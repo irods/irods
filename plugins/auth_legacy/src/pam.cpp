@@ -307,6 +307,11 @@ irods::error pam_auth_agent_request(
         return ERROR( SYS_INVALID_INPUT_PARAM, "invalid plugin context" );
     }
 
+    // Emit a warning so that clients will alert users/developers to the deprecation of these plugins.
+    constexpr const char* msg = "The legacy authentication plugin interface has been deprecated. Please update client "
+                                "to not use legacy authentication plugins.";
+    addRErrorMsg(&_ctx.comm()->rError, DEPRECATED_AUTHENTICATION_PLUGIN, msg);
+
     // =-=-=-=-=-=-=-
     // get the server host handle
     rodsServerHost_t* server_host = 0;

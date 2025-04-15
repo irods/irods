@@ -256,7 +256,11 @@ namespace irods::authentication
     /// \retval true If server version is less than 4.3.0
     /// \retval false If server version is greater than or equal to 4.3.0
     ///
+    /// \deprecated Legacy authentication plugins are deprecated.
+    ///
     /// \since 4.3.0
+    // clang-format off
+    [[deprecated("Legacy authentication plugins are deprecated.")]]
     inline auto use_legacy_authentication(const RcComm& _comm) -> bool
     {
         static constexpr auto minimum_version_for_auth_plugin_framework = irods::version{4, 3, 0};
@@ -270,6 +274,7 @@ namespace irods::authentication
 
         return *server_version < minimum_version_for_auth_plugin_framework;
     } // use_legacy_authentication
+    // clang-format on
 
     /// \brief Convenience function for invoking the authentication API endpoint.
     ///

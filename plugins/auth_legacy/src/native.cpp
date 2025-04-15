@@ -257,6 +257,11 @@ irods::error native_auth_agent_request(irods::plugin_context& _ctx)
         return ERROR(SYS_INVALID_INPUT_PARAM, "Null comm pointer.");
     }
 
+    // Emit a warning so that clients will alert users/developers to the deprecation of these plugins.
+    constexpr const char* msg = "The legacy authentication plugin interface has been deprecated. Please update client "
+                                "to not use legacy authentication plugins.";
+    addRErrorMsg(&_ctx.comm()->rError, DEPRECATED_AUTHENTICATION_PLUGIN, msg);
+
     // generate a random buffer and copy it to the challenge
     char buf[ CHALLENGE_LEN + 2 ];
     get64RandomBytes( buf );

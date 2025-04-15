@@ -219,20 +219,27 @@ int
 freeRcComm( rcComm_t *conn );
 int
 cleanRcComm( rcComm_t *conn );
-/* XXXX putting clientLogin here for now. Should be in clientLogin.h */
-#ifdef __cplusplus
-int
-clientLogin( rcComm_t *conn, const char* _context = 0, const char* _scheme_override = 0 );
-#else
-int
-clientLogin( rcComm_t *conn, const char* _context, const char* _scheme_override );
-#endif
-int
-clientLoginPam( rcComm_t *conn, char *password, int ttl );
-int
-clientLoginTTL( rcComm_t *conn, int ttl );
 
 // clang-format off
+/* XXXX putting clientLogin here for now. Should be in clientLogin.h */
+#ifdef __cplusplus
+int clientLogin(rcComm_t* conn, const char* _context = nullptr, const char* _scheme_override = nullptr);
+#else
+int clientLogin(rcComm_t* conn, const char* _context, const char* _scheme_override);
+#endif
+
+__attribute__((deprecated("Use clientLogin with pam_password scheme, and AUTH_PASSWORD_KEY and TTL_KEY in context.")))
+int clientLoginPam(rcComm_t* conn, char* password, int ttl);
+
+// This function does not actually authenticate. It requests a limited password for the connected client user and
+// then records it as an obfuscated password in the .irodsA file. This is used by iinit exclusively for native
+// authentication with TTL.
+int clientLoginTTL(rcComm_t* conn, int ttl);
+
+// This function only uses legacy native authentication.
+__attribute__((deprecated("Use clientLogin with AUTH_PASSWORD_KEY in context.")))
+int clientLoginWithPassword(rcComm_t* conn, char* password);
+
 __attribute__((deprecated("Use session_signature member variable in RcComm instance.")))
 char* getSessionSignatureClientside();
 // clang-format on
@@ -265,8 +272,6 @@ char* getSessionSignatureClientside();
 /// \since 4.3.1
 int set_session_signature_client_side(rcComm_t* _comm, const char* _buffer, size_t _buffer_size);
 
-int
-clientLoginWithPassword( rcComm_t *conn, char* password );
 void
 cliReconnManager( rcComm_t *conn );
 int
