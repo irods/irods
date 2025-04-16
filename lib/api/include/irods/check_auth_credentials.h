@@ -48,7 +48,7 @@ typedef struct CheckAuthCredentialsInput // NOLINT(modernize-use-using)
     char password[250];
 
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    // NOLINTNEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+    // NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 } checkAuthCredsInp_t;
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
