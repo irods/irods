@@ -896,6 +896,7 @@ NEW_ERROR(OOI_REVID_NOT_FOUND,                         -2211000)
  */
 NEW_ERROR(DEPRECATED_PARAMETER,                        -3000000)
 NEW_ERROR(DEPRECATED_API,                              -3001000)
+NEW_ERROR(DEPRECATED_AUTHENTICATION_PLUGIN,            -3002000) // iRODS 5 error code
 /** @} */
 
 /* XML parsing and TDS error */
