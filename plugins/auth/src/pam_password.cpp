@@ -297,8 +297,18 @@ namespace irods
 
             json resp{req};
 
+            // This operation asserts that the key exists in the request above, so we know that it is there.
+            const auto password_iter = resp.find(irods::AUTH_PASSWORD_KEY);
+            const auto password = password_iter->get<std::string>();
+
+            // Erase the password key as soon as it is no longer needed to avoid sending it back in the response.
+            resp.erase(password_iter);
+
             log_auth::trace("getting TTL param");
 
+            // Check TTL parameters before checking the password so that we avoid unnecessary communication with the PAM
+            // service. If we cannot authenticate with the iRODS server because of a bad TTL input, there is no reason
+            // to check the PAM credentials.
             int ttl = 0;
             if (req.contains(irods::AUTH_TTL_KEY)) {
                 if (const auto& ttl_str = req.at(irods::AUTH_TTL_KEY).get_ref<const std::string&>(); !ttl_str.empty()) {
@@ -312,7 +322,6 @@ namespace irods
             }
 
             const auto& username = req.at("user_name").get_ref<const std::string&>();
-            const auto& password = req.at(irods::AUTH_PASSWORD_KEY).get_ref<const std::string&>();
 
             log_auth::trace("performing PAM auth check for [{}]", username);
 
