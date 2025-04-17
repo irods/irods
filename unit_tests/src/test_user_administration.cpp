@@ -2,6 +2,7 @@
 
 #include "irods/client_connection.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/rcConnect.h"
 #include "irods/rodsClient.h"
 #include "irods/user_administration.hpp"
@@ -9,6 +10,8 @@
 
 #include <algorithm>
 #include <iterator>
+
+#include <nlohmann/json.hpp>
 
 TEST_CASE("user group administration")
 {
@@ -201,7 +204,7 @@ TEST_CASE("user group administration")
             [&conn, &test_admin] { CHECK_NOTHROW(adm::client::remove_user(conn, test_admin)); }};
 
         // Set the test admin's password. This will be used later.
-        adm::user_password_property admin_prop{"admin_pass"};
+        const adm::user_password_property admin_prop{"admin_pass"};
         REQUIRE_NOTHROW(adm::client::modify_user(conn, test_admin, admin_prop));
 
         // Connect to the server and authenticate as the new admin.
@@ -209,7 +212,8 @@ TEST_CASE("user group administration")
         _getRodsEnv(env);
         irods::experimental::client_connection admin_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_admin.name, env.rodsZone}};
-        CHECK(clientLoginWithPassword(static_cast<RcComm*>(admin_conn), admin_prop.value.data()) == 0);
+        const auto admin_user_ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, admin_prop.value.data()}};
+        REQUIRE(clientLogin(static_cast<RcComm*>(admin_conn), admin_user_ctx.dump().c_str()) == 0);
 
         // Create a rodsuser.
         const adm::user test_user{"unit_test_test_user"};
@@ -221,13 +225,14 @@ TEST_CASE("user group administration")
         // Notice the second argument on the property. This instructs the user administration library
         // to not call obfGetPw and instead, use the given argument as the descrambled password. The
         // password passed as the second argument must be the requester's password.
-        adm::user_password_property test_user_prop{"user_pass", admin_prop.value};
+        const adm::user_password_property test_user_prop{"user_pass", admin_prop.value};
         REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, test_user, test_user_prop));
 
         // Show the test user can connect to the server and authenticate using the new password.
         irods::experimental::client_connection user_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
-        CHECK(clientLoginWithPassword(static_cast<RcComm*>(user_conn), test_user_prop.value.data()) == 0);
+        const auto test_user_ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, test_user_prop.value.data()}};
+        CHECK(clientLogin(static_cast<RcComm*>(user_conn), test_user_ctx.dump().c_str()) == 0);
     }
 
     SECTION("#7576: ensure no limitations on proxied groupadmin")

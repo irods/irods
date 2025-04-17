@@ -6,6 +6,7 @@
 #include "irods/fully_qualified_username.hpp"
 #include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/rcConnect.h"
 #include "irods/resource_administration.hpp"
@@ -15,6 +16,8 @@
 
 #include <chrono>
 #include <thread>
+
+#include <nlohmann/json.hpp>
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("connection pool")
@@ -187,12 +190,13 @@ TEST_CASE("connection pool")
         irods::at_scope_exit remove_proxy_admin{
             [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
 
-        auto password = std::to_array("ppass");
+        const auto password = std::to_array("ppass");
         const ia::user_password_property pwd_property{password.data()};
         REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
         const auto auth_func = [&password](auto& _comm) {
-            if (clientLoginWithPassword(&_comm, password.data()) != 0) {
+            const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}};
+            if (clientLogin(&_comm, ctx.dump().c_str()) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };
@@ -214,7 +218,7 @@ TEST_CASE("connection pool")
     {
         const auto auth_func = [](auto& _comm) {
             // This will cause the connection pool to throw an exception on construction.
-            if (clientLoginWithPassword(&_comm, "nope") != 0) {
+            if (clientLogin(&_comm, nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}}.dump().c_str()) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };
@@ -240,15 +244,13 @@ TEST_CASE("connection pool")
         irods::at_scope_exit remove_proxy_admin{
             [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
 
-        // The property is mutable so that we can use it for clientLoginWithPassword()
-        // later in the test.
-        auto password = std::to_array("ppass");
+        const auto password = std::to_array("ppass");
         const ia::user_password_property pwd_property{password.data()};
         REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
         const auto auth_func = [](auto& _comm) {
             // This will cause the connection pool to throw an exception on construction.
-            if (clientLoginWithPassword(&_comm, "nope") != 0) {
+            if (clientLogin(&_comm, nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}}.dump().c_str()) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };

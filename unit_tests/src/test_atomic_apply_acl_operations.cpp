@@ -9,6 +9,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/user_administration.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/transport/default_transport.hpp"
 #include "irods/dstream.hpp"
 #include "irods/zone_administration.hpp"
@@ -357,8 +358,8 @@ TEST_CASE("Non-admin users can modify ACLs of collections and data objects")
     auto* conn_ptr = rcConnect(env.rodsHost, env.rodsPort, test_user.name.c_str(), env.rodsZone, 0, &error);
     REQUIRE(conn_ptr);
     irods::at_scope_exit disconnect_test_user{[conn_ptr] { rcDisconnect(conn_ptr); }};
-    char password[] = "rods";
-    REQUIRE(clientLoginWithPassword(conn_ptr, password) == 0);
+    const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "rods"}};
+    REQUIRE(clientLogin(conn_ptr, ctx.dump().c_str()) == 0);
 
     // Capture the home collection of the test user.
     const auto test_user_home = fs::path{"/"} / env.rodsZone / "home" / test_user.name;
