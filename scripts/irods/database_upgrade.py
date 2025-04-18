@@ -231,7 +231,8 @@ def run_update(irods_config, cursor):
                 SET access_ts = modify_ts
                 WHERE access_ts = '0';
 
-            Please consult your local DBA before making any SQL adjustments.
+            Please consult your local database administrator before making any SQL
+            adjustments.
 
             =======================================================================
         """))
