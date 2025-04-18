@@ -118,17 +118,18 @@ def setup_database_config(irods_config):
                     oracle_home=os.getenv('ORACLE_HOME', None)))
 
         irods_config.database_config['db_host'] = lib.default_prompt(
-            'Database server\'s hostname or IP address',
-            default=[irods_config.database_config.get('db_host', 'localhost')])
+            'Database FQDN, hostname, or IP address (253 characters max)',
+            default=[irods_config.database_config.get('db_host', 'localhost')],
+            input_filter=lib.character_count_filter(minimum=1, maximum=253, field='Database server host'))
 
         irods_config.database_config['db_port'] = lib.default_prompt(
-            'Database server\'s port',
+            'Database port',
             default=[irods_config.database_config.get('db_port', database_connect.get_default_port_for_database_type(irods_config.catalog_database_type))],
-            input_filter=lib.int_filter(field='Port'))
+            input_filter=lib.int_filter(field='Database server port'))
 
         if irods_config.catalog_database_type == 'oracle':
             irods_config.database_config['db_name'] = lib.default_prompt(
-                'Service name',
+                'Database name',
                 default=[irods_config.database_config.get('db_name', 'ICAT.example.org')])
         else:
             irods_config.database_config['db_name'] = lib.default_prompt(
@@ -146,15 +147,15 @@ def setup_database_config(irods_config):
 
         confirmation_message = ''.join([
                 '\n',
-                '-------------------------------------------\n',
-                'Database Type: %s\n',
-                'ODBC Driver:   %s\n',
-                'Database Host: %s\n',
-                'Database Port: %d\n',
-                'Database Name: %s\n' if irods_config.catalog_database_type != 'oracle' else 'Service Name:  %s\n',
-                'Database User: %s\n',
-                'Database Cert: %s\n' if db_type == 'cockroachdb' else '%s',
-                '-------------------------------------------\n\n',
+                '-------------------------------------------------------------\n',
+                'Database Type:        %s\n',
+                'Database ODBC Driver: %s\n',
+                'Database Host:        %s\n',
+                'Database Port:        %d\n',
+                'Database Name:        %s\n',
+                'Database Username:    %s\n',
+                'Database Certificate: %s\n' if db_type == 'cockroachdb' else '%s',
+                '-------------------------------------------------------------\n\n',
                 'Please confirm']) % (
                     irods_config.catalog_database_type,
                     irods_config.database_config['db_odbc_driver'],
