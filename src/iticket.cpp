@@ -1,3 +1,4 @@
+#include "utility.hpp"
 #include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
@@ -893,7 +894,7 @@ main( int argc, char **argv ) {
 
     const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
 
-    status = clientLogin( Conn );
+    status = utils::authenticate_client(Conn, myEnv);
     if ( status != 0 ) {
         print_error_stack_to_file(Conn->rError, stderr);
         if ( !debug ) {

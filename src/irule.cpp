@@ -1,7 +1,4 @@
-/*
- * irule - The irods utility to execute user composed rules.
-*/
-
+#include "utility.hpp"
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
 #include <irods/parseCommandLine.h>
@@ -225,7 +222,7 @@ main( int argc, char **argv ) {
                     exit( 2 );
                 }
 
-                status = clientLogin( conn );
+                status = utils::authenticate_client(conn, myEnv);
                 if ( status != 0 ) {
                     print_error_stack_to_file(conn->rError, stderr);
                     rcDisconnect( conn );
@@ -455,7 +452,7 @@ main( int argc, char **argv ) {
             exit( 2 );
         }
 
-        status = clientLogin( conn );
+        status = utils::authenticate_client(conn, myEnv);
         if ( status != 0 ) {
             print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );

@@ -1,3 +1,4 @@
+#include "utility.hpp"
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/parseCommandLine.h>
@@ -81,7 +82,7 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    status = clientLogin( conn );
+    status = utils::authenticate_client(conn, myEnv);
     if ( status != 0 ) {
         print_error_stack_to_file(conn->rError, stderr);
         rcDisconnect( conn );
