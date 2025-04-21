@@ -136,6 +136,7 @@ namespace
     auto check_catalog_schema_version() -> std::pair<bool, int>;
     auto setup_signal_handlers() -> int;
     auto wait_for_external_dependent_servers_to_start() -> int;
+    auto set_environment_variables() -> void;
 
     auto handle_shutdown() -> void;
     auto handle_shutdown_graceful() -> void;
@@ -235,6 +236,8 @@ auto main(int _argc, char* _argv[]) -> int
     try {
         const auto config_file_path = irods::get_irods_config_directory() / "server_config.json";
         irods::server_properties::instance().init(config_file_path.c_str());
+
+        set_environment_variables();
 
         // Configure the legacy rodsLog API so messages are written to the legacy log category
         // provided by the new logging API.
@@ -827,6 +830,18 @@ Signals:
 
         return -1;
     } // wait_for_external_dependent_servers_to_start
+
+    auto set_environment_variables() -> void
+    {
+        // All environment variables are inherited by the agent factory and delay server due to
+        // the use of execv(), which is exactly what we want.
+        const auto config_handle = irods::server_properties::instance().map();
+        const auto& config = config_handle.get_json();
+        const auto& env_vars = config.at(irods::KW_CFG_ENVIRONMENT_VARIABLES);
+        for (auto&& [key, value] : env_vars.items()) {
+            setenv(key.c_str(), value.get_ref<const std::string&>().c_str(), 1);
+        }
+    } // set_environment_variables
 
     auto handle_shutdown() -> void
     {
