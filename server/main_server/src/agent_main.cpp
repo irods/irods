@@ -58,17 +58,12 @@
 #include <csignal>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <string>
 #include <string_view>
 #include <thread>
-
-#ifdef __cpp_lib_filesystem
-#  include <filesystem>
-#else
-#  include <boost/filesystem.hpp>
-#endif
 
 // __has_feature is a Clang specific feature.
 // The preprocessor code below exists so that other compilers can be used (e.g. GCC).
@@ -99,11 +94,7 @@ extern "C" const char* __ubsan_default_options()
 
 namespace
 {
-#ifdef __cpp_lib_filesystem
     namespace fs = std::filesystem;
-#else
-    namespace fs = boost::filesystem;
-#endif
 
     using log_af = irods::experimental::log::agent_factory;
     using log_agent = irods::experimental::log::agent;
