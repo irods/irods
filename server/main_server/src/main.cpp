@@ -148,10 +148,8 @@ namespace
     auto handle_configuration_reload(bool _write_to_stdout, bool _enable_test_mode) -> void;
     auto launch_delay_server(bool _write_to_stdout, bool _enable_test_mode) -> void;
     auto get_preferred_host(const std::string_view _host) -> std::string;
-    auto migrate_and_launch_delay_server(bool _write_to_stdout,
-                                         bool _enable_test_mode,
-                                         std::chrono::steady_clock::time_point& _time_start) -> void;
-    auto log_stacktrace_files(std::chrono::steady_clock::time_point& _time_start) -> void;
+    auto migrate_and_launch_delay_server(bool _write_to_stdout, bool _enable_test_mode) -> void;
+    auto log_stacktrace_files() -> void;
     auto evict_expired_dns_cache_entries() -> void;
     auto evict_expired_hostname_cache_entries() -> void;
     auto remove_leftover_agent_info_files_for_ips() -> void;
@@ -336,14 +334,6 @@ auto main(int _argc, char* _argv[]) -> int
         // THE PARENT PROCESS IS THE ONLY PROCESS THAT SHOULD/CAN REACT TO SIGNALS!
         // EVERYTHING IS PROPAGATED THROUGH/FROM THE PARENT PROCESS!
 
-        // dsm = Short for delay server migration
-        // This is used to control the frequency of the delay server migration logic.
-        auto dsm_time_start = std::chrono::steady_clock::now();
-
-        // stfp = Short for stacktrace file processor
-        // This is used to control the frequency of the stacktrace file processing logic.
-        auto stfp_time_start = dsm_time_start;
-
         while (true) {
             if (g_terminate) {
                 log_server::info("{}: Received shutdown instruction. Exiting server main loop.", __func__);
@@ -368,10 +358,10 @@ auto main(int _argc, char* _argv[]) -> int
                 waitpid(-1, nullptr, WNOHANG);
             }
 
-            log_stacktrace_files(stfp_time_start);
+            log_stacktrace_files();
             remove_leftover_agent_info_files_for_ips();
             launch_agent_factory(__func__, write_to_stdout, enable_test_mode);
-            migrate_and_launch_delay_server(write_to_stdout, enable_test_mode, dsm_time_start);
+            migrate_and_launch_delay_server(write_to_stdout, enable_test_mode);
             apply_access_time_updates();
             evict_expired_dns_cache_entries();
             evict_expired_hostname_cache_entries();
@@ -1252,9 +1242,7 @@ Signals:
     } // get_preferred_host
 
     // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-    auto migrate_and_launch_delay_server(bool _write_to_stdout,
-                                         bool _enable_test_mode,
-                                         std::chrono::steady_clock::time_point& _time_start) -> void
+    auto migrate_and_launch_delay_server(bool _write_to_stdout, bool _enable_test_mode) -> void
     {
         // The host property in server_config.json defines the true identity of the local server.
         // We cannot use localhost or the loopback address because the computer may have multiple
@@ -1288,15 +1276,16 @@ Signals:
             }
         }
 
-        const auto migration_sleep_time_in_seconds =
+        const auto sleep_time =
             irods::get_advanced_setting<int>(irods::KW_CFG_MIGRATE_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
+        static auto start_time = std::chrono::steady_clock::now();
         const auto now = std::chrono::steady_clock::now();
 
-        if (now - _time_start < std::chrono::seconds{migration_sleep_time_in_seconds}) {
+        if (now - start_time < std::chrono::seconds{sleep_time}) {
             return;
         }
 
-        _time_start = now;
+        start_time = now;
 
         std::optional<std::string> leader;
         std::optional<std::string> successor;
@@ -1379,17 +1368,18 @@ Signals:
         }
     } // migrate_and_launch_delay_server
 
-    auto log_stacktrace_files(std::chrono::steady_clock::time_point& _time_start) -> void
+    auto log_stacktrace_files() -> void
     {
-        const auto timeout =
+        const auto sleep_time =
             irods::get_advanced_setting<int>(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
+        static auto start_time = std::chrono::steady_clock::now();
         const auto now = std::chrono::steady_clock::now();
 
-        if (now - _time_start < std::chrono::seconds{timeout}) {
+        if (now - start_time < std::chrono::seconds{sleep_time}) {
             return;
         }
 
-        _time_start = now;
+        start_time = now;
 
         for (auto&& entry : fs::directory_iterator{irods::get_irods_stacktrace_directory().c_str()}) {
             // Expected filename format:
