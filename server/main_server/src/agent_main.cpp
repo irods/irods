@@ -270,17 +270,6 @@ auto main(int _argc, char* _argv[]) -> int
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 
-        // Set the default value for evicting DNS cache entries.
-        using key_path_t = irods::configuration_parser::key_path_t;
-        irods::set_server_property(
-            key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_DNS_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
-            irods::get_dns_cache_eviction_age());
-        // Set the default value for evicting hostname cache entries.
-        irods::set_server_property(
-            key_path_t{
-                irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
-            irods::get_hostname_cache_eviction_age());
-
         if (const auto res = createAndSetRECacheSalt(); !res.ok()) {
             log_af::error("{}: createAndSetRECacheSalt error.\n{}", __func__, res.result());
             return 1;
