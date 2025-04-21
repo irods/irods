@@ -1,5 +1,5 @@
-#ifndef IRODS_SWITCH_USER_HPP
-#define IRODS_SWITCH_USER_HPP
+#ifndef IRODS_SWITCH_USER_H
+#define IRODS_SWITCH_USER_H
 
 /// \file
 
@@ -76,4 +76,4 @@ int rc_switch_user(struct RcComm* _comm, const struct SwitchUserInput* _input);
 } // extern "C"
 #endif
 
-#endif // IRODS_SWITCH_USER_HPP
+#endif // IRODS_SWITCH_USER_H
