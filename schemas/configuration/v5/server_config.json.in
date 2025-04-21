@@ -38,7 +38,12 @@
                             "type": "integer",
                             "minimum": 1
                         }
-                    }
+                    },
+                    "required": [
+                        "cache_clearer_sleep_time_in_seconds",
+                        "eviction_age_in_seconds",
+                        "shared_memory_size_in_bytes"
+                    ]
                 },
                 "hostname_cache": {
                     "type": "object",
@@ -55,7 +60,12 @@
                             "type": "integer",
                             "minimum": 1
                         }
-                    }
+                    },
+                    "required": [
+                        "cache_clearer_sleep_time_in_seconds",
+                        "eviction_age_in_seconds",
+                        "shared_memory_size_in_bytes"
+                    ]
                 },
                 "maximum_size_for_single_buffer_in_megabytes": {
                     "type": "integer",
@@ -93,9 +103,16 @@
             "required": [
                 "default_number_of_transfer_threads",
                 "default_temporary_password_lifetime_in_seconds",
+                "delay_rule_executors",
+                "delay_server_sleep_time_in_seconds",
+                "dns_cache",
+                "hostname_cache",
                 "maximum_size_for_single_buffer_in_megabytes",
+                "maximum_size_of_delay_queue_in_bytes",
                 "maximum_temporary_password_lifetime_in_seconds",
                 "migrate_delay_server_sleep_time_in_seconds",
+                "number_of_concurrent_delay_rule_executors",
+                "stacktrace_file_processor_sleep_time_in_seconds",
                 "transfer_buffer_size_for_parallel_transfer_in_megabytes",
                 "transfer_chunk_size_for_parallel_transfer_in_megabytes"
             ]
