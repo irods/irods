@@ -276,11 +276,19 @@ auto main(int _argc, char* _argv[]) -> int
         log_server::info("{}: Initializing shared memory for main server process.", __func__);
 
         namespace hnc = irods::experimental::net::hostname_cache;
-        hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
+
+        {
+            const auto cache_config = irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_HOSTNAME_CACHE);
+            hnc::init("irods_hostname_cache", cache_config.at(irods::KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES).get<int>());
+        }
         irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
         namespace dnsc = irods::experimental::net::dns_cache;
-        dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
+
+        {
+            const auto cache_config = irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_DNS_CACHE);
+            dnsc::init("irods_dns_cache", cache_config.at(irods::KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES).get<int>());
+        }
         irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
         // TODO(#8014): These directories should be created by the packaging.

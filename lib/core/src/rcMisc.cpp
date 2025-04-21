@@ -82,6 +82,24 @@ namespace
             std::free(_q); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
         }
     }
+
+    // This function DOES NOT use the logging library because it is used in client-side code
+    // and we want to reduce the number of places from which an exception can be thrown.
+    auto get_dns_cache_eviction_age() noexcept -> int
+    {
+        try {
+            const auto cache_config = irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_DNS_CACHE);
+            const auto age = cache_config.at(irods::KW_CFG_EVICTION_AGE_IN_SECONDS).get<int>();
+
+            if (age >= 0) {
+                return age;
+            }
+        }
+        catch (const std::exception&) {
+        }
+
+        return 3600;
+    } // get_dns_cache_eviction_age
 } // namespace
 
 int
@@ -4684,7 +4702,7 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len)
     snprintf(_buf, _len, "%s", p_addrinfo->ai_canonname);
 
     if (CLIENT_PT != ::ProcessType) {
-        const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+        const std::chrono::seconds age{get_dns_cache_eviction_age()};
         const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
 
         rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
@@ -4725,7 +4743,7 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out)
     *_out = reinterpret_cast<struct sockaddr_in*>(p_addrinfo->ai_addr)->sin_addr;
 
     if (CLIENT_PT != ::ProcessType) {
-        const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+        const std::chrono::seconds age{get_dns_cache_eviction_age()};
         const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
 
         rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
