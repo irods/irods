@@ -26,34 +26,34 @@
                 "dns_cache": {
                     "type": "object",
                     "properties": {
-                        "shared_memory_size_in_bytes": {
+                        "cache_clearer_sleep_time_in_seconds": {
                             "type": "integer",
-                            "minimum": 1
+                            "minimum": 0
                         },
                         "eviction_age_in_seconds": {
                             "type": "integer",
                             "minimum": 0
                         },
-                        "cache_clearer_sleep_time_in_seconds": {
+                        "shared_memory_size_in_bytes": {
                             "type": "integer",
-                            "minimum": 0
+                            "minimum": 1
                         }
                     }
                 },
                 "hostname_cache": {
                     "type": "object",
                     "properties": {
-                        "shared_memory_size_in_bytes": {
+                        "cache_clearer_sleep_time_in_seconds": {
                             "type": "integer",
-                            "minimum": 1
+                            "minimum": 0
                         },
                         "eviction_age_in_seconds": {
                             "type": "integer",
                             "minimum": 0
                         },
-                        "cache_clearer_sleep_time_in_seconds": {
+                        "shared_memory_size_in_bytes": {
                             "type": "integer",
-                            "minimum": 0
+                            "minimum": 1
                         }
                     }
                 },
