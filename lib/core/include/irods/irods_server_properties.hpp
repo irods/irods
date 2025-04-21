@@ -282,43 +282,6 @@ namespace irods
     {
         return irods::get_server_property<T>(configuration_parser::key_path_t{KW_CFG_ADVANCED_SETTINGS, _prop});
     } // get_advanced_setting
-
-    /// Returns the amount of shared memory that should be allocated for the DNS cache.
-    ///
-    /// \return An integer representing the size in bytes.
-    /// \retval 5000000          If an error occurred or the size was less than or equal to zero.
-    /// \retval Configured-Value Otherwise.
-    ///
-    /// \since 4.2.9
-    auto get_dns_cache_shared_memory_size() noexcept -> int;
-
-    /// Returns the DNS cache eviction age from server_config.json.
-    ///
-    /// \return An integer representing seconds.
-    /// \retval 3600             If an error occurred or the age was less than zero.
-    /// \retval Configured-Value Otherwise.
-    ///
-    /// \since 4.2.9
-    auto get_dns_cache_eviction_age() noexcept -> int;
-
-    /// Returns the amount of shared memory that should be allocated for the Hostname cache.
-    ///
-    /// \return An integer representing the size in bytes.
-    /// \retval 2500000          If an error occurred or the size was less than or equal to zero.
-    /// \retval Configured-Value Otherwise.
-    ///
-    /// \since 4.2.9
-    auto get_hostname_cache_shared_memory_size() noexcept -> int;
-
-    /// Returns the hostname cache eviction age from server_config.json.
-    ///
-    /// \return An integer representing seconds.
-    /// \retval 3600             If an error occurred or the age was less than zero.
-    /// \retval Configured-Value Otherwise.
-    ///
-    /// \since 4.2.9
-    auto get_hostname_cache_eviction_age() noexcept -> int;
 } // namespace irods
 
 #endif // IRODS_SERVER_PROPERTIES_HPP
-

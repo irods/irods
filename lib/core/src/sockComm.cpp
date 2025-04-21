@@ -489,7 +489,24 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
                     std::strncpy(*addr, alias->data(), alias->size());
                 }
 
-                const std::chrono::seconds age{irods::get_hostname_cache_eviction_age()};
+                const std::chrono::seconds age{[] {
+                    // This lambda DOES NOT use the logging library because it is used in client-side code
+                    // and we want to reduce the number of places from which an exception can be thrown.
+                    try {
+                        const auto cache_config =
+                            irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_HOSTNAME_CACHE);
+                        const auto age = cache_config.at(irods::KW_CFG_EVICTION_AGE_IN_SECONDS).get<int>();
+
+                        if (age >= 0) {
+                            return age;
+                        }
+                    }
+                    catch (const std::exception&) {
+                    }
+
+                    return 3600;
+                }()};
+
                 const auto inserted = hnc::insert_or_assign("localhost", *addr, age);
 
                 rodsLog(LOG_DEBUG, "%s :: Added alias to hostname cache for localhost [alias=%s, inserted=%d].",
