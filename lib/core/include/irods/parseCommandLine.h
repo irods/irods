@@ -49,8 +49,6 @@ typedef struct RodsArguments {
     char *dataTypeString;
     int longOption;
     int link;
-    int rlock; // JMC - backport 4604
-    int wlock; // JMC - backport 4604
     int veryLongOption;
     int mountCollection;
     char *mountType;

@@ -670,14 +670,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    if ( rodsArgs->wlock == True ) { // JMC - backport 4604
-        addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE );
-    }
-    if ( rodsArgs->rlock == True ) { // JMC - backport 4612
-        rodsLog( LOG_ERROR, "initCondForPut: --rlock not supported, changing it to --wlock" );
-        addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE );
-    }
-
     if ( rodsArgs->metadata_string != NULL && strlen( rodsArgs->metadata_string ) != 0 ) {
         addKeyVal( &dataObjOprInp->condInput, METADATA_INCLUDED_KW, rodsArgs->metadata_string );
     }

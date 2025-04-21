@@ -60,7 +60,7 @@ class ChunkyDevTest(ResourceBase):
 
         # put and list basic file information
         self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "home")  # debug
-        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ichksum -f " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "    sha2:")
         self.admin.assert_icommand("iput -kf " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "foo1")
@@ -72,7 +72,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest/foo1",
                                    'STDOUT_SINGLELINE', testuser1 + "#" + irodszone + ":read")
         # basic replica
-        self.admin.assert_icommand("irepl -R " + self.testresc + " --rlock " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', self.testresc)
 
         # overwrite a copy
@@ -96,7 +96,7 @@ class ChunkyDevTest(ResourceBase):
         assert imeta_output.find('cm') > -1
 
         # new file mode check
-        self.admin.assert_icommand("iget -fK --rlock " + irodshome + "/icmdtest/foo2 /tmp/")
+        self.admin.assert_icommand("iget -fK " + irodshome + "/icmdtest/foo2 /tmp/")
         assert stat.S_IMODE(os.stat("/tmp/foo2").st_mode) == 0o640
         os.unlink("/tmp/foo2")
 
@@ -112,7 +112,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["hello"])
         self.admin.assert_icommand("iquest 'collection: %s\ndataObj: %s' \"SELECT COLL_NAME, DATA_NAME WHERE META_DATA_ATTR_NAME = 'testmeta1' AND META_DATA_ATTR_VALUE = '180'\"", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("iquest 'collection: %s\ndataObj: %s' \"SELECT COLL_NAME, DATA_NAME WHERE META_DATA_ATTR_NAME = 'testmeta2' AND META_DATA_ATTR_VALUE = 'hello'\"", 'STDOUT_SINGLELINE', "dataObj: foo1")
-        self.admin.assert_icommand("iget -f -K --rlock " + irodshome + "/icmdtest/foo2 " + dir_w)
+        self.admin.assert_icommand("iget -f -K " + irodshome + "/icmdtest/foo2 " + dir_w)
         assert myssize == str(os.stat(dir_w + "/foo2").st_size)
         os.unlink(dir_w + "/foo2")
 
@@ -153,7 +153,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.copyfile(test_file, mysfile)
 
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -337,7 +337,7 @@ class ChunkyDevTest(ResourceBase):
 
         self.admin.assert_icommand("imkdir icmdtest")
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -446,7 +446,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imkdir icmdtest")
 
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -633,13 +633,13 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        self.admin.assert_icommand("iput -vbPr --retries 10 --wlock -X " + rsfile + " --lfrestart " +
+        self.admin.assert_icommand("iput -vbPr --retries 10 -X " + rsfile + " --lfrestart " +
                                    lrsfile + " -N 2 " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "New restartFile")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        self.admin.assert_icommand("irepl -vrPT -R " + self.testresc + " --rlock " +
+        self.admin.assert_icommand("irepl -vrPT -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " --dryrun -N 1 " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "This is a DRYRUN")
@@ -660,7 +660,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(dir_w + "/testz"):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
-                                   " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
+                                   "  -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
         self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz")
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testz " + dir_w + "/testz")
         if os.path.isfile(lrsfile):

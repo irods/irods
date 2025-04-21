@@ -2,7 +2,6 @@
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjGet.h"
-#include "irods/dataObjLock.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjPut.h"

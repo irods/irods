@@ -5,7 +5,6 @@
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjCreateAndStat.h"
 #include "irods/dataObjInpOut.h"
-#include "irods/dataObjLock.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjOpenAndStat.h"
 #include "irods/dataObjOpr.hpp"

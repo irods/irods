@@ -1,6 +1,5 @@
 #include "irods/apiNumber.h"
 #include "irods/dataObjClose.h"
-#include "irods/dataObjLock.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjRepl.h"
 #include "irods/dataObjTrim.h"

@@ -65,7 +65,6 @@
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. The value is the md5 checksum value of the
  *            local file.
- *    \n LOCK_TYPE_KW - set advisory lock type. valid value - WRITE_LOCK_TYPE.
  * \param[in] locFilePath - the path of the local file to upload. This path
  *           can be a relative path.
  *

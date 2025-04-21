@@ -18,7 +18,6 @@
 #include "irods/fileChmod.h"
 #include "irods/fileRmdir.h"
 #include "irods/fileStat.h"
-#include "irods/dataObjLock.h" // JMC - backport 4599
 #include "irods/fileGetFsFreeSpace.h"
 #include "irods/fileOpendir.h"
 #include "irods/fileClosedir.h"
