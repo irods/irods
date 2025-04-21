@@ -1,6 +1,4 @@
-/*
- * iclienthints - produce json configuration clienthints
-*/
+#include "utility.hpp"
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsClient.h>
@@ -84,7 +82,7 @@ main( int _argc, char** argv ) {
     init_api_table( api_tbl, pk_tbl );
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
-        status = clientLogin( conn );
+        status = utils::authenticate_client(conn, myEnv);
         if ( status != 0 ) {
             print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );

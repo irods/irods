@@ -81,7 +81,7 @@ mkrodsdir() {
 
 namespace
 {
-    namespace irods_auth = irods::authentication;
+    namespace ia = irods::authentication;
 
     constexpr const char* const NATIVE_SCHEME = "native";
 
@@ -393,13 +393,11 @@ int main( int argc, char **argv )
     }
 
     auto ctx = nlohmann::json{{irods::AUTH_TTL_KEY, std::to_string(ttl)},
-                              {irods_auth::record_auth_file, true},
-                              {irods_auth::force_password_prompt, true}};
+                              {ia::record_auth_file, true},
+                              {ia::force_password_prompt, true},
+                              {ia::scheme_name, my_env.rodsAuthScheme}};
 
-    // Use the scheme override here to ensure that the authentication scheme in the environment is the same as
-    // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
-    // iinit match, then nothing will need to change in clientLogin. If they do not match, the override wins.
-    if (const int ec = clientLogin(Conn, ctx.dump().c_str(), my_env.rodsAuthScheme); ec != 0) {
+    if (const int ec = ia::authenticate_client(*Conn, ctx); ec != 0) {
         print_error_stack_to_file(Conn->rError, stderr);
         rcDisconnect(Conn);
         return 7;

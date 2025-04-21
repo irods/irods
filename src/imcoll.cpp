@@ -1,10 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- * imcoll - The irods mounted collection utility that deals with
- * mounting/unmounting and the management of mounted structured files.
-*/
-
+#include "utility.hpp"
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsClient.h>
@@ -103,7 +97,7 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    status = clientLogin( conn );
+    status = utils::authenticate_client(conn, myEnv);
     if ( status != 0 ) {
         print_error_stack_to_file(conn->rError, stderr);
         rcDisconnect( conn );

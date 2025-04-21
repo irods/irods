@@ -1,9 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- * iphymv - The irods physical move utility
- */
-
+#include "utility.hpp"
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
 #include <irods/parseCommandLine.h>
@@ -80,7 +75,7 @@ main( int argc, char **argv ) {
         return 2;
     }
 
-    status = clientLogin( conn );
+    status = utils::authenticate_client(conn, myEnv);
     if ( status != 0 ) {
         // Failed to authenticate as the configured user
         print_error_stack_to_file(conn->rError, stderr);

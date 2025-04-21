@@ -1,3 +1,4 @@
+#include "utility.hpp"
 #include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_children_parser.hpp>
 #include <irods/irods_client_api_table.hpp>
@@ -512,7 +513,7 @@ main( int argc, char **argv ) {
             return 2;
         }
 
-        status = clientLogin( Conn );
+        status = utils::authenticate_client(Conn, myEnv);
         if ( status != 0 ) {
             print_error_stack_to_file(Conn->rError, stderr);
             return 3;

@@ -1,6 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
+#include "utility.hpp"
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
@@ -412,7 +410,7 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    status = clientLogin( Conn );
+    status = utils::authenticate_client(Conn, myEnv);
     if ( status != 0 ) {
         print_error_stack_to_file(Conn->rError, stderr);
         rcDisconnect( Conn );

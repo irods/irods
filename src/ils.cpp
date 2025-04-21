@@ -1,3 +1,4 @@
+#include "utility.hpp"
 #include <irods/filesystem.hpp>
 #include <irods/irods_buffer_encryption.hpp>
 #include <irods/irods_client_api_table.hpp>
@@ -75,7 +76,7 @@ main( int argc, char **argv ) {
     irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
     init_api_table( api_tbl, pk_tbl );
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
-        status = clientLogin( conn );
+        status = utils::authenticate_client(conn, myEnv);
         if ( status != 0 ) {
             print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );

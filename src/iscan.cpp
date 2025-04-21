@@ -1,6 +1,4 @@
-/*** Copyright (c) 2010 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
- *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
-/* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
+#include "utility.hpp"
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsClient.h>
@@ -71,7 +69,7 @@ main( int argc, char **argv ) {
     }
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
-        status = clientLogin( conn );
+        status = utils::authenticate_client(conn, myEnv);
         if ( status != 0 ) {
             print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );
