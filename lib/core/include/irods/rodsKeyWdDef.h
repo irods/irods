@@ -116,13 +116,6 @@
 #define STALE_ALL_INTERMEDIATE_REPLICAS_KW          "staleAllIntermediateReplicas"
 #define SOURCE_L1_DESC_KW                           "sourceL1Desc"
 
-// =-=-=-=-=-=-=-
-// JMC - backport 4599
-#define LOCK_TYPE_KW                                "lockType"      /* valid values are READ_LOCK_TYPE
-* WRITE_LOCK_TYPE and UNLOCK_TYPE */
-#define LOCK_CMD_KW                                 "lockCmd"       /* valid values are SET_LOCK_WAIT_CMD,
-* SET_LOCK_CMD and GET_LOCK_CMD */
-#define LOCK_FD_KW                                  "lockFd"        /* Lock file desc for unlock */
 #define MAX_SUB_FILE_KW                             "maxSubFile" /* max number of files for tar file bundles */
 #define MAX_BUNDLE_SIZE_KW                          "maxBunSize" /* max size of a tar bundle in Gbs */
 #define NO_STAGING_KW                               "noStaging"

@@ -51,8 +51,6 @@ static int parse_program_options(
         ("ignore-symlinks", "ignore symlinks.")
         ("lfrestart", po::value<std::string>(), "lfRestartFile - specifies that the large file restart option is on and the lfRestartFile input specifies a local file that contains the restart information.")
         ("retries", po::value<int>(), "count - Retry the iput in case of error. The 'count' input specifies the number of times to retry. It must be used with the -X option")
-        ("wlock", "use advisory write (exclusive) lock for the upload")
-        ("rlock", "use advisory read lock for the download")
         ("purgec", "Purge the staged cache copy after uploading an object to a")
         ("kv_pass", po::value<std::string>(), "pass key-value strings through to the plugin infrastructure")
         ("metadata", po::value<std::string>(), "atomically assign metadata after a data object is put")
@@ -218,12 +216,6 @@ static int parse_program_options(
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
-    }
-    if ( global_prog_ops_var_map.count( "wlock" ) ) {
-        _rods_args.wlock = 1;
-    }
-    if ( global_prog_ops_var_map.count( "rlock" ) ) {
-        _rods_args.rlock = 1;
     }
     if ( global_prog_ops_var_map.count( "purgec" ) ) {
         _rods_args.purgeCache = 1;

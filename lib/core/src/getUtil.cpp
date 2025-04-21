@@ -369,19 +369,7 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
         conn->fileRestart.flags = FILE_RESTART_ON;
         rstrcpy(conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, MAX_NAME_LEN);
     }
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4604
-    if ( rodsArgs->rlock == True ) {
-        addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE );
-    }
-    // =-=-=-=-=-=-=-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4612
-    if ( rodsArgs->wlock == True ) {
-        rodsLog( LOG_ERROR, "initCondForPut: --wlock not supported, changing it to --rlock" );
-        addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE );
-    }
-    // =-=-=-=-=-=-=-
+
     dataObjOprInp->openFlags = O_RDONLY;
 
     return 0;

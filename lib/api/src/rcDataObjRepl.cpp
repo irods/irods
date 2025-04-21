@@ -50,7 +50,6 @@
  *            This keyWd has no value.
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.
- *    \n LOCK_TYPE_KW - set advisory lock type. valid value - READ_LOCK_TYPE.
  *
  * \return integer
  * \retval 0 on success

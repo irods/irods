@@ -188,7 +188,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjCreateAndStat.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjGet.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjInpOut.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjLock.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjLseek.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjOpen.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjOpenAndStat.h"
