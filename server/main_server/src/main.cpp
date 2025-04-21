@@ -152,6 +152,8 @@ namespace
                                          bool _enable_test_mode,
                                          std::chrono::steady_clock::time_point& _time_start) -> void;
     auto log_stacktrace_files(std::chrono::steady_clock::time_point& _time_start) -> void;
+    auto evict_expired_dns_cache_entries() -> void;
+    auto evict_expired_hostname_cache_entries() -> void;
     auto remove_leftover_agent_info_files_for_ips() -> void;
 
     auto init_access_time_queue() -> bool;
@@ -363,6 +365,8 @@ auto main(int _argc, char* _argv[]) -> int
             launch_agent_factory(__func__, write_to_stdout, enable_test_mode);
             migrate_and_launch_delay_server(write_to_stdout, enable_test_mode, dsm_time_start);
             apply_access_time_updates();
+            evict_expired_dns_cache_entries();
+            evict_expired_hostname_cache_entries();
 
             std::this_thread::sleep_for(std::chrono::seconds{1});
         }
@@ -1463,6 +1467,60 @@ Signals:
             }
         }
     } // log_stacktrace_files
+
+    auto evict_expired_dns_cache_entries() -> void
+    {
+        try {
+            const auto cache_config = irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_DNS_CACHE);
+            const auto sleep_time = cache_config.at(irods::KW_CFG_CACHE_CLEARER_SLEEP_TIME_IN_SECONDS).get<int>();
+
+            static auto start_time = std::chrono::steady_clock::now();
+            const auto now = std::chrono::steady_clock::now();
+
+            if (now - start_time < std::chrono::seconds{sleep_time}) {
+                return;
+            }
+
+            start_time = now;
+            irods::experimental::net::dns_cache::erase_expired_entries();
+        }
+        catch (const irods::exception& e) {
+            log_server::error("{}: Caught exception while removing expired entries from DNS cache: {}",
+                              __func__,
+                              e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_server::error(
+                "{}: Caught exception while removing expired entries from DNS cache: {}", __func__, e.what());
+        }
+    } // evict_expired_dns_cache_entries
+
+    auto evict_expired_hostname_cache_entries() -> void
+    {
+        try {
+            const auto cache_config = irods::get_advanced_setting<nlohmann::json>(irods::KW_CFG_HOSTNAME_CACHE);
+            const auto sleep_time = cache_config.at(irods::KW_CFG_CACHE_CLEARER_SLEEP_TIME_IN_SECONDS).get<int>();
+
+            static auto start_time = std::chrono::steady_clock::now();
+            const auto now = std::chrono::steady_clock::now();
+
+            if (now - start_time < std::chrono::seconds{sleep_time}) {
+                return;
+            }
+
+            start_time = now;
+            irods::experimental::net::hostname_cache::erase_expired_entries();
+        }
+        catch (const irods::exception& e) {
+            log_server::error("{}: Caught exception while removing expired entries from hostname cache: {}",
+                              __func__,
+                              e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_server::error(
+                "{}: Caught exception while removing expired entries from hostname cache: {}", __func__, e.what());
+        }
+    } // evict_expired_hostname_cache_entries
 
     auto remove_leftover_agent_info_files_for_ips() -> void
     {
