@@ -58,10 +58,12 @@ namespace irods
                     continue;
                 }
 
-                const auto hostname_in_provider_hosts_list = std::any_of(
-                    std::cbegin(*provider_hosts), std::cend(*provider_hosts), [&_host_name](const auto& _host) {
-                        return _host_name == _host;
-                    });
+                const auto hostname_in_provider_hosts_list =
+                    std::any_of(std::cbegin(*provider_hosts),
+                                std::cend(*provider_hosts),
+                                [&_host_name](const nlohmann::json& _host) {
+                                    return _host_name == _host.get_ref<const std::string&>();
+                                });
 
                 if (hostname_in_provider_hosts_list) {
                     return negotiation_key->get<std::string>();
