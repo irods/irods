@@ -45,6 +45,7 @@ set(
   access_time_queue
   atomic_apply_acl_operations
   atomic_apply_metadata_operations
+  authenticate_client
   capped_memory_resource
   client_connection
   client_server_negotiation

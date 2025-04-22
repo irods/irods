@@ -397,6 +397,7 @@ install(
 
 set(
   IRODS_LIB_CORE_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/authenticate.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/bunUtil.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/chksumUtil.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/clientLogin.cpp"
