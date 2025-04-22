@@ -1,4 +1,5 @@
 #include "irods/authPluginRequest.h"
+#include "irods/authenticate.h"
 #include "irods/authentication_plugin_framework.hpp"
 #include "irods/checksum.h"
 #include "irods/irods_at_scope_exit.hpp"

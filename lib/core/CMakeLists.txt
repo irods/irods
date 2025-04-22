@@ -2,6 +2,7 @@ set(
   IRODS_LIB_CORE_HEADERS_PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/alignPointer.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiHandler.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authenticate.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authentication_plugin_framework.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/base64.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/base64.hpp"
