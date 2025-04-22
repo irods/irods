@@ -168,7 +168,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authPluginRequest.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authRequest.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authResponse.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authenticate.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/bulkDataObjPut.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/bulkDataObjReg.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/check_auth_credentials.h"

@@ -174,7 +174,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsAuthPluginRequest.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsAuthRequest.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsAuthResponse.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsAuthenticate.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsBulkDataObjPut.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsBulkDataObjReg.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rsChkNVPathPerm.hpp"
