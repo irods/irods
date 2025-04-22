@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
 #include "irods/filesystem.hpp"
@@ -18,6 +19,8 @@
 #include <thread>
 
 #include <nlohmann/json.hpp>
+
+namespace ia = irods::authentication;
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("connection pool")
@@ -167,8 +170,8 @@ TEST_CASE("connection pool")
     SECTION("connection pools allow the default authentication method to be overridden")
     {
         REQUIRE_NOTHROW([&env] {
-            const auto auth_func = [](auto& _comm) {
-                if (clientLogin(&_comm) != 0) {
+            const auto auth_func = [&env](auto& _comm) {
+                if (ia::authenticate_client(_comm, nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}}) != 0) {
                     THROW(SYS_SOCK_CONNECT_ERR, ".irodsA authentication error");
                 }
             };
@@ -182,21 +185,22 @@ TEST_CASE("connection pool")
     {
         irods::experimental::client_connection admin_conn;
 
-        namespace ia = irods::experimental::administration;
+        namespace adm = irods::experimental::administration;
 
-        const ia::user proxy_admin{"proxy_admin"};
-        REQUIRE_NOTHROW(ia::client::add_user(admin_conn, proxy_admin, ia::user_type::rodsadmin));
+        const adm::user proxy_admin{"proxy_admin"};
+        REQUIRE_NOTHROW(adm::client::add_user(admin_conn, proxy_admin, adm::user_type::rodsadmin));
 
         irods::at_scope_exit remove_proxy_admin{
-            [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
+            [&admin_conn, proxy_admin] { adm::client::remove_user(admin_conn, proxy_admin); }};
 
         const auto password = std::to_array("ppass");
-        const ia::user_password_property pwd_property{password.data()};
-        REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
+        const adm::user_password_property pwd_property{password.data()};
+        REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
-        const auto auth_func = [&password](auto& _comm) {
-            const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}};
-            if (clientLogin(&_comm, ctx.dump().c_str()) != 0) {
+        const auto auth_func = [&env, &password](auto& _comm) {
+            const auto ctx =
+                nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}, {ia::scheme_name, env.rodsAuthScheme}};
+            if (ia::authenticate_client(_comm, ctx) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };
@@ -216,9 +220,10 @@ TEST_CASE("connection pool")
 
     SECTION("connection pool throws exception on incorrect alternative authentication method")
     {
-        const auto auth_func = [](auto& _comm) {
+        const auto auth_func = [&env](auto& _comm) {
             // This will cause the connection pool to throw an exception on construction.
-            if (clientLogin(&_comm, nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}}.dump().c_str()) != 0) {
+            const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}, {ia::scheme_name, env.rodsAuthScheme}};
+            if (ia::authenticate_client(_comm, ctx) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };
@@ -236,21 +241,22 @@ TEST_CASE("connection pool")
     {
         irods::experimental::client_connection admin_conn;
 
-        namespace ia = irods::experimental::administration;
+        namespace adm = irods::experimental::administration;
 
-        const ia::user proxy_admin{"proxy_admin"};
-        REQUIRE_NOTHROW(ia::client::add_user(admin_conn, proxy_admin, ia::user_type::rodsadmin));
+        const adm::user proxy_admin{"proxy_admin"};
+        REQUIRE_NOTHROW(adm::client::add_user(admin_conn, proxy_admin, adm::user_type::rodsadmin));
 
         irods::at_scope_exit remove_proxy_admin{
-            [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
+            [&admin_conn, proxy_admin] { adm::client::remove_user(admin_conn, proxy_admin); }};
 
         const auto password = std::to_array("ppass");
-        const ia::user_password_property pwd_property{password.data()};
-        REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
+        const adm::user_password_property pwd_property{password.data()};
+        REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
-        const auto auth_func = [](auto& _comm) {
+        const auto auth_func = [&env](auto& _comm) {
             // This will cause the connection pool to throw an exception on construction.
-            if (clientLogin(&_comm, nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}}.dump().c_str()) != 0) {
+            const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "nope"}, {ia::scheme_name, env.rodsAuthScheme}};
+            if (ia::authenticate_client(_comm, ctx) != 0) {
                 THROW(SYS_SOCK_CONNECT_ERR, "Password authentication error");
             }
         };

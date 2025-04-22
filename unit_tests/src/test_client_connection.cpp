@@ -4,6 +4,7 @@
 
 #include <catch2/catch.hpp>
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/fully_qualified_username.hpp"
@@ -26,6 +27,7 @@
 #include <nlohmann/json.hpp>
 
 namespace ix = irods::experimental;
+namespace ia = irods::authentication;
 
 TEST_CASE("connect using default constructor", "client_connection")
 {
@@ -66,7 +68,7 @@ TEST_CASE("take ownership of raw connection", "client_connection")
                                    &error);
 
     REQUIRE(raw_conn_ptr);
-    REQUIRE(clientLogin(raw_conn_ptr) == 0);
+    REQUIRE(ia::authenticate_client(*raw_conn_ptr, nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}}) == 0);
 
     ix::client_connection conn{*raw_conn_ptr};
     REQUIRE(conn);
@@ -148,7 +150,10 @@ TEST_CASE("defer authentication", "client_connection")
 {
     load_client_api_plugins();
 
-    const auto test_deferred_authentication = [](ix::client_connection& _conn, const std::string& _path) {
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto test_deferred_authentication = [&env](ix::client_connection& _conn, const std::string& _path) {
         // Show that "conn" holds a valid RcComm.
         REQUIRE(_conn);
 
@@ -157,19 +162,20 @@ TEST_CASE("defer authentication", "client_connection")
         REQUIRE_THROWS(ix::filesystem::client::exists(_conn, _path));
 
         // Show that the previous operation is allowed once the user is authenticated.
-        REQUIRE(clientLogin(static_cast<RcComm*>(_conn)) == 0);
+        REQUIRE(ia::authenticate_client(
+                    static_cast<RcComm&>(_conn), nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}}) == 0);
         REQUIRE(ix::filesystem::client::exists(_conn, _path));
     };
 
-    namespace ia = irods::experimental::administration;
+    namespace adm = irods::experimental::administration;
 
     ix::client_connection admin_conn;
 
-    const ia::user defer_user{"defer_user"};
-    REQUIRE_NOTHROW(ia::client::add_user(admin_conn, defer_user));
+    const adm::user defer_user{"defer_user"};
+    REQUIRE_NOTHROW(adm::client::add_user(admin_conn, defer_user));
 
     irods::at_scope_exit remove_defer_user{
-        [&admin_conn, defer_user] { ia::client::remove_user(admin_conn, defer_user); }};
+        [&admin_conn, defer_user] { adm::client::remove_user(admin_conn, defer_user); }};
 
     SECTION("construct using irods_environment.json")
     {
@@ -179,9 +185,6 @@ TEST_CASE("defer authentication", "client_connection")
 
     SECTION("construct with user-provided arguments")
     {
-        rodsEnv env;
-        _getRodsEnv(env);
-
         ix::fully_qualified_username user{env.rodsUserName, env.rodsZone};
         ix::client_connection conn{ix::defer_authentication, env.rodsHost, env.rodsPort, user};
 
@@ -190,9 +193,6 @@ TEST_CASE("defer authentication", "client_connection")
 
     SECTION("construct with proxy and user-provided arguments")
     {
-        rodsEnv env;
-        _getRodsEnv(env);
-
         ix::fully_qualified_username proxy_user{env.rodsUserName, env.rodsZone};
         ix::fully_qualified_username user{defer_user.name, env.rodsZone};
 
@@ -210,9 +210,6 @@ TEST_CASE("defer authentication", "client_connection")
 
     SECTION("connect with user-provided arguments")
     {
-        rodsEnv env;
-        _getRodsEnv(env);
-
         ix::client_connection conn{ix::defer_connection};
         conn.connect(ix::defer_authentication, env.rodsHost, env.rodsPort, {env.rodsUserName, env.rodsZone});
 
@@ -221,9 +218,6 @@ TEST_CASE("defer authentication", "client_connection")
 
     SECTION("connect with proxy and user-provided arguments")
     {
-        rodsEnv env;
-        _getRodsEnv(env);
-
         ix::fully_qualified_username proxy_user{env.rodsUserName, env.rodsZone};
         ix::fully_qualified_username user{defer_user.name, env.rodsZone};
 
@@ -235,18 +229,15 @@ TEST_CASE("defer authentication", "client_connection")
 
     SECTION("connect with proxy using irods_environment.json")
     {
-        const ia::user proxy_admin{"proxy_admin"};
-        REQUIRE_NOTHROW(ia::client::add_user(admin_conn, proxy_admin, ia::user_type::rodsadmin));
+        const adm::user proxy_admin{"proxy_admin"};
+        REQUIRE_NOTHROW(adm::client::add_user(admin_conn, proxy_admin, adm::user_type::rodsadmin));
 
         irods::at_scope_exit remove_proxy_admin{
-            [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
+            [&admin_conn, proxy_admin] { adm::client::remove_user(admin_conn, proxy_admin); }};
 
         const auto password = std::to_array("ppass");
-        const ia::user_password_property pwd_property{password.data()};
-        REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
-
-        rodsEnv env;
-        _getRodsEnv(env);
+        const adm::user_password_property pwd_property{password.data()};
+        REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
         ix::client_connection conn{ix::defer_connection};
         conn.connect(ix::defer_authentication, {proxy_admin.name, env.rodsZone});
@@ -260,8 +251,9 @@ TEST_CASE("defer authentication", "client_connection")
         REQUIRE_THROWS(ix::filesystem::client::exists(conn, path));
 
         // Show that the previous operation is allowed once the user is authenticated.
-        const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}};
-        REQUIRE(clientLogin(static_cast<RcComm*>(conn), ctx.dump().c_str()) == 0);
+        const auto ctx =
+            nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}, {ia::scheme_name, env.rodsAuthScheme}};
+        REQUIRE(ia::authenticate_client(static_cast<RcComm&>(conn), ctx) == 0);
         REQUIRE(ix::filesystem::client::exists(conn, path));
     }
 }
@@ -381,17 +373,17 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
     {
         ix::client_connection admin_conn;
 
-        namespace ia = irods::experimental::administration;
+        namespace adm = irods::experimental::administration;
 
-        const ia::user other_user{"other_user"};
-        REQUIRE_NOTHROW(ia::client::add_user(admin_conn, other_user, ia::user_type::rodsadmin));
+        const adm::user other_user{"other_user"};
+        REQUIRE_NOTHROW(adm::client::add_user(admin_conn, other_user, adm::user_type::rodsadmin));
 
         irods::at_scope_exit remove_proxy_admin{
-            [&admin_conn, other_user] { ia::client::remove_user(admin_conn, other_user); }};
+            [&admin_conn, other_user] { adm::client::remove_user(admin_conn, other_user); }};
 
         const auto password = std::to_array("rods");
-        const ia::user_password_property pwd_property{password.data()};
-        REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, other_user, pwd_property));
+        const adm::user_password_property pwd_property{password.data()};
+        REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, other_user, pwd_property));
 
         SECTION("proxied user has empty zone name")
         {

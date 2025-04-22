@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
@@ -12,6 +13,8 @@
 #include <iterator>
 
 #include <nlohmann/json.hpp>
+
+namespace ia = irods::authentication;
 
 TEST_CASE("user group administration")
 {
@@ -212,8 +215,9 @@ TEST_CASE("user group administration")
         _getRodsEnv(env);
         irods::experimental::client_connection admin_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_admin.name, env.rodsZone}};
-        const auto admin_user_ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, admin_prop.value.data()}};
-        REQUIRE(clientLogin(static_cast<RcComm*>(admin_conn), admin_user_ctx.dump().c_str()) == 0);
+        const auto admin_user_ctx =
+            nlohmann::json{{irods::AUTH_PASSWORD_KEY, admin_prop.value.data()}, {ia::scheme_name, env.rodsAuthScheme}};
+        REQUIRE(ia::authenticate_client(static_cast<RcComm&>(admin_conn), admin_user_ctx) == 0);
 
         // Create a rodsuser.
         const adm::user test_user{"unit_test_test_user"};
@@ -231,8 +235,9 @@ TEST_CASE("user group administration")
         // Show the test user can connect to the server and authenticate using the new password.
         irods::experimental::client_connection user_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
-        const auto test_user_ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, test_user_prop.value.data()}};
-        CHECK(clientLogin(static_cast<RcComm*>(user_conn), test_user_ctx.dump().c_str()) == 0);
+        const auto test_user_ctx = nlohmann::json{
+            {irods::AUTH_PASSWORD_KEY, test_user_prop.value.data()}, {ia::scheme_name, env.rodsAuthScheme}};
+        CHECK(ia::authenticate_client(static_cast<RcComm&>(user_conn), test_user_ctx) == 0);
     }
 
     SECTION("#7576: ensure no limitations on proxied groupadmin")
