@@ -30,6 +30,7 @@ jobs:
                 cmake \
                 rpm-build \
                 bzip2-devel \
+                catch2-devel \
                 curl-devel \
                 fakeroot \
                 openssl-devel \
@@ -52,7 +53,6 @@ jobs:
               dnf -y update
               dnf -y install \
                 irods-externals-boost1.81.0-2 \
-                irods-externals-catch22.13.8-0 \
                 irods-externals-clang16.0.6-0 \
                 irods-externals-fmt8.1.1-2 \
                 irods-externals-json3.10.4-0 \
