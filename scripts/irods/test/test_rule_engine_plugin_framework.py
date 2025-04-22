@@ -654,19 +654,6 @@ OUTPUT ruleExecOut
 
             lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Test_Plugin_Instance_Delay', start_index=initial_log_size))
 
-def delay_assert(command, interval=1, maxrep=5):
-    success = False
-    for _ in range(maxrep):
-        time.sleep(interval)  # wait for test to fire
-        try:
-            command()
-            success = True
-            break
-        except AssertionError:
-            continue
-    if not success:
-        raise AssertionError
-
 class Test_Plugin_Instance_CppDefault(ResourceBase, unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -718,7 +705,7 @@ msiDataObjCreate("{0}", "forceFlag=", *out)
 
                 self.admin.assert_icommand(['irule', '-F', rule_file])
                 self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'irods_policy_execute_rule')
-                delay_assert(lambda: self.admin.assert_icommand(['ils', '-l', flag_file],  'STDOUT_SINGLELINE', 'flag_file'))
+                lib.delayAssert(lambda: lib.replica_exists(self.admin, flag_file, 0))
 
 
 
