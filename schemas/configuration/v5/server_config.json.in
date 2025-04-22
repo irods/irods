@@ -6,6 +6,11 @@
         "advanced_settings": {
             "type": "object",
             "properties": {
+                "checksum_read_buffer_size_in_bytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647
+                },
                 "default_number_of_transfer_threads": {
                     "type": "integer",
                     "minimum": 0
@@ -101,6 +106,7 @@
                 }
             },
             "required": [
+                "checksum_read_buffer_size_in_bytes",
                 "default_number_of_transfer_threads",
                 "default_temporary_password_lifetime_in_seconds",
                 "delay_rule_executors",
@@ -265,12 +271,14 @@
                     "authentication": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "database": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "delay_server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "genquery2": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "legacy": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "microservice": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "network": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "resource": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "rule_engine": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
-                    "server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1}
+                    "server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "sql": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1}
                 }
             }
         },
