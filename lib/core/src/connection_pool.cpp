@@ -1,5 +1,6 @@
 #include "irods/connection_pool.hpp"
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_query.hpp"
 #include "irods/query_builder.hpp"
@@ -239,6 +240,8 @@ namespace irods
                                             const std::function<void()>& _on_connect_error,
                                             const std::function<void()>& _on_login_error)
     {
+        namespace ia = irods::authentication;
+
         auto& ctx = conn_ctxs_[_index];
 
         if (options_.number_of_seconds_before_connection_refresh) {
@@ -277,7 +280,10 @@ namespace irods
             return;
         }
 
-        if (clientLogin(ctx.conn.get()) != 0) {
+        RodsEnvironment env;
+        _getRodsEnv(env);
+
+        if (ia::authenticate_client(*ctx.conn, nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}}) != 0) {
             _on_login_error();
         }
     } // create_connection

@@ -11,6 +11,7 @@
 #include <csetjmp>
 jmp_buf Jcenv;
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/hostname_cache.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
 #include "irods/irods_configuration_keywords.hpp"
@@ -35,6 +36,8 @@ jmp_buf Jcenv;
 
 namespace
 {
+    namespace ia = irods::authentication;
+
     // Tries to create a socket of specified _domain and _type, retrying up to _retries times before failing.
     auto try_to_create_socket(int _domain, int _type, int _protocol, int _retries = 1) -> int
     {
@@ -1596,7 +1599,7 @@ rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag ) {
                           myEnv->rodsZone, reconnFlag, &errMsg );
 
     if ( newConn != NULL ) {
-        status = clientLogin( newConn );
+        status = ia::authenticate_client(*newConn, nlohmann::json{{ia::scheme_name, myEnv->rodsAuthScheme}});
         if ( status != 0 ) {
             rcDisconnect( newConn );
             return status;

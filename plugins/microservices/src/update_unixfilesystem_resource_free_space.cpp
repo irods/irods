@@ -1,3 +1,4 @@
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/msParam.h"
 #include "irods/rcMisc.h"
 #include "irods/rsGeneralAdmin.hpp"
@@ -124,26 +125,33 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
 
     rErrMsg_t errMsg;
     memset(&errMsg, 0, sizeof(errMsg));
+    // TODO(#8405): Use scoped_privileged_client instead here.
     rcComm_t *admin_connection = rcConnect(service_account_environment.rodsHost, service_account_environment.rodsPort,
                                            service_account_environment.rodsUserName, service_account_environment.rodsZone, 0, &errMsg);
     if (admin_connection == NULL) {
         char *mySubName = NULL;
         const char *myName = rodsErrorName(errMsg.status, &mySubName);
+        // TODO(#8003): Replace rodsLog calls
         rodsLog(LOG_ERROR, "[%s]: rcConnect failure [%s] [%s] [%d] [%s]", __FUNCTION__,
                 myName, mySubName, errMsg.status, errMsg.msg);
         return errMsg.status;
     }
 
-    const int clientLogin_ret = clientLogin(admin_connection);
-    if (clientLogin_ret != 0) {
-        rodsLog(LOG_ERROR, "[%s]: clientLogin failure [%d]", __FUNCTION__, clientLogin_ret);
-        return clientLogin_ret;
+    namespace ia = irods::authentication;
+
+    const int err = ia::authenticate_client(
+        *admin_connection, nlohmann::json{{ia::scheme_name, service_account_environment.rodsAuthScheme}});
+    if (err != 0) {
+        // TODO(#8003): Replace rodsLog calls
+        rodsLog(LOG_ERROR, "[%s]: authenticate_client failure [%d]", __func__, err);
+        return err;
     }
 
     const int rcGeneralAdmin_ret = rcGeneralAdmin(admin_connection, &admin_in);
     rcDisconnect(admin_connection);
     if (rcGeneralAdmin_ret < 0) {
         printErrorStack(admin_connection->rError);
+        // TODO(#8003): Replace rodsLog calls
         rodsLog(LOG_ERROR, "[%s]: rcGeneralAdmin failure [%d]", __FUNCTION__, rcGeneralAdmin_ret);
     }
     return rcGeneralAdmin_ret;
