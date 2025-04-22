@@ -21,7 +21,6 @@
 #  include "irods/rsAuthPluginRequest.hpp"
 #  include "irods/rsAuthRequest.hpp"
 #  include "irods/rsAuthResponse.hpp"
-#  include "irods/rsAuthenticate.hpp"
 #  include "irods/rsBulkDataObjPut.hpp"
 #  include "irods/rsBulkDataObjReg.hpp"
 #  include "irods/rsChkNVPathPerm.hpp"
@@ -166,7 +165,6 @@
 #include <cstdlib>
 #include <functional>
 
-#define RS_AUTHENTICATE                    NULLPTR_FOR_CLIENT_TABLE(rsAuthenticate)
 #define RS_AUTH_CHECK                      NULLPTR_FOR_CLIENT_TABLE(rsAuthCheck)
 #define RS_AUTH_PLUG_REQ                   NULLPTR_FOR_CLIENT_TABLE(rsAuthPluginRequest)
 #define RS_AUTH_REQUEST                    NULLPTR_FOR_CLIENT_TABLE(rsAuthRequest)
