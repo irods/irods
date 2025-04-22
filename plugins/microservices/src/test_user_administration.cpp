@@ -1,8 +1,9 @@
 /// \file
 
+#include "irods/authentication_plugin_framework.hpp"
+#include "irods/client_connection.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
-#include "irods/client_connection.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_ms_plugin.hpp"
@@ -27,6 +28,7 @@ namespace
     {
         IRODS_MSI_TEST_BEGIN("#7208: user administration library can change passwords inside the server")
 
+        namespace ia = irods::authentication;
         namespace adm = irods::experimental::administration;
 
         // Create a test user.
@@ -42,8 +44,9 @@ namespace
         const auto& env = _rei->rsComm->myEnv;
         irods::experimental::client_connection conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
-        const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, prop.value.data()}};
-        IRODS_MSI_ASSERT(clientLogin(static_cast<RcComm*>(conn), ctx.dump().c_str()) == 0);
+        const auto ctx =
+            nlohmann::json{{irods::AUTH_PASSWORD_KEY, prop.value.data()}, {ia::scheme_name, env.rodsAuthScheme}};
+        IRODS_MSI_ASSERT(ia::authenticate_client(static_cast<RcComm&>(conn), ctx) == 0);
 
         IRODS_MSI_TEST_END
     } // msi_impl

@@ -4,6 +4,7 @@
 #include "irods/rodsClient.h"
 #include "irods/atomic_apply_acl_operations.h"
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/rodsErrorTable.h"
@@ -21,6 +22,7 @@
 #include <iostream>
 #include <utility>
 
+namespace ia = irods::authentication;
 namespace fs = irods::experimental::filesystem;
 namespace ua = irods::experimental::administration;
 namespace io = irods::experimental::io;
@@ -358,8 +360,8 @@ TEST_CASE("Non-admin users can modify ACLs of collections and data objects")
     auto* conn_ptr = rcConnect(env.rodsHost, env.rodsPort, test_user.name.c_str(), env.rodsZone, 0, &error);
     REQUIRE(conn_ptr);
     irods::at_scope_exit disconnect_test_user{[conn_ptr] { rcDisconnect(conn_ptr); }};
-    const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "rods"}};
-    REQUIRE(clientLogin(conn_ptr, ctx.dump().c_str()) == 0);
+    const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "rods"}, {ia::scheme_name, env.rodsAuthScheme}};
+    REQUIRE(ia::authenticate_client(*conn_ptr, ctx) == 0);
 
     // Capture the home collection of the test user.
     const auto test_user_home = fs::path{"/"} / env.rodsZone / "home" / test_user.name;
