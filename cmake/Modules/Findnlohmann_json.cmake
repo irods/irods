@@ -118,48 +118,6 @@ function(_nlohmann_json_create_target include_dir_var_name)
   unset("${include_dir_var_name}" CACHE)
 endfunction()
 
-# Search in IRODS_EXTERNALS path first.
-if (DEFINED IRODS_EXTERNALS_FULLPATH_JSON AND NOT TARGET nlohmann_json::nlohmann_json)
-  if (DEFINED nlohmann_json_FIND_VERSION)
-    if (nlohmann_json_FIND_VERSION_EXACT)
-      find_package(
-        nlohmann_json "${nlohmann_json_FIND_VERSION}" EXACT
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_JSON}"
-        NO_DEFAULT_PATH
-      )
-    else()
-      find_package(
-        nlohmann_json "${nlohmann_json_FIND_VERSION}"
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_JSON}"
-        NO_DEFAULT_PATH
-      )
-    endif()
-  else()
-      find_package(
-        nlohmann_json
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_JSON}"
-        NO_DEFAULT_PATH
-      )
-  endif()
-
-  if (NOT TARGET nlohmann_json::nlohmann_json)
-    # handle missing configuration files
-    find_path(
-      nlohmann_json_include_dir
-      NAMES "nlohmann/json.hpp"
-      PATHS "${IRODS_EXTERNALS_FULLPATH_JSON}/include"
-      NO_DEFAULT_PATH
-    )
-    _nlohmann_json_create_target("nlohmann_json_include_dir")
-  endif()
-endif()
-
 if (NOT TARGET nlohmann_json::nlohmann_json)
   set(pre_def_nlohmann_json_CONSIDERED_CONFIGS "${nlohmann_json_CONSIDERED_CONFIGS}")
   set(pre_def_nlohmann_json_CONSIDERED_VERSIONS "${nlohmann_json_CONSIDERED_VERSIONS}")
