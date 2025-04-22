@@ -33,6 +33,7 @@ namespace irods::authentication
     static const char* const next_operation{"next_operation"};
     static const char* const force_password_prompt{"force_password_prompt"};
     static const char* const record_auth_file{"record_auth_file"};
+    static const char* const scheme_name{"scheme"};
 
     /// \brief Base class for authentication plugin implementations.
     ///
@@ -150,28 +151,37 @@ namespace irods::authentication
     /// \endparblock
     ///
     /// \param[in/out] _comm iRODS communication object.
-    /// \param[in] _env Environment object from which the authentication scheme is retrieved.
-    /// \param[in] _ctx JSON object which includes information for the authentication plugin.
+    /// \param[in] _ctx JSON object which includes information for the authentication plugin. \parblock
+    ///
+    /// The inputs will differ based on the authentication scheme, and not all options are recognized by all
+    /// authentication schemes. The authentication scheme can be provided with the "scheme" key and a value of a string
+    /// containing the name of the scheme to use (e.g. "native"). If no such key is provided, an error will occur.
+    /// \endparblock
     ///
     /// \return An integer.
     /// \retval 0 On success.
     /// \retval <0 On failure, which includes one of the following situations: \parblock
-    /// - If the authentication plugin cannot be resolved
+    /// - If the authentication scheme name is not provided
+    /// - If the authentication plugin for the given authentication scheme name cannot be resolved
     /// - If an operation fails to set "next_operation" to a non-empty string in its response
     /// - If the flow is completed with \p !_comm.loggedIn
     /// \endparblock
     ///
     /// \since 4.3.0
-    inline auto authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx) -> int
+    inline auto authenticate_client(RcComm& _comm, const json& _ctx) -> int
     {
         if (_comm.loggedIn) {
             return 0;
         }
 
         try {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            const std::string scheme = _env.rodsAuthScheme;
+            const auto scheme_iter = _ctx.find(irods::authentication::scheme_name);
+            if (_ctx.end() == scheme_iter) {
+                THROW(USER_AUTH_SCHEME_ERR,
+                      fmt::format("Missing [{}] in JSON payload.", irods::authentication::scheme_name));
+            }
 
+            const auto& scheme = scheme_iter->get_ref<const std::string&>();
             std::unique_ptr<authentication_base> auth{resolve_authentication_plugin(scheme, "client")};
 
             const std::string* next_operation = &irods::AUTH_CLIENT_START;

@@ -222,10 +222,8 @@ namespace irods
             // because this is how the PAM authentication plugin has worked historically. This
             // is done in order to minimize communications with the PAM server as iRODS does
             // not use proper "sessions".
-            static constexpr const char* auth_scheme_native = "native";
-            rodsEnv env{};
-            std::strncpy(env.rodsAuthScheme, auth_scheme_native, NAME_LEN);
-            if (const auto err = irods_auth::authenticate_client(comm, env, json{}); err < 0) {
+            const auto ctx = nlohmann::json{{irods_auth::scheme_name, "native"}};
+            if (const auto err = irods_auth::authenticate_client(comm, ctx); err < 0) {
                 THROW(err, "pam_password: Failed to authenticate with generated native password.");
             }
 
