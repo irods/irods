@@ -25,6 +25,7 @@ jobs:
                 cmake \
                 python3-dev \
                 unixodbc \
+                catch2 \
                 libcurl4-gnutls-dev \
                 libbz2-dev \
                 zlib1g-dev \
@@ -46,7 +47,6 @@ jobs:
               apt-get update -qq
               apt-get install -qq \
                 irods-externals-boost1.81.0-2 \
-                irods-externals-catch22.13.8-0 \
                 irods-externals-clang16.0.6-0 \
                 irods-externals-fmt8.1.1-2 \
                 irods-externals-json3.10.4-0 \

@@ -118,53 +118,6 @@ function(_Catch2_create_target include_dir_var_name)
   unset("${include_dir_var_name}" CACHE)
 endfunction()
 
-# Search in IRODS_EXTERNALS path first.
-if (DEFINED IRODS_EXTERNALS_FULLPATH_CATCH2 AND NOT TARGET Catch2::Catch2)
-  if (DEFINED Catch2_FIND_VERSION)
-    if (Catch2_FIND_VERSION_EXACT)
-      find_package(
-        Catch2 "${Catch2_FIND_VERSION}" EXACT
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_CATCH2}"
-        NO_DEFAULT_PATH
-      )
-    else()
-      find_package(
-        Catch2 "${Catch2_FIND_VERSION}"
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_CATCH2}"
-        NO_DEFAULT_PATH
-      )
-    endif()
-  else()
-      find_package(
-        Catch2
-        QUIET
-        NO_MODULE
-        PATHS "${IRODS_EXTERNALS_FULLPATH_CATCH2}"
-        NO_DEFAULT_PATH
-      )
-  endif()
-
-  if (TARGET Catch2::Catch2)
-    set(CATCH2_NO_CMAKE NO)
-  else()
-    # handle missing configuration files
-    find_path(
-      catch2_include_dir
-      NAMES "catch2/catch.hpp"
-      PATHS "${IRODS_EXTERNALS_FULLPATH_CATCH2}/include"
-      NO_DEFAULT_PATH
-    )
-    _Catch2_create_target("catch2_include_dir")
-    if (TARGET Catch2::Catch2)
-      set(CATCH2_NO_CMAKE YES)
-    endif()
-  endif()
-endif()
-
 if (NOT TARGET Catch2::Catch2)
   set(pre_def_Catch2_CONSIDERED_CONFIGS "${Catch2_CONSIDERED_CONFIGS}")
   set(pre_def_Catch2_CONSIDERED_VERSIONS "${Catch2_CONSIDERED_VERSIONS}")
