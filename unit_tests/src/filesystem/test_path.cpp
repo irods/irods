@@ -12,7 +12,7 @@
 //   - https://en.cppreference.com/w/Cppreference:Copyright/GDFL
 //
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/filesystem/path.hpp"
 #include "irods/filesystem/path_utilities.hpp"

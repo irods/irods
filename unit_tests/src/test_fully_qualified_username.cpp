@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/fully_qualified_username.hpp"
 #include "irods/rodsErrorTable.h"
@@ -19,7 +19,7 @@ TEST_CASE("fully_qualified_username throws exception on empty name")
     }
     catch (const irods::exception& e) {
         CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
-        CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty name not allowed."));
+        CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Empty name not allowed."));
     }
 }
 
@@ -30,6 +30,6 @@ TEST_CASE("fully_qualified_username throws exception on empty zone")
     }
     catch (const irods::exception& e) {
         CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
-        CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed."));
+        CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Empty zone not allowed."));
     }
 }

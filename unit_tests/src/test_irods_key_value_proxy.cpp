@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/key_value_proxy.hpp"
 #include "irods/lifetime_manager.hpp"

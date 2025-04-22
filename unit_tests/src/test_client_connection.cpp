@@ -2,7 +2,7 @@
 // IMPORTANT: Some tests in this file require rodsadmin level privileges!
 //
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/authentication_plugin_framework.hpp"
 #include "irods/client_connection.hpp"
@@ -318,7 +318,8 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
         }
         catch (const irods::exception& e) {
             CHECK(e.code() == USER_SOCK_CONNECT_TIMEDOUT);
-            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("_rcConnect: connectToRhost failed"));
+            CHECK_THAT(
+                e.client_display_what(), Catch::Matchers::ContainsSubstring("_rcConnect: connectToRhost failed"));
         }
     }
 
@@ -331,7 +332,8 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
             const auto ec = ix::make_error_code(e.code());
             CHECK(ix::get_irods_error_code(ec) == USER_SOCK_CONNECT_ERR);
             CHECK(ix::get_errno(ec) == ECONNREFUSED);
-            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("_rcConnect: connectToRhost failed"));
+            CHECK_THAT(
+                e.client_display_what(), Catch::Matchers::ContainsSubstring("_rcConnect: connectToRhost failed"));
         }
     }
 
@@ -342,7 +344,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
         }
         catch (const irods::exception& e) {
             CHECK(e.code() == CAT_INVALID_USER);
-            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Client login error"));
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Client login error"));
         }
     }
 
@@ -353,7 +355,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
         }
         catch (const irods::exception& e) {
             CHECK(e.code() == CAT_INVALID_USER);
-            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Client login error"));
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Client login error"));
         }
     }
 
@@ -365,7 +367,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
         }
         catch (const irods::exception& e) {
             CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
-            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Empty zone not allowed"));
         }
     }
 
@@ -393,7 +395,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
             }
             catch (const irods::exception& e) {
                 CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
-                CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+                CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Empty zone not allowed"));
             }
         }
 
@@ -405,7 +407,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
             }
             catch (const irods::exception& e) {
                 CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
-                CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+                CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Empty zone not allowed"));
             }
         }
     }

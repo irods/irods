@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/get_library_features.h"
 #include "irods/client_connection.hpp"

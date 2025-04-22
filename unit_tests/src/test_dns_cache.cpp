@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/dns_cache.hpp"
 #include "irods/irods_at_scope_exit.hpp"

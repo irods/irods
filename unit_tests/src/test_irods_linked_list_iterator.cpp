@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/irods_linked_list_iterator.hpp"
 #include "irods/objInfo.h"
