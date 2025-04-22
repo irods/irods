@@ -2,7 +2,7 @@
 
 #if BOOST_VERSION >= 107200
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/fixed_buffer_resource.hpp"
 

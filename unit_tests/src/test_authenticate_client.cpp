@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/authenticate.h"
 #include "irods/authentication_plugin_framework.hpp"

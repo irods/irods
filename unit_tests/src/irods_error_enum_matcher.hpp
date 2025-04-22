@@ -3,8 +3,9 @@
 #include <iostream>
 
 // The matcher class
-template<typename T = IRODS_ERROR_ENUM>
-class error_enum : public Catch::MatcherBase<T> {
+template <typename T = IRODS_ERROR_ENUM>
+class error_enum : public Catch::Matchers::MatcherBase<T>
+{
     T rhs_;
 public:
     explicit error_enum(const T _rhs) : rhs_{_rhs} {}

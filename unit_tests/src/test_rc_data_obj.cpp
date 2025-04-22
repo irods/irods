@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods_error_enum_matcher.hpp"
 #include "unit_test_utils.hpp"

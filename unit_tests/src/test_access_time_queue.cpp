@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "irods/access_time_queue.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -99,7 +99,7 @@ TEST_CASE("invalid initialization")
 
     SECTION("queue name prefix starts with character other than alphabetic or underscore")
     {
-        auto matcher = Catch::Matchers::Contains(
+        auto matcher = Catch::Matchers::ContainsSubstring(
             "init: Access time queue name prefix violates name requirement: [_a-zA-Z][_a-zA-Z0-9]*");
 
         CHECK_THROWS_WITH([] { atq::init("1_number", 1); }(), matcher);
