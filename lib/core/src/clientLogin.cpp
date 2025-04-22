@@ -218,7 +218,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
 /// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
 ///        Authentication will follow
-int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_override)
+int clientLogin(rcComm_t* _comm, const char* _context, [[maybe_unused]] const char* _scheme_override)
 {
     if (!_comm) {
         return SYS_INVALID_INPUT_PARAM;
@@ -229,13 +229,23 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
         return 0;
     }
 
-    RodsEnvironment env{};
-    if (const auto err = getRodsEnv(&env); 0 != err) {
-        return err;
-    }
+    try {
+        if (nullptr != _context) {
+            return irods::authentication::authenticate_client(*_comm, nlohmann::json::parse(_context));
+        }
 
-    const auto ctx = (nullptr != _context) ? json::parse(_context) : nlohmann::json{};
-    return irods::authentication::authenticate_client(*_comm, env, ctx);
+        // If _context is nullptr, the historical behavior is to derive the auth scheme from the client environment.
+        RodsEnvironment env{};
+        if (const auto err = getRodsEnv(&env); 0 != err) {
+            return err;
+        }
+
+        const auto ctx = nlohmann::json{{irods::authentication::scheme_name, env.rodsAuthScheme}};
+        return irods::authentication::authenticate_client(*_comm, ctx);
+    }
+    catch (const std::exception& e) {
+        return SYS_LIBRARY_ERROR;
+    }
 } // clientLogin
 
 int
