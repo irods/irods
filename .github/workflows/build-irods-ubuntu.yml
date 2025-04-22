@@ -30,8 +30,10 @@ jobs:
                 catch2 \
                 libcurl4-gnutls-dev \
                 libbz2-dev \
+                libfmt-dev \
                 zlib1g-dev \
                 libpam0g-dev \
+                libspdlog-dev \
                 libssl-dev \
                 libxml2-dev \
                 nlohmann-json3-dev \
@@ -51,10 +53,8 @@ jobs:
               apt-get install -qq \
                 irods-externals-boost1.81.0-2 \
                 irods-externals-clang16.0.6-0 \
-                irods-externals-fmt8.1.1-2 \
                 irods-externals-jsoncons0.178.0-0 \
-                irods-externals-nanodbc2.13.0-3 \
-                irods-externals-spdlog1.9.2-3
+                irods-externals-nanodbc2.13.0-3
       - name: Configure CMake
         run:  |
               mkdir build
