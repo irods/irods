@@ -235,7 +235,8 @@
                     },
                     "zone_port": {
                         "type": "integer",
-                        "minimum": 0
+                        "minimum": 0,
+                        "maximum": 65535
                     }
                 },
                 "required": [
@@ -342,8 +343,16 @@
         },
         "schema_name": {"type": "string"},
         "schema_version": {"type": "string"},
-        "server_port_range_end": {"type": "integer"},
-        "server_port_range_start": {"type": "integer"},
+        "server_port_range_end": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+        },
+        "server_port_range_start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+        },
         "tcp_keepalive_intvl_in_seconds": {
             "type": "integer",
             "minimum": -1
@@ -402,7 +411,8 @@
         },
         "zone_port": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "maximum": 65535
         },
         "zone_user": {
             "type": "string",
