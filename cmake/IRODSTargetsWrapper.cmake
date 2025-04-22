@@ -19,10 +19,15 @@ find_dependency(Threads)
 
 find_dependency(nlohmann_json "3.6.1")
 find_dependency(OpenSSL COMPONENTS Crypto SSL)
-find_dependency(fmt "8.1.1"
-  HINTS "${IRODS_EXTERNALS_FULLPATH_FMT}")
-find_dependency(spdlog "1.9.2"
-  HINTS "${IRODS_EXTERNALS_FULLPATH_SPDLOG}")
+find_dependency(fmt "8.1.1")
+find_dependency(spdlog "1.9.2")
+
+if (TARGET fmt::fmt-header-only AND NOT TARGET fmt::fmt)
+  add_library(fmt::fmt ALIAS fmt::fmt-header-only)
+endif()
+if (TARGET spdlog::spdlog_header_only AND NOT TARGET spdlog::spdlog)
+  add_library(spdlog::spdlog ALIAS spdlog::spdlog_header_only)
+endif()
 
 include("${IRODS_TARGETS_PATH_UNWRAPPED}")
 

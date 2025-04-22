@@ -129,8 +129,15 @@ logPsgError( HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         }
-
-        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}", __func__, sqlstate, sqlcode, psgErrorMsg);
+        // Newer versions of fmt don't know how to deal with SQLCHAR[].
+        // Quick and dirty solution is to reinterpret_cast to char*.
+        // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}",
+                      __func__,
+                      reinterpret_cast<char*>(sqlstate),
+                      sqlcode,
+                      reinterpret_cast<char*>(psgErrorMsg));
+        // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
     }
     return errorVal;
 }
@@ -210,9 +217,14 @@ cllConnect( icatSessionStruct *icss ) {
         SQLSMALLINT length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
-            log_db::error("{}:          SQLSTATE: {}\n", __func__, sqlstate);
+            // Newer versions of fmt don't know how to deal with SQLCHAR[].
+            // Quick and dirty solution is to reinterpret_cast to char*.
+            // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+            static_assert(sizeof(char) == sizeof(SQLCHAR));
+            log_db::error("{}:          SQLSTATE: {}\n", __func__, reinterpret_cast<char*>(sqlstate));
             log_db::error("{}:  Native Error Code: {}\n", __func__, sqlcode);
-            log_db::error("{}: {} \n", __func__, buffer);
+            log_db::error("{}: {} \n", __func__, reinterpret_cast<char*>(buffer));
+            // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
         }
 
         SQLDisconnect( myHdbc );
