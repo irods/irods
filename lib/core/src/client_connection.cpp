@@ -1,5 +1,6 @@
 #include "irods/client_connection.hpp"
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/rcConnect.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_exception.hpp"
@@ -155,11 +156,7 @@ namespace irods::experimental
                                               const fully_qualified_username& _username) -> void
     {
         only_connect(_host, _port, _username);
-
-        if (const auto ec = clientLogin(conn_.get()); ec < 0) {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(ec, "Client login error");
-        }
+        login();
     } // connect_and_login
 
     auto client_connection::connect_and_login(const std::string& _host,
@@ -168,11 +165,7 @@ namespace irods::experimental
                                               const fully_qualified_username& _username) -> void
     {
         only_connect(_host, _port, _proxy_username, _username);
-
-        if (const auto ec = clientLogin(conn_.get()); ec < 0) {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(ec, "Client login error");
-        }
+        login();
     } // connect_and_login
 
     auto client_connection::only_connect(const std::string& _host,
@@ -220,4 +213,23 @@ namespace irods::experimental
             THROW(USER_SOCK_CONNECT_ERR, "Connect error");
         }
     } // only_connect
+
+    auto client_connection::login() -> void
+    {
+        namespace ia = irods::authentication;
+
+        if (!conn_) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(SYS_LIBRARY_ERROR, "Invalid connection object");
+        }
+
+        RodsEnvironment env;
+        _getRodsEnv(env);
+
+        const auto ctx = nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}};
+        if (const auto err = ia::authenticate_client(*conn_, ctx); err < 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(err, "Client login error");
+        }
+    } // login
 } // namespace irods::experimental

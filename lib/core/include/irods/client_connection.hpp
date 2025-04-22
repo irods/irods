@@ -273,6 +273,8 @@ namespace irods::experimental
                           const fully_qualified_username& _proxy_username,
                           const fully_qualified_username& _username) -> void;
 
+        auto login() -> void;
+
         std::unique_ptr<RcComm, int (*)(RcComm*)> conn_;
     }; // class client_connection
 }; // namespace irods::experimental

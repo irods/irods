@@ -235,10 +235,8 @@ int clientLogin(rcComm_t* _comm, const char* _context, [[maybe_unused]] const ch
         }
 
         // If _context is nullptr, the historical behavior is to derive the auth scheme from the client environment.
-        RodsEnvironment env{};
-        if (const auto err = getRodsEnv(&env); 0 != err) {
-            return err;
-        }
+        RodsEnvironment env;
+        _getRodsEnv(env);
 
         const auto ctx = nlohmann::json{{irods::authentication::scheme_name, env.rodsAuthScheme}};
         return irods::authentication::authenticate_client(*_comm, ctx);

@@ -221,14 +221,15 @@ int
 cleanRcComm( rcComm_t *conn );
 
 // clang-format off
-/* XXXX putting clientLogin here for now. Should be in clientLogin.h */
 #ifdef __cplusplus
+[[deprecated("Use irods::authentication::authenticate_client instead.")]]
 int clientLogin(rcComm_t* conn, const char* _context = nullptr, const char* _scheme_override = nullptr);
 #else
+__attribute__((deprecated("Use rc_authenticate_client instead.")))
 int clientLogin(rcComm_t* conn, const char* _context, const char* _scheme_override);
 #endif
 
-__attribute__((deprecated("Use clientLogin with pam_password scheme, and AUTH_PASSWORD_KEY and TTL_KEY in context.")))
+__attribute__((deprecated("Use rc_authenticate_client with pam_password scheme, and AUTH_PASSWORD_KEY and TTL_KEY in context.")))
 int clientLoginPam(rcComm_t* conn, char* password, int ttl);
 
 // This function does not actually authenticate. It requests a limited password for the connected client user and
@@ -238,7 +239,7 @@ __attribute__((deprecated("Native authentication plugin now handles limited pass
 int clientLoginTTL(rcComm_t* conn, int ttl);
 
 // This function only uses legacy native authentication.
-__attribute__((deprecated("Use clientLogin with AUTH_PASSWORD_KEY in context.")))
+__attribute__((deprecated("Use rc_authenticate_client with AUTH_PASSWORD_KEY in context.")))
 int clientLoginWithPassword(rcComm_t* conn, char* password);
 
 __attribute__((deprecated("Use session_signature member variable in RcComm instance.")))

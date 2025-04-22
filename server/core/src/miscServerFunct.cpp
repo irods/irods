@@ -1,5 +1,6 @@
 #include "irods/miscServerFunct.hpp"
 
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjLseek.h"
 #include "irods/irods_configuration_keywords.hpp"
@@ -128,11 +129,15 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
         return status;
     }
 
-    status = clientLogin( rodsServerHost->conn );
+    RodsEnvironment env;
+    _getRodsEnv(env);
+
+    namespace ia = irods::authentication;
+
+    status = ia::authenticate_client(*rodsServerHost->conn, nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}});
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "svrToSvrConnect: clientLogin to %s failed",
-                 rodsServerHost->hostName->name );
+        // TODO(#8003): Replace rodsLog calls
+        rodsLog(LOG_NOTICE, "svrToSvrConnect: authenticate_client to %s failed", rodsServerHost->hostName->name);
         return status;
     }
     else {
