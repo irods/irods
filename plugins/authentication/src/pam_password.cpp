@@ -119,7 +119,7 @@ namespace
 #endif // #ifdef RODS_SERVER
 } // anonymous namespace
 
-namespace irods
+namespace irods::authentication
 {
     /// \brief Authentication plugin implementation for pam_password scheme.
     ///
@@ -370,12 +370,13 @@ namespace irods
         } // pam_password_auth_agent_request
 #endif    // #ifdef RODS_SERVER
     };    // class pam_password_authentication
-} // namespace irods
+} // namespace irods::authentication
 
 // clang-format off
 extern "C"
-irods::pam_password_authentication* plugin_factory(const std::string&, const std::string&)
+auto plugin_factory([[maybe_unused]] const std::string& _instance_name,
+                    [[maybe_unused]] const std::string& _context) -> irods_auth::pam_password_authentication*
 {
-    return new irods::pam_password_authentication{};
+    return new irods_auth::pam_password_authentication{}; // NOLINT(cppcoreguidelines-owning-memory)
 } // plugin_factory
 // clang-format on
