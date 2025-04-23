@@ -212,7 +212,7 @@ NEW_ERROR(SYS_MSSO_OPEN_ERR,                           -135000)
 NEW_ERROR(SYS_MSSO_CLOSE_ERR,                          -136000)
 NEW_ERROR(SYS_RULE_NOT_FOUND,                          -144000) // JMC
 NEW_ERROR(SYS_NOT_IMPLEMENTED,                         -146000) // JMC
-NEW_ERROR(SYS_SIGNED_SID_NOT_MATCHED,                  -147000) // JMC
+NEW_ERROR(ZONE_KEY_SIGNATURE_MISMATCH,                 -147000)
 NEW_ERROR(SYS_HASH_IMMUTABLE,                          -148000)
 NEW_ERROR(SYS_UNINITIALIZED,                           -149000)
 NEW_ERROR(SYS_NEGATIVE_SIZE,                           -150000)

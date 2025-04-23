@@ -63,7 +63,7 @@ namespace irods
             }
         }
 
-        return ERROR(SYS_SIGNED_SID_NOT_MATCHED, "signed zone_keys do not match");
+        return ERROR(ZONE_KEY_SIGNATURE_MISMATCH, "signed zone_keys do not match");
     } // check_sent_sid
 
 
