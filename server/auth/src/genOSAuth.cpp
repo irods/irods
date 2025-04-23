@@ -10,6 +10,7 @@
 
 #include "irods/authenticate.h"
 #include "irods/osauth.h"
+#include "irods/rodsDef.h"
 
 
 int
