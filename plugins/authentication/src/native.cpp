@@ -1,3 +1,5 @@
+/// \file
+
 #include "irods/authentication_plugin_framework.hpp"
 
 #include "irods/authCheck.h"
@@ -121,6 +123,41 @@ namespace
 
 namespace irods
 {
+    /// \brief Authentication plugin implementation for native scheme.
+    ///
+    /// Authentication plugins implement a number of operations to perform the steps required to authenticate with
+    /// an iRODS server. As described in \p irods::authentication::authenticate_client, the operations use JSON
+    /// payloads to receive request information and return information in responses. The keys of the JSON payload
+    /// recognized by this authentication scheme will be described here. All of these are optional and the values for
+    /// the default behavior are shown. All options pertain to client-side plugin behavior.
+    /// \code{.js}
+    /// {
+    ///     // This option instructs the plugin to authenticate the user with a time-limited password. The value is an
+    ///     // integer which is given to the server. The server interprets the value in hours. After authenticating
+    ///     // with the server using a "real" password, the plugin will generate a limited password and re-authenticate
+    ///     // using that. It is recommended that this option be used with the "record_auth_file" option set to true so
+    ///     // that the limited password can be used again by the client.
+    ///     "a_ttl": 0,
+    ///
+    ///     // This option forces the plugin to prompt the user for a password which will be read from stdin. If the
+    ///     // option is not present or is set to false, the password will be retrieved by some other means. It is
+    ///     // possible that the plugin will still prompt for the user's password, but this is only after trying to
+    ///     // get the password from the "a_pw" key or the .irodsA file.
+    ///     "force_password_prompt": false,
+    ///
+    ///     // This option provides the user's iRODS password to the plugin. This is useful for clients which do not use
+    ///     // stdin and may not use or have have access to a .irodsA file. A password provided this way will be used
+    ///     // over a password stored in an .irodsA file. If "force_password_prompt" is present and set to true, this
+    ///     // option is ignored. If this option is absent, the password will be fetched from a .irodsA file or, failing
+    ///     // that, from stdin.
+    ///     "a_pw": "<iRODS password>",
+    ///
+    ///     // This option instructs the client-side plugin to record the user's password to a .irodsA file. If this
+    ///     // option is not present or is set to false, the password will not be recorded to a .irodsA file and the
+    ///     // caller will need to provide the user's password again to authenticate with another connection.
+    ///     "record_auth_file": false
+    /// }
+    /// \endcode
     class native_authentication : public irods_auth::authentication_base {
       private:
         static constexpr const char* scheme_name = "native";
