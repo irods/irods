@@ -2,9 +2,6 @@
 
 #include "irods/authentication_plugin_framework.hpp"
 
-#define USE_SSL 1
-#include "irods/sslSockComm.h"
-
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
@@ -172,6 +169,13 @@ namespace irods::authentication
     private:
         json auth_client_start(rcComm_t& comm, const json& req)
         {
+            if (irods::CS_NEG_USE_SSL != static_cast<char*>(comm.negotiation_results)) {
+                THROW(SYS_NOT_ALLOWED,
+                      "Client communications with this server are not secure and this authentication plugin is "
+                      "configured to require TLS communication. Authentication is not allowed unless this server "
+                      "is configured to require TLS in order to prevent leaking sensitive user information.");
+            }
+
             json resp{req};
             resp["user_name"] = comm.proxyUser.userName;
             resp["zone_name"] = comm.proxyUser.rodsZone;
@@ -210,24 +214,16 @@ namespace irods::authentication
 
         json pam_password_auth_client_request(rcComm_t& comm, const json& req)
         {
+            if (irods::CS_NEG_USE_SSL != static_cast<char*>(comm.negotiation_results)) {
+                THROW(SYS_NOT_ALLOWED,
+                      "Client communications with this server are not secure and this authentication plugin is "
+                      "configured to require TLS communication. Authentication is not allowed unless this server "
+                      "is configured to require TLS in order to prevent leaking sensitive user information.");
+            }
+
             json svr_req{req};
 
             svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_REQUEST;
-
-            // Need to enable SSL here if it is not already being used because the PAM password
-            // is sent to the server in the clear.
-            const bool using_ssl = irods::CS_NEG_USE_SSL == comm.negotiation_results;
-            const auto end_ssl_if_we_enabled_it = irods::at_scope_exit{[&comm, using_ssl] {
-                if (!using_ssl) {
-                    sslEnd(&comm);
-                }
-            }};
-
-            if (!using_ssl) {
-                if (const int ec = sslStart(&comm); ec) {
-                    THROW(ec, "failed to enable SSL");
-                }
-            }
 
             auto resp = irods_auth::request(comm, svr_req);
 
@@ -271,6 +267,13 @@ namespace irods::authentication
         {
             using log_auth = irods::experimental::log::authentication;
 
+            if (irods::CS_NEG_USE_SSL != static_cast<char*>(comm.negotiation_results)) {
+                THROW(SYS_NOT_ALLOWED,
+                      "Client communications with this server are not secure and this authentication plugin is "
+                      "configured to require TLS communication. Authentication is not allowed unless this server "
+                      "is configured to require TLS in order to prevent leaking sensitive user information.");
+            }
+
             const std::vector<std::string_view> required_keys{"user_name", "zone_name", irods::AUTH_PASSWORD_KEY};
             irods_auth::throw_if_request_message_is_missing_key(req, required_keys);
 
@@ -283,35 +286,15 @@ namespace irods::authentication
             }
 
             if (LOCAL_HOST != host->localFlag) {
-                const auto disconnect = irods::at_scope_exit{[host] {
-                    rcDisconnect(host->conn);
-                    host->conn = nullptr;
-                }};
-
                 log_auth::trace("redirecting call to CSP");
 
-                // Need to enable SSL here if it is not already being used because the PAM password
-                // is forwarded to the provider in the clear.
-                // clang-format off
-                const bool using_ssl = (0 == std::strncmp(
-                    irods::CS_NEG_USE_SSL.c_str(),
-                    host->conn->negotiation_results, // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                    MAX_NAME_LEN));
-                // clang-format on
-
-                const auto end_ssl_if_we_enabled_it = irods::at_scope_exit{[host, using_ssl] {
-                    if (!using_ssl) {
-                        sslEnd(host->conn);
-                    }
-                }};
-
-                if (!using_ssl) {
-                    if (const int ec = sslStart(host->conn); ec) {
-                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                        THROW(ec, "failed to enable SSL in server-to-server communication");
-                    }
+                if (irods::CS_NEG_USE_SSL != static_cast<char*>(host->conn->negotiation_results)) {
+                    THROW(SYS_NOT_ALLOWED,
+                          "Server-to-server communications with the catalog service provider server are not secure and "
+                          "this authentication plugin is configured to require TLS communication. Authentication "
+                          "is not allowed unless this server is configured to require TLS in order to prevent "
+                          "leaking sensitive user information.");
                 }
-
                 return irods_auth::request(*host->conn, req);
             }
 
