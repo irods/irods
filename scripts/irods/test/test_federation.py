@@ -1149,7 +1149,7 @@ OUTPUT ruleExecOut
 				# If the hostname is not found in the catalog_provider_hosts list, the remote server will sign its local
 				# zone key with its local negotiation key and the signed zone key sent by the local server will not match
 				# that signed zone key.
-				user.assert_icommand(['ils', '-l', remote_home_collection], 'STDERR', 'SYS_SIGNED_SID_NOT_MATCHED')
+				user.assert_icommand(['ils', '-l', remote_home_collection], 'STDERR', 'ZONE_KEY_SIGNATURE_MISMATCH')
 
 			# Now add the valid hostname to the end of the list so that the zone key will be correctly signed.
 			svr_cfg['federation'][0]['catalog_provider_hosts'].append(remote_provider_host)
