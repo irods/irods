@@ -114,14 +114,14 @@ namespace
         return password;
     } // get_password_from_client_stdin
 
-    auto force_password_prompt(const nlohmann::json& _req) -> bool
+    auto forcibly_prompt_for_password(const nlohmann::json& _req) -> bool
     {
         const auto force_prompt = _req.find(irods_auth::force_password_prompt);
         return _req.end() != force_prompt && force_prompt->get<bool>();
-    } // force_password_prompt
+    } // forcibly_prompt_for_password
 } // anonymous namespace
 
-namespace irods
+namespace irods::authentication
 {
     /// \brief Authentication plugin implementation for native scheme.
     ///
@@ -245,7 +245,7 @@ namespace irods
                 md5_buf[CHALLENGE_LEN + 1] = '\0';
             }
             // If the client wants to forcibly prompt for a password, get the password from stdin.
-            else if (force_password_prompt(req)) {
+            else if (forcibly_prompt_for_password(req)) {
                 client_provided_password = get_password_from_client_stdin();
             }
             // If the client has provided a password in the request, use that. Historically, we have given preference to
@@ -691,11 +691,13 @@ namespace irods
         } // native_auth_agent_start
 #endif
     }; // class native_authentication
-} // namespace irods
+} // namespace irods::authentication
 
+// clang-format off
 extern "C"
-irods::native_authentication* plugin_factory(const std::string&, const std::string&)
+auto plugin_factory([[maybe_unused]] const std::string& _instance_name,
+                    [[maybe_unused]] const std::string& _context) -> irods_auth::native_authentication*
 {
-    return new irods::native_authentication{};
-}
-
+    return new irods_auth::native_authentication{}; // NOLINT(cppcoreguidelines-owning-memory)
+} // plugin_factory
+// clang-format on
