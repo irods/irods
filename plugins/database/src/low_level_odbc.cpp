@@ -42,6 +42,7 @@
 namespace
 {
     using log_db = irods::experimental::log::database;
+    using log_sql = irods::experimental::log::sql;
 
     // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define IRODS_DB_TRACE(msg, ...) log_db::trace("{}@{}: " msg, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);
@@ -102,7 +103,7 @@ static SQLLEN resultDataSizeArray[ MAX_NUMBER_ICAT_COLUMS ];
   call SQLError to get error information and log it
 */
 int
-logPsgError( int level, HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
+logPsgError( HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
     SQLCHAR         sqlstate[ SQL_SQLSTATE_SIZE + 10];
     SQLINTEGER sqlcode;
     SQLSMALLINT length;
@@ -129,9 +130,7 @@ logPsgError( int level, HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
             }
         }
 
-        rodsLog( level, "SQLSTATE: %s", sqlstate );
-        rodsLog( level, "SQLCODE: %ld", sqlcode );
-        rodsLog( level, "SQL Error message: %s", psgErrorMsg );
+        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}", __func__, sqlstate, sqlcode, psgErrorMsg);
     }
     return errorVal;
 }
@@ -379,11 +378,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
   Log the bind variables from the global array (after an error)
 */
 void
-logTheBindVariables( int level ) {
+logTheBindVariables() {
     for ( int i = 0; i < cllBindVarCountPrev; i++ ) {
-        char tmpStr[TMP_STR_LEN + 2];
-        snprintf( tmpStr, TMP_STR_LEN, "bindVar[%d]=%s", i + 1, cllBindVars[i] );
-        rodsLog( level, "%s", tmpStr );
+        log_sql::info("{}: Bind variable #{} = [{}]", __func__, i + 1, cllBindVars[i]);
     }
 }
 
@@ -402,7 +399,7 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
                                            SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen( cllBindVars[i] ), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
         char tmpStr[TMP_STR_LEN];
         snprintf( tmpStr, sizeof( tmpStr ), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
-        rodsLogSql( tmpStr );
+        log_sql::debug("{}: SQL: [{}]", __func__, tmpStr);
         if ( stat != SQL_SUCCESS ) {
             log_db::error("{}: SQLBindParameter failed: {}", __func__, stat);
             return -1;
@@ -449,7 +446,7 @@ _cllExecSqlNoResult(
     icatSessionStruct* icss,
     const char*        sql,
     int                option ) {
-    rodsLog( LOG_DEBUG10, "%s", sql );
+    log_sql::debug("{}: SQL: [{}]", __func__, sql);
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT myHstmt;
@@ -464,27 +461,27 @@ _cllExecSqlNoResult(
         return -1;
     }
 
-    rodsLogSql( sql );
+    log_sql::debug("{}: SQL: [{}]", __func__, sql);
 
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, strlen( sql ) );
     switch ( stat ) {
     case SQL_SUCCESS:
-        rodsLogSqlResult( "SUCCESS" );
+        log_sql::debug("{}: result: SUCCESS", __func__);
         break;
     case SQL_SUCCESS_WITH_INFO:
-        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
+        log_sql::debug("{}: result: SUCCESS_WITH_INFO", __func__);
         break;
     case SQL_NO_DATA_FOUND:
-        rodsLogSqlResult( "NO_DATA" );
+        log_sql::debug("{}: result: NO_DATA", __func__);
         break;
     case SQL_ERROR:
-        rodsLogSqlResult( "SQL_ERROR" );
+        log_sql::debug("{}: result: SQL_ERROR", __func__);
         break;
     case SQL_INVALID_HANDLE:
-        rodsLogSqlResult( "HANDLE_ERROR" );
+        log_sql::debug("{}: result: HANDLE_ERROR", __func__);
         break;
     default:
-        rodsLogSqlResult( "UNKNOWN" );
+        log_sql::debug("{}: result: UNKNOWN", __func__);
     }
 
     int result;
@@ -522,14 +519,13 @@ _cllExecSqlNoResult(
     }
     else {
         if ( option == 0 ) {
-            logTheBindVariables( LOG_NOTICE );
+            logTheBindVariables();
         }
-        rodsLog( LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
-                 stat, sql );
+        log_sql::error("{}: SQLExecDirect error: {} SQL:[{}]", __func__, stat, sql);
 
         // logPsgError returns an iRODS-specific error code for duplicate entries in the catalog
         // Returns -2 otherwise.
-        result = logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, myHstmt,
+        result = logPsgError( icss->environPtr, myHdbc, myHstmt,
                               icss->databaseType );
         // On error cases, do not call SQLRowCount: it will cause a Function sequence error
         // However, calling functions may read the return value of SQLRowCount via
@@ -565,7 +561,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
        needed here, and in fact causes postgres processes to be in the
        'idle in transaction' state which prevents some operations (such as
        backup).  So this was removed. */
-    rodsLog( LOG_DEBUG10, "%s", sql );
+    log_sql::debug("{}: SQL: [{}]", __func__, sql);
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;
@@ -601,37 +597,36 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         return -1;
     }
 
-    rodsLogSql( sql );
+    log_sql::debug("{}: SQL: [{}]", __func__, sql);
+
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
 
     switch ( stat ) {
     case SQL_SUCCESS:
-        rodsLogSqlResult( "SUCCESS" );
+        log_sql::debug("{}: result: SUCCESS", __func__);
         break;
     case SQL_SUCCESS_WITH_INFO:
-        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
+        log_sql::debug("{}: result: SUCCESS_WITH_INFO", __func__);
         break;
     case SQL_NO_DATA_FOUND:
-        rodsLogSqlResult( "NO_DATA" );
+        log_sql::debug("{}: result: NO_DATA", __func__);
         break;
     case SQL_ERROR:
-        rodsLogSqlResult( "SQL_ERROR" );
+        log_sql::debug("{}: result: SQL_ERROR", __func__);
         break;
     case SQL_INVALID_HANDLE:
-        rodsLogSqlResult( "HANDLE_ERROR" );
+        log_sql::debug("{}: result: HANDLE_ERROR", __func__);
         break;
     default:
-        rodsLogSqlResult( "UNKNOWN" );
+        log_sql::debug("{}: result: UNKNOWN", __func__);
     }
 
     if ( stat != SQL_SUCCESS &&
             stat != SQL_SUCCESS_WITH_INFO &&
             stat != SQL_NO_DATA_FOUND ) {
-        logTheBindVariables( LOG_NOTICE );
-        rodsLog( LOG_NOTICE,
-                 "cllExecSqlWithResult: SQLExecDirect error: %d, sql:%s",
-                 stat, sql );
-        logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
+        logTheBindVariables();
+        log_sql::error("{}: SQLExecDirect error: {} SQL:[{}]", __func__, stat, sql);
+        logPsgError( icss->environPtr, myHdbc, hstmt,
                      icss->databaseType );
         return -1;
     }
@@ -710,11 +705,10 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 */
 void
 logBindVars(
-    int level,
     std::vector<std::string> &bindVars ) {
     for ( std::size_t i = 0; i < bindVars.size(); i++ ) {
         if ( !bindVars[i].empty() ) {
-            rodsLog( level, "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+            log_sql::info("{}: Bind variable #{} = [{}]", __func__, i + 1, bindVars[i]);
         }
     }
 }
@@ -731,7 +725,7 @@ cllExecSqlWithResultBV(
     const char *sql,
     std::vector< std::string > &bindVars ) {
 
-    rodsLog( LOG_DEBUG10, "%s", sql );
+    log_sql::debug("{}: SQL:  [{}]", __func__, sql);
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;
@@ -768,46 +762,42 @@ cllExecSqlWithResultBV(
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
                                      SQL_CHAR, 0, 0, const_cast<char*>( bindVars[i].c_str() ), bindVars[i].size(), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
-            char tmpStr[TMP_STR_LEN];
-            snprintf( tmpStr, sizeof( tmpStr ), "bindVar%ju=%s", static_cast<uintmax_t>(i + 1), bindVars[i].c_str() );
-            rodsLogSql( tmpStr );
+            log_sql::info("{}: Bind variable #{} = [{}]", __func__, i + 1, bindVars[i]);
             if ( stat != SQL_SUCCESS ) {
                 log_db::error("{}: SQLBindParameter failed: {}", __func__, stat);
                 return -1;
             }
         }
     }
-    rodsLogSql( sql );
+    log_sql::debug("{}: SQL: [{}]", __func__, sql);
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
 
     switch ( stat ) {
     case SQL_SUCCESS:
-        rodsLogSqlResult( "SUCCESS" );
+        log_sql::debug("{}: result: SUCCESS", __func__);
         break;
     case SQL_SUCCESS_WITH_INFO:
-        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
+        log_sql::debug("{}: result: SUCCESS_WITH_INFO", __func__);
         break;
     case SQL_NO_DATA_FOUND:
-        rodsLogSqlResult( "NO_DATA" );
+        log_sql::debug("{}: result: NO_DATA", __func__);
         break;
     case SQL_ERROR:
-        rodsLogSqlResult( "SQL_ERROR" );
+        log_sql::debug("{}: result: SQL_ERROR", __func__);
         break;
     case SQL_INVALID_HANDLE:
-        rodsLogSqlResult( "HANDLE_ERROR" );
+        log_sql::debug("{}: result: HANDLE_ERROR", __func__);
         break;
     default:
-        rodsLogSqlResult( "UNKNOWN" );
+        log_sql::debug("{}: result: UNKNOWN", __func__);
     }
 
     if ( stat != SQL_SUCCESS &&
             stat != SQL_SUCCESS_WITH_INFO &&
             stat != SQL_NO_DATA_FOUND ) {
-        logBindVars( LOG_NOTICE, bindVars );
-        rodsLog( LOG_NOTICE,
-                 "cllExecSqlWithResultBV: SQLExecDirect error: %d, sql:%s",
-                 stat, sql );
-        logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
+        logBindVars(bindVars);
+        log_sql::error("{}: SQLExecDirect error: {} SQL:[{}]", __func__, stat, sql);
+        logPsgError( icss->environPtr, myHdbc, hstmt,
                      icss->databaseType );
         return -1;
     }

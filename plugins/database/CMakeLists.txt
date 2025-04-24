@@ -9,7 +9,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query_setup.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/general_update.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_catalog_properties.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_sql_logger.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/low_level_odbc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/mid_level_routines.cpp"
 )
@@ -17,7 +16,6 @@ set(
 set(
   IRODS_PLUGINS_DATABASE_HEADERS_PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_catalog_properties.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_sql_logger.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_zone_info.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/low_level.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/low_level_odbc.hpp"

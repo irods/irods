@@ -29,7 +29,6 @@
 #include "irods/modAccessControl.h"
 #include "irods/msParam.h"
 #include "irods/private/irods_catalog_properties.hpp"
-#include "irods/private/irods_sql_logger.hpp"
 #include "irods/private/low_level.hpp"
 #include "irods/private/mid_level.hpp"
 #include "irods/rcConnect.h"
@@ -565,8 +564,6 @@ irods::error _childIsValid(
     }
 
     // Get resource's parent
-    irods::sql_logger logger( "_childIsValid", logSQL );
-    logger.log();
     parent[0] = '\0';
     {
         std::vector<std::string> bindVars;
@@ -598,8 +595,6 @@ irods::error update_child_parent(const std::string& _child_resc_id,
                                  const std::string& _parent_resc_id,
                                  const std::string& _parent_child_context)
 {
-    irods::sql_logger logger("update_child_parent", logSQL);
-
     const auto [current_time_secs, current_time_msecs] = get_current_time();
 
     // Update the parent for the child resource
@@ -610,7 +605,6 @@ irods::error update_child_parent(const std::string& _child_resc_id,
     cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
     cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
     cllBindVars[cllBindVarCount++] = _child_resc_id.c_str();
-    logger.log();
 
     int status = cmlExecuteNoAnswerSql(
         "update R_RESC_MAIN set resc_parent=?, resc_parent_context=?, modify_ts=?, modify_ts_millis=? "
@@ -633,10 +627,7 @@ _rescHasData(
     icatSessionStruct* _icss,
     const std::string& _resc_name,
     bool&              _has_data ) {
-    irods::sql_logger logger( "_rescHasData", logSQL );
     rodsLong_t obj_count{};
-
-    logger.log();
 
     int status = get_object_count_of_resource_by_name(
                       _icss,
@@ -713,9 +704,7 @@ _rescHasParentOrChild( char* rescId ) {
     char parent[MAX_NAME_LEN];
     char children[MAX_NAME_LEN];
     int status;
-    irods::sql_logger logger( "_rescHasParentOrChild", logSQL );
 
-    logger.log();
     parent[0] = '\0';
     children[0] = '\0';
     {
@@ -760,9 +749,7 @@ _rescHasParentOrChild( char* rescId ) {
 bool _userInRUserAuth( const char* userName, const char* zoneName, const char* auth_name ) {
     int status;
     rodsLong_t iVal;
-    irods::sql_logger logger( "_userInRUserAuth", logSQL );
 
-    logger.log();
     {
         std::vector<std::string> bindVars;
         bindVars.push_back( userName );
@@ -3581,10 +3568,6 @@ irods::error db_add_child_resc_op(
         return PASS( ret );
     }
 
-    irods::sql_logger logger( __FUNCTION__, logSQL );
-
-    logger.log();
-
     std::string new_child_string( resc_input[irods::RESOURCE_CHILDREN] );
 
     irods::children_parser child_parser;
@@ -3657,8 +3640,6 @@ irods::error db_add_child_resc_op(
                    CAT_INVALID_ZONE,
                    "resources must be in the local zone");
     }
-
-    logger.log();
 
     ret = update_child_parent(child_resource_id, parent_resource_id, child_context);
     if(!ret.ok()) {
@@ -3864,7 +3845,6 @@ irods::error db_del_child_resc_op(
         return PASS( ret );
     }
 
-    irods::sql_logger logger( "chlDelChildResc", logSQL );
     std::string child_string( resc_input[irods::RESOURCE_CHILDREN] );
 
     std::string& parent_name = resc_input[irods::RESOURCE_NAME];
@@ -13229,9 +13209,6 @@ irods::error db_get_hierarchy_for_resc_op(
     char parent[MAX_NAME_LEN];
     int status;
 
-
-    irods::sql_logger logger( "chlGetHierarchyForResc", logSQL );
-    logger.log();
 
     if ( !icss.status ) {
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
