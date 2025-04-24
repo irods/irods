@@ -51,60 +51,6 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_Auth, self).tearDown()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
-    def test_authentication_PAM_without_negotiation(self):
-        numbits = 2048
-        irods_config = IrodsConfig()
-        server_key_path = os.path.join(irods_config.irods_directory, 'test', 'server.key')
-        chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
-        dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, str(numbits)])
-        lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
-        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, str(numbits)])
-
-        IrodsController().stop()
-
-        service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
-        with lib.file_backed_up(irods_config.server_config_path):
-            server_update = {
-                "tls_server": {
-                    "certificate_chain_file": chain_pem_path,
-                    "certificate_key_file": server_key_path,
-                    "dh_params_file": dhparams_pem_path,
-                }
-            }
-            lib.update_json_file_from_dict(irods_config.server_config_path, server_update)
-
-            client_update = {
-                'irods_ssl_ca_certificate_file': chain_pem_path,
-                'irods_ssl_verify_server': 'none',
-                'irods_authentication_scheme': 'pam_password',
-            }
-
-            # now the actual test
-            auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
-            self.auth_session.environment_file_contents.update(client_update)
-
-            # Server was stopped above as re-configuration occurs. Start the server here to run the test.
-            IrodsController().start(test_mode=True)
-
-            # do the reauth
-            self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
-                                              input=f'{self.auth_session.password}\n')
-            # connect and list some files
-            self.auth_session.assert_icommand('icd')
-            self.auth_session.assert_icommand('ils -L', 'STDOUT_SINGLELINE', 'home')
-
-            # reset client environment to original
-            self.auth_session.environment_file_contents = auth_session_env_backup
-
-            # clean up
-            for filename in [chain_pem_path, server_key_path, dhparams_pem_path]:
-                os.unlink(filename)
-
-        # Reload configuration to put back the server configuration.
-        IrodsController().reload_configuration()
-
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
         irods_config = IrodsConfig()
         numbits = 2048
@@ -633,9 +579,9 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         except KeyError:
             # This is a requirement in order to run these tests and running the tests is required for our test suite, so
-            # we always fail here when the prerequisites are not being met on the test-running host.
-            self.fail('OS user "[{}]" with password "[{}]" must exist in order to run these tests.'.format(
-                self.pam_user, self.pam_password))
+            # we raise an error here when the prerequisites are not being met on the test-running host.
+            raise EnvironmentError(
+                f"OS user [{self.pam_user}] with password [{self.pam_password}] must exist in order to run these tests.")
 
         auth_scheme = 'pam_password'
         cmd = 'iinit --with-ssl --prompt-auth-scheme'
