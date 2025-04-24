@@ -25,7 +25,6 @@ extern int icatGeneralQuerySetup();
 
 int updateDebug = 0;
 
-extern int logSQLGenUpdate;
 char tSQL[MAX_SQL_SIZE];
 
 #pragma GCC diagnostic push
@@ -210,21 +209,12 @@ int chl_general_update_impl(
         if ( status ) {
             return status;
         }
-        /* Since the sql string is lower case, this is not checked for
-           in ICAT test suite; removed since now this is only for
-           extended tables and so would be difficult to test */
-        if ( logSQLGenUpdate ) {
-            rodsLog( LOG_SQL, "chlGeneralUpdate sql 1" );
-        }
     }
     else {
         if ( generalUpdateInp.type == GENERAL_UPDATE_DELETE ) {
             status = generalDelete( generalUpdateInp );
             if ( status ) {
                 return status;
-            }
-            if ( logSQLGenUpdate ) {
-                rodsLog( LOG_SQL, "chlGeneralUpdate sql 2" );
             }
         }
         else {
@@ -250,11 +240,5 @@ int chl_general_update_impl(
         return status;
     }
 
-    return 0;
-}
-
-int
-chlDebugGenUpdate( int mode ) {
-    logSQLGenUpdate = mode;
     return 0;
 }
