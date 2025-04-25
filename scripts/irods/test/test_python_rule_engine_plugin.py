@@ -23,7 +23,6 @@ def append_native_re_to_server_config (with_backup=False):
     orig = irods_config.server_config['plugin_configuration']['rule_engines']
 
     try:
-        IrodsController().stop()
         irods_config.server_config['plugin_configuration']['rule_engines'] = orig + [{
                 "instance_name": "irods_rule_engine_plugin-irods_rule_language-instance",
                 "plugin_name": "irods_rule_engine_plugin-irods_rule_language",
@@ -46,13 +45,12 @@ def append_native_re_to_server_config (with_backup=False):
                 "shared_memory_instance": "irods_rule_language_rule_engine"
             }]
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=with_backup)
-        IrodsController().start(test_mode=True)
+        IrodsController().reload_configuration()
         yield
     finally:
-        IrodsController().stop()
         irods_config.server_config['plugin_configuration']['rule_engines'] = orig
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=with_backup)
-        IrodsController().start(test_mode=True)
+        IrodsController().reload_configuration()
 
 
 class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
@@ -83,6 +81,7 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
                     writeLine("serverLog", ":native PEP:")
                 }
                 '''))
+                IrodsController().reload_configuration()
                 time.sleep(5);
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 tmpf = tempfile.NamedTemporaryFile()
