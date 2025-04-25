@@ -8408,7 +8408,9 @@ irods::error db_set_avu_metadata_op(
         std::vector<std::string> bindVars;
         bindVars.push_back( _attribute );
         bindVars.push_back( objIdStr );
-        status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
+        status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in "
+                "(select meta_id from R_META_MAIN where meta_attr_name = ? and meta_id in "
+                "(select meta_id from R_OBJT_METAMAP where object_id = ?)) limit 3",
                  metaIdStr, MAX_NAME_LEN, 2, bindVars, &icss );
     }
 
