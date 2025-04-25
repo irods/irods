@@ -908,8 +908,8 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 # Show the AVU containing the error exists on the session collection.
                 self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
                     f'attribute: {attr_name}\n',
-                    '[iRods__Error__Code:-1107000]',
-                    '[NO_COLUMN_NAME_FOUND]'
+                    '[iRods__Error__Code:-1084000]',
+                    '[INPUT_ARG_NOT_WELL_FORMED_ERR]'
                 ])
 
         finally:
