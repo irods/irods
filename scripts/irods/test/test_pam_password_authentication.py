@@ -108,11 +108,12 @@ class test_configurations(unittest.TestCase):
         lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
         # Make a backup of the core.re file and configure it for TLS.
-        self.core_re = core_file.CoreFile(self.plugin_name)
-        self.core_re_path = os.path.join(paths.core_re_directory(), 'core.re')
-        self.core_re_file_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(self.core_re_path)).name
-        shutil.copyfile(self.core_re_path, self.core_re_file_backup)
-        self.core_re.add_rule(get_pep_for_tls(self.plugin_name))
+        self.core_file = core_file.CoreFile(self.plugin_name)
+        self.core_file_path = os.path.join(paths.core_re_directory(),
+            'core.re' if self.plugin_name == 'irods_rule_engine_plugin-irods_rule_language' else 'core.py')
+        self.core_file_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(self.core_file_path)).name
+        shutil.copyfile(self.core_file_path, self.core_file_backup)
+        self.core_file.add_rule(get_pep_for_tls(self.plugin_name))
 
         IrodsController().reload_configuration()
 
@@ -136,7 +137,7 @@ class test_configurations(unittest.TestCase):
         # Put all the modified configurations back and reload the server configuration.
         shutil.copyfile(self.service_account_environment_file_backup, self.service_account_environment_file_path)
         shutil.copyfile(self.server_config_backup, paths.server_config_path())
-        shutil.copyfile(self.core_re_file_backup, self.core_re_path)
+        shutil.copyfile(self.core_file_backup, self.core_file_path)
         IrodsController().reload_configuration()
 
         for filename in [self.chain_pem_path, self.server_key_path, self.dhparams_pem_path]:
