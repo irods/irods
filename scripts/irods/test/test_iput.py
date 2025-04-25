@@ -1,20 +1,17 @@
-from __future__ import print_function
 import json
 import os
+import psutil
+import subprocess
 import sys
 import tempfile
-import psutil
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 from .. import lib
 from .. import paths
 from .. import test
 from ..test.command import assert_command
+from ..configuration import IrodsConfig
 from ..controller import IrodsController
 
 rodsadmins = [('otherrods', 'rods')]
@@ -871,7 +868,8 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
             'STDOUT', test.settings.HOSTNAME_2)
 
     def tearDown(self):
-        self.admin.run_icommand(['irm', '-f', self.object_name])
+        if self.object_name is not None:
+            self.admin.run_icommand(['irm', '-f', self.object_name])
         self.admin.assert_icommand(['iadmin', 'rmresc', self.resource])
         super(test_iput_with_checksums, self).tearDown()
 
@@ -949,40 +947,28 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Requires resolution of #6835")
     def test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
-        self.object_name = 'test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
-        server_config_filename = paths.server_config_path()
-
-        # load server_config.json to inject a new rule base
-        with open(server_config_filename) as f:
-            svr_cfg = json.load(f)
+        # This is required to avoid issues with tearing down the test.
+        self.object_name = None
 
         try:
-            # create a small file
-            file_size = 10
-            local_file = os.path.join(self.admin.local_session_dir, self.object_name)
-            lib.make_file(local_file, file_size)
+            config = IrodsConfig()
 
-            with lib.file_backed_up(server_config_filename):
-                for buffer_size in [-2**63-1, -1, 0, 2**63]:  # first and last are outside range of 64 bit signed integers
-                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
-                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
-
-                    # repave the existing server_config.json
-                    with open(server_config_filename, 'w') as f:
-                        f.write(new_server_config)
-
-                    IrodsController().reload_configuration()
-
-                    # put the file and verify we get an error due to invalid configuration
-                    self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name],
-                            'STDERR_SINGLELINE', '-180000 CONFIGURATION_ERROR')
-
-                    # clean up for next iteration
-                    self.admin.assert_icommand(['irm', '-f', self.object_name])
+            with lib.file_backed_up(config.server_config_path):
+                for buffer_size in [-1, 0, 2**31]: # Config option only supports signed 32-bit integers.
+                    with self.subTest(f'checksum_read_buffer_size_in_bytes is [{buffer_size}]'):
+                        config.server_config['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
+                        lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                        res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+                        self.assertNotEqual(res.returncode, 0)
+                        self.assertIn('"valid": false', res.stderr)
+                        self.assertIn('"instanceLocation": "/advanced_settings/checksum_read_buffer_size_in_bytes"', res.stderr)
+                        # "buffer_size" isn't included in the strings because jsoncons doesn't include
+                        # a space after "found" when handling max value violations.
+                        self.assertTrue(f'"error": "Minimum value is 1 but found' in res.stderr or \
+                                        f'"error": "Maximum value is 2147483647 but found' in res.stderr)
 
         finally:
             IrodsController().reload_configuration()
-            os.unlink(local_file)
 
     def get_checksum(self, object_name):
         iquest_result,_,ec = self.admin.run_icommand(['iquest', '%s', 'select DATA_CHECKSUM where DATA_NAME = \'{}\''.format(object_name)])
