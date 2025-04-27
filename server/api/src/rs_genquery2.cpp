@@ -74,7 +74,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
     }
 
     if (host_info->localFlag != LOCAL_HOST) {
-        log_api::trace("{}: Redirecting request to remote zone [{}].", __func__, _input->zone);
+        log_api::trace("{}: Redirecting request to server [{}].", __func__, host_info->hostName->name);
         return rc_genquery2(host_info->conn, _input, _output);
     }
 
