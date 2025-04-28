@@ -3,6 +3,9 @@ import unittest
 
 from . import session
 from .. import lib
+from .. import test
+from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
@@ -301,3 +304,21 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.run_icommand(['iadmin', 'rmresc', resc0])
             self.admin.run_icommand(['iadmin', 'rmresc', resc1])
+
+    @unittest.skipUnless(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Test must be run from a Catalog Service Consumer')
+    def test_genquery2_does_not_fail_when_log_level_is_set_to_trace_and_request_is_redirected_to_the_provider__issue_8439(self):
+        config = IrodsConfig()
+        controller = IrodsController()
+
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # While the bug only requires setting the "api" log category to "trace", we go beyond
+                # that to verify there are no issues with other log categories.
+                for log_category in config.server_config['log_level']:
+                    config.server_config['log_level'][log_category] = 'trace'
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                controller.reload_configuration()
+                self.user.assert_icommand(['iquery', 'select COLL_NAME'], 'STDOUT', [json.dumps([self.user.session_collection])])
+
+        finally:
+            controller.reload_configuration()
