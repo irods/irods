@@ -98,9 +98,12 @@ namespace
 
     using log_server = irods::experimental::log::server;
 
-    volatile std::sig_atomic_t g_terminate = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    volatile std::sig_atomic_t g_terminate_graceful = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    volatile std::sig_atomic_t g_reload_config = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+    volatile std::sig_atomic_t g_terminate = 0;
+    volatile std::sig_atomic_t g_terminate_graceful = 0;
+    volatile std::sig_atomic_t g_reload_config = 0;
+    volatile std::sig_atomic_t g_agent_factory_initialized = 0;
+    // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
     // This global variable MUST always hold the max number of child processes forkable
     // by the main server process. It guarantees that the main server process reaps children
@@ -734,6 +737,17 @@ Signals:
             return -1;
         }
 
+        // SIGUSR2 is used by the agent factory to notify the main server process
+        // when it has completed initialization.
+        struct sigaction sa_sigusr2; // NOLINT(cppcoreguidelines-pro-type-member-init)
+        sigemptyset(&sa_sigusr2.sa_mask);
+        sa_sigusr2.sa_flags = 0;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        sa_sigusr2.sa_handler = [](int) { g_agent_factory_initialized = 1; };
+        if (sigaction(SIGUSR2, &sa_sigusr2, nullptr) == -1) {
+            return -1;
+        }
+
         irods::setup_unrecoverable_signal_handlers();
 
         return 0;
@@ -989,6 +1003,11 @@ Signals:
 
         args.push_back(nullptr);
 
+        // Reset the initialization flag for the agent factory. This flag is how we know when the agent
+        // factory is ready to accept client connections. This flag will be set to 1 when the agent factory
+        // sends the SIGUSR2 signal to the main server process.
+        g_agent_factory_initialized = 0;
+
         g_pid_af = fork();
 
         if (0 == g_pid_af) {
@@ -1009,6 +1028,22 @@ Signals:
         }
 
         log_server::info("{}: Agent Factory PID = [{}].", __func__, g_pid_af);
+
+        // Wait for the agent factory's signal that it has completed initialization. This effectively
+        // means the agent factory has opened its listening socket and is entering its main loop.
+        while (0 == g_agent_factory_initialized) {
+            // If this loop cannot make progress for some reason, allow the admin to stop the server
+            // without needing SIGKILL.
+            if (g_terminate || g_terminate_graceful) {
+                log_server::info(
+                    "{}: Received shutdown instruction. Ending wait loop for agent factory initialization.", __func__);
+                return false;
+            }
+
+            log_server::debug("{}: Waiting for agent factory to complete initialization.", __func__);
+            std::this_thread::sleep_for(std::chrono::milliseconds{250});
+        }
+
         return true;
     } // launch_agent_factory
 
@@ -1130,7 +1165,7 @@ Signals:
         // Wait for the previous agent factory to close its listening socket before launching
         // the new agent factory.
         while (true) {
-            // If this loop cannot make process for some reason, allow the admin to stop the server
+            // If this loop cannot make progress for some reason, allow the admin to stop the server
             // without needing SIGKILL.
             if (g_terminate || g_terminate_graceful) {
                 log_server::info("{}: Received shutdown instruction. Ending reload operation.", __func__);
