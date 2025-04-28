@@ -192,14 +192,7 @@ cllConnect( icatSessionStruct *icss ) {
     // =-=-=-=-=-=-=-
     // ODBC Entry is defined as "iRODS Catalog" or an env variable
     char odbcEntryName[ DB_TYPENAME_LEN ];
-    char* odbc_env = getenv( "irodsOdbcDSN" );
-    if ( odbc_env ) {
-        log_db::debug("{}: Setting ODBC entry to ENV [{}]", __func__, odbc_env);
-        snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", odbc_env );
-    }
-    else {
-        snprintf( odbcEntryName, sizeof( odbcEntryName ), "iRODS Catalog" );
-    }
+    snprintf(odbcEntryName, sizeof(odbcEntryName), "iRODS Catalog");
 
     // =-=-=-=-=-=-=-
     // initialize a connection to the catalog
