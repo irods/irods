@@ -1,4 +1,5 @@
 #include "irods/catalog.hpp"
+
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_logger.hpp"
@@ -7,18 +8,17 @@
 #include "irods/objDesc.hpp"
 #include "irods/rodsConnect.h"
 
-#include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
+#include <nlohmann/json.hpp>
 
-#include <fstream>
 #include <functional>
 #include <stdexcept>
 
-using json = nlohmann::json;
-
 namespace
 {
+    using json = nlohmann::json;
+
     auto capture_database_info(const json& _server_config,
                                std::string& _db_instance_name,
                                std::string& _db_username,
@@ -35,54 +35,25 @@ namespace
 
 namespace irods::experimental::catalog {
 
-    auto new_database_connection(bool _read_server_config) -> std::tuple<std::string, nanodbc::connection>
+    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>
     {
         namespace log = irods::experimental::log;
-
-        const std::string dsn = [] {
-            if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
-                return dsn;
-            }
-
-            return "iRODS Catalog";
-        }();
 
         std::string db_username;
         std::string db_password;
         std::string db_instance_name;
 
-        if (_read_server_config) {
-            std::string config_path;
-
-            if (const auto error = irods::get_full_path_for_config_file("server_config.json", config_path); !error.ok()) {
-                log::database::error("Server configuration not found");
-                throw std::runtime_error{"Failed to connect to catalog"};
-            }
-
-            log::database::trace("Reading server configuration ...");
-
-            json config;
-
-            {
-                std::ifstream config_file{config_path};
-                config_file >> config;
-            }
-
-            capture_database_info(config, db_instance_name, db_username, db_password);
-        }
-        else {
-            const auto config_handle{server_properties::instance().map()};
-            const auto& config{config_handle.get_json()};
-            capture_database_info(config, db_instance_name, db_username, db_password);
-        }
+        const auto config_handle{server_properties::instance().map()};
+        const auto& config{config_handle.get_json()};
+        capture_database_info(config, db_instance_name, db_username, db_password);
 
         try {
             if (db_instance_name.empty()) {
-                throw std::runtime_error{"Database instance name cannot be empty"};
+                throw std::runtime_error{fmt::format("{}: Database instance name cannot be empty", __func__)};
             }
 
-            log::database::trace(fmt::format("attempting connection to database using dsn [{}]", dsn));
-
+            constexpr const char* dsn = "iRODS Catalog";
+            log::database::trace("{}: Attempting connection to database using dsn [{}]", __func__, dsn);
             nanodbc::connection db_conn{dsn, db_username, db_password};
 
             if (db_instance_name == "mysql") {
@@ -99,7 +70,7 @@ namespace irods::experimental::catalog {
         }
         catch (const std::exception& e) {
             log::database::error(e.what());
-            throw std::runtime_error{"Failed to connect to catalog"};
+            throw std::runtime_error{fmt::format("{}: Failed to connect to catalog", __func__)};
         }
     } // new_database_connection
 
