@@ -425,7 +425,7 @@ Signals:
                  service requests for a limited amount of time. Once the time
                  limit is reached, agents will perform the normal shutdown
                  routine as if SIGTERM was received by the server.
-  SIGINT         Same as SIGQUIT.
+  SIGINT         Same as SIGTERM.
 )__");
     } // print_usage
 
