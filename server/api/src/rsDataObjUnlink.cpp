@@ -597,6 +597,22 @@ int dataObjUnlinkS(rsComm_t* rsComm,
         }
     }
 
+    // Special collections have their own logic regarding registration which is not handled
+    // in this implementation. Skip the unregistering step.
+    if (nullptr == dataObjInfo->specColl) {
+        unregDataObj_t unreg_inp{};
+        unreg_inp.dataObjInfo = info.get();
+        unreg_inp.condInput = &dataObjUnlinkInp->condInput;
+        if (const auto ec = rsUnregDataObj(rsComm, &unreg_inp); ec < 0) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - rsUnregDataObj failed "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                __FUNCTION__, __LINE__, ec, info.logical_path(), info.hierarchy()));
+
+            return ec;
+        }
+    }
+
     // The UNREG_OPR type is used to indicate that the replica should not be physically unlinked,
     // but only unregistered. Therefore, only attempt physical unlink if this is not an UNREG_OPR.
     if (UNREG_OPR != dataObjUnlinkInp->oprType) {
@@ -615,26 +631,6 @@ int dataObjUnlinkS(rsComm_t* rsComm,
                 return ec;
             }
         }
-    }
-
-    // Special collections have their own logic regarding registration which is not handled
-    // in this implementation. Just return success.
-    if (dataObjInfo->specColl) {
-        return 0;
-    }
-
-    unregDataObj_t unreg_inp{};
-    unreg_inp.dataObjInfo = info.get();
-    unreg_inp.condInput = &dataObjUnlinkInp->condInput;
-    if (const auto ec = rsUnregDataObj(rsComm, &unreg_inp); ec < 0) {
-        irods::log(LOG_NOTICE, fmt::format(
-            "[{}:{}] - rsUnregDataObj failed "
-            "[error_code=[{}], path=[{}], hierarchy=[{}]",
-            __FUNCTION__, __LINE__, ec, info.logical_path(), info.hierarchy()));
-
-        // TODO: Should the replica be marked stale if the unregister itself fails?
-
-        return ec;
     }
 
     return 0;
