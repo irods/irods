@@ -1,15 +1,11 @@
-from __future__ import print_function
 import os
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
-from .. import test
 from .. import lib
+from .. import paths
+from .. import test
 
 class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
@@ -109,3 +105,93 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
             self.user.assert_icommand(['irmtrash'])
             self.admin.assert_icommand(['irm', '-r', '-f', collection_path])
             self.admin.assert_icommand(['irmtrash', '-M'])
+
+
+@unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Checks local resource vault.")
+class test_no_accidental_data_loss_on_unlink__issue_8441(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.admin = session.mkuser_and_return_session("rodsadmin", "otherrods", "rods", lib.get_hostname())
+        self.user = session.mkuser_and_return_session('rodsuser', "alice", "apass", lib.get_hostname())
+
+        self.resource = "leaky_resc"
+        self.vault_path = os.path.join(paths.home_directory(), f"{self.resource}_vault")
+        self.admin.assert_icommand(
+            ["iadmin", "mkresc", self.resource, "unixfilesystem",
+             ":".join([test.settings.HOSTNAME_1, self.vault_path])], "STDOUT")
+
+    @classmethod
+    def tearDownClass(self):
+        self.user.__exit__()
+        self.admin.__exit__()
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.run_icommand(['iadmin', 'rmuser', self.user.username])
+            admin_session.run_icommand(['iadmin', 'rmuser', self.admin.username])
+            admin_session.run_icommand(["iadmin", "rmresc", self.resource])
+
+    def setUp(self):
+        # Define all the paths that will be used by the tests.
+        self.user_collection = "/".join([self.user.session_collection, self.id() + "-coll"])
+        self.admin_collection = "/".join([self.admin.session_collection, self.id() + "-coll"])
+        self.user_data_object = "/".join([self.user_collection, self.id() + ".data"])
+        self.admin_data_object = "/".join([self.admin_collection, self.id() + ".data"])
+        # The physical path is constructed by taking the logical path, removing the zone hint and leading slash, and
+        # concatenating it with the resource vault path. So, we skip the first two elements in the split.
+        self.user_physical_path = os.path.join(
+            self.vault_path, os.path.sep.join(self.user_data_object.split("/")[2:]))
+        self.admin_physical_path = os.path.join(
+            self.vault_path, os.path.sep.join(self.admin_data_object.split("/")[2:]))
+        # Create test collections and data objects owned by each user for use in the tests. Importantly, ensure that the
+        # physical data is in the expected location.
+        self.user.assert_icommand(["imkdir", self.user_collection])
+        self.user.assert_icommand(["itouch", "-R", self.resource, self.user_data_object])
+        self.assertTrue(os.path.exists(self.user_physical_path),
+                        msg=f"Data not created at [{self.user_physical_path}] as expected.")
+        self.admin.assert_icommand(["imkdir", self.admin_collection])
+        self.admin.assert_icommand(["itouch", "-R", self.resource, self.admin_data_object])
+        self.assertTrue(os.path.exists(self.admin_physical_path),
+                        msg=f"Data not created at [{self.admin_physical_path}] as expected.")
+
+    def tearDown(self):
+        self.user.run_icommand(["irm", "-rf", self.user_collection])
+        self.admin.run_icommand(["irm", "-rf", self.admin_collection])
+
+    def assert_unlink_fails(self, owner, executor, collection_permission, object_permission, object_path):
+        # Give specified permissions to the "executor" user by the "owner" user.
+        collection_path = os.path.dirname(object_path)
+        owner.assert_icommand(["ichmod", collection_permission, executor.username, collection_path])
+        owner.assert_icommand(["ichmod", object_permission, executor.username, object_path])
+
+        # Execute unlink on the data object as the "executor" user with irm -f.
+        out, err, rc = executor.run_icommand(["irm", "-f", object_path])
+
+        # Assert that the irm failed.
+        self.assertIn("CAT_NO_ACCESS_PERMISSION", err,
+                      msg=f"Expected CAT_NO_ACCESS_PERMISSION in error output. stderr: [{err}]")
+        self.assertNotEqual(0, rc, msg="Unlink did not return an error code as expected.")
+        self.assertEqual(0, len(out), msg=f"Unexpected output on stdout: [{out}]")
+        # Assert that the unregister failed.
+        self.assertTrue(lib.replica_exists_on_resource(owner, object_path, self.resource),
+                        msg=f"Replica for [{object_path}] was unregistered unexpectedly.")
+
+    def test_as_user_with_modify_on_collection_and_modify_on_object(self):
+        owner = self.admin
+        executor = self.user
+        target_object = self.admin_data_object
+        collection_permission = "modify_object"
+        object_permission = "modify_object"
+        self.assert_unlink_fails(owner, executor, collection_permission, object_permission, target_object)
+        # Assert that the physical data was not unlinked.
+        self.assertTrue(os.path.exists(self.admin_physical_path),
+                        msg=f"Data at [{self.admin_physical_path}] unlinked unexpectedly.")
+
+    def test_as_admin_with_modify_on_collection_and_modify_on_object(self):
+        owner = self.user
+        executor = self.admin
+        target_object = self.user_data_object
+        collection_permission = "modify_object"
+        object_permission = "modify_object"
+        self.assert_unlink_fails(owner, executor, collection_permission, object_permission, target_object)
+        # Assert that the physical data was not unlinked.
+        self.assertTrue(os.path.exists(self.user_physical_path),
+                        msg=f"Data at [{self.user_physical_path}] unlinked unexpectedly.")
