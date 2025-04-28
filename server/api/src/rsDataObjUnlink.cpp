@@ -56,10 +56,10 @@
 #include <string_view>
 #include <chrono>
 
-namespace logger = irods::experimental::log;
-
 namespace
 {
+    using log_api = irods::experimental::log::api;
+
     namespace id = irods::experimental::data_object;
     namespace ir = irods::experimental::replica;
     namespace ill = irods::logical_locking;
@@ -480,7 +480,7 @@ int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
                 fs::server::last_write_time(*rsComm, parent_path, mtime);
             }
             catch (const fs::filesystem_error& e) {
-                logger::api::error(e.what());
+                log_api::error(e.what());
                 return e.code().value();
             }
         }
@@ -504,6 +504,7 @@ int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
     }
 } // rsDataObjUnlink
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 int dataObjUnlinkS(rsComm_t* rsComm,
                    dataObjInp_t* dataObjUnlinkInp,
                    dataObjInfo_t* dataObjInfo)
@@ -543,11 +544,11 @@ int dataObjUnlinkS(rsComm_t* rsComm,
             if (UNREG_OPR != dataObjUnlinkInp->oprType && !has_prefix(dataObjInfo->filePath, vault_path.data())) {
                 dataObjUnlinkInp->oprType = UNREG_OPR;
 
-                logger::api::info("Replica is not in a vault. Unregistering replica and leaving it on "
-                                  "disk as-is [data_object={}, physical_object={}, vault_path={}].",
-                                  dataObjUnlinkInp->objPath,
-                                  dataObjInfo->filePath,
-                                  vault_path);
+                log_api::info("Replica is not in a vault. Unregistering replica and leaving it on "
+                              "disk as-is [data_object={}, physical_object={}, vault_path={}].",
+                              dataObjUnlinkInp->objPath,
+                              dataObjInfo->filePath,
+                              vault_path);
             }
         }
     }
@@ -603,13 +604,13 @@ int dataObjUnlinkS(rsComm_t* rsComm,
         unregDataObj_t unreg_inp{};
         unreg_inp.dataObjInfo = info.get();
         unreg_inp.condInput = &dataObjUnlinkInp->condInput;
-        if (const auto ec = rsUnregDataObj(rsComm, &unreg_inp); ec < 0) {
-            irods::log(LOG_NOTICE, fmt::format(
-                "[{}:{}] - rsUnregDataObj failed "
-                "[error_code=[{}], path=[{}], hierarchy=[{}]",
-                __FUNCTION__, __LINE__, ec, info.logical_path(), info.hierarchy()));
-
-            return ec;
+        if (const auto err = rsUnregDataObj(rsComm, &unreg_inp); err < 0) {
+            log_api::error("[{}] - rsUnregDataObj failed. error_code=[{}], path=[{}], hierarchy=[{}]",
+                           __func__,
+                           err,
+                           info.logical_path(),
+                           info.hierarchy());
+            return err;
         }
     }
 
