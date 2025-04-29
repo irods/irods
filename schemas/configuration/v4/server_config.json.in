@@ -31,7 +31,11 @@
                         "cache_clearer_sleep_time_in_seconds": {"type": "integer"}
                     }
                 },
-                "maximum_size_for_single_buffer_in_megabytes": {"type": "integer"},
+                "maximum_size_for_single_buffer_in_megabytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2047
+                },
                 "maximum_size_of_delay_queue_in_bytes": {"type": "integer"},
                 "maximum_temporary_password_lifetime_in_seconds": {"type": "integer"},
                 "migrate_delay_server_sleep_time_in_seconds":  {"type": "integer"},
