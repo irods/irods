@@ -118,7 +118,7 @@ namespace
         BytesBuf* dataObjOutBBuf)
     {
         char *chksumStr = NULL;
-        const auto free_checksum_str = irods::at_scope_exit{[chksumStr] { std::free(chksumStr); }};
+        const auto free_checksum_str = irods::at_scope_exit{[&chksumStr] { std::free(chksumStr); }};
 
         dataObjInfo_t* dataObjInfo = L1desc[_fd].dataObjInfo;
         copyKeyVal( &dataObjInp->condInput, &dataObjInfo->condInput );
@@ -284,13 +284,18 @@ int rsDataObjGet(
     std::memset(*portalOprOut, 0, sizeof(portalOprOut_t));
 
     try {
+        // The configuration schema ensures that this value stays in range and does not result in an invalid value.
+        const auto buffer_size_in_bytes =
+            irods::get_advanced_setting<const int>(irods::KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
         const auto replica_size = L1desc[fd].dataObjInfo->dataSize;
-        if (const auto single_buffer_size = irods::get_advanced_setting<const int>(irods::KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
-            replica_size <= single_buffer_size && UNKNOWN_FILE_SZ != replica_size)
-        {
-            dataObjOutBBuf->buf = std::malloc(single_buffer_size);
-            std::memset(dataObjOutBBuf, 0, sizeof(single_buffer_size));
-            dataObjOutBBuf->len = single_buffer_size;
+
+        if (replica_size <= buffer_size_in_bytes && UNKNOWN_FILE_SZ != replica_size) {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            dataObjOutBBuf->buf = std::malloc(buffer_size_in_bytes);
+            std::memset(dataObjOutBBuf->buf, 0, buffer_size_in_bytes);
+            dataObjOutBBuf->len = buffer_size_in_bytes;
 
             return single_buffer_get(*rsComm, fd, portalOprOut, dataObjOutBBuf);
         }

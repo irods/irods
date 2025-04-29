@@ -74,7 +74,8 @@
                 },
                 "maximum_size_for_single_buffer_in_megabytes": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "maximum": 2047
                 },
                 "maximum_size_of_delay_queue_in_bytes": {
                     "type": "integer",
