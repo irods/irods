@@ -232,22 +232,6 @@ sColumn( int defineVal, const char *tableName, const char *columnName ) {
     return 0;
 }
 
-/* given a defineValue, return the table and column names;
-   called from icatGeneralUpdate functions */
-int
-sGetColumnInfo( int defineVal, char **tableName, char **columnName ) {
-    int i;
-    for ( i = 0; i < nColumns; i++ ) {
-        if ( Columns[i].defineValue == defineVal ) {
-            *tableName = Columns[i].tableName;
-            *columnName = Columns[i].columnName;
-            return 0;
-        }
-    }
-    return CAT_INVALID_ARGUMENT;
-}
-
-
 /* Determine if a table is present in some sqlText.  The table can be
    a simple table name, or of the form "tableName1 tableName2", where
    1 is being aliased to 2.  If the input table is just one token,

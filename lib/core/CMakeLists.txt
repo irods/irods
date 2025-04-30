@@ -126,7 +126,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsErrorTable.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsGenQuery.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsGenQueryNames.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsGeneralUpdate.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsKeyWdDef.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsLog.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsPackInstruct.h"

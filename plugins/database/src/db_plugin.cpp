@@ -14735,57 +14735,6 @@ irods::error db_gen_query_ticket_setup_op(
 
 } // db_gen_query_ticket_setup_op
 
-// =-=-=-=-=-=-=-
-// from general_query.cpp ::
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-int chl_general_update_impl( generalUpdateInp_t );
-#pragma GCC diagnostic pop
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-irods::error db_general_update_op(
-    irods::plugin_context& _ctx,
-    generalUpdateInp_t*    _update_inp ) {
-#pragma GCC diagnostic pop
-    // =-=-=-=-=-=-=-
-    // check the context
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // check the params
-    if ( !_update_inp ) {
-        return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
-    }
-
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    /*irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }*/
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    int status = chl_general_update_impl(
-                     *_update_inp );
-    if ( status < 0 ) {
-        return ERROR( status, "chl_general_update_impl( failed" );
-    }
-    else {
-        return SUCCESS();
-    }
-
-} // db_general_update_op
-
 auto db_check_permission_to_modify_data_object_op(
     irods::plugin_context& _ctx,
     const rodsLong_t       _data_id) -> irods::error
@@ -15740,13 +15689,6 @@ irods::database* plugin_factory(
         DATABASE_OP_GEN_QUERY,
         function<error(plugin_context&,genQueryInp_t*,genQueryOut_t*)>(
             db_gen_query_op ) );
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    pg->add_operation(
-        DATABASE_OP_GENERAL_UPDATE,
-        function<error(plugin_context&,generalUpdateInp_t*)>(
-            db_general_update_op ) );
-#pragma GCC diagnostic pop
     pg->add_operation(
         DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
         function<error(plugin_context&,const char*,const char*,const char*,int,int)>(

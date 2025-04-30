@@ -5,7 +5,6 @@
 #include "irods/ruleExecSubmit.h"
 #include "irods/rcConnect.h"
 #include "irods/icatStructs.hpp"
-#include "irods/rodsGeneralUpdate.h"
 #include "irods/specificQuery.h"
 #include "irods/irods_resource_manager.hpp"
 
@@ -55,9 +54,6 @@ int chlGenQueryAccessControlSetup( const char *user, const char *zone, const cha
 int chlGenQueryTicketSetup( const char *ticket, const char *clientAddr );
 int chlSpecificQuery( specificQueryInp_t specificQueryInp,
                       genQueryOut_t *genQueryOut );
-
-int chlGeneralUpdate(generalUpdateInp_t generalUpdateInp)
-    __attribute__((deprecated("GeneralUpdate is deprecated. Its use should be avoided.")));
 
 int chlDelCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo );
 int chlDelColl( rsComm_t *rsComm, collInfo_t *collInfo );

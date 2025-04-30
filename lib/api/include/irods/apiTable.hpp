@@ -79,7 +79,6 @@
 #  include "irods/rsFileWrite.hpp"
 #  include "irods/rsGenQuery.hpp"
 #  include "irods/rsGeneralAdmin.hpp"
-#  include "irods/rsGeneralUpdate.hpp"
 #  include "irods/rsGetHierFromLeafId.hpp"
 #  include "irods/rsGetHierarchyForResc.hpp"
 #  include "irods/rsGetHostForGet.hpp"
@@ -229,7 +228,6 @@
 #define RS_FILE_UNLINK                     NULLPTR_FOR_CLIENT_TABLE(rsFileUnlink)
 #define RS_FILE_WRITE                      NULLPTR_FOR_CLIENT_TABLE(rsFileWrite)
 #define RS_GENERAL_ADMIN                   NULLPTR_FOR_CLIENT_TABLE(rsGeneralAdmin)
-#define RS_GENERAL_UPDATE                  NULLPTR_FOR_CLIENT_TABLE(rsGeneralUpdate)
 #define RS_GENQUERY2                       NULLPTR_FOR_CLIENT_TABLE(rs_genquery2)
 #define RS_GEN_QUERY                       NULLPTR_FOR_CLIENT_TABLE(rsGenQuery)
 #define RS_GET_HIER_FOR_RESC               NULLPTR_FOR_CLIENT_TABLE(rsGetHierarchyForResc)
@@ -725,17 +723,6 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_get_temp_password", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_GETTEMPPASSWORDOUT
     },
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    {
-        GENERAL_UPDATE_AN, RODS_API_VERSION,
-        LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "GeneralUpdateInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,generalUpdateInp_t*)>(RS_GENERAL_UPDATE)),
-        "api_general_update", irods::clearInStruct_noop, irods::clearOutStruct_noop,
-        (funcPtr)CALL_GENERALUPDATEINP
-    },
-#pragma GCC diagnostic pop
     {
         MOD_DATA_OBJ_META_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ModDataObjMeta_PI", 0, NULL, 0,

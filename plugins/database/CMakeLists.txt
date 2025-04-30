@@ -7,7 +7,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/db_plugin.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query_setup.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/general_update.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_catalog_properties.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/low_level_odbc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/mid_level_routines.cpp"

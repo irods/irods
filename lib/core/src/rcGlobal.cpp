@@ -10,7 +10,6 @@
 #include "irods/rodsPackTable.h"		/* globally declare RodsPackTable */
 #include "irods/objInfo.h"
 #include "irods/rodsGenQuery.h"
-#include "irods/rodsGeneralUpdate.h"
 #include "irods/guiProgressCallback.h"
 
 int ProcessType = CLIENT_PT;

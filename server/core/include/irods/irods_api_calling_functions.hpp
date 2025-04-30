@@ -569,14 +569,6 @@ int call_getTempPasswordOut(
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-[[deprecated("GeneralUpdate is deprecated. Its use should be avoided.")]] int
-call_generalUpdateInp(irods::api_entry*, rsComm_t*, generalUpdateInp_t*);
-#  define CALL_GENERALUPDATEINP call_generalUpdateInp
-#else
-#define CALL_GENERALUPDATEINP nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
 int call_modDataObjMetaInp(
     irods::api_entry*,
     rsComm_t*,
