@@ -14,6 +14,7 @@ Checks:
     cert-flp30-c,
     cert-oop*,
     cppcoreguidelines-*,
+    -cppcoreguidelines-avoid-do-while,
     concurrency-*,
     google-build-namespaces,
     google-build-using-namespace,
@@ -39,6 +40,7 @@ WarningsAsErrors:
     boost-*,
     bugprone-*,
     -bugprone-easily-swappable-parameters,
+    -bugprone-unchecked-optional-access,
     clang-diagnostic-*,
     clang-analyzer-*,
     cert-dcl*,
@@ -69,12 +71,15 @@ WarningsAsErrors:
     misc-*,
     modernize-*,
     -modernize-avoid-c-arrays,
+    -modernize-macro-to-enum,
     -modernize-use-trailing-return-type,
     performance-*,
     portability-std-allocator-const,
     readability-*,
     -readability-avoid-const-params-in-decls,
     -readability-function-cognitive-complexity,
+    -readability-function-size,
+    -readability-identifier-length,
     -readability-implicit-bool-conversion,
     -readability-magic-numbers,
     -readability-named-parameter
@@ -116,5 +121,9 @@ CheckOptions:
     value:           'false'
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
+  - key:             readability-function-cognitive-complexity.DescribeBasicIncrements
+    value:           'false'
+  - key:             readability-function-cognitive-complexity.IgnoreMacros
+    value:           'true'
 ...
 
