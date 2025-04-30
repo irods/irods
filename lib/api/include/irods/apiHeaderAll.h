@@ -87,7 +87,6 @@
 #include "irods/dataObjTruncate.h"
 #include "irods/fileTruncate.h"
 #include "irods/subStructFileTruncate.h"
-#include "irods/generalUpdate.h"
 #include "irods/subStructFileGet.h"
 #include "irods/subStructFilePut.h"
 #include "irods/syncMountedColl.h"

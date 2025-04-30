@@ -149,7 +149,6 @@ namespace irods::client_api_allowlist
             MOD_ACCESS_CONTROL_AN,
             RULE_EXEC_MOD_AN,
             GET_TEMP_PASSWORD_AN,
-            GENERAL_UPDATE_AN,
             READ_COLLECTION_AN,
             USER_ADMIN_AN,
             //GENERAL_ROW_INSERT_AN,

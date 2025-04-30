@@ -611,19 +611,6 @@ int call_ruleExecModInp(
                    _inp);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-int call_generalUpdateInp(
-    irods::api_entry*    _api,
-    rsComm_t*            _comm,
-    generalUpdateInp_t* _inp ) {
-    return _api->call_handler<
-               generalUpdateInp_t*>(
-                   _comm,
-                   _inp);
-}
-#pragma GCC diagnostic pop
-
 int call_modDataObjMetaInp(
     irods::api_entry*    _api,
     rsComm_t*            _comm,

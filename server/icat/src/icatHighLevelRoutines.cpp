@@ -209,11 +209,8 @@ int chlClose() {
 } // chlClose
 
 // =-=-=-=-=-=-=-
-//This is used by the icatGeneralUpdate.c functions to get the icss
-//structure.  icatGeneralUpdate.c and this (icatHighLevelRoutine.c)
-//are actually one module but in two separate source files (as they
-//got larger) so this is a 'glue' that binds them together.  So this
-//is mostly an 'internal' function too.
+//This is used by the general_query.cpp functions to get the icss
+//structure. So this is mostly an 'internal' function too.
 int chlGetRcs(
     icatSessionStruct** _icss ) {
     // =-=-=-=-=-=-=-
@@ -4479,52 +4476,6 @@ int chlGenQueryTicketSetup(
 
 
 } // chlGenQueryTicketSetup
-
-int chlGeneralUpdate(
-    generalUpdateInp_t _update_inp ) {
-    // =-=-=-=-=-=-=-
-    // call factory for database object
-    irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // resolve a plugin for that object
-    irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
-
-    // =-=-=-=-=-=-=-
-    // call the operation on the plugin
-    ret = db->call <
-          generalUpdateInp_t* > ( 0,
-                                  irods::DATABASE_OP_GENERAL_UPDATE,
-                                  ptr,
-                                  &_update_inp );
-
-    return ret.code();
-
-} // chlGeneralUpdate
 
 int chlGetReplListForLeafBundles(
     rodsLong_t                  _count,
