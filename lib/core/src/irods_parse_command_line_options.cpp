@@ -253,6 +253,7 @@ static int parse_program_options(
 
 } // parse_program_options
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 static int build_irods_path_structure(const path_list_t& _path_list,
                                       const RodsArguments& _rods_args,
                                       rodsEnv* _rods_env,
@@ -314,6 +315,11 @@ static int build_irods_path_structure(const path_list_t& _path_list,
     }
 
     if ( _dst_type != NO_INPUT_T ) {
+        if (nullptr != _rods_paths->destPath) {
+            clearRodsPath(_rods_paths->destPath);
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            std::free(_rods_paths->destPath);
+        }
         _rods_paths->destPath = ( rodsPath_t* )malloc( sizeof( rodsPath_t ) );
         memset( _rods_paths->destPath, 0, sizeof( rodsPath_t ) );
         if ( _path_list.size() > 1 ) {
