@@ -35,7 +35,9 @@ jobs:
                   git config --global clangFormat.extensions 'h,h.in,c,c.in,hpp,hpp.in,cpp,cpp.in'
 
                   # Diff the target branch with all changes made within the pull request.
+                  set +e
                   diff_output=$(git clang-format --diff origin/$GITHUB_BASE_REF)
+                  set -e
 
                   if [[ "$diff_output" == *"no modified files to format"* ]] || [[ "$diff_output" == *"clang-format did not modify any files"* ]]; then
                       echo "Source code is properly formatted.";
