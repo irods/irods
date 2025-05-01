@@ -478,6 +478,7 @@ namespace irods::authentication
             return resp;
         } // native_auth_agent_request
 
+        // NOLINTNEXTLINE(readability-function-cognitive-complexity)
         json native_auth_agent_response(rsComm_t& comm, const json& req)
         {
             irods_auth::throw_if_request_message_is_missing_key(
@@ -518,6 +519,16 @@ namespace irods::authentication
             authCheckInp.username = const_cast<char*>(username.data());
 
             authCheckOut_t* authCheckOut = nullptr;
+            const auto free_authCheckOut = irods::at_scope_exit{[&authCheckOut] {
+                if (nullptr != authCheckOut) {
+                    if (nullptr != authCheckOut->serverResponse) {
+                        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                        std::free(authCheckOut->serverResponse);
+                    }
+                    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                    std::free(authCheckOut);
+                }
+            }};
             if (LOCAL_HOST == rodsServerHost->localFlag) {
                 status = rsAuthCheck(&comm, &authCheckInp, &authCheckOut);
             }
@@ -662,13 +673,6 @@ namespace irods::authentication
             else {          /* proxyUser and clientUser are the same */
                 comm.proxyUser.authInfo.authFlag =
                     comm.clientUser.authInfo.authFlag = authCheckOut->privLevel;
-            }
-
-            if ( authCheckOut != NULL ) {
-                if ( authCheckOut->serverResponse != NULL ) {
-                    free( authCheckOut->serverResponse );
-                }
-                free( authCheckOut );
             }
 
             return resp;
