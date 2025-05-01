@@ -67,7 +67,7 @@ jobs:
 
                   # Run clang-tidy on the changes.
                   git diff -U0 origin/$GITHUB_BASE_REF | \
-                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet | \
+                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 300 | \
                       tee clang_tidy_output.txt
 
                   # Return a failure if the output contains a clang-tidy error.
