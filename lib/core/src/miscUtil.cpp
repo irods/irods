@@ -249,8 +249,9 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
             rstrcpy( rodsPath->chksum, rodsObjStatOut->chksum, NAME_LEN );
         }
     }
-    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
-    std::free(rodsPath->rodsObjStat);
+    if (nullptr != rodsPath->rodsObjStat) {
+        freeRodsObjStat(rodsPath->rodsObjStat);
+    }
     rodsPath->rodsObjStat = rodsObjStatOut;
 
     return rodsPath->objState;
