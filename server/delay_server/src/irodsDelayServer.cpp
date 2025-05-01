@@ -600,9 +600,8 @@ namespace
 
         ruleExecSubmitInp_t rule_exec_submit_inp{};
 
-        irods::at_scope_exit at_scope_exit{[&rule_exec_submit_inp] {
-            freeBBuf(rule_exec_submit_inp.packedReiAndArgBBuf);
-        }};
+        const auto free_rule_exec_submit_inp_members =
+            irods::at_scope_exit{[&rule_exec_submit_inp] { clearRuleExecSubmitInput(&rule_exec_submit_inp); }};
 
         ix::client_connection conn = get_new_connection(std::nullopt);
 
