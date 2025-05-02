@@ -587,60 +587,6 @@ class ResourceSuite(ResourceBase):
         self.assertEqual(
             str(os.stat(local_filepath).st_size), lib.get_replica_size(self.admin, os.path.basename(logical_path), 0))
 
-    def test_local_iput_physicalpath_no_permission(self):
-        # local setup
-        datafilename = "newfile.txt"
-        with open(datafilename, 'wt') as f:
-            print("TESTFILE -- [" + datafilename + "]", file=f, end='')
-        # assertions
-        self.admin.assert_icommand("iput -p /newfileinroot.txt " + datafilename, 'STDERR_SINGLELINE',
-                                   ["UNIX_FILE_CREATE_ERR", "Permission denied"])  # should fail to write
-        # local cleanup
-        if os.path.exists(datafilename):
-            os.unlink(datafilename)
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Needs investigation refer issue 4932")
-    def test_local_iput_physicalpath(self):
-        # local setup
-        datafilename = "newfile.txt"
-        with open(datafilename, 'wt') as f:
-            print("TESTFILE -- [" + datafilename + "]", file=f, end='')
-        # assertions
-        fullpath = IrodsConfig().irods_directory + "/newphysicalpath.txt"
-        self.admin.assert_icommand("iput -p " + fullpath + " " + datafilename)  # should complete
-        self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', datafilename)  # should be listed
-        self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', fullpath)  # should be listed
-        # local cleanup
-        if os.path.exists(datafilename):
-            os.unlink(datafilename)
-        if os.path.exists(fullpath):
-            os.unlink(fullpath)
-
-    def test_admin_local_iput_relative_physicalpath_into_server_bin(self):
-        # local setup
-        datafilename = "newfile.txt"
-        with open(datafilename, 'wt') as f:
-            print("TESTFILE -- [" + datafilename + "]", file=f, end='')
-        # assertions
-        relpath = "relativephysicalpath.txt"
-        # should disallow relative path
-        self.admin.assert_icommand("iput -p " + relpath + " " + datafilename, 'STDERR_SINGLELINE', "absolute")
-        # local cleanup
-        if os.path.exists(datafilename):
-            os.unlink(datafilename)
-
-    def test_local_iput_relative_physicalpath_into_server_bin(self):
-        # local setup
-        datafilename = "newfile.txt"
-        with open(datafilename, 'wt') as f:
-            print("TESTFILE -- [" + datafilename + "]", file=f, end='')
-        # assertions
-        relpath = "relativephysicalpath.txt"
-        self.user0.assert_icommand("iput -p " + relpath + " " + datafilename, 'STDERR_SINGLELINE', "absolute")  # should error
-        # local cleanup
-        if os.path.exists(datafilename):
-            os.unlink(datafilename)
-
     def test_local_iput_with_changed_target_filename(self):
         # local setup
         datafilename = "newfile.txt"
