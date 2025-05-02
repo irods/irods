@@ -31,8 +31,6 @@ typedef struct OpenStat {
  *          FORCE_FLAG_KW - overwrite an existing data object
  *          REG_CHKSUM_KW - compute the checksum value
  *          VERIFY_CHKSUM_KW - compute and verify the checksum on the data.
- *          FILE_PATH_KW - "value" = the physical path of the
- *              destination file. Valid only if O_CREAT is on.
  *          REPL_NUM_KW  - "value" = The replica number of the copy to
  *              open.
  *          DEST_RESC_NAME_KW - "value" = The destination Resource. Valid

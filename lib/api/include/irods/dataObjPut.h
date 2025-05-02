@@ -21,8 +21,6 @@
  *          DATA_TYPE_KW - "value" = the data type of the file.
  *          REPL_NUM_KW  - "value" = The replica number of the copy to
  *              upload.
- *          FILE_PATH_KW - "value" = the physical path of the
- *              destination file. Valid only if O_CREAT is on.
  *          DEST_RESC_NAME_KW - "value" = The destination Resource. Valid
  *              only if O_CREAT is on.
  *   return value - The status of the operation.

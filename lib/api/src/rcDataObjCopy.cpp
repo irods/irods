@@ -57,8 +57,6 @@
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. This keyWd has no value.
  *    \n DEST_RESC_NAME_KW - The resource to store this data object
- *    \n FILE_PATH_KW - The physical file path for this data object if the
- *             normal resource vault is not used.
  *    \n RBUDP_TRANSFER_KW - (Deprecated) use RBUDP for data transfer. This keyWd has no
  *             value
  *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second

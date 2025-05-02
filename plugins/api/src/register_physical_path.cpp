@@ -289,6 +289,59 @@ namespace
         return 0;
     } // filePathRegRepl
 
+    auto initDataObjInfoWithInp(dataObjInfo_t* dataObjInfo, dataObjInp_t* dataObjInp) -> int
+    {
+        namespace ix = irods::experimental;
+
+        if (!dataObjInp || !dataObjInfo) {
+            rodsLog(LOG_ERROR, "[%s] - null input", __FUNCTION__);
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+        auto kvp = ix::make_key_value_proxy(dataObjInp->condInput);
+        memset(dataObjInfo, 0, sizeof(dataObjInfo_t));
+
+        rstrcpy(dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+
+        if (kvp.contains(DATA_ID_KW)) {
+            dataObjInfo->dataId = std::atoll(kvp.at(DATA_ID_KW).value().data());
+        }
+
+        if (kvp.contains(RESC_NAME_KW)) {
+            const auto resc_name = kvp.at(RESC_NAME_KW).value();
+            rstrcpy(dataObjInfo->rescName, resc_name.data(), NAME_LEN);
+            if (!kvp.contains(RESC_HIER_STR_KW)) {
+                rstrcpy(dataObjInfo->rescHier, resc_name.data(), MAX_NAME_LEN);
+            }
+        }
+
+        if (kvp.contains(RESC_HIER_STR_KW)) {
+            auto hier = kvp.at(RESC_HIER_STR_KW).value();
+            rstrcpy(dataObjInfo->rescHier, hier.data(), MAX_NAME_LEN);
+        }
+
+        irods::error ret = resc_mgr.hier_to_leaf_id(dataObjInfo->rescHier, dataObjInfo->rescId);
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+        }
+
+        snprintf(dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);
+
+        if (kvp.contains(DATA_TYPE_KW)) {
+            auto data_type = kvp.at(DATA_TYPE_KW).value();
+            rstrcpy(dataObjInfo->dataType, data_type.data(), NAME_LEN);
+        }
+        else {
+            rstrcpy(dataObjInfo->dataType, "generic", NAME_LEN);
+        }
+
+        if (kvp.contains(FILE_PATH_KW)) {
+            auto file_path = kvp.at(FILE_PATH_KW).value();
+            rstrcpy(dataObjInfo->filePath, file_path.data(), MAX_NAME_LEN);
+        }
+
+        return 0;
+    } // initDataObjInfoWithInp
+
     auto filePathReg(RsComm* _comm, DataObjInp* _inp, const std::string_view _resc, BytesBuf** _out) -> int
     {
         namespace fs = irods::experimental::filesystem;
