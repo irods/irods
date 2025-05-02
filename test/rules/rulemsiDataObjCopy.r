@@ -6,7 +6,6 @@ myTestRule {
 #    destRescName
 #    forceFlag=
 #    numThreads
-#    filePath="Physical file path of the uploaded file on the server"
 #    dataType
 #    verifyChksum=
 # Output parameter is:
