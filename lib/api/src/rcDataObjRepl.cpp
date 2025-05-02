@@ -48,8 +48,6 @@
  *    \n DEST_RESC_NAME_KW - The resource to store the new replica.
  *    \n ADMIN_KW - admin user backup/replicate other user's files.
  *            This keyWd has no value.
- *    \n FILE_PATH_KW - The physical file path for this data object if the
- *             normal resource vault is not used.
  *
  * \return integer
  * \retval 0 on success

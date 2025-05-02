@@ -202,18 +202,6 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    if ( rodsArgs->physicalPath == True ) {
-        if ( rodsArgs->physicalPathString == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "initCondForCp: NULL physicalPathString error" );
-            return USER__NULL_INPUT_ERR;
-        }
-        else {
-            addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, FILE_PATH_KW,
-                       rodsArgs->physicalPathString );
-        }
-    }
-
     if ( rodsArgs->resource == True ) {
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
