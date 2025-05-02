@@ -9,7 +9,6 @@ myTestRule {
 #     forceFlag=
 #     replNum - the replica number to overwrite
 #     numThreads
-#     filePath - the physical file path of the uploaded file on the server
 #     dataType
 #     verifyChksum=
 # Output parameter is:

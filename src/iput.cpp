@@ -115,12 +115,12 @@ usage( FILE* _fout ) {
 
     const char *msgs[] = {
         "Usage: iput [-abfIkKPrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
-        "             [-p physicalPath] [-R resource] [-X restartFile] [--ignore-symlinks]",
+        "             [-R resource] [-X restartFile] [--ignore-symlinks]",
         "             [--lfrestart lfRestartFile] [--retries count]",
         "             [--purgec] [--kv_pass=key-value-string] [--metadata=avu-string]",
         "             [--acl=acl-string]  localSrcFile|localSrcDir ...  destDataObj|destColl",
         "Usage: iput [-abfIkKPtTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
-        "             [-p physicalPath] [-R resource] [-X restartFile] [--ignore-symlinks]",
+        "             [-R resource] [-X restartFile] [--ignore-symlinks]",
         "             [--lfrestart lfRestartFile] [--retries count]",
         "             [--purgec] [--kv_pass=key-value-string] [--metadata=avu-string]",
         "             [--acl=acl-string]  localSrcFile",
@@ -187,7 +187,6 @@ usage( FILE* _fout ) {
         "       decides the number of threads to use.",
         " --purgec  Purge the staged cache copy after uploading an object to a",
         "     COMPOUND resource",
-        " -p  physicalPath - the absolute physical path of the uploaded file on the server ",
         " -P  output the progress of the upload.",
         " -R  resource - specifies the resource to store to. This can also be specified",
         "     in your environment or via a rule set up by the administrator.",
