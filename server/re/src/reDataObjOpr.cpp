@@ -1161,9 +1161,8 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
-    validKwFlags = OBJ_PATH_FLAG   | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
-                   DATA_TYPE_FLAG  | VERIFY_CHKSUM_FLAG  |
-                   FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
+    validKwFlags =
+        OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, &myDataObjCopyInp->destDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
@@ -1308,8 +1307,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
-    validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
-                   REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
+    validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
                    ALL_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, dataObjInp,
                   LOCAL_PATH_KW, validKwFlags, &outBadKeyWd );

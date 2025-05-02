@@ -42,8 +42,6 @@
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n DATA_TYPE_KW - the data type of the data object.
  *    \n DEST_RESC_NAME_KW - The resource to store this data object
- *    \n FILE_PATH_KW - The physical file path for this data object if the
- *             normal resource vault is not used.
  *    \n FORCE_FLAG_KW - overwrite existing copy. This keyWd has no value
  *
  * \return integer

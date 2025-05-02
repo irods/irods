@@ -57,8 +57,6 @@
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. This keyWd has no value.
  *    \n DEST_RESC_NAME_KW - The resource to store this data object
- *    \n FILE_PATH_KW - The physical file path for this data object if the
- *             normal resource vault is not used.
  *
  * \return integer
  * \retval 0 on success
