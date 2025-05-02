@@ -35,7 +35,6 @@
 // =-=-=-=-=-=-=-
 // debug flag used across all icat fcns
 int logSQL = 0;
-int logSQLGenQuery = 0;
 
 // =-=-=-=-=-=-=-
 // holds the flavor of the catalog for the
@@ -55,11 +54,9 @@ int chlDebug(
     // if mode contains 'sql' then turn SQL logging on
     if ( mode.find( "sql" ) != std::string::npos ) {
         logSQL = 1;
-        logSQLGenQuery = 1;//chlDebugGenQuery( 1 );
     }
     else {
         logSQL = 0;
-        logSQLGenQuery = 1;//chlDebugGenQuery( 0 );
     }
 
     return 0;

@@ -152,7 +152,6 @@ int sTable( const char *tableName, const char *tableAlias, int cycler );
 int sColumn( int defineVal, const char *tableName, const char *columnName );
 
 int chlDebug( const char *debugMode );
-int chlDebugGenQuery( int mode );
 int chlInsRuleTable( rsComm_t *rsComm,
                      const char *baseName, const char *priorityStr, const char *ruleName,
                      const char *ruleHead, const char *ruleCondition, const char *ruleAction,

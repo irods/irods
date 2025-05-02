@@ -96,6 +96,7 @@ namespace irods::experimental::log
         struct agent_factory {};
         struct agent {};
         struct delay_server {};
+        struct genquery1 {};
         struct genquery2 {};
         struct resource {};
         struct database {};
@@ -151,6 +152,7 @@ namespace irods::experimental::log
     using agent_factory  = logger<category::agent_factory>;
     using agent          = logger<category::agent>;
     using delay_server   = logger<category::delay_server>;
+    using genquery1      = logger<category::genquery1>;
     using genquery2      = logger<category::genquery2>;
     using resource       = logger<category::resource>;
     using database       = logger<category::database>;
@@ -853,6 +855,15 @@ namespace irods::experimental::log
 
         friend class logger<category::delay_server>;
     }; // class logger_config<category::delay_server>
+
+    template <>
+    class logger_config<category::genquery1>
+    {
+        static constexpr const char* const name = "genquery1";
+        inline static level level = level::info; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
+        friend class logger<category::genquery1>;
+    }; // class logger_config<category::genquery1>
 
     template <>
     class logger_config<category::genquery2>

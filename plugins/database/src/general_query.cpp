@@ -37,8 +37,7 @@
 #include <algorithm>
 
 using log_db = irods::experimental::log::database;
-
-extern int logSQLGenQuery;
+using log_gq = irods::experimental::log::genquery1;
 
 void icatGeneralQuerySetup();
 int insertWhere( char *condition, int option );
@@ -148,7 +147,7 @@ int fkFindName( const char *tableName ) {
             return i;
         }
     }
-    rodsLog( LOG_ERROR, "fkFindName table %s unknown", tableName );
+    log_gq::error("{}: fkFindName table [{}] unknown", __func__, tableName);
     return 0;
 }
 
@@ -160,7 +159,7 @@ tables.
 int
 sFklink( const char *table1, const char *table2, const char *connectingSQL ) {
     if ( nLinks >= MAX_LINKS_TABLES_OR_COLUMNS ) {
-        rodsLog( LOG_ERROR, "fklink table full %d", CAT_TOO_MANY_TABLES );
+        log_gq::error("{}: fklink table full, error_code=[{}]", __func__, CAT_TOO_MANY_TABLES);
         return CAT_TOO_MANY_TABLES;
     }
     Links[nLinks].table1 = fkFindName( table1 );
@@ -205,7 +204,7 @@ sTableInit() {
 int
 sTable( const char *tableName, const char *tableAlias, int cycler ) {
     if ( nTables >= MAX_LINKS_TABLES_OR_COLUMNS ) {
-        rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
+        log_gq::error("{}: sTable table full, error_code=[{}]", __func__, CAT_TOO_MANY_TABLES);
         return CAT_TOO_MANY_TABLES;
     }
     snprintf( Tables[nTables].tableName, sizeof( Tables[nTables].tableName ), "%s", tableName );
@@ -221,7 +220,7 @@ sTable( const char *tableName, const char *tableAlias, int cycler ) {
 int
 sColumn( int defineVal, const char *tableName, const char *columnName ) {
     if ( nColumns >= MAX_LINKS_TABLES_OR_COLUMNS ) {
-        rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
+        log_gq::error("{}: sTable table full, error_code=[{}]", __func__, CAT_TOO_MANY_TABLES);
         return CAT_TOO_MANY_TABLES;
     }
     snprintf( Columns[nColumns].tableName, sizeof( Columns[nColumns].tableName ), "%s", tableName );
@@ -1246,7 +1245,8 @@ addInClauseToWhereForParentOf( char *inArg )
     // Making sure that the separator has a single char
     if (separator.size() > 1)
     {
-        rodsLog( LOG_ERROR, "irods::get_virtual_path_separator() returned a string with more than one character.");
+        log_gq::error(
+            "{}: irods::get_virtual_path_separator() returned a string with more than one character.", __func__);
         return BAD_FUNCTION_CALL;
     }
 
@@ -1259,7 +1259,7 @@ addInClauseToWhereForParentOf( char *inArg )
     }
     catch ( const boost::bad_function_call& )
     {
-        rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
+        log_gq::error("{}: boost::split threw boost::bad_function_call", __func__);
         return BAD_FUNCTION_CALL;
     }
 
@@ -1780,8 +1780,10 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
             int status = parseUserName( genQueryInp.sqlCondInp.value[i], userName,
                                         userZone );
             if ( status ) {
-                rodsLog( LOG_ERROR, "parseUserName failed in generateSpecialQuery on %s with status %d.",
-                         genQueryInp.sqlCondInp.value[i], status );
+                log_gq::error("{}: parseUserName failed in generateSpecialQuery on [{}] with status [{}].",
+                              __func__,
+                              genQueryInp.sqlCondInp.value[i],
+                              status);
                 return status;
             }
             if ( userZone[0] == '\0' ) {
@@ -1791,12 +1793,11 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
                 }
 
                 snprintf( userZone, sizeof( userZone ), "%s", zoneName.c_str() );
-                rodsLog( LOG_ERROR, "userZone1=:%s:\n", userZone );
+                log_gq::error("{}: userZone1=[{}]", __func__, userZone);
             }
-            rodsLog( LOG_DEBUG, "spQuery(1) userZone2=:%s:\n", userZone );
-            rodsLog( LOG_DEBUG, "spQuery(1) userName=:%s:\n", userName );
-            rodsLog( LOG_DEBUG, "spQuery(1) in=:%s:\n",
-                     genQueryInp.sqlCondInp.value[i] );
+            log_gq::debug("{}: spQuery(1) userZone2=[{}]", __func__, userZone);
+            log_gq::debug("{}: spQuery(1) userName=[{}]", __func__, userName);
+            log_gq::debug("{}: spQuery(1) in=[{}]", __func__, genQueryInp.sqlCondInp.value[i]);
             cllBindVars[cllBindVarCount++] = userName;
             cllBindVars[cllBindVarCount++] = userZone;
             cllBindVars[cllBindVarCount++] = userName;
@@ -1812,10 +1813,9 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
     }
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_R_RESC_NAME ) {
-            rodsLog( LOG_DEBUG, "spQuery(2) userZone2=:%s:\n", userZone );
-            rodsLog( LOG_DEBUG, "spQuery(2) userName=:%s:\n", userName );
-            rodsLog( LOG_DEBUG, "spQuery(2) in=:%s:\n",
-                     genQueryInp.sqlCondInp.value[i] );
+            log_gq::debug("{}: spQuery(2) userZone2=[{}]", __func__, userZone);
+            log_gq::debug("{}: spQuery(2) userName=[{}]", __func__, userName);
+            log_gq::debug("{}: spQuery(2) in=[{}]", __func__, genQueryInp.sqlCondInp.value[i]);
             snprintf( rescName, sizeof( rescName ), "%s", genQueryInp.sqlCondInp.value[i] );
             cllBindVars[cllCounter++] = rescName;
             cllBindVars[cllCounter++] = userName;
@@ -1905,8 +1905,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
                           genQueryInp.selectInp.value[i] & 0xf, 0 );
         if ( table < 0 ) {
             std::cerr << irods::stacktrace().dump(); // XXXX - JMC
-            rodsLog( LOG_ERROR, "Table for column %d not found\n",
-                     genQueryInp.selectInp.inx[i] );
+            log_gq::error("{}: Table for column [{}] not found", __func__, genQueryInp.selectInp.inx[i]);
             return CAT_UNKNOWN_TABLE;
         }
 
@@ -1957,8 +1956,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
                           castOption );
         if ( table < 0 ) {
             std::cerr << irods::stacktrace().dump(); // XXXX - JMC
-            rodsLog( LOG_ERROR, "Table for column %d not found\n",
-                     genQueryInp.sqlCondInp.inx[i] );
+            log_gq::error("{}: Table for column [{}] not found", __func__, genQueryInp.sqlCondInp.inx[i]);
             return CAT_UNKNOWN_TABLE;
         }
         if ( Tables[table].cycler < 1 ) {
@@ -1982,7 +1980,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 
     keepVal = tScan( startingTable, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
-        rodsLog( LOG_ERROR, "error failed to link tables\n" );
+        log_gq::error("{}: error failed to link tables", __func__);
         return CAT_FAILED_TO_LINK_TABLES;
     }
     else {
@@ -2142,8 +2140,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         if ( strcmp( genQueryInp.condInput.keyWord[i],
                      TICKET_KW ) == 0 ) {
             /* for now, log it but the one used is the session ticket */
-            rodsLog( LOG_NOTICE, "ticket input, value: %s",
-                     genQueryInp.condInput.value[i] );
+            log_gq::debug("{}: ticket input, value: [{}]", __func__, genQueryInp.condInput.value[i]);
         }
     }
     if ( genQueryInp.condInput.len == 1 &&
@@ -2303,7 +2300,7 @@ int chl_gen_query_access_control_setup_impl(
     if ( !rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) ) ) {
         return USER_STRLEN_TOOLONG;
     }
-    rodsLog(LOG_DEBUG, "session ticket setup, value: %s", ticket);
+    log_gq::debug("{}: session ticket setup, value: [{}]", __func__, ticket);
     return 0;
 }
 
@@ -2329,10 +2326,6 @@ int chl_gen_query_access_control_setup_impl(
 #else
     static int recursiveCall = 0;
 #endif
-
-    if ( logSQLGenQuery ) {
-        rodsLog( LOG_SQL, "chlGenQuery" );
-    }
 
     icatSessionStruct *icss = 0;
 
@@ -2361,22 +2354,8 @@ int chl_gen_query_access_control_setup_impl(
         if ( status != 0 ) {
             return status;
         }
-        if ( logSQLGenQuery ) {
-            if ( genQueryInp.rowOffset == 0 ) {
-                rodsLog( LOG_SQL, "chlGenQuery SQL 1" );
-            }
-            else {
-                rodsLog( LOG_SQL, "chlGenQuery SQL 2" );
-            }
-        }
 
-        if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {
-            /* For Oracle, done just below, for Postgres a little later */
-            if ( logSQLGenQuery ) {
-                rodsLog( LOG_SQL, "chlGenQuery SQL 3" );
-            }
-        }
-
+        /* For Oracle, done just below, for Postgres a little later */
 #if ORA_ICAT
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {
             int cllBindVarCountSave;
@@ -2386,9 +2365,7 @@ int chl_gen_query_access_control_setup_impl(
                                                   icss );
             if ( status < 0 ) {
                 if ( status != CAT_NO_ROWS_FOUND ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlGenQuery cmlGetIntegerValueFromSqlV3 failure %d",
-                             status );
+                    log_gq::error("{}: chlGenQuery cmlGetIntegerValueFromSqlV3 failure [{}]", __func__, status);
                 }
                 return status;
             }
@@ -2403,9 +2380,7 @@ int chl_gen_query_access_control_setup_impl(
                                         genQueryInp.rowOffset, icss );
         if ( status < 0 ) {
             if ( status != CAT_NO_ROWS_FOUND ) {
-                rodsLog( LOG_NOTICE,
-                         "chlGenQuery cmlGetFirstRowFromSql failure %d",
-                         status );
+                log_gq::error("{}: chlGenQuery cmlGetFirstRowFromSql failure [{}]", __func__, status);
             }
 #if ORA_ICAT
 #else
@@ -2591,10 +2566,4 @@ int chl_gen_query_access_control_setup_impl(
     }
     return 0;
 
-}
-
-int
-chlDebugGenQuery( int mode ) {
-    logSQLGenQuery = mode;
-    return 0;
 }
