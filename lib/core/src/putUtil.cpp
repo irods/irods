@@ -549,28 +549,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 #endif
 
-    if ( rodsArgs->physicalPath == True ) {
-        if ( rodsArgs->physicalPathString == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "initCondForPut: NULL physicalPathString error" );
-            return USER__NULL_INPUT_ERR;
-        }
-        else {
-            fs::path slash( "/" );
-            std::string preferred_slash = slash.make_preferred().native();
-            if ( preferred_slash[0] != rodsArgs->physicalPathString[0] ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "initCondForPut: physical path [%s] must be absolute, not relative",
-                    rodsArgs->physicalPathString );
-                return USER_INPUT_PATH_ERR;
-            }
-
-            addKeyVal( &dataObjOprInp->condInput, FILE_PATH_KW,
-                       rodsArgs->physicalPathString );
-        }
-    }
-
     if ( rodsArgs->resource == True ) {
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,

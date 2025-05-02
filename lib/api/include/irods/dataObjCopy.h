@@ -42,8 +42,6 @@ typedef struct DataObjCopyInp {
  *                      REG_CHKSUM_KW - compute the checksum value
  *                      VERIFY_CHKSUM_KW - compute and verify the checksum on
  *                        the data.
- *                      FILE_PATH_KW - "value" = the physical path of the
- *                        destination file.
  *                      DEST_RESC_NAME_KW - "value" = The destination Resource.
  *          numThreads - number of threads to use. NO_THREADING = no threading.
  *          openFlags - Open flag for the copy operation. Should be O_WRONLY.

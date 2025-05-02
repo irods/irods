@@ -112,8 +112,6 @@ int initDataOprInp(dataOprInp_t* dataOprInp, int l1descInx, int oprType);
 
 int convL3descInx(int l3descInx);
 
-int initDataObjInfoWithInp(dataObjInfo_t* dataObjInfo, dataObjInp_t* dataObjInp);
-
 int allocL1desc();
 
 int closeAllL1desc(rsComm_t* rsComm);

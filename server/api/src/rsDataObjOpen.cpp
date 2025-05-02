@@ -257,10 +257,6 @@ namespace
                 new_replica.data_id(std::atoll(cond_input.at(DATA_ID_KW).value().data()));
             }
 
-            if (cond_input.contains(FILE_PATH_KW)) {
-                new_replica.physical_path(cond_input.at(FILE_PATH_KW).value());
-            }
-
             cond_input[OPEN_TYPE_KW] = std::to_string(CREATE_TYPE);
             const int l1_index = irods::populate_L1desc_with_inp(_inp, *new_replica.get(), _inp.dataSize);
 
@@ -1247,6 +1243,12 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     const auto data_object_exists = fs::server::exists(*rsComm, dataObjInp->objPath);
+
+    // Remove the FILE_PATH_KW from the condInput to ensure it is not used at any stage in this API.
+    if (const auto* file_path_cstr = getValByKey(&dataObjInp->condInput, FILE_PATH_KW); nullptr != file_path_cstr) {
+        rmKeyVal(&dataObjInp->condInput, FILE_PATH_KW);
+    }
+
     const auto fd = rsDataObjOpen_impl(rsComm, dataObjInp);
 
     // Do not update the collection mtime if the logical path refers to a remote

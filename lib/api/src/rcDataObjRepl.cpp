@@ -51,8 +51,6 @@
  *             resource, don't make another one.
  *    \n ADMIN_KW - admin user backup/replicate other user's files.
  *            This keyWd has no value.
- *    \n FILE_PATH_KW - The physical file path for this data object if the
- *             normal resource vault is not used.
  *    \n RBUDP_TRANSFER_KW - (Deprecated) use RBUDP for data transfer. This keyWd has no
  *             value.
  *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second
