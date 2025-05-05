@@ -10,7 +10,7 @@ import tempfile
 import textwrap
 import time
 
-def run_update(irods_config, cursor):
+def run_update(irods_config, cursor, is_upgrade):
     l = logging.getLogger(__name__)
     new_schema_version = database_connect.get_schema_version_in_database(cursor) + 1
     l.info('Updating to schema version %d...', new_schema_version)
@@ -216,26 +216,29 @@ def run_update(irods_config, cursor):
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'batch_size', '20000');")
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'resolution_in_seconds', '86400');")
 
-        print(textwrap.dedent("""
-            =======================================================================
+        # Only print the following message if the administrator ran upgrade_irods.py.
+        # The function argument should be False if invoked from setup_irods.py.
+        if is_upgrade:
+            print(textwrap.dedent("""
+                =======================================================================
 
-            iRODS 5.0.0 tracks the access time for all replicas. Replicas which
-            existed before the upgrade will have an initial value of 0. This is
-            intentional, and the server will update access times as replicas
-            are opened.
+                iRODS 5.0.0 tracks the access time for all replicas. Replicas which
+                existed before the upgrade will have an initial value of 0. This is
+                intentional, and the server will update access times as replicas
+                are opened.
 
-            If a starting value of 0 is unsuitable for your needs, consider setting
-            the access time to match the modification time using the following SQL:
+                If a starting value of 0 is unsuitable for your needs, consider setting
+                the access time to match the modification time using the following SQL:
 
-                UPDATE R_DATA_MAIN
-                SET access_ts = modify_ts
-                WHERE access_ts = '0';
+                    UPDATE R_DATA_MAIN
+                    SET access_ts = modify_ts
+                    WHERE access_ts = '0';
 
-            Please consult your local database administrator before making any SQL
-            adjustments.
+                Please consult your local database administrator before making any SQL
+                adjustments.
 
-            =======================================================================
-        """))
+                =======================================================================
+            """))
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))

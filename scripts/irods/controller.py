@@ -82,7 +82,7 @@ class IrodsController(object):
 
         if self.config.is_provider:
             from . import database_interface
-            database_interface.run_catalog_update(self.config)
+            database_interface.run_catalog_update(self.config, is_upgrade=True)
 
     def start(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
