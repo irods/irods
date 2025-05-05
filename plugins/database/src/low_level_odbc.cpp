@@ -762,7 +762,7 @@ cllExecSqlWithResultBV(
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
                                      SQL_CHAR, 0, 0, const_cast<char*>( bindVars[i].c_str() ), bindVars[i].size(), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
-            log_sql::info("{}: Bind variable #{} = [{}]", __func__, i + 1, bindVars[i]);
+            log_sql::debug("{}: Bind variable #{} = [{}]", __func__, i + 1, bindVars[i]);
             if ( stat != SQL_SUCCESS ) {
                 log_db::error("{}: SQLBindParameter failed: {}", __func__, stat);
                 return -1;
