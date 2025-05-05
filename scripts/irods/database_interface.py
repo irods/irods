@@ -32,7 +32,7 @@ def setup_catalog(irods_config, default_resource_directory=None, default_resourc
                 cursor.rollback()
                 raise
 
-def run_catalog_update(irods_config):
+def run_catalog_update(irods_config, is_upgrade):
     l = logging.getLogger(__name__)
     l.debug('Syncing .odbc.ini file...')
     def update_catalog_schema(irods_config, cursor):
@@ -45,7 +45,7 @@ def run_catalog_update(irods_config):
                 return
             elif schema_version_in_database < irods_config.version['catalog_schema_version']:
                 try:
-                    database_upgrade.run_update(irods_config, cursor)
+                    database_upgrade.run_update(irods_config, cursor, is_upgrade)
                     l.debug('Committing database changes...')
                     cursor.commit()
                 except:
