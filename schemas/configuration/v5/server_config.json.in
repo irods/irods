@@ -130,7 +130,6 @@
             "uniqueItems": true
         },
         "catalog_service_role": {"enum": ["consumer", "provider"]},
-        "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
         "client_server_policy": {
             "enum": [
                 "CS_NEG_REFUSE",
@@ -414,7 +413,6 @@
         "advanced_settings",
         "catalog_provider_hosts",
         "catalog_service_role",
-        "client_api_allowlist_policy",
         "client_server_policy",
         "connection_pool_refresh_time_in_seconds",
         "controlled_user_connection_list",
