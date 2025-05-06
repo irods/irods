@@ -26,7 +26,6 @@
         "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
         "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40
     },
-    "client_api_allowlist_policy": "enforce",
     "client_server_policy": "CS_NEG_REFUSE",
     "connection_pool_refresh_time_in_seconds": 300,
     "controlled_user_connection_list": {

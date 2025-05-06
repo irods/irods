@@ -199,17 +199,6 @@ namespace irods::client_api_allowlist
                 log_api::trace("Connection is a server-to-server connection. Skipping client API allowlist.");
                 return false;
             }
-
-            const auto config_handle{irods::server_properties::instance().map()};
-            const auto& config{config_handle.get_json()};
-
-            if (const auto iter = config.find(irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY); iter != std::end(config)) {
-                return iter->get_ref<const std::string&>() == "enforce";
-            }
-
-            log_api::trace(
-                "Could not retrieve [{}] from configuration. Using default value of [enforce].",
-                irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY);
         }
         catch (...) {
             // At this point, this function MUST NOT invoke anything that could result in an

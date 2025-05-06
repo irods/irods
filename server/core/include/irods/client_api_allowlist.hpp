@@ -17,18 +17,16 @@ namespace irods::client_api_allowlist
     /// \since 4.3.1
     auto init() -> void;
 
-    /// Returns whether the allowlist should be enforced based on the server configuration and
-    /// the connection representation.
+    /// Returns whether the allowlist should be enforced.
     ///
     /// \param[in] _comm The server communication object.
     ///
     /// \return A boolean value
-    /// \retval true  If the \b server configuration has \b client_api_allowlist_policy
-    ///               set to \b enforce and \b comm represents a \b client-to-agent connection
-    ///               (i.e. the source of the connection is \b NOT an iRODS consumer or provider).
-    /// \retval false Otherwise.
+    /// \retval false If \p _comm represents a user of type rodsadmin.
+    /// \retval false If \p _comm is a server-to-server connection.
+    /// \retval true  Otherwise.
     ///
-    /// \since 4.2.8
+    /// \since 5.0.0
     auto enforce(const RsComm& _comm) noexcept -> bool;
 
     /// Checks if the allowlist contains a particular API number.
@@ -36,7 +34,7 @@ namespace irods::client_api_allowlist
     /// \param[in] _api_number The API number to look for.
     ///
     /// \return A boolean value.
-    /// \retval true  If the allowlist contains api_number.
+    /// \retval true  If the allowlist contains the API number.
     /// \retval false Otherwise.
     ///
     /// \since 4.2.8
@@ -53,4 +51,3 @@ namespace irods::client_api_allowlist
 } // namespace irods::client_api_allowlist
 
 #endif // IRODS_CLIENT_API_ALLOWLIST_HPP
-
