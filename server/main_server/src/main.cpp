@@ -391,11 +391,9 @@ namespace
 
 Usage: irodsServer [OPTION]...
 
-The Integrated Rule-Oriented Data System (iRODS) is open source data management
-software used by research, commercial, and governmental organizations worldwide.
-
-It virtualizes data storage resources, so users can take control of their data,
-regardless of where and on what device the data is stored.
+The Integrated Rule-Oriented Data System (iRODS) is open source, policy-based
+data management software used by research, commercial, and governmental
+organizations worldwide.
 
 If launched without any options, the server will run in the foreground and write
 activity to syslog.
