@@ -115,8 +115,8 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
             // Get the database type string from server_config.json.
             const auto handle = irods::server_properties::instance().map();
             const auto& config = handle.get_json();
-            const auto& db = config.at(nlohmann::json::json_pointer{"/plugin_configuration/database"});
-            opts.database = std::begin(db).key();
+            const auto& db = config.at(nlohmann::json::json_pointer{"/plugin_configuration/database/technology"});
+            opts.database = db.get_ref<const std::string&>();
         }
 
         opts.user_name = _comm->clientUser.userName;
