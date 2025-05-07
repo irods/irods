@@ -146,17 +146,17 @@ def run_update(irods_config, cursor, is_upgrade):
             with tempfile.NamedTemporaryFile() as f:
                 f.write('\n'.join([
                     '[client]',
-                    '='.join(['user', irods_config.database_config['db_username']]),
-                    '='.join(['password', irods_config.database_config['db_password']]),
-                    '='.join(['port', str(irods_config.database_config['db_port'])]),
-                    '='.join(['host', irods_config.database_config['db_host']])
+                    '='.join(['user', irods_config.database_config['username']]),
+                    '='.join(['password', irods_config.database_config['password']]),
+                    '='.join(['port', str(irods_config.database_config['port'])]),
+                    '='.join(['host', irods_config.database_config['host']])
                 ]).encode())
 
                 f.flush()
 
                 with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
-                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['name']],
                         stdin=sql_file)
 
         # Add a new column that will be responsible for holding the fractional part of the modify_ts
