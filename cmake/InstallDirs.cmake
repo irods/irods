@@ -57,6 +57,10 @@ if(NOT DEFINED IRODS_PLUGINS_DIRECTORY)
   set(IRODS_PLUGINS_DIRECTORY "${CMAKE_INSTALL_LIBDIR}/irods/plugins" CACHE PATH "iRODS plugins directory")
 endif()
 
+if(NOT DEFINED IRODS_CLIENTS_DIRECTORY)
+  set(IRODS_CLIENTS_DIRECTORY "${CMAKE_INSTALL_LIBDIR}/irods/clients" CACHE PATH "iRODS clients directory")
+endif()
+
 if (NOT DEFINED IRODS_DOC_DIR)
   set(IRODS_DOC_DIR "${CMAKE_INSTALL_DOCDIR}" CACHE PATH "iRODS documentation directory")
 endif()
