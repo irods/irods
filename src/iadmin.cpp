@@ -1364,24 +1364,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         show_global_quotas(cmdToken[1]);
         return 0;
     }
-    if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
-        if ( _rodsArgs->force == True ) {
-            int path_index = 1;
-#ifdef osx_platform
-            path_index = 2;
-#endif
-            generalAdmin( 0, "add", "dir",
-                          cmdToken[path_index], "",
-                          "", "",
-                          "", "",
-                          "", "" );
-        }
-        else {
-            usage( "mkdir" );
-        }
-
-        return 0;
-    }
 
     if ( strcmp( cmdToken[0], "mkresc" ) == 0 ) {
         // trim spaces in resource type string
@@ -1746,20 +1728,6 @@ main( int argc, char **argv ) {
 
     rodsArguments_t myRodsArgs;
     int status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
-
-#ifdef osx_platform
-    // getopt has different behavior on OSX, we work around this for
-    // the one specific instance where mkdir is use with a force flag
-    // this will be refactored in the future to use the boost::program_options
-    // to remove the need for this gratuitous hack
-    if ( argc > 2 ) {
-        std::string sub_cmd   = argv[1];
-        std::string force_flg = argv[2];
-        if ( "mkdir" == sub_cmd && "-f" == force_flg ) {
-            myRodsArgs.force = True;
-        }
-    } // if argc
-#endif
 
     if ( status ) {
         fprintf( stderr, "Use -h for help.\n" );
@@ -2188,14 +2156,6 @@ usage( char *subOpt ) {
     char *rmuserMsgs[] = {
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " Remove an iRODS user.",
-        ""
-    };
-
-    char *mkdirMsgs[] = {
-        "***************************** WARNING ********************************",
-        "This command is intended for installation purposes and should never be",
-        "called directly by a user.  In order to make a collection please use",
-        "the 'imkdir' icommand.",
         ""
     };
 
@@ -2706,7 +2666,6 @@ usage( char *subOpt ) {
                        "rua",
                        "rpp",
                        "rmuser",
-                       "mkdir",
                        "mkresc",
                        "modresc",
                        "modrescdatapaths",
@@ -2756,7 +2715,6 @@ usage( char *subOpt ) {
                       ruaMsgs,
                       rppMsgs,
                       rmuserMsgs,
-                      mkdirMsgs,
                       mkrescMsgs,
                       modrescMsgs,
                       modrescDataPathsMsgs,
