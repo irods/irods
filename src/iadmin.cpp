@@ -452,75 +452,6 @@ auto modify_replica(
     return 0;
 } // modify_replica
 
-auto ls_replica(
-    char** tokens) -> int
-{
-    try {
-        const auto args = get_args_vector(tokens, 5);
-        std::stringstream q_str;
-        q_str << "select";
-        for (auto c = std::begin(genquery_attrs); c != std::end(genquery_attrs); ++c) {
-            q_str << " " << c->first;
-            if (std::next(c) != std::end(genquery_attrs)) {
-                q_str << ",";
-            }
-        }
-
-        const auto data_object_option = get_data_object_value(args[1], args[2]);
-        if (const auto id = std::get_if<data_id_t>(&data_object_option)) {
-            q_str << " where DATA_ID = '" << *id << "'";
-        }
-        else if (const auto path = std::get_if<logical_path_t>(&data_object_option)) {
-            const auto dirname = path->parent_path().string();
-            q_str << " where COLL_NAME = '" << dirname << "'";
-            const auto basename = path->object_name().string();
-            q_str << " and DATA_NAME = '" << basename << "'";
-        }
-        else {
-            std::cerr << "Invalid data object option specified." << std::endl;
-            return -2;
-        }
-
-        const auto replica_option = get_replica_value(args[3], args[4]);
-        if (const auto num = std::get_if<replica_number_t>(&replica_option)) {
-            q_str << " and DATA_REPL_NUM = '" << *num << "'";
-        }
-        else if (const auto hier = std::get_if<resource_hierarchy_t>(&replica_option)) {
-            q_str << " and DATA_RESC_HIER = '" << *hier << "'";
-        }
-        else {
-            std::cerr << "Invalid replica option specified." << std::endl;
-            return -2;
-        }
-
-        if (veryVerbose) {
-            std::cout << "query:[" << q_str.str() << "]" << std::endl;
-        }
-
-        auto q = irods::experimental::query_builder{}
-            .zone_hint(Conn->clientUser.rodsZone)
-            .build<rcComm_t>(*Conn, q_str.str());
-
-        if (std::begin(q) == std::end(q)) {
-            std::cout << "No results found." << std::endl;
-            return -3;
-        }
-
-        size_t index = 0;
-        for (auto&& result : q) {
-            for (auto&& r : result) {
-                std::cout << genquery_attrs[index++].first << ": ";
-                std::cout << r << std::endl;
-            }
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "An error occurred:\n" << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-} // ls_replica
-
 constexpr auto is_timestamp_label(std::string_view _label) -> bool
 {
     constexpr std::array timestamp_labels{"create_ts", "modify_ts"};
@@ -1264,10 +1195,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "lr" ) == 0 ) {
         show_resource(cmdToken[1]);
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
-        ls_replica(cmdToken);
         return 0;
     }
     if ( strcmp( cmdToken[0], "lz" ) == 0 ) {
@@ -2058,7 +1985,6 @@ void usageMain() {
         " luan Name (list users associated with auth name (GSI/Kerberos)",
         " lt [name] [subname] (list token info)",
         " lr [name] (list resource info)",
-        " ls [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] (list replica info)",
         " lz [name] (list zone info)",
         " lg [name] (list group info (user member list))",
         " lgd name  (list group details)",
@@ -2165,18 +2091,6 @@ usage( char *subOpt ) {
         "lr [name] (list resource info)",
         "Just 'lr' briefly lists the defined resources.",
         "If you include a resource name, it will list more detailed information.",
-        ""
-    };
-    char *lsMsgs[] = {
-        "ls [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] (list replica info)",
-        "List attributes of a replica in the catalog.",
-        " ",
-        "The logical_path must refer to a data object registered in the catalog.",
-        " ",
-        "The replica to modify must be specified. There are 2 options for doing so:",
-        "    1. replica_number - An integer representing the replica number",
-        "    2. resource - Resource hierarchy hosting the target replica",
-        " ",
         ""
     };
     char *lzMsgs[] = {
@@ -2846,7 +2760,6 @@ usage( char *subOpt ) {
                       luzMsgs,
                       ltMsgs,
                       lrMsgs,
-                      lsMsgs,
                       lzMsgs,
                       lgMsgs,
                       lgdMsgs,
