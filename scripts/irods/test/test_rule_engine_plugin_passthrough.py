@@ -1,12 +1,8 @@
-from __future__ import print_function
+import json
+import mmap
 import os
 import sys
-import mmap
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 from .. import test
@@ -30,32 +26,32 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
     def test_repf_continuation_using_passthrough_rep__issues_4147_4148_4179(self):
         config = IrodsConfig()
 
-        with lib.file_backed_up(config.server_config_path):
-            pep_name = 'pep_database_open_pre'
-            RULE_ENGINE_CONTINUE = 5000000
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                pep_name = 'pep_database_open_pre'
+                RULE_ENGINE_CONTINUE = 5000000
 
-            # Enable the Passthrough REP (make it the first REP in the list).
-            # Configure the Passthrough REP to return 'RULE_ENGINE_CONTINUE' to the REPF.
-            # Set the log level to 'trace' for the rule engine and legacy logger categories.
-            config.server_config['log_level']['rule_engine'] = 'trace'
-            config.server_config['log_level']['legacy'] = 'trace'
-            config.server_config['plugin_configuration']['rule_engines'].insert(0, {
-                'instance_name': 'irods_rule_engine_plugin-passthrough-instance',
-                'plugin_name': 'irods_rule_engine_plugin-passthrough',
-                'plugin_specific_configuration': {
-                    'return_codes_for_peps': [
-                        {
-                            'regex': '^' + pep_name + '$',
-                            'code': RULE_ENGINE_CONTINUE
-                        }
-                    ]
-                }
-            })
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                # Enable the Passthrough REP (make it the first REP in the list).
+                # Configure the Passthrough REP to return 'RULE_ENGINE_CONTINUE' to the REPF.
+                # Set the log level to 'trace' for the rule engine and legacy logger categories.
+                config.server_config['log_level']['rule_engine'] = 'trace'
+                config.server_config['log_level']['legacy'] = 'trace'
+                config.server_config['plugin_configuration']['rule_engines'].insert(0, {
+                    'instance_name': 'irods_rule_engine_plugin-passthrough-instance',
+                    'plugin_name': 'irods_rule_engine_plugin-passthrough',
+                    'plugin_specific_configuration': {
+                        'return_codes_for_peps': [
+                            {
+                                'regex': '^' + pep_name + '$',
+                                'code': RULE_ENGINE_CONTINUE
+                            }
+                        ]
+                    }
+                })
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+                core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            try:
                 with lib.file_backed_up(core_re_path):
                     second_msg = 'This should appear after the first message!'
 
@@ -77,5 +73,5 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
                         self.assertTrue(mm.find(second_msg.encode(), index) != -1)
                         mm.close()
 
-            finally:
-                IrodsController(config).reload_configuration()
+        finally:
+            IrodsController(config).reload_configuration()
