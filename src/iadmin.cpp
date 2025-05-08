@@ -1599,11 +1599,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         generalAdmin( 0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "", _rodsArgs );
         return 0;
     }
-    if ( strcmp( cmdToken[0], "rmdir" ) == 0 ) {
-        generalAdmin( 0, "rm", "dir", cmdToken[1], cmdToken[2],
-                      cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return 0;
-    }
     if ( strcmp( cmdToken[0], "rmuser" ) == 0 ) {
         generalAdmin( 0, "rm", "user", cmdToken[1],
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
@@ -1994,7 +1989,6 @@ void usageMain() {
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
         " rpp Name  (remove PAM-derived Password for user Name)",
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
-        " rmdir Name (remove directory) ",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
         " modresc Name [name, type, host, path, status, comment, info, free_space, context, rebalance] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
@@ -2202,12 +2196,6 @@ usage( char *subOpt ) {
         "This command is intended for installation purposes and should never be",
         "called directly by a user.  In order to make a collection please use",
         "the 'imkdir' icommand.",
-        ""
-    };
-
-    char *rmdirMsgs[] = {
-        " rmdir Name (remove directory) ",
-        "This is similar to 'irm -f'.",
         ""
     };
 
@@ -2719,7 +2707,6 @@ usage( char *subOpt ) {
                        "rpp",
                        "rmuser",
                        "mkdir",
-                       "rmdir",
                        "mkresc",
                        "modresc",
                        "modrescdatapaths",
@@ -2770,7 +2757,6 @@ usage( char *subOpt ) {
                       rppMsgs,
                       rmuserMsgs,
                       mkdirMsgs,
-                      rmdirMsgs,
                       mkrescMsgs,
                       modrescMsgs,
                       modrescDataPathsMsgs,
