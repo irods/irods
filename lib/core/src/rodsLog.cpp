@@ -27,6 +27,7 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include <unistd.h>
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300
 #include <cstdarg>
@@ -68,6 +69,36 @@ std::string create_log_error_prefix() {
 
     return ret;
 }
+
+int rodsLog_derive_verbosity_level_from_legacy_log_level()
+{
+    if (CLIENT_PT == ::ProcessType) {
+        return verbosityLevel;
+    }
+
+    namespace log_ns = irods::experimental::log;
+
+    // clang-format off
+    switch (log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY)) {
+        using enum log_ns::level;
+        case trace:     return LOG_SQL;
+        case debug:     return LOG_DEBUG7;
+        case info:      return LOG_NOTICE;
+        case warn:      return LOG_WARNING;
+        case error:     return LOG_ERROR;
+        case critical:  return LOG_SYS_FATAL;
+    }
+    // clang-format on
+
+    // We should never reach this line because get_level_from_config() always returns
+    // a valid log level (i.e. it catches all exceptions and defaults to level::info).
+    //
+    // Even though this code path is effectively unreachable, we've decided to return
+    // LOG_SQL just in case. By returning LOG_SQL, we guarantee that all messages are
+    // forwarded to the new logger. The only downside is that the new logger could
+    // choose to discard the message resulting in wasted effort by the rodsLog API.
+    return LOG_SQL;
+} // rodsLog_derive_verbosity_level_from_legacy_log_level
 
 void forward_to_syslog(int log_level, const std::string& msg)
 {

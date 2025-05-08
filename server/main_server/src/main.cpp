@@ -23,6 +23,7 @@
 #include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
 #include "irods/update_replica_access_time.h"
 #include "irods/set_delay_server_migration_info.h"
 
@@ -244,7 +245,7 @@ auto main(int _argc, char* _argv[]) -> int
 
         // Configure the legacy rodsLog API so messages are written to the legacy log category
         // provided by the new logging API.
-        rodsLogLevel(LOG_NOTICE);
+        rodsLogLevel(rodsLog_derive_verbosity_level_from_legacy_log_level());
         rodsLogSqlReq(0);
 
         init_logger(getpid(), write_to_stdout, enable_test_mode);

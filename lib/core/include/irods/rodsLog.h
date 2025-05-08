@@ -60,6 +60,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Converts the log level for the legacy log category in server_config.json
+ * into an appropriate log level (e.g. LOG_DEBUG) for the rodsLog API.
+ *
+ * This function is designed to initialize the verbosity level for the
+ * rodsLog API.
+ *
+ * \warning For server-side use only.
+ *
+ * \since 5.0.0
+ */
+int rodsLog_derive_verbosity_level_from_legacy_log_level();
+
 void rodsLog( int level, const char *formatStr, ... );
 void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
                          const char *formatStr, ... );
