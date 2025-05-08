@@ -157,7 +157,7 @@ void usage( char *prog ) {
     printf( "     pathname of which all components will be removed, as\n" );
     printf( "     long as they are empty, starting with the lastmost.\n" );
     printf( " -v  verbose\n" );
-    printf( " -V  very verbose\n" );
+    printf( " -V  Very verbose\n" );
     printf( " -h  this help\n" );
     printReleaseInfo( "irmdir" );
 }

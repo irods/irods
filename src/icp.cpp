@@ -141,7 +141,7 @@ usage() {
         " -r recursive - copy the whole subtree",
         " -T  renew socket connection after 10 minutes",
         " -v verbose - display various messages while processing",
-        " -V very verbose",
+        " -V Very verbose",
         " -X restartFile - specifies that the restart option is on and the",
         "      restartFile input specifies a local file that contains the restart info.",
         " -h this help",

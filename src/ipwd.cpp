@@ -49,7 +49,7 @@ void usage( char *prog ) {
     std::cout << "Shows your iRODS Current Working Directory.\n"
               << "Usage: " << prog << " [-vVh]\n"
               << " -v  verbose\n"
-              << " -V  very verbose\n"
+              << " -V  Very verbose\n"
               << " -h  this help" << std::endl;
     printReleaseInfo( "ipwd" );
 }
