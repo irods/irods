@@ -116,7 +116,7 @@ usage( char *program ) {
         " ",
         "Options are:",
         "-v verbose - display various messages while processing",
-        "-V very verbose",
+        "-V Very verbose",
         "-h help - this help",
         ""
     };

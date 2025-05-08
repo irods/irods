@@ -494,7 +494,7 @@ usage() {
         " ls [-lvV] Name (list dataObject, -l -v for long form)",
         " ldt (list data types (those available))",
         " ",
-        "Time can be full or partial date/time: '2009-12-01' or '2009-12-11.12:03'",
+        "Time can be full or partial date/time: '2024-12-01' or '2024-12-11.12:03'",
         "etc, or a delta time '+1h' (one hour from now), etc.",
         " ",
         "Examples:",

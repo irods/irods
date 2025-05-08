@@ -105,7 +105,7 @@ void usage(char *prog) {
     std::printf("Usage: %s [-fvVh]\n", prog);
     std::printf(" -f  force removal of auth file\n");
     std::printf(" -v  verbose\n");
-    std::printf(" -V  very verbose\n");
+    std::printf(" -V  Very verbose\n");
     std::printf(" -h  this help\n");
     printReleaseInfo("iexit");
 }
