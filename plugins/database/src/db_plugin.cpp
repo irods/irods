@@ -10729,16 +10729,13 @@ irods::error db_rename_object_op(
     char collName[MAX_NAME_LEN] = "";
     char *cVal[3];
     int iVal[3];
-    int pLen, cLen, len;
+    int pLen, cLen;
     int isRootDir = 0;
     char objIdString[MAX_NAME_LEN];
     char collIdString[MAX_NAME_LEN];
     char collNameTmp[MAX_NAME_LEN];
 
-    char pLenStr[MAX_NAME_LEN];
-    char cLenStr[MAX_NAME_LEN];
     char collNameSlash[MAX_NAME_LEN];
-    char collNameSlashLen[20];
     char slashNewName[MAX_NAME_LEN];
 
     if ( logSQL != 0 ) {
@@ -10915,28 +10912,27 @@ irods::error db_rename_object_op(
            part, _new_name string, and then (if any for each row) the
            tailing part of the name.
            (In the sql substr function, the index for sql is 1 origin.) */
-        snprintf( pLenStr, MAX_NAME_LEN, "%d", pLen ); /* formerly +1 but without is
-                                                       correct, makes a difference in Oracle, and works
-                                                       in postgres too. */
-        snprintf( cLenStr, MAX_NAME_LEN, "%d", cLen + 1 );
         snprintf( collNameSlash, MAX_NAME_LEN, "%s/", collName );
-        len = strlen( collNameSlash );
-        snprintf( collNameSlashLen, 10, "%d", len );
         snprintf( slashNewName, MAX_NAME_LEN, "/%s", _new_name );
         if ( isRootDir ) {
             snprintf( slashNewName, MAX_NAME_LEN, "%s", _new_name );
         }
-        cllBindVars[cllBindVarCount++] = pLenStr;
+	/* Instead of preparing the string length here, we have the RDBMS do its own length
+	 * calculations on the strings that we pass on via binded variables.
+	 * This method avoids string length interpretation issues related to
+	 * encoding transformations of multi-byte Unicode characters.
+	 */
+        cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
-        cllBindVars[cllBindVarCount++] = cLenStr;
-        cllBindVars[cllBindVarCount++] = collNameSlashLen;
+        cllBindVars[cllBindVarCount++] = collName;
+        cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collName;
         if ( logSQL != 0 ) {
             log_sql::debug("chlRenameObject SQL 9");
         }
         status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set coll_name = substr(coll_name,1,?) || ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
+                      "update R_COLL_MAIN set coll_name = substr(coll_name,1,length(?)) || ? || substr(coll_name, length(?)+1) where substr(parent_coll_name,1,length(?)) = ? or parent_coll_name  = ?",
                       &icss );
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
@@ -10945,17 +10941,17 @@ irods::error db_rename_object_op(
         }
 
         /* like above, but for the parent_coll_name's */
-        cllBindVars[cllBindVarCount++] = pLenStr;
+        cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
-        cllBindVars[cllBindVarCount++] = cLenStr;
-        cllBindVars[cllBindVarCount++] = collNameSlashLen;
+        cllBindVars[cllBindVarCount++] = collName;
+        cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collName;
         if ( logSQL != 0 ) {
             log_sql::debug("chlRenameObject SQL 10");
         }
         status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name,1,?) || ? || substr(parent_coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
+                      "update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name,1,length(?)) || ? || substr(parent_coll_name, length(?)+1) where substr(parent_coll_name,1,length(?)) = ? or parent_coll_name  = ?",
                       &icss );
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
@@ -11069,14 +11065,12 @@ irods::error db_move_object_op(
     char parentTargetCollName[MAX_NAME_LEN] = "";
     char newCollName[MAX_NAME_LEN] = "";
     int pLen, ocLen;
-    int i, OK, len;
+    int i, OK;
     char *cp;
     char objIdString[MAX_NAME_LEN];
     char collIdString[MAX_NAME_LEN];
     char nameTmp[MAX_NAME_LEN];
-    char ocLenStr[MAX_NAME_LEN];
     char collNameSlash[MAX_NAME_LEN];
-    char collNameSlashLen[20];
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlMoveObject");
@@ -11346,22 +11340,23 @@ irods::error db_move_object_op(
            part, endCollName string, and then (if any for each row) the
            tailing part of the name.
            (In the sql substr function, the index for sql is 1 origin.) */
-        snprintf( ocLenStr, MAX_NAME_LEN, "%d", ocLen + 1 );
         snprintf( collNameSlash, MAX_NAME_LEN, "%s/", oldCollName );
-        len = strlen( collNameSlash );
-        snprintf( collNameSlashLen, 10, "%d", len );
+
+	/* See remark earlier on rational for having string length calculations
+	 * done by the RDBMS rather than here
+	 */
         cllBindVars[cllBindVarCount++] = newCollName;
-        cllBindVars[cllBindVarCount++] = ocLenStr;
+        cllBindVars[cllBindVarCount++] = oldCollName;
         cllBindVars[cllBindVarCount++] = newCollName;
-        cllBindVars[cllBindVarCount++] = ocLenStr;
-        cllBindVars[cllBindVarCount++] = collNameSlashLen;
+        cllBindVars[cllBindVarCount++] = oldCollName;
+        cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = oldCollName;
         if ( logSQL != 0 ) {
             log_sql::debug("chlMoveObject SQL 13");
         }
         status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
+                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, length(?) + 1) , coll_name = ? || substr(coll_name, length(?) + 1 ) where substr(parent_coll_name,1,length(?) ) = ? or parent_coll_name = ?",
                       &icss );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             status = 0;
