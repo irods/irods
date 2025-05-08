@@ -1624,27 +1624,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         }
         return 0;
     }
-    if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
-        char myString[TIME_LEN];
-        if ( strcmp( cmdToken[1], "str" ) == 0 ) {
-            int status;
-            status = checkDateFormat( cmdToken[2] );
-            if ( status ) {
-                rodsLogError( LOG_ERROR, status, "ctime str:checkDateFormat error" );
-            }
-            printf( "Converted to local iRODS integer time: %s\n", cmdToken[2] );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "now" ) == 0 ) {
-            char nowString[100];
-            getNowStr( nowString );
-            printf( "Current time as iRODS integer time: %s\n", nowString );
-            return 0;
-        }
-        getLocalTimeFromRodsTime( cmdToken[1], myString );
-        printf( "Converted to local time: %s\n", myString );
-        return 0;
-    }
     if ( strcmp( cmdToken[0], "rum" ) == 0 ) {
         int status;
         status = generalAdmin( 0, "rm", "unusedAVUs", "", "",
@@ -1811,30 +1790,6 @@ main( int argc, char **argv ) {
         return 1;
     }
 
-    if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
-        char myString[TIME_LEN];
-        if ( strcmp( cmdToken[1], "str" ) == 0 ) {
-            int status;
-            status = checkDateFormat( cmdToken[2] );
-            if ( status ) {
-                rodsLogError( LOG_ERROR, status, "ctime str:checkDateFormat error" );
-            }
-            printf( "Converted to local iRODS integer time: %s\n", cmdToken[2] );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "now" ) == 0 ) {
-            char nowString[100];
-            getNowStr( nowString );
-            printf( "Current time as iRODS integer time: %s\n", nowString );
-            return 0;
-        }
-        getLocalTimeFromRodsTime( cmdToken[1], myString );
-        printf( "Converted to local time: %s\n", myString );
-        return 0;
-    }
-
-    /* need to copy time convert commands up here too */
-
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
     irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
@@ -1976,7 +1931,6 @@ void usageMain() {
         " rt tokenNamespace Name [Value1] (remove token) ",
         " spass Password Key (print a scrambled form of a password for DB)",
         " dspass Password Key (descramble a password and print it)",
-        " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
         " suq User Target Value (set user quota)",
         " sgq Group Target Value (set group quota)",
         " lq [Name] List Quotas",
@@ -2416,24 +2370,6 @@ usage( char *subOpt ) {
         ""
     };
 
-    char *ctimeMsgs[] = {
-        " ctime Time (convert a iRODSTime value (integer) to local time",
-        "Time values (modify times, access times) are stored in the database",
-        "as a Unix Time value.  This is the number of seconds since 1970 and",
-        "is the same in all time zones (basically, Coordinated Universal Time).",
-        "ils and other utilities will convert it before displaying it, but iadmin",
-        "displays the actual value in the database.  You can enter the value to",
-        "the ctime command to convert it to your local time.  The following two",
-        "additional forms can also be used:",
-        " ",
-        " ctime now      - convert a current time to an iRODS time integer value.",
-        " ",
-        " ctime str Timestr  - convert a string of the format Timestr",
-        " (YYYY-MM-DD.hh:mm:ss) to an iRODS integer value time.",
-        " ",
-        ""
-    };
-
     char *suqMsgs[] = {
         " suq User Target Value (set user quota)",
         " ",
@@ -2684,7 +2620,6 @@ usage( char *subOpt ) {
                        "rt",
                        "spass",
                        "dspass",
-                       "ctime",
                        "suq",
                        "sgq",
                        "lq",
@@ -2733,7 +2668,6 @@ usage( char *subOpt ) {
                       rtMsgs,
                       spassMsgs,
                       dspassMsgs,
-                      ctimeMsgs,
                       suqMsgs,
                       sgqMsgs,
                       lqMsgs,
