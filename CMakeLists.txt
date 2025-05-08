@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14...3.18 FATAL_ERROR)
 if (POLICY CMP0109)
   # find_program requires permission to execute but not to read
   cmake_policy(SET CMP0109 NEW)
@@ -95,6 +95,9 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'. This is the correct setting for normal builds.")
 endif()
+
+set(ICOMMANDS_INSTALL_DIRECTORY "${IRODS_CLIENTS_DIRECTORY}/icommands" CACHE PATH "Path to install icommands executables")
+set(ICOMMANDS_INSTALL_SYMLINKS TRUE CACHE BOOL "Choose whether to install symlinks to icommands in CMAKE_INSTALL_BINDIR.")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   set(IRODS_BUILD_WITH_WERROR_DEFAULT ON)
@@ -251,7 +254,7 @@ set(
   izonereport
   )
 
-foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
+foreach(EXECUTABLE IN LISTS IRODS_CLIENT_ICOMMANDS_EXECUTABLES)
   add_executable(
     ${EXECUTABLE}
     ${CMAKE_SOURCE_DIR}/src/${EXECUTABLE}.cpp
@@ -287,7 +290,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     TARGETS
     ${EXECUTABLE}
     RUNTIME
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    DESTINATION "${ICOMMANDS_INSTALL_DIRECTORY}"
     COMPONENT icommands
     )
 
@@ -319,6 +322,85 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
       )
   endif()
 endforeach()
+
+if (ICOMMANDS_INSTALL_SYMLINKS)
+  # Normalize both
+  cmake_path(
+    NORMAL_PATH ICOMMANDS_INSTALL_DIRECTORY
+    OUTPUT_VARIABLE ICOMMANDS_INSTALL_DIRECTORY_NORM
+  )
+  cmake_path(
+    NORMAL_PATH CMAKE_INSTALL_BINDIR
+    OUTPUT_VARIABLE CMAKE_INSTALL_BINDIR_NORM
+  )
+
+  # Remove trailing slashes
+  string(REGEX MATCH "^(.+)/+$" _regex_out "${ICOMMANDS_INSTALL_DIRECTORY_NORM}")
+  if (NOT ("${CMAKE_MATCH_1}" STREQUAL ""))
+    set(ICOMMANDS_INSTALL_DIRECTORY_NORM "${CMAKE_MATCH_1}")
+  endif()
+  string(REGEX MATCH "^(.+)/+$" _regex_out "${CMAKE_INSTALL_BINDIR_NORM}")
+  if (NOT ("${CMAKE_MATCH_1}" STREQUAL ""))
+    set(CMAKE_INSTALL_BINDIR_NORM "${CMAKE_MATCH_1}")
+  endif()
+
+  if (NOT (ICOMMANDS_INSTALL_DIRECTORY_NORM STREQUAL CMAKE_INSTALL_BINDIR_NORM))
+    cmake_path(IS_ABSOLUTE ICOMMANDS_INSTALL_DIRECTORY_NORM ICOMMANDS_INSTALL_DIRECTORY_IS_ABSOLUTE)
+    cmake_path(IS_ABSOLUTE CMAKE_INSTALL_BINDIR_NORM CMAKE_INSTALL_BINDIR_IS_ABSOLUTE)
+
+    # Make relative ICOMMANDS_INSTALL_DIRECTORY
+    if (ICOMMANDS_INSTALL_DIRECTORY_IS_ABSOLUTE AND NOT CMAKE_INSTALL_BINDIR_IS_ABSOLUTE)
+      set(ICOMMANDS_LINK_PATH "${ICOMMANDS_INSTALL_DIRECTORY_NORM}")
+    else()
+      cmake_path(
+        RELATIVE_PATH ICOMMANDS_INSTALL_DIRECTORY_NORM
+        BASE_DIRECTORY "${CMAKE_INSTALL_BINDIR_NORM}"
+        OUTPUT_VARIABLE ICOMMANDS_LINK_PATH
+      )
+    endif()
+
+    if (NOT ("${ICOMMANDS_LINK_PATH}" STREQUAL ""))
+      # add trailing slash
+      if (NOT (ICOMMANDS_LINK_PATH STREQUAL "/"))
+        set(ICOMMANDS_LINK_PATH "${ICOMMANDS_LINK_PATH}/")
+      endif()
+
+      add_custom_target(links ALL)
+
+      set(ICOMMANDS_LINK_STAGING_DIR "${CMAKE_BINARY_DIR}/links")
+      add_custom_command(
+        OUTPUT "${ICOMMANDS_LINK_STAGING_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E "make_directory" "${ICOMMANDS_LINK_STAGING_DIR}"
+      )
+
+      foreach(EXECUTABLE IN LISTS IRODS_CLIENT_ICOMMANDS_EXECUTABLES)
+        # Despite what CMake's documentation might say, the generator expression TARGET_FILE_NAME
+        # cannot be used in the OUTPUT target for add_custom_command.
+        # See https://gitlab.kitware.com/cmake/cmake/-/issues/23837
+        set(EXECUTABLE_LINK_TEMPNAME "${EXECUTABLE}.link")
+        set(EXECUTABLE_LINK_NAME "$<TARGET_FILE_NAME:${EXECUTABLE}>")
+
+        set(EXECUTABLE_LINK_STAGING "${ICOMMANDS_LINK_STAGING_DIR}/${EXECUTABLE_LINK_TEMPNAME}")
+        set(EXECUTABLE_LINK_DEST_PATH "${ICOMMANDS_LINK_PATH}$<TARGET_FILE_NAME:${EXECUTABLE}>")
+
+        add_custom_command(
+          OUTPUT "${EXECUTABLE_LINK_STAGING}"
+          DEPENDS "${ICOMMANDS_LINK_STAGING_DIR}"
+          COMMENT "making symlink for ${EXECUTABLE}"
+          COMMAND "${CMAKE_COMMAND}" -E create_symlink "${EXECUTABLE_LINK_DEST_PATH}" "${EXECUTABLE_LINK_STAGING}"
+        )
+        add_custom_target("${EXECUTABLE}-link" DEPENDS "${EXECUTABLE_LINK_STAGING}")
+        add_dependencies(links "${EXECUTABLE}-link")
+        install(
+          PROGRAMS "${EXECUTABLE_LINK_STAGING}"
+          DESTINATION "${CMAKE_INSTALL_BINDIR}"
+          RENAME "${EXECUTABLE_LINK_NAME}"
+          COMPONENT links
+        )
+      endforeach()
+    endif()
+  endif()
+endif()
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
