@@ -370,6 +370,12 @@ int main( int argc, char **argv )
     save_updates_to_irods_environment(json_env);
     _reloadRodsEnv(my_env);
 
+    printf("Connecting as %s#%s to %s:%d ...\n",
+           my_env.rodsUserName,
+           my_env.rodsZone,
+           my_env.rodsHost,
+           my_env.rodsPort);
+
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
     std::string lower_scheme = my_env.rodsAuthScheme;
