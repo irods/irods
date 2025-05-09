@@ -725,7 +725,7 @@ namespace irods::experimental::log
                 object[tag::server::timestamp] = utc_timestamp();
                 object[tag::server::zone] = get_server_zone();
 
-                return object.dump();
+                return object.dump(-1, ' ', false, json::error_handler_t::replace);
             } // to_json_string
 
             template <
