@@ -166,8 +166,8 @@ sFklink( const char *table1, const char *table2, const char *connectingSQL ) {
     Links[nLinks].table2 = fkFindName( table2 );
     snprintf( Links[nLinks].connectingSQL, sizeof( Links[nLinks].connectingSQL ), "%s", connectingSQL );
 
-    log_gq::debug("{}: link {} is from {} to {}", __func__, nLinks, Links[nLinks].table1, Links[nLinks].table2);
-    log_gq::debug("{}: T{} L{} T{}", __func__, Links[nLinks].table1, nLinks, Links[nLinks].table2);
+    log_gq::debug("{}: link [{}] is from [{}] to [{}]", __func__, nLinks, Links[nLinks].table1, Links[nLinks].table2);
+    log_gq::debug("{}: T[{}] L[{}] T[{}]", __func__, Links[nLinks].table1, nLinks, Links[nLinks].table2);
 
     nLinks++;
     return 0;
@@ -209,7 +209,7 @@ sTable( const char *tableName, const char *tableAlias, int cycler ) {
     snprintf( Tables[nTables].tableAlias, sizeof( Tables[nTables].tableAlias ), "%s", tableAlias );
     Tables[nTables].cycler = cycler;
 
-    log_gq::debug("{}: table {} is {}", __func__, nTables, tableName);
+    log_gq::debug("{}: table [{}] is [{}]", __func__, nTables, tableName);
 
     nTables++;
     return 0;
@@ -225,7 +225,7 @@ sColumn( int defineVal, const char *tableName, const char *columnName ) {
     snprintf( Columns[nColumns].columnName, sizeof( Columns[nColumns].columnName ), "%s", columnName );
     Columns[nColumns].defineValue = defineVal;
 
-    log_gq::debug("{}: column {} is {} {} {}", __func__, nColumns, defineVal, tableName, columnName);
+    log_gq::debug("{}: column [{}] is [{}] [{}] [{}]", __func__, nColumns, defineVal, tableName, columnName);
 
     nColumns++;
     return 0;
@@ -270,7 +270,7 @@ tablePresent( char *table, char *sqlText ) {
         tokens++;
     }
 
-    log_gq::debug("{}: tablePresent tokens={}", __func__, tokens);
+    log_gq::debug("{}: tablePresent tokens=[{}]", __func__, tokens);
 
     if ( tokens == 2 ) {
         return ( 1 ); /* 2 tokens and did match, is present */
@@ -315,11 +315,11 @@ tScan( int table, int link ) {
     int subKeep;
     int i;
 
-    log_gq::debug("{}: {} tScan", __func__, table);
+    log_gq::debug("{}: [{}] tScan", __func__, table);
 
     thisKeep = 0;
     if ( table < 0 || static_cast<std::size_t>(table) >= sizeof( Tables ) / sizeof( *Tables ) ) {
-        log_gq::error("{}: index {} out of bounds.", __func__, table);
+        log_gq::error("{}: index [{}] out of bounds.", __func__, table);
         return -1;
     }
 
@@ -328,7 +328,7 @@ tScan( int table, int link ) {
         Tables[table].flag = 2;
         nToFind--;
 
-        log_gq::debug("{}: nToFind decremented, now={}", __func__, nToFind);
+        log_gq::debug("{}: nToFind decremented, now=[{}]", __func__, nToFind);
 
         if ( nToFind <= 0 ) {
             return thisKeep;
@@ -337,14 +337,14 @@ tScan( int table, int link ) {
     else {
         if ( Tables[table].flag != 0 ) { /* not still seeking this one */
 
-            log_gq::debug("{}: {} returning flag={}", __func__, table, Tables[table].flag);
+            log_gq::debug("{}: [{}] returning flag=[{}]", __func__, table, Tables[table].flag);
 
             return 0;
         }
     }
     if ( Tables[table].cycler == 1 ) {
 
-        log_gq::debug("{}: {} returning cycler", __func__, table);
+        log_gq::debug("{}: [{}] returning cycler", __func__, table);
 
         return ( thisKeep ); /* do no more for cyclers */
     }
@@ -354,17 +354,17 @@ tScan( int table, int link ) {
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
 
-            log_gq::debug("{}: {} trying link {} forward", __func__, table, i);
+            log_gq::debug("{}: [{}] trying link [{}] forward", __func__, table, i);
 
             subKeep = tScan( Links[i].table2, i );
 
             log_gq::debug(
-                "{}: subKeep {}, this table {}, link {}, table2 {}", __func__, subKeep, table, i, Links[i].table2);
+                "{}: subKeep [{}], this table [{}], link [{}], table2 [{}]", __func__, subKeep, table, i, Links[i].table2);
 
             if ( subKeep ) {
                 thisKeep = 1;
 
-                log_gq::debug("{}: {} use link {}", __func__, table, i);
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
 
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
@@ -384,7 +384,7 @@ tScan( int table, int link ) {
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
-                log_gq::debug("{}: added (2) to fromSQL: {}", __func__, fromSQL);
+                log_gq::debug("{}: added (2) to fromSQL: [{}]", __func__, fromSQL);
 
                 if ( nToFind <= 0 ) {
                     return thisKeep;
@@ -395,17 +395,17 @@ tScan( int table, int link ) {
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
 
-            log_gq::debug("{}: {} trying link {} backward", __func__, table, i);
+            log_gq::debug("{}: [{}] trying link [{}] backward", __func__, table, i);
 
             subKeep = tScan( Links[i].table1, i );
 
             log_gq::debug(
-                "{}: subKeep {}, this table {}, link {}, table1 {}", __func__, subKeep, table, i, Links[i].table1);
+                "{}: subKeep [{}], this table [{}], link [{}], table1 [{}]", __func__, subKeep, table, i, Links[i].table1);
 
             if ( subKeep ) {
                 thisKeep = 1;
 
-                log_gq::debug("{}: {} use link {}", __func__, table, i);
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
 
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
@@ -425,7 +425,7 @@ tScan( int table, int link ) {
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
-                log_gq::debug("{}: added (3) to fromSQL: {}", __func__, fromSQL);
+                log_gq::debug("{}: added (3) to fromSQL: [{}]", __func__, fromSQL);
 
                 if ( nToFind <= 0 ) {
                     return thisKeep;
@@ -434,7 +434,7 @@ tScan( int table, int link ) {
         }
     }
 
-    log_gq::debug("{}: {} returning {}", __func__, table, thisKeep);
+    log_gq::debug("{}: [{}] returning [{}]", __func__, table, thisKeep);
 
     return thisKeep;
 }
@@ -459,10 +459,10 @@ sTest( int i1, int i2 ) {
     nToFind = 2;
     keepVal = tScan( i1, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
-        log_gq::error("{}: error failed to link {} to {}", __func__, i1, i2);
+        log_gq::error("{}: error failed to link [{}] to [{}]", __func__, i1, i2);
     }
     else {
-        log_gq::debug("{}: SUCCESS linking {} to {}", __func__, i1, i2);
+        log_gq::debug("{}: SUCCESS linking [{}] to [{}]", __func__, i1, i2);
     }
     return 0;
 }
@@ -485,10 +485,10 @@ int sTest2( int i1, int i2, int i3 ) {
     nToFind = 3;
     keepVal = tScan( i1, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
-        log_gq::error("{}: error failed to link {}, {} and {}", __func__, i1, i2, i3);
+        log_gq::error("{}: error failed to link [{}], [{}] and [{}]", __func__, i1, i2, i3);
     }
     else {
-        log_gq::debug("{}: SUCCESS linking {}, {}, {}", __func__, i1, i2, i3);
+        log_gq::debug("{}: SUCCESS linking [{}], [{}], [{}]", __func__, i1, i2, i3);
     }
     return 0;
 }
@@ -503,14 +503,14 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     int subKeep;
     int i;
 
-    log_gq::debug("{}: {} tCycleChk", __func__, table);
+    log_gq::debug("{}: [{}] tCycleChk", __func__, table);
 
     thisKeep = 0;
 
     if ( Tables[table].flag != 0 ) {
         if ( Tables[table].flag == thisTreeNum ) {
 
-            log_gq::debug("{}: Found cycle at node {}", __func__, table);
+            log_gq::debug("{}: Found cycle at node [{}]", __func__, table);
 
             return 1;
         }
@@ -519,7 +519,7 @@ tCycleChk( int table, int link, int thisTreeNum ) {
 
     if ( Tables[table].cycler == 1 ) {
 
-        log_gq::debug("{}: {} returning cycler", __func__, table);
+        log_gq::debug("{}: [{}] returning cycler", __func__, table);
 
         return ( thisKeep ); /* do no more for cyclers */
     }
@@ -527,13 +527,13 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
 
-            log_gq::debug("{}: {} trying link {} forward", __func__, table, i);
+            log_gq::debug("{}: [{}] trying link [{}] forward", __func__, table, i);
 
             subKeep = tCycleChk( Links[i].table2, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
 
-                log_gq::debug("{}: {} use link {} tree {}", __func__, table, i, thisTreeNum);
+                log_gq::debug("{}: [{}] use link [{}] tree [{}]", __func__, table, i, thisTreeNum);
 
                 return thisKeep;
             }
@@ -542,20 +542,20 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
 
-            log_gq::debug("{}: {} trying link {} backward", __func__, table, i);
+            log_gq::debug("{}: [{}] trying link [{}] backward", __func__, table, i);
 
             subKeep = tCycleChk( Links[i].table1, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
 
-                log_gq::debug("{}: {} use link {}", __func__, table, i);
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
 
                 return thisKeep;
             }
         }
     }
 
-    log_gq::debug("{}: {} returning {}", __func__, table, thisKeep);
+    log_gq::debug("{}: [{}] returning [{}]", __func__, table, thisKeep);
 
     return thisKeep;
 }
@@ -588,7 +588,7 @@ int findCycles( int startTable ) {
         treeNum++;
         status = tCycleChk( startTable, -1, treeNum );
 
-        log_gq::debug("{}: tree {} status {}", __func__, treeNum, status);
+        log_gq::debug("{}: tree [{}] status [{}]", __func__, treeNum, status);
 
         if ( status ) {
             return status;
@@ -600,7 +600,7 @@ int findCycles( int startTable ) {
             treeNum++;
             status = tCycleChk( i, -1, treeNum );
 
-            log_gq::debug("{}: tree {} status {}", __func__, treeNum, status);
+            log_gq::debug("{}: tree [{}] status [{}]", __func__, treeNum, status);
 
             if ( status ) {
                 return status;
@@ -701,7 +701,7 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
-                log_gq::debug("{}: added (1) to fromSQL: {}", __func__, fromSQL);
+                log_gq::debug("{}: added (1) to fromSQL: [{}]", __func__, fromSQL);
 
             }
             else {
@@ -737,7 +737,7 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                 }
             }
 
-            log_gq::debug("{}: table index={}, nToFind={}", __func__, i, nToFind);
+            log_gq::debug("{}: table index=[{}], nToFind=[{}]", __func__, i, nToFind);
 
             return i;
         }
@@ -1989,13 +1989,13 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
 
     if ( debug ) {
-        log_gq::debug("{}: selectSQL: {}", __func__, selectSQL);
+        log_gq::debug("{}: selectSQL: [{}]", __func__, selectSQL);
     }
     if ( debug ) {
-        log_gq::debug("{}: fromSQL: {}", __func__, fromSQL);
+        log_gq::debug("{}: fromSQL: [{}]", __func__, fromSQL);
     }
     if ( debug ) {
-        log_gq::debug("{}: whereSQL: {}", __func__, whereSQL);
+        log_gq::debug("{}: whereSQL: [{}]", __func__, whereSQL);
     }
     useGroupBy = 0;
     if ( mightNeedGroupBy ) {
@@ -2004,7 +2004,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         }
     }
     if ( debug && useGroupBy ) {
-        log_gq::debug("{}: groupBySQL: {}", __func__, groupBySQL);
+        log_gq::debug("{}: groupBySQL: [{}]", __func__, groupBySQL);
     }
 
     combinedSQL[0] = '\0';
@@ -2312,7 +2312,7 @@ int chl_gen_query_access_control_setup_impl(
         return CAT_NOT_OPEN;
     }
     if ( debug ) {
-        log_gq::debug("{}: icss={}", __func__, (uintmax_t) icss);
+        log_gq::debug("{}: icss=[{}]", __func__, (uintmax_t) icss);
     }
 
     if ( genQueryInp.continueInx == 0 ) {
@@ -2394,7 +2394,7 @@ int chl_gen_query_access_control_setup_impl(
             }
         }
         if ( debug ) {
-            log_gq::debug("{}: statement number ={}", __func__, statementNum);
+            log_gq::debug("{}: statement number =[{}]", __func__, statementNum);
         }
         needToGetNextRow = 0;
     }
@@ -2433,11 +2433,11 @@ int chl_gen_query_access_control_setup_impl(
 
         result->rowCnt++;
         if ( debug ) {
-            log_gq::debug("{}: result->rowCnt={}", __func__, result->rowCnt);
+            log_gq::debug("{}: result->rowCnt=[{}]", __func__, result->rowCnt);
         }
         numOfCols = icss->stmtPtr[statementNum]->numOfCols;
         if ( debug ) {
-            log_gq::debug("{}: numOfCols={}", __func__, numOfCols);
+            log_gq::debug("{}: numOfCols=[{}]", __func__, numOfCols);
         }
         result->attriCnt = numOfCols;
         result->continueInx = statementNum + 1;
@@ -2455,13 +2455,13 @@ int chl_gen_query_access_control_setup_impl(
             maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
         }
         if ( debug ) {
-            log_gq::debug("{}: maxColSize={}", __func__, maxColSize);
+            log_gq::debug("{}: maxColSize=[{}]", __func__, maxColSize);
         }
 
         if ( i == 0 ) { /* first time thru, allocate and initialize */
             attriTextLen = numOfCols * maxColSize;
             if ( debug ) {
-                log_gq::debug("{}: attriTextLen={}", __func__, attriTextLen);
+                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
             }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
@@ -2490,10 +2490,10 @@ int chl_gen_query_access_control_setup_impl(
         if ( maxColSize > currentMaxColSize ) {
             maxColSize += MINIMUM_COL_SIZE; // bump it up to try to avoid some multiple resizes
             if (debug)
-                log_gq::debug("{}: Bumping {} to {}", __func__, currentMaxColSize, maxColSize);
+                log_gq::debug("{}: Bumping [{}] to [{}]", __func__, currentMaxColSize, maxColSize);
             attriTextLen = numOfCols * maxColSize;
             if ( debug ) {
-                log_gq::debug("{}: attriTextLen={}", __func__, attriTextLen);
+                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
             }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
