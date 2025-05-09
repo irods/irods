@@ -367,7 +367,7 @@ if (ICOMMANDS_INSTALL_SYMLINKS)
 
       add_custom_target(links ALL)
 
-      set(ICOMMANDS_LINK_STAGING_DIR "${CMAKE_BINARY_DIR}/links")
+      set(ICOMMANDS_LINK_STAGING_DIR "${CMAKE_BINARY_DIR}/links-staging")
       add_custom_command(
         OUTPUT "${ICOMMANDS_LINK_STAGING_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E "make_directory" "${ICOMMANDS_LINK_STAGING_DIR}"
