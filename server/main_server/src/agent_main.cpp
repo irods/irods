@@ -757,6 +757,11 @@ namespace
 
         irods::experimental::log::set_server_type("agent");
 
+        // Always invoke start operations for plugins before (network) PEPs are triggered.
+        // This is very important because some rule engine plugins require initialization before
+        // they can process any PEPs (e.g. Python REP).
+        irods::re_plugin_globals->global_re_mgr.call_start_operations();
+
         // Artificially create a conn object in order to create a network object.
         // This is gratuitous but necessary to maintain the consistent interface.
         RcComm tmp_comm{};
@@ -861,8 +866,6 @@ namespace
             sendVersion(net_obj, status, 0, nullptr, 0);
             cleanupAndExit(status);
         }
-
-        irods::re_plugin_globals->global_re_mgr.call_start_operations();
 
         status = getRodsEnv(&rsComm.myEnv);
 
