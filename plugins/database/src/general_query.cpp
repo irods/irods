@@ -165,12 +165,10 @@ sFklink( const char *table1, const char *table2, const char *connectingSQL ) {
     Links[nLinks].table1 = fkFindName( table1 );
     Links[nLinks].table2 = fkFindName( table2 );
     snprintf( Links[nLinks].connectingSQL, sizeof( Links[nLinks].connectingSQL ), "%s", connectingSQL );
-    if ( debug > 1 ) printf( "link %d is from %d to %d\n", nLinks,
-                                 Links[nLinks].table1,
-                                 Links[nLinks].table2 );
-    if ( debug2 ) printf( "T%2.2d L%2.2d T%2.2d\n",
-                              Links[nLinks].table1,  nLinks,
-                              Links[nLinks].table2 );
+
+    log_gq::debug("{}: link [{}] is from [{}] to [{}]", __func__, nLinks, Links[nLinks].table1, Links[nLinks].table2);
+    log_gq::debug("{}: T[{}] L[{}] T[{}]", __func__, Links[nLinks].table1, nLinks, Links[nLinks].table2);
+
     nLinks++;
     return 0;
 }
@@ -210,9 +208,9 @@ sTable( const char *tableName, const char *tableAlias, int cycler ) {
     snprintf( Tables[nTables].tableName, sizeof( Tables[nTables].tableName ), "%s", tableName );
     snprintf( Tables[nTables].tableAlias, sizeof( Tables[nTables].tableAlias ), "%s", tableAlias );
     Tables[nTables].cycler = cycler;
-    if ( debug > 1 ) {
-        printf( "table %d is %s\n", nTables, tableName );
-    }
+
+    log_gq::debug("{}: table [{}] is [{}]", __func__, nTables, tableName);
+
     nTables++;
     return 0;
 }
@@ -226,8 +224,9 @@ sColumn( int defineVal, const char *tableName, const char *columnName ) {
     snprintf( Columns[nColumns].tableName, sizeof( Columns[nColumns].tableName ), "%s", tableName );
     snprintf( Columns[nColumns].columnName, sizeof( Columns[nColumns].columnName ), "%s", columnName );
     Columns[nColumns].defineValue = defineVal;
-    if ( debug > 1 ) printf( "column %d is %d %s %s\n",
-                                 nColumns, defineVal, tableName, columnName );
+
+    log_gq::debug("{}: column [{}] is [{}] [{}] [{}]", __func__, nColumns, defineVal, tableName, columnName);
+
     nColumns++;
     return 0;
 }
@@ -243,17 +242,12 @@ tablePresent( char *table, char *sqlText ) {
     int tokens, blank;
     char *cp1, *cp2;
 
-    if ( debug > 1 ) {
-        printf( "tablePresent table:%s:\n", table );
-    }
-    if ( debug > 1 ) {
-        printf( "tablePresent sqlText:%s:\n", sqlText );
-    }
+    log_gq::debug("{}: tablePresent table[{}]", __func__, table);
+    log_gq::debug("{}: tablePresent sqlText[{}]", __func__, sqlText);
 
     if ( strstr( sqlText, table ) == NULL ) {
-        if ( debug > 1 ) {
-            printf( "tablePresent return 0 (simple)\n" );
-        }
+        log_gq::debug("{}: tablePresent return 0 (simple)", __func__);
+
         return ( 0 ); /* simple case */
     }
 
@@ -275,9 +269,8 @@ tablePresent( char *table, char *sqlText ) {
         tokens++;
     }
 
-    if ( debug > 1 ) {
-        printf( "tablePresent tokens=%d\n", tokens );
-    }
+    log_gq::debug("{}: tablePresent tokens=[{}]", __func__, tokens);
+
     if ( tokens == 2 ) {
         return ( 1 ); /* 2 tokens and did match, is present */
     }
@@ -321,13 +314,11 @@ tScan( int table, int link ) {
     int subKeep;
     int i;
 
-    if ( debug > 1 ) {
-        printf( "%d tScan\n", table );
-    }
+    log_gq::debug("{}: [{}] tScan", __func__, table);
 
     thisKeep = 0;
     if ( table < 0 || static_cast<std::size_t>(table) >= sizeof( Tables ) / sizeof( *Tables ) ) {
-        printf( "index %d out of bounds.", table );
+        log_gq::error("{}: index [{}] out of bounds.", __func__, table);
         return -1;
     }
 
@@ -335,25 +326,24 @@ tScan( int table, int link ) {
         thisKeep = 1;
         Tables[table].flag = 2;
         nToFind--;
-        if ( debug > 1 ) {
-            printf( "nToFind decremented, now=%d\n", nToFind );
-        }
+
+        log_gq::debug("{}: nToFind decremented, now=[{}]", __func__, nToFind);
+
         if ( nToFind <= 0 ) {
             return thisKeep;
         }
     }
     else {
         if ( Tables[table].flag != 0 ) { /* not still seeking this one */
-            if ( debug > 1 ) {
-                printf( "%d returning flag=%d\n", table, Tables[table].flag );
-            }
+
+            log_gq::debug("{}: [{}] returning flag=[{}]", __func__, table, Tables[table].flag);
+
             return 0;
         }
     }
     if ( Tables[table].cycler == 1 ) {
-        if ( debug > 1 ) {
-            printf( "%d returning cycler\n", table );
-        }
+        log_gq::debug("{}: [{}] returning cycler", __func__, table);
+
         return ( thisKeep ); /* do no more for cyclers */
     }
 
@@ -361,17 +351,22 @@ tScan( int table, int link ) {
 
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
-            if ( debug > 1 ) {
-                printf( "%d trying link %d forward\n", table, i );
-            }
+            log_gq::debug("{}: [{}] trying link [{}] forward", __func__, table, i);
+
             subKeep = tScan( Links[i].table2, i );
-            if ( debug > 1 ) printf( "subKeep %d, this table %d, link %d, table2 %d\n",
-                                         subKeep, table, i, Links[i].table2 );
+
+            log_gq::debug("{}: subKeep [{}], this table [{}], link [{}], table2 [{}]",
+                          __func__,
+                          subKeep,
+                          table,
+                          i,
+                          Links[i].table2);
+
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) {
-                    printf( "%d use link %d\n", table, i );
-                }
+
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
+
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
@@ -389,9 +384,9 @@ tScan( int table, int link ) {
                                    MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
-                if ( debug > 1 ) {
-                    printf( "added (2) to fromSQL: %s\n", fromSQL );
-                }
+
+                log_gq::debug("{}: added (2) to fromSQL: [{}]", __func__, fromSQL);
+
                 if ( nToFind <= 0 ) {
                     return thisKeep;
                 }
@@ -400,17 +395,22 @@ tScan( int table, int link ) {
     }
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
-            if ( debug > 1 ) {
-                printf( "%d trying link %d backward\n", table, i );
-            }
+            log_gq::debug("{}: [{}] trying link [{}] backward", __func__, table, i);
+
             subKeep = tScan( Links[i].table1, i );
-            if ( debug > 1 ) printf( "subKeep %d, this table %d, link %d, table1 %d\n",
-                                         subKeep, table, i, Links[i].table1 );
+
+            log_gq::debug("{}: subKeep [{}], this table [{}], link [{}], table1 [{}]",
+                          __func__,
+                          subKeep,
+                          table,
+                          i,
+                          Links[i].table1);
+
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) {
-                    printf( "%d use link %d\n", table, i );
-                }
+
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
+
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
@@ -428,18 +428,18 @@ tScan( int table, int link ) {
                                    MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
-                if ( debug > 1 ) {
-                    printf( "added (3) to fromSQL: %s\n", fromSQL );
-                }
+
+                log_gq::debug("{}: added (3) to fromSQL: [{}]", __func__, fromSQL);
+
                 if ( nToFind <= 0 ) {
                     return thisKeep;
                 }
             }
         }
     }
-    if ( debug > 1 ) {
-        printf( "%d returning %d\n", table, thisKeep );
-    }
+
+    log_gq::debug("{}: [{}] returning [{}]", __func__, table, thisKeep);
+
     return thisKeep;
 }
 
@@ -463,10 +463,10 @@ sTest( int i1, int i2 ) {
     nToFind = 2;
     keepVal = tScan( i1, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
-        printf( "error failed to link %d to %d\n", i1, i2 );
+        log_gq::error("{}: error failed to link [{}] to [{}]", __func__, i1, i2);
     }
     else {
-        printf( "SUCCESS linking %d to %d\n", i1, i2 );
+        log_gq::debug("{}: SUCCESS linking [{}] to [{}]", __func__, i1, i2);
     }
     return 0;
 }
@@ -489,10 +489,10 @@ int sTest2( int i1, int i2, int i3 ) {
     nToFind = 3;
     keepVal = tScan( i1, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
-        printf( "error failed to link %d, %d and %d\n", i1, i2, i3 );
+        log_gq::error("{}: error failed to link [{}], [{}] and [{}]", __func__, i1, i2, i3);
     }
     else {
-        printf( "SUCCESS linking %d, %d, %d\n", i1, i2, i3 );
+        log_gq::debug("{}: SUCCESS linking [{}], [{}], [{}]", __func__, i1, i2, i3);
     }
     return 0;
 }
@@ -507,61 +507,56 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     int subKeep;
     int i;
 
-    if ( debug > 1 ) {
-        printf( "%d tCycleChk\n", table );
-    }
+    log_gq::debug("{}: [{}] tCycleChk", __func__, table);
 
     thisKeep = 0;
 
     if ( Tables[table].flag != 0 ) {
         if ( Tables[table].flag == thisTreeNum ) {
-            if ( debug > 1 ) {
-                printf( "Found cycle at node %d\n", table );
-            }
+            log_gq::debug("{}: Found cycle at node [{}]", __func__, table);
+
             return 1;
         }
     }
     Tables[table].flag = thisTreeNum;
 
     if ( Tables[table].cycler == 1 ) {
-        if ( debug > 1 ) {
-            printf( "%d returning cycler\n", table );
-        }
+        log_gq::debug("{}: [{}] returning cycler", __func__, table);
+
         return ( thisKeep ); /* do no more for cyclers */
     }
 
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
-            if ( debug > 1 ) {
-                printf( "%d trying link %d forward\n", table, i );
-            }
+            log_gq::debug("{}: [{}] trying link [{}] forward", __func__, table, i);
+
             subKeep = tCycleChk( Links[i].table2, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) printf( "%d use link %d tree %d\n", table, i,
-                                             thisTreeNum );
+
+                log_gq::debug("{}: [{}] use link [{}] tree [{}]", __func__, table, i, thisTreeNum);
+
                 return thisKeep;
             }
         }
     }
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
-            if ( debug > 1 ) {
-                printf( "%d trying link %d backward\n", table, i );
-            }
+            log_gq::debug("{}: [{}] trying link [{}] backward", __func__, table, i);
+
             subKeep = tCycleChk( Links[i].table1, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) {
-                    printf( "%d use link %d\n", table, i );
-                }
+
+                log_gq::debug("{}: [{}] use link [{}]", __func__, table, i);
+
                 return thisKeep;
             }
         }
     }
-    if ( debug > 1 ) {
-        printf( "%d returning %d\n", table, thisKeep );
-    }
+
+    log_gq::debug("{}: [{}] returning [{}]", __func__, table, thisKeep);
+
     return thisKeep;
 }
 
@@ -592,9 +587,9 @@ int findCycles( int startTable ) {
         }
         treeNum++;
         status = tCycleChk( startTable, -1, treeNum );
-        if ( debug > 1 ) {
-            printf( "tree %d status %d\n", treeNum, status );
-        }
+
+        log_gq::debug("{}: tree [{}] status [{}]", __func__, treeNum, status);
+
         if ( status ) {
             return status;
         }
@@ -604,9 +599,9 @@ int findCycles( int startTable ) {
         if ( Tables[i].flag == 0 ) {
             treeNum++;
             status = tCycleChk( i, -1, treeNum );
-            if ( debug > 1 ) {
-                printf( "tree %d status %d\n", treeNum, status );
-            }
+
+            log_gq::debug("{}: tree [{}] status [{}]", __func__, treeNum, status);
+
             if ( status ) {
                 return status;
             }
@@ -705,9 +700,8 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                     if ( !rstrcat( fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
-                if ( debug > 1 ) {
-                    printf( "added (1) to fromSQL: %s\n", fromSQL );
-                }
+
+                log_gq::debug("{}: added (1) to fromSQL: [{}]", __func__, fromSQL);
             }
             else {
 
@@ -741,9 +735,9 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
 #endif
                 }
             }
-            if ( debug > 1 ) {
-                printf( "table index=%d, nToFind=%d\n", i, nToFind );
-            }
+
+            log_gq::debug("{}: table index=[{}], nToFind=[{}]", __func__, i, nToFind);
+
             return i;
         }
     }
@@ -1967,9 +1961,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         return CAT_FAILED_TO_LINK_TABLES;
     }
     else {
-        if ( debug > 1 ) {
-            printf( "SUCCESS linking tables\n" );
-        }
+        log_gq::debug("{}: SUCCESS linking tables", __func__);
     }
 
     if ( N_col_meta_data_attr_name > 1 ) {
@@ -1996,13 +1988,13 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
 
     if ( debug ) {
-        printf( "selectSQL: %s\n", selectSQL );
+        log_gq::debug("{}: selectSQL: [{}]", __func__, selectSQL);
     }
     if ( debug ) {
-        printf( "fromSQL: %s\n", fromSQL );
+        log_gq::debug("{}: fromSQL: [{}]", __func__, fromSQL);
     }
     if ( debug ) {
-        printf( "whereSQL: %s\n", whereSQL );
+        log_gq::debug("{}: whereSQL: [{}]", __func__, whereSQL);
     }
     useGroupBy = 0;
     if ( mightNeedGroupBy ) {
@@ -2011,7 +2003,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         }
     }
     if ( debug && useGroupBy ) {
-        printf( "groupBySQL: %s\n", groupBySQL );
+        log_gq::debug("{}: groupBySQL: [{}]", __func__, groupBySQL);
     }
 
     combinedSQL[0] = '\0';
@@ -2062,7 +2054,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
 
     if ( debug ) {
-        printf( "combinedSQL=:%s:\n", combinedSQL );
+        log_gq::debug("{}: combinedSQL=[{}]", __func__, combinedSQL);
     }
     strncpy( resultingSQL, combinedSQL, MAX_SQL_SIZE_GQ );
 
@@ -2077,7 +2069,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
 
     if ( debug ) {
-        printf( "countSQL=:%s:\n", countSQL );
+        log_gq::debug("{}: countSQL=[{}]", __func__, countSQL);
     }
     strncpy( resultingCountSQL, countSQL, MAX_SQL_SIZE_GQ );
 #endif
@@ -2319,7 +2311,7 @@ int chl_gen_query_access_control_setup_impl(
         return CAT_NOT_OPEN;
     }
     if ( debug ) {
-        printf( "icss=%ju\n", ( uintmax_t )icss );
+        log_gq::debug("{}: icss=[{}]", __func__, (uintmax_t) icss);
     }
 
     if ( genQueryInp.continueInx == 0 ) {
@@ -2401,7 +2393,7 @@ int chl_gen_query_access_control_setup_impl(
             }
         }
         if ( debug ) {
-            printf( "statement number =%d\n", statementNum );
+            log_gq::debug("{}: statement number =[{}]", __func__, statementNum);
         }
         needToGetNextRow = 0;
     }
@@ -2440,11 +2432,11 @@ int chl_gen_query_access_control_setup_impl(
 
         result->rowCnt++;
         if ( debug ) {
-            printf( "result->rowCnt=%d\n", result->rowCnt );
+            log_gq::debug("{}: result->rowCnt=[{}]", __func__, result->rowCnt);
         }
         numOfCols = icss->stmtPtr[statementNum]->numOfCols;
         if ( debug ) {
-            printf( "numOfCols=%d\n", numOfCols );
+            log_gq::debug("{}: numOfCols=[{}]", __func__, numOfCols);
         }
         result->attriCnt = numOfCols;
         result->continueInx = statementNum + 1;
@@ -2462,13 +2454,13 @@ int chl_gen_query_access_control_setup_impl(
             maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
         }
         if ( debug ) {
-            printf( "maxColSize=%d\n", maxColSize );
+            log_gq::debug("{}: maxColSize=[{}]", __func__, maxColSize);
         }
 
         if ( i == 0 ) { /* first time thru, allocate and initialize */
             attriTextLen = numOfCols * maxColSize;
             if ( debug ) {
-                printf( "attriTextLen=%d\n", attriTextLen );
+                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
             }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
@@ -2496,11 +2488,11 @@ int chl_gen_query_access_control_setup_impl(
            old one. */
         if ( maxColSize > currentMaxColSize ) {
             maxColSize += MINIMUM_COL_SIZE; // bump it up to try to avoid some multiple resizes
-            if ( debug ) printf( "Bumping %d to %d\n",
-                                     currentMaxColSize, maxColSize );
+            if (debug)
+                log_gq::debug("{}: Bumping [{}] to [{}]", __func__, currentMaxColSize, maxColSize);
             attriTextLen = numOfCols * maxColSize;
             if ( debug ) {
-                printf( "attriTextLen=%d\n", attriTextLen );
+                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
             }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
