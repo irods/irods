@@ -2190,7 +2190,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
 #                    ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', str(repl_num)],
 #                    'STDOUT', '{0}: {1}'.format(k, str(cols[k])))
                 full_row = lib.get_replica_full_row(self.admin, object_path, repl_num)
-                assert '{0}: {1}'.format(str(k), str(cols[k])) in full_row
+                assert '{0} = {1}'.format(str(k), str(cols[k])) in full_row
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
