@@ -674,25 +674,20 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
             # Put data object to play with...
             user0.assert_icommand(
                 ['iput', '-R', self.resource_1, physical_path, logical_path])
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_1],
-                'STDOUT', 'DATA_REPL_STATUS: 1')
+            self.assertEqual(int(lib.get_replica_status(self.admin, os.path.basename(logical_path), 0)), 1)
             self.admin.assert_icommand(['iscan', '-d', logical_path])
 
             # Attempt to replicate data object for which admin has no permissions...
             self.admin.assert_icommand(
                 ['irepl', '-R', self.resource_2, logical_path],
                 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
-                'STDOUT', 'No results found.')
+            self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, self.resource_2))
+            self.assertFalse(lib.replica_exists(self.admin, logical_path, 1))
             # TODO: #4770 Use test tool to assert that file was not created on resource_2 (i.e. iscan on remote physical file)
 
             # Try again with admin flag (with success)
             self.admin.assert_icommand(['irepl', '-M', '-R', self.resource_2, logical_path])
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
-                'STDOUT', 'DATA_REPL_STATUS: 1')
+            self.assertEqual(int(lib.get_replica_status(self.admin, os.path.basename(logical_path), 1)), 1)
             self.admin.assert_icommand(['iscan', '-d', logical_path])
 
         finally:

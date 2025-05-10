@@ -646,8 +646,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT', 'created [{}]'.format(logical_path))
         os.unlink(rule_file)
 
-        self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'], 'STDOUT', 'DATA_REPL_STATUS: 1')
-
+        self.assertEqual(int(lib.get_replica_status(self.admin, os.path.basename(logical_path), 0)), 1)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiExecCmd_closeAllL1Desc__issue_6623(self):

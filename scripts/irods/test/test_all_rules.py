@@ -869,13 +869,12 @@ OUTPUT ruleExecOut
             with open(rule_file, 'wt') as f:
                 print(rule_string.format(logical_path, leaf_resource, source_resource), file=f, end='')
             self.admin.assert_icommand(['iput', rule_file, logical_path])
-            self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'],
-                'STDOUT', 'DATA_RESC_HIER: {}'.format(source_resource))
+            self.assertEqual(source_resource, lib.get_replica_full_row(self.admin, logical_path, "0")["DATA_RESC_HIER"])
 
             rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
             self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', 'msiDataObjPhymv status')
-            self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'],
-                'STDOUT', 'DATA_RESC_HIER: {}'.format(resource_hierarchy))
+            self.assertEqual(
+                resource_hierarchy, lib.get_replica_full_row(self.admin, logical_path, "0")["DATA_RESC_HIER"])
 
         finally:
             if os.path.exists(rule_file):
