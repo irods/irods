@@ -715,15 +715,14 @@ def get_replica_atime(session, logical_path, replica_number):
 
 def get_replica_full_row(session, logical_path, replica_number):
     logical_path = logical_path.replace("'", "\\x27")
-    query = (
-        f"select COLL_ID, DATA_CREATE_TIME, DATA_CHECKSUM, DATA_EXPIRY, DATA_ID, DATA_REPL_STATUS, ",
-        f"DATA_MAP_ID, DATA_MODE, DATA_NAME, DATA_OWNER_NAME, DATA_OWNER_ZONE, DATA_PATH, ",
-        f"DATA_REPL_NUM, DATA_SIZE, DATA_STATUS, DATA_TYPE_NAME, DATA_VERSION, DATA_MODIFY_TIME, ",
-        f"DATA_COMMENTS, DATA_RESC_HIER, DATA_RESC_ID, DATA_RESC_NAME ",
-        f"where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
-        ).format(os.path.dirname(logical_path),
-                 os.path.basename(logical_path),
-                 str(replica_number))
+    query = f"select COLL_ID, DATA_CREATE_TIME, DATA_CHECKSUM, DATA_EXPIRY, DATA_ID, DATA_REPL_STATUS, \
+        DATA_MAP_ID, DATA_MODE, DATA_NAME, DATA_OWNER_NAME, DATA_OWNER_ZONE, DATA_PATH, \
+        DATA_REPL_NUM, DATA_SIZE, DATA_STATUS, DATA_TYPE_NAME, DATA_VERSION, DATA_MODIFY_TIME, \
+        DATA_COMMENTS, DATA_RESC_HIER, DATA_RESC_ID, DATA_RESC_NAME \
+        where \
+        COLL_NAME = '{os.path.dirname(logical_path)}' and \
+        DATA_NAME = '{os.path.basename(logical_path)}' and \
+        DATA_REPL_NUM = '{str(replica_number)}'"
     out, _, _ = session.run_icommand(['iquery', query])
     return json.loads(out.strip())
 
