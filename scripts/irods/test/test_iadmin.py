@@ -2230,7 +2230,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
 #                        ['iadmin', 'ls', d, data_object_option[d], r, replica_option[r]],
 #                        'STDOUT', 'DATA_COMMENTS: ' + value)
                     full_row = lib.get_replica_full_row(self.admin, object_path, '1')
-                    assert f'DATA_COMMENTS: {value}' in full_row
+                    assert f'DATA_COMMENTS = {value}' in full_row
 
 #                    self.admin.assert_icommand_fail(
 #                        ['iadmin', 'ls', d, data_object_option[d], 'resource_hierarchy', self.admin.default_resource],
