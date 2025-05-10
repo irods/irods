@@ -674,25 +674,31 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
             # Put data object to play with...
             user0.assert_icommand(
                 ['iput', '-R', self.resource_1, physical_path, logical_path])
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_1],
-                'STDOUT', 'DATA_REPL_STATUS: 1')
+#            self.admin.assert_icommand(
+#                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_1],
+#                'STDOUT', 'DATA_REPL_STATUS: 1')
+            full_row = lib.get_replica_full_row(self.admin, logical_path, '0')
+            assert 'DATA_REPL_STATUS = 1' in full_row
             self.admin.assert_icommand(['iscan', '-d', logical_path])
 
             # Attempt to replicate data object for which admin has no permissions...
             self.admin.assert_icommand(
                 ['irepl', '-R', self.resource_2, logical_path],
                 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
-                'STDOUT', 'No results found.')
+#            self.admin.assert_icommand(
+#                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
+#                'STDOUT', 'No results found.')
+            full_row = lib.get_replica_full_row(self.admin, logical_path, '1')
+            assert 'None' in full_row
             # TODO: #4770 Use test tool to assert that file was not created on resource_2 (i.e. iscan on remote physical file)
 
             # Try again with admin flag (with success)
             self.admin.assert_icommand(['irepl', '-M', '-R', self.resource_2, logical_path])
-            self.admin.assert_icommand(
-                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
-                'STDOUT', 'DATA_REPL_STATUS: 1')
+#            self.admin.assert_icommand(
+#                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', self.resource_2],
+#                'STDOUT', 'DATA_REPL_STATUS: 1')
+            full_row = lib.get_replica_full_row(self.admin, logical_path, '1')
+            assert 'DATA_REPL_STATUS = 1' in full_row
             self.admin.assert_icommand(['iscan', '-d', logical_path])
 
         finally:

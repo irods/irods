@@ -646,7 +646,9 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT', 'created [{}]'.format(logical_path))
         os.unlink(rule_file)
 
-        self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'], 'STDOUT', 'DATA_REPL_STATUS: 1')
+#        self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'], 'STDOUT', 'DATA_REPL_STATUS: 1')
+        full_row = lib.get_replica_full_row(self.admin, logical_path, '0')
+        assert 'DATA_REPL_STATUS = 1' in full_row
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
