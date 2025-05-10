@@ -417,7 +417,7 @@ Options:
                  with --daemonize.
   -t, --test-mode
                  Write log messages to normal location and
-                 log/test_mode_output.log.
+                 <service_account_home_directory>/log/test_mode_output.log.
       --version  Display version information and exit.
 
 Signals:
