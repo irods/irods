@@ -2177,14 +2177,10 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iput', original_file_path, object_path])
             repl_num = 0
             for k in cols:
-                self.admin.assert_icommand(
-                    ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', str(repl_num)],
-                    'STDOUT', str(k))
+                self.assertIn(str(k), lib.get_replica_full_row(self.admin, object_path, repl_num))
                 self.admin.assert_icommand(
                     ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', str(repl_num), str(k), str(cols[k])])
-                self.admin.assert_icommand(
-                    ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', str(repl_num)],
-                    'STDOUT', '{0}: {1}'.format(k, str(cols[k])))
+                self.assertEqual(str(cols[k]), lib.get_replica_full_row(self.admin, object_path, repl_num)[k])
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
@@ -2211,17 +2207,11 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             for d in data_object_option:
                 for r in replica_option:
                     value = '_'.join([data_object_option[d], replica_option[r]])
-                    self.admin.assert_icommand(
-                        ['iadmin', 'ls', d, data_object_option[d], r, replica_option[r]],
-                        'STDOUT', 'DATA_COMMENTS')
+                    self.assertIn("DATA_COMMENTS", lib.get_replica_full_row(self.admin, object_path, "1"))
                     self.admin.assert_icommand(
                         ['iadmin', 'modrepl', d, data_object_option[d], r, replica_option[r], 'DATA_COMMENTS', value])
-                    self.admin.assert_icommand(
-                        ['iadmin', 'ls', d, data_object_option[d], r, replica_option[r]],
-                        'STDOUT', 'DATA_COMMENTS: ' + value)
-                    self.admin.assert_icommand_fail(
-                        ['iadmin', 'ls', d, data_object_option[d], 'resource_hierarchy', self.admin.default_resource],
-                        'STDOUT', 'DATA_COMMENTS: ' + value)
+                    self.assertEqual(str(value), lib.get_replica_full_row(self.admin, object_path, "1")["DATA_COMMENTS"])
+
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
@@ -2234,8 +2224,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             object_path = os.path.join(self.admin.session_collection, filename)
             self.admin.assert_icommand(['iput', original_file_path, object_path])
 
-            initial_ls_output,_,_ = self.admin.run_icommand(
-                ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', '0'])
+            initial_full_row = lib.get_replica_full_row(self.admin, object_path, "0")
 
             garbage_str = 'nopes'
             self.admin.assert_icommand(
@@ -2245,9 +2234,8 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
                 ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', garbage_str, 'DATA_COMMENTS', 'nopes'],
                 'STDERR', 'Invalid input [{}] for replica_number.'.format(garbage_str))
 
-            ending_ls_output,_,_ = self.admin.run_icommand(
-                ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', '0'])
-            self.assertEqual(initial_ls_output, ending_ls_output)
+            ending_full_row = lib.get_replica_full_row(self.admin, object_path, "0")
+            self.assertEqual(initial_full_row, ending_full_row)
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
