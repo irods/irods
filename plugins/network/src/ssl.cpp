@@ -493,13 +493,6 @@ irods::error ssl_read_msg_header(irods::plugin_context& _ctx,
 
     }
 
-    // log debug information if appropriate
-    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
-        printf( "received header: len = %d\n%s\n",
-                header_length,
-                static_cast<char*>( _buffer ) );
-    }
-
     return SUCCESS();
 } // ssl_read_msg_header
 
@@ -814,11 +807,6 @@ irods::error ssl_write_msg_header(irods::plugin_context& _ctx,
         return PASSMSG("Invalid SSL plugin context.", err);
     }
 
-    // log debug information if appropriate
-    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
-        printf( "sending header: len = %d\n%s\n", _header->len, ( const char * ) _header->buf );
-    }
-
     // extract the useful bits from the context
     irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
 
@@ -892,14 +880,6 @@ irods::error ssl_send_rods_msg(
     // send the message buffer
     int bytes_written = 0;
     if (_msg_buf && msg_header.msgLen > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_msg_buf->buf);
-
-            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
-                std::printf("sending msg: \n%s\n", buf);
-            }
-        }
-
         if (const auto err = ssl_socket_write(_msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
             return PASSMSG("Failed writing SSL message to socket.", err);
         }
@@ -907,14 +887,6 @@ irods::error ssl_send_rods_msg(
 
     // send the error buffer
     if (_error_buf && msg_header.errorLen > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_error_buf->buf);
-
-            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
-                std::printf("sending msg: \n%s\n", buf);
-            }
-        }
-
         if (const auto err = ssl_socket_write(_error_buf->buf, _error_buf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
             return PASSMSG("Failed writing SSL message to socket.", err);
         }
@@ -922,14 +894,6 @@ irods::error ssl_send_rods_msg(
 
     // send the stream buffer
     if (_stream_bbuf && msg_header.bsLen > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_stream_bbuf->buf);
-
-            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
-                std::printf("sending msg: \n%s\n", buf);
-            }
-        }
-
         if (const auto err = ssl_socket_write(_stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
             return PASSMSG("Failed writing SSL message to socket.", err);
         }
@@ -956,15 +920,6 @@ irods::error read_bytes_buf(
     int bytes_read = 0;
     const irods::error err = ssl_socket_read(_socket_handle, _buffer->buf, _length, bytes_read, _time_val, _ssl);
     _buffer->len = bytes_read;
-
-    // log transaction if requested
-    if (_protocol == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
-        const auto* buf = static_cast<char*>(_buffer->buf);
-
-        if (!may_contain_sensitive_data(buf, _buffer->len)) {
-            std::printf("received msg: \n%s\n", buf);
-        }
-    }
 
     // trap failed read
     if (!(err.ok() && bytes_read == _length)) {
