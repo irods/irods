@@ -3363,13 +3363,6 @@ int packStruct(const void *inStruct,
 
         /* add a NULL termination */
         *static_cast<char*>(outPtr) = '\0';
-        if (getRodsLogLevel() >= LOG_DEBUG9) {
-            const auto* buf = static_cast<char*>(packedOutput.bBuf.buf);
-
-            if (!may_contain_sensitive_data(buf, packedOutput.bBuf.len)) {
-                std::printf("packed XML: \n%s\n", buf);
-            }
-        }
     }
 
     *packedResult = (bytesBuf_t*)malloc(sizeof(**packedResult));
@@ -3447,15 +3440,8 @@ int pack_struct(const void *inStruct,
             return status;
         }
 
-        // Add a null byte. 
+        // Add a null byte.
         *static_cast<char*>(outPtr) = '\0';
-        if (getRodsLogLevel() >= LOG_DEBUG9) {
-            const auto* buf = static_cast<char*>(packedOutput.bBuf.buf);
-
-            if (!may_contain_sensitive_data(buf, packedOutput.bBuf.len)) {
-                std::printf("packed XML: \n%s\n", buf);
-            }
-        }
     }
 
     *packedResult = static_cast<bytesBuf_t*>(malloc(sizeof(**packedResult)));

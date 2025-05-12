@@ -214,8 +214,6 @@ irods::error tcp_read_msg_header(
         return ERROR(SYS_HEADER_READ_LEN_ERR, boost::format("only read [%d] of [%d]") % bytes_read % header_length);
     }
 
-    rodsLog(LOG_DEBUG8, "received header: len = %d\n%.*s\n", header_length, bytes_read, static_cast<const char*>( _buffer ) );
-
     return SUCCESS();
 } // tcp_read_msg_header
 
@@ -229,15 +227,6 @@ irods::error tcp_write_msg_header(
     irods::error ret = _ctx.valid< irods::tcp_object >();
     if ( !ret.ok() ) {
         return PASS( ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // log debug information if appropriate
-    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
-        printf( "sending header: len = %d\n%.*s\n",
-                _header->len,
-                _header->len,
-                ( const char * ) _header->buf );
     }
 
     // =-=-=-=-=-=-=-
@@ -350,14 +339,6 @@ irods::error tcp_send_rods_msg(
     // send the message buffer
     int bytes_written = 0;
     if (_msg_buf && _msg_buf->len > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_msg_buf->buf);
-
-            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
-                std::printf("sending msg: \n%.*s\n", _msg_buf->len, buf);
-            }
-        }
-
         ret = tcp_socket_write(
                   socket_handle,
                   _msg_buf->buf,
@@ -366,20 +347,11 @@ irods::error tcp_send_rods_msg(
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-
     } // if msgLen > 0
 
     // =-=-=-=-=-=-=-
     // send the error buffer
     if (_error_buf && _error_buf->len > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_error_buf->buf);
-
-            if (!may_contain_sensitive_data(buf, _error_buf->len)) {
-                std::printf("sending msg: \n%.*s\n", _error_buf->len, buf);
-            }
-        }
-
         ret = tcp_socket_write(
                   socket_handle,
                   _error_buf->buf,
@@ -388,20 +360,11 @@ irods::error tcp_send_rods_msg(
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-
     } // if errorLen > 0
 
     // =-=-=-=-=-=-=-
     // send the stream buffer
     if (_stream_bbuf && _stream_bbuf->len > 0) {
-        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            const auto* buf = static_cast<char*>(_stream_bbuf->buf);
-
-            if (!may_contain_sensitive_data(buf, _stream_bbuf->len)) {
-                std::printf("sending msg: \n%.*s\n", _stream_bbuf->len, buf);
-            }
-        }
-
         ret = tcp_socket_write(
                   socket_handle,
                   _stream_bbuf->buf,
@@ -410,11 +373,9 @@ irods::error tcp_send_rods_msg(
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-
     } // if bsLen > 0
 
     return SUCCESS();
-
 } // tcp_send_rods_msg
 
 // =-=-=-=-=-=-=-
@@ -442,15 +403,6 @@ irods::error read_bytes_buf(
                            bytes_read,
                            _time_val );
     _buffer->len = bytes_read;
-
-    // log transaction if requested
-    if (_protocol == XML_PROT) {
-        const auto* buf = static_cast<char*>(_buffer->buf);
-
-        if (!may_contain_sensitive_data(buf, _buffer->len)) {
-            rodsLog(LOG_DEBUG8, "received msg: \n%.*s\n", _buffer->len, buf);
-        }
-    }
 
     if (!ret.ok()) {
         free(_buffer->buf);
