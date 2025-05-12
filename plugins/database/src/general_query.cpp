@@ -1987,22 +1987,16 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         return CAT_INVALID_ARGUMENT;
     }
 
-    if ( debug ) {
-        log_gq::debug("{}: selectSQL: [{}]", __func__, selectSQL);
-    }
-    if ( debug ) {
-        log_gq::debug("{}: fromSQL: [{}]", __func__, fromSQL);
-    }
-    if ( debug ) {
-        log_gq::debug("{}: whereSQL: [{}]", __func__, whereSQL);
-    }
+    log_gq::debug("{}: selectSQL: [{}]", __func__, selectSQL);
+    log_gq::debug("{}: fromSQL: [{}]", __func__, fromSQL);
+    log_gq::debug("{}: whereSQL: [{}]", __func__, whereSQL);
     useGroupBy = 0;
     if ( mightNeedGroupBy ) {
         if ( strlen( groupBySQL ) > 10 ) {
             useGroupBy = 1;
         }
     }
-    if ( debug && useGroupBy ) {
+    if (useGroupBy) {
         log_gq::debug("{}: groupBySQL: [{}]", __func__, groupBySQL);
     }
 
@@ -2053,9 +2047,8 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 #endif
     }
 
-    if ( debug ) {
-        log_gq::debug("{}: combinedSQL=[{}]", __func__, combinedSQL);
-    }
+    log_gq::debug("{}: combinedSQL=[{}]", __func__, combinedSQL);
+
     strncpy( resultingSQL, combinedSQL, MAX_SQL_SIZE_GQ );
 
 #if ORA_ICAT
@@ -2068,9 +2061,8 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         if ( !rstrcat( countSQL, whereSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
 
-    if ( debug ) {
-        log_gq::debug("{}: countSQL=[{}]", __func__, countSQL);
-    }
+    log_gq::debug("{}: countSQL=[{}]", __func__, countSQL);
+
     strncpy( resultingCountSQL, countSQL, MAX_SQL_SIZE_GQ );
 #endif
     return 0;
@@ -2310,9 +2302,8 @@ int chl_gen_query_access_control_setup_impl(
     if ( status < 0 || icss == NULL ) {
         return CAT_NOT_OPEN;
     }
-    if ( debug ) {
-        log_gq::debug("{}: icss=[{}]", __func__, (uintmax_t) icss);
-    }
+
+    log_gq::debug("{}: icss=[{}]", __func__, (uintmax_t) icss);
 
     if ( genQueryInp.continueInx == 0 ) {
         if ( genQueryInp.options & QUOTA_QUERY ) {
@@ -2392,9 +2383,9 @@ int chl_gen_query_access_control_setup_impl(
                 return status;
             }
         }
-        if ( debug ) {
-            log_gq::debug("{}: statement number =[{}]", __func__, statementNum);
-        }
+
+        log_gq::debug("{}: statement number =[{}]", __func__, statementNum);
+
         needToGetNextRow = 0;
     }
     else {
@@ -2431,13 +2422,13 @@ int chl_gen_query_access_control_setup_impl(
         needToGetNextRow = 1;
 
         result->rowCnt++;
-        if ( debug ) {
-            log_gq::debug("{}: result->rowCnt=[{}]", __func__, result->rowCnt);
-        }
+
+        log_gq::debug("{}: result->rowCnt=[{}]", __func__, result->rowCnt);
+
         numOfCols = icss->stmtPtr[statementNum]->numOfCols;
-        if ( debug ) {
-            log_gq::debug("{}: numOfCols=[{}]", __func__, numOfCols);
-        }
+
+        log_gq::debug("{}: numOfCols=[{}]", __func__, numOfCols);
+
         result->attriCnt = numOfCols;
         result->continueInx = statementNum + 1;
 
@@ -2453,15 +2444,14 @@ int chl_gen_query_access_control_setup_impl(
         if ( maxColSize < MINIMUM_COL_SIZE ) {
             maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
         }
-        if ( debug ) {
-            log_gq::debug("{}: maxColSize=[{}]", __func__, maxColSize);
-        }
+
+        log_gq::debug("{}: maxColSize=[{}]", __func__, maxColSize);
 
         if ( i == 0 ) { /* first time thru, allocate and initialize */
             attriTextLen = numOfCols * maxColSize;
-            if ( debug ) {
-                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
-            }
+
+            log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
+
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char* )malloc( totalLen );
@@ -2488,12 +2478,13 @@ int chl_gen_query_access_control_setup_impl(
            old one. */
         if ( maxColSize > currentMaxColSize ) {
             maxColSize += MINIMUM_COL_SIZE; // bump it up to try to avoid some multiple resizes
-            if (debug)
-                log_gq::debug("{}: Bumping [{}] to [{}]", __func__, currentMaxColSize, maxColSize);
+
+            log_gq::debug("{}: Bumping [{}] to [{}]", __func__, currentMaxColSize, maxColSize);
+
             attriTextLen = numOfCols * maxColSize;
-            if ( debug ) {
-                log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
-            }
+
+            log_gq::debug("{}: attriTextLen=[{}]", __func__, attriTextLen);
+
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 char *cp1, *cp2;
