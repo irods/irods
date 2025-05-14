@@ -10423,14 +10423,12 @@ irods::error db_move_object_op(
     char parentTargetCollName[MAX_NAME_LEN] = "";
     char newCollName[MAX_NAME_LEN] = "";
     int pLen, ocLen;
-    int i, OK, len;
+    int i, OK;
     char *cp;
     char objIdString[MAX_NAME_LEN];
     char collIdString[MAX_NAME_LEN];
     char nameTmp[MAX_NAME_LEN];
-    char ocLenStr[MAX_NAME_LEN];
     char collNameSlash[MAX_NAME_LEN];
-    char collNameSlashLen[20];
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlMoveObject");
@@ -10700,22 +10698,19 @@ irods::error db_move_object_op(
            part, endCollName string, and then (if any for each row) the
            tailing part of the name.
            (In the sql substr function, the index for sql is 1 origin.) */
-        snprintf( ocLenStr, MAX_NAME_LEN, "%d", ocLen + 1 );
         snprintf( collNameSlash, MAX_NAME_LEN, "%s/", oldCollName );
-        len = strlen( collNameSlash );
-        snprintf( collNameSlashLen, 10, "%d", len );
         cllBindVars[cllBindVarCount++] = newCollName;
-        cllBindVars[cllBindVarCount++] = ocLenStr;
+        cllBindVars[cllBindVarCount++] = oldCollName;
         cllBindVars[cllBindVarCount++] = newCollName;
-        cllBindVars[cllBindVarCount++] = ocLenStr;
-        cllBindVars[cllBindVarCount++] = collNameSlashLen;
+        cllBindVars[cllBindVarCount++] = oldCollName;
+        cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = oldCollName;
         if ( logSQL != 0 ) {
             log_sql::debug("chlMoveObject SQL 13");
         }
         status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
+                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, length(?) + 1), coll_name = ? || substr(coll_name, length(?) + 1) where substr(parent_coll_name, 1, length(?)) = ? or parent_coll_name = ?",
                       &icss );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             status = 0;
