@@ -15243,7 +15243,22 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
         // triggering OOM errors.
         for (auto&& rule_id : rule_ids) {
             stmt.bind(0, secs.c_str());
-            stmt.bind(1, rule_id.get_ref<const std::string&>().c_str());
+
+            const auto& rule_id_string = rule_id.get_ref<const std::string&>();
+            try {
+                log_db::debug("{}: Successfully converted rule_id string [{}] to integer [{}].",
+                              __func__,
+                              rule_id_string,
+                              std::stoll(rule_id_string));
+            }
+            catch (const std::exception& e) {
+                log_db::error(
+                    "{}: Could not convert rule_id string [{}] to integer: {}", __func__, rule_id_string, e.what());
+                return ERROR(SYS_INVALID_INPUT_PARAM,
+                             fmt::format("Could not convert rule_id string [{}] to integer", rule_id_string));
+            }
+            stmt.bind(1, rule_id_string.c_str());
+
             nanodbc::execute(stmt);
         }
 
