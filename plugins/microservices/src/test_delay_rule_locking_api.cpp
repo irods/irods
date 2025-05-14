@@ -7,6 +7,7 @@
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
 #include "irods/rs_delay_rule_lock.hpp"
 #include "irods/rs_delay_rule_unlock.hpp"
 #include "irods/rs_genquery2.hpp"
@@ -256,7 +257,7 @@ namespace
 
         // Not an integer.
         unlock_input.rule_ids = strdup(R"(["xyz"])");
-        IRODS_MSI_ASSERT(rs_delay_rule_unlock(_rei->rsComm, &unlock_input) == SYS_LIBRARY_ERROR);
+        IRODS_MSI_ASSERT(rs_delay_rule_unlock(_rei->rsComm, &unlock_input) == SYS_INVALID_INPUT_PARAM);
 
         IRODS_MSI_TEST_END
     } // test_unlock_multiple_delay_rules

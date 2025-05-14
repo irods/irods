@@ -242,7 +242,7 @@ TEST_CASE("invalid delay rule ids")
     SECTION("not an integer")
     {
         unlock_input.rule_ids = strdup(R"(["xyz"])");
-        REQUIRE(rc_delay_rule_unlock(static_cast<RcComm*>(conn), &unlock_input) == SYS_LIBRARY_ERROR);
+        REQUIRE(rc_delay_rule_unlock(static_cast<RcComm*>(conn), &unlock_input) == SYS_INVALID_INPUT_PARAM);
     }
 }
 
