@@ -57,17 +57,4 @@ int checkHostAccessControl(const std::string& _user_name,
 
 int msiCheckHostAccessControl(ruleExecInfo_t* rei);
 
-int msiDigestMonStat(msParam_t* cpu_wght,
-                     msParam_t* mem_wght,
-                     msParam_t* swap_wght,
-                     msParam_t* runq_wght,
-                     msParam_t* disk_wght,
-                     msParam_t* netin_wght,
-                     msParam_t* netout_wght,
-                     ruleExecInfo_t* rei);
-
-int msiFlushMonStat(msParam_t* timespan, msParam_t* tablename, ruleExecInfo_t* rei);
-
-int msiServerMonPerf(msParam_t* verbosity, msParam_t* probtime, ruleExecInfo_t* rei);
-
 #endif // IRODS_RE_IN2P3_SYS_RULE_HPP
