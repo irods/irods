@@ -302,6 +302,9 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
     new_server_config.pop('server_control_plane_port', None)
     new_server_config.pop('server_control_plane_timeout_milliseconds', None)
 
+    # Add client-server negotiation policy for outbound traffic based on the service account client environment.
+    new_server_config["client_server_policy"] = service_account_environment.get("irods_client_server_policy", None)
+
     # Add encryption properties based on the service account client environment. If any of the
     # configuration values are missing, we put an invalid value in the server configuration so that
     # the situation is brought to the attention of the administrator. All of these properties are
