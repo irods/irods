@@ -683,7 +683,15 @@ int initRsCommWithStartupPack(rsComm_t& rsComm, const startupPack_t& startupPack
     snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
 
-    rsComm.connectCnt = startupPack.connectCnt;
+    // The connect count is incremented to detect imminent infinite loops in server redirection. This can
+    // happen when the following is true:
+    // - The computer has multiple hostnames
+    // - The iRODS process is not configured to recognize all hostname aliases
+    // - The iRODS process is passed a hostname alias which causes it to redirect to itself
+    //
+    // Once the connect count exceeds a certain threshold, the server will terminate the request.
+    rsComm.connectCnt = startupPack.connectCnt + 1;
+
     rsComm.irodsProt = startupPack.irodsProt;
     rsComm.reconnFlag = startupPack.reconnFlag;
     rstrcpy(rsComm.proxyUser.userName, startupPack.proxyUser, NAME_LEN);
