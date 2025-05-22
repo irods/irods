@@ -22,7 +22,7 @@ def make_session_for_existing_user(username, password, hostname, zone):
     env_dict = lib.make_environment_dict(username, hostname, zone, use_ssl=test.settings.USE_SSL)
     return IrodsSession(env_dict, password, False)
 
-def make_session_for_existing_admin():
+def make_session_for_existing_admin(hostname=None):
     irods_config = IrodsConfig()
     if irods_config.version_tuple < (4, 1, 0):
         client_environment = open_and_load_pre410_env_file(os.path.join(irods_config.home_directory, '.irods', '.irodsEnv'))
@@ -31,7 +31,7 @@ def make_session_for_existing_admin():
     username = client_environment['irods_user_name']
     zone_name = client_environment['irods_zone_name']
     env_dict = lib.make_environment_dict(
-        username, test.settings.ICAT_HOSTNAME, zone_name, use_ssl=test.settings.USE_SSL)
+        username, test.settings.ICAT_HOSTNAME if hostname is None else hostname, zone_name, use_ssl=test.settings.USE_SSL)
     return IrodsSession(env_dict, test.settings.PREEXISTING_ADMIN_PASSWORD, False)
 
 def mkuser_and_return_session(user_type, username, password, hostname):
