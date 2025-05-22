@@ -2,13 +2,9 @@ import os
 import subprocess
 import sys
 import tempfile
+import unittest
 
 from datetime import datetime, timedelta
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 from . import session
 from .. import test
@@ -512,3 +508,35 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                 self.assertIn('"valid": false', res.stderr)
                 self.assertIn('"instanceLocation": "/host"', res.stderr)
                 self.assertIn('"error": "Number of characters must be at most 253"', res.stderr)
+
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Test must be run from the Catalog Service Provider')
+    def test_server_returns_SYS_EXCEED_CONNECT_CNT_when_redirect_loop_to_self_is_detected__issue_8529(self):
+        # This test requires that the Catalog Service Provider be identifiable by two names. This
+        # requirement is satisfied by the iRODS Testing Environment because setup_irods.py produces a
+        # server_config.json which initializes the "host" property to the container id while also allowing
+        # the same container to be identified (internally) as "irods-catalog-provider".
+
+        # Force the test to fail if the provider cannot be reached by its alternative name. This test is
+        # designed to align with the environment seen in the iRODS Testing Environment.
+        hostname_alias = 'irods-catalog-provider'
+        try:
+            admin = session.make_session_for_existing_admin(hostname_alias)
+            admin.__exit__()
+        except AssertionError:
+            raise EnvironmentError('Catalog Service Provider must be reachable by hostname [irods-catalog-provider]')
+
+        # Force the test to fail if the provider cannot be identified by at least two different names.
+        if IrodsConfig().server_config['host'] == hostname_alias:
+            raise EnvironmentError('[host] property in server_config.json cannot match [irods-catalog-provider]')
+
+        resc_name = 'issue_8529_resc'
+        local_file = os.path.join(self.admin.local_session_dir, 'issue_8529_file.txt')
+
+        try:
+            lib.create_ufs_resource(self.admin, resc_name, hostname=hostname_alias)
+            lib.create_ascii_printable_file(local_file, 1)
+            self.admin.assert_icommand(['iput', '-R', resc_name, local_file], 'STDERR', ['-9000 SYS_EXCEED_CONNECT_CNT'])
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', os.path.basename(local_file)])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
