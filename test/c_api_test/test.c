@@ -15,7 +15,7 @@
 #include "irods/dataObjClose.h"
 #include "irods/checksum.h"
 
-#if IRODS_VERSION_INTEGER != 5000000
+#if IRODS_VERSION_INTEGER != 5000001
 #  error "IRODS_VERSION_INTEGER needs attention"
 #endif
 
