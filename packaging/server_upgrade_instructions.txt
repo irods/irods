@@ -18,5 +18,9 @@ following command using the service account.
 For additional information, see the help text (irodsServer -h) or
 documentation at https://docs.irods.org.
 
+If using rsyslog, please add irodsAgent to your rsyslog configuration
+to avoid missing important log messages. For detailed instructions, See
+https://docs.irods.org/5.0.1/system_overview/server_log/#rsyslog-configuration.
+
 =======================================================================
 
