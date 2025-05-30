@@ -10266,16 +10266,16 @@ irods::error db_rename_object_op(
            part, _new_name string, and then (if any for each row) the
            tailing part of the name.
            (In the sql substr function, the index for sql is 1 origin.) */
-        snprintf( collNameSlash, MAX_NAME_LEN, "%s/", collName );
+        snprintf(collNameSlash, MAX_NAME_LEN, "%s/", collName);
         snprintf( slashNewName, MAX_NAME_LEN, "/%s", _new_name );
         if ( isRootDir ) {
             snprintf( slashNewName, MAX_NAME_LEN, "%s", _new_name );
         }
-	/* Instead of preparing the string length here, we have the RDBMS do its own length
-	 * calculations on the strings that we pass on via binded variables.
-	 * This method avoids string length interpretation issues related to
-	 * encoding transformations of multi-byte Unicode characters.
-	 */
+        /* Instead of preparing the string length here, we have the RDBMS do its own length
+         * calculations on the strings that we pass on via binded variables.
+         * This method avoids string length interpretation issues related to
+         * encoding transformations of multi-byte Unicode characters.
+         */
         cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
         cllBindVars[cllBindVarCount++] = collName;
@@ -10286,13 +10286,15 @@ irods::error db_rename_object_op(
             log_sql::debug("chlRenameObject SQL 9");
         }
 #ifdef ORA_ICAT
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set coll_name = SUBSTR(coll_name, 1, LENGTH(?)) || ? || SUBSTR(coll_name, LENGTH(?) + 1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_COLL_MAIN set coll_name = SUBSTR(coll_name, 1, LENGTH(?)) || ? || SUBSTR(coll_name, LENGTH(?) + "
+            "1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
+            &icss);
 #else
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set coll_name = substr(coll_name, 1, char_length(?)) || ? || substr(coll_name, char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_COLL_MAIN set coll_name = substr(coll_name, 1, char_length(?)) || ? || substr(coll_name, "
+            "char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+            &icss);
 #endif
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
@@ -10311,13 +10313,15 @@ irods::error db_rename_object_op(
             log_sql::debug("chlRenameObject SQL 10");
         }
 #ifdef ORA_ICAT
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = SUBSTR(parent_coll_name, 1, LENGTH(?)) || ? || SUBSTR(parent_coll_name, LENGTH(?) + 1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = SUBSTR(parent_coll_name, 1, "
+                                       "LENGTH(?)) || ? || SUBSTR(parent_coll_name, LENGTH(?) + 1) where "
+                                       "SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
+                                       &icss);
 #else
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name, 1, char_length(?)) || ? || substr(parent_coll_name, char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name, 1, "
+                                       "char_length(?)) || ? || substr(parent_coll_name, char_length(?) + 1) where "
+                                       "substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+                                       &icss);
 #endif
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
@@ -10708,9 +10712,9 @@ irods::error db_move_object_op(
            (In the sql substr function, the index for sql is 1 origin.) */
         snprintf( collNameSlash, MAX_NAME_LEN, "%s/", oldCollName );
 
-	/* See remark earlier on rational for having string length calculations
-	 * done by the RDBMS rather than here
-	 */
+        /* See remark earlier on rationale for having string length calculations
+         * done by the RDBMS rather than here
+         */
         cllBindVars[cllBindVarCount++] = newCollName;
         cllBindVars[cllBindVarCount++] = oldCollName;
         cllBindVars[cllBindVarCount++] = newCollName;
@@ -10722,13 +10726,15 @@ irods::error db_move_object_op(
             log_sql::debug("chlMoveObject SQL 13");
         }
 #ifdef ORA_ICAT
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = ? || SUBSTR(parent_coll_name, LENGTH(?) + 1), coll_name = ? || SUBSTR(coll_name, LENGTH(?) + 1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_COLL_MAIN set parent_coll_name = ? || SUBSTR(parent_coll_name, LENGTH(?) + 1), coll_name = ? || "
+            "SUBSTR(coll_name, LENGTH(?) + 1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
+            &icss);
 #else
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, char_length(?) + 1), coll_name = ? || substr(coll_name, char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, "
+                                       "char_length(?) + 1), coll_name = ? || substr(coll_name, char_length(?) + 1) "
+                                       "where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+                                       &icss);
 #endif
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             status = 0;
