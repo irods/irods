@@ -53,6 +53,7 @@
 #include "irods/key_value_proxy.hpp"
 #include "irods/replica_access_table.hpp"
 #include "irods/replica_state_table.hpp"
+#include "irods/irods_resource_redirect.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/data_object_proxy.hpp"
@@ -727,6 +728,31 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
     std::unique_ptr<irods::at_scope_exit<std::function<void()>>> restore_entry;
 
     int ec = 0;
+
+    // Call notify on resource plugin if this is a write. This allows S3 to pave over the physical path
+    // before it is written to the database in case decoupled mode is being used.  See irods/irods_resource_plugin_s3#2146.
+    if ((l1desc.dataObjInp->openFlags & O_ACCMODE) != O_RDONLY) {
+
+        irods::file_object_ptr file_obj(
+            new irods::file_object(
+                rsComm,
+                L1desc[fd].dataObjInfo));
+
+        irods::error ret = fileNotify(
+            rsComm,
+            file_obj,
+            irods::WRITE_OPERATION);
+
+        if ( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "Failed to signal the resource that the data object \"";
+            msg << L1desc[fd].dataObjInfo->objPath;
+            msg << "\" was modified.";
+            ret = PASSMSG( msg.str(), ret );
+            irods::log( ret );
+            return ret.code();
+        }
+    }
 
     // Replica access tokens only apply to write operations.
     if ((l1desc.dataObjInp->openFlags & O_ACCMODE) != O_RDONLY) {
