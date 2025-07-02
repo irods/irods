@@ -1,10 +1,10 @@
-import unittest
-
 import copy
 import json
 import os
 import socket
+import subprocess
 import time
+import unittest
 
 from . import session
 from ..configuration import IrodsConfig
@@ -146,3 +146,28 @@ class test_server_configuration__issue_8012(session.make_sessions_mixin([('other
 
         finally:
             controller.reload_configuration()
+
+
+@unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Only requires a single server')
+class test_maximum_size_for_single_buffer_in_megabytes_constraints__issue_8373(unittest.TestCase):
+    def test_configuration_validation_reports_values_under_minimum(self):
+        config = IrodsConfig()
+        with lib.file_backed_up(config.server_config_path):
+            config.server_config["advanced_settings"]["maximum_size_for_single_buffer_in_megabytes"] = 0
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+            res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn('"valid": false', res.stderr)
+            self.assertIn('"instanceLocation": "/advanced_settings/maximum_size_for_single_buffer_in_megabytes"', res.stderr)
+            self.assertIn('"error": "Minimum value is 1 but found', res.stderr)
+
+    def test_configuration_validation_reports_values_over_maximum(self):
+        config = IrodsConfig()
+        with lib.file_backed_up(config.server_config_path):
+            config.server_config["advanced_settings"]["maximum_size_for_single_buffer_in_megabytes"] = 2048
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+            res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn('"valid": false', res.stderr)
+            self.assertIn('"instanceLocation": "/advanced_settings/maximum_size_for_single_buffer_in_megabytes"', res.stderr)
+            self.assertIn('"error": "Maximum value is 2047 but found', res.stderr)
