@@ -11,9 +11,18 @@
 #include "irods/rsDataObjCopy.hpp"
 
 #include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
+
+#include <nlohmann/json.hpp>
+
+namespace
+{
+    using json = nlohmann::json;
+    using log_api = irods::experimental::log::api;
+} //namespace
 
 int
 rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -261,7 +270,41 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         /* use rsDataObjChksum because the path could be in a remote zone */
         status = rsDataObjChksum(rsComm, &dataObjCopyInp.destDataObjInp, &destChksumStr);
 
-        if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && status != CAT_NO_ROWS_FOUND) {
+        if (CHECK_VERIFICATION_RESULTS == status) {
+            try {
+                const auto& verification_result = json::parse(destChksumStr);
+                for (const auto& entry : verification_result) {
+                    if (const auto ec = entry.at("error_code").get<int>(); ec != 0) {
+                        // "actual" error happened: log it and fail
+                        log_api::error("{}: error in rsDataObjChksum, message = [{}]; error_code = [{}]",
+                                       __func__,
+                                       entry.at("message").get_ref<const std::string&>(),
+                                       ec);
+                        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+                        free(srcChksumStr);
+                        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+                        free(destChksumStr);
+                        clearKeyVal(&dataObjCopyInp.srcDataObjInp.condInput);
+                        clearKeyVal(&dataObjCopyInp.destDataObjInp.condInput);
+                        return status;
+                    }
+                }
+            }
+            catch (const json::exception& ex) {
+                log_api::error("{}: json exception from rsDataObjChksum return, destChksumStr = \"{}\"; what = [{}]",
+                               __func__,
+                               destChksumStr ? destChksumStr : "nullptr",
+                               ex.what());
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+                free(srcChksumStr);
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+                free(destChksumStr);
+                clearKeyVal(&dataObjCopyInp.srcDataObjInp.condInput);
+                clearKeyVal(&dataObjCopyInp.destDataObjInp.condInput);
+                return status;
+            }
+        }
+        else if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && status != CAT_NO_ROWS_FOUND) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             rodsLog(LOG_ERROR,
                     "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
