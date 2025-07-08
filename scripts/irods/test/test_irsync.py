@@ -682,3 +682,55 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # Show no data object exists, proving the symlink file was ignored.
         logical_path = f'{self.user0.session_collection}/{symlink_dir_basename}/{symlink_file_basename}'
         self.assertFalse(lib.replica_exists(self.user0, logical_path, 0))
+
+    def test_irsync_succeeds_with_checksum_and_stale_replica__issue_8384(self):
+        # Create a file.
+        test_file_basename = 'irsync_issue_8384.txt'
+        test_file = os.path.join(self.admin.local_session_dir,test_file_basename)
+
+        with open(test_file, 'w') as f:
+            f.write('Random test data.')
+
+        # Set up hierarchy similar to the issue
+        replication_resc = 'repl_resc_8384'
+        child_resc = 'ufs1_8384'
+        other_child_resc = 'ufs2_8384'
+        source_coll = 'thesource_8384'
+        dest_coll = 'thetarget_8384'
+        child_resc_dir = os.path.join(self.admin.local_session_dir, 'ufs1vault_8384')
+        other_child_resc_dir = os.path.join(self.admin.local_session_dir, 'ufs2vault_8384')
+
+        try:
+            self.admin.assert_icommand(['imkdir', f'{self.admin.session_collection}/{source_coll}', f'{self.admin.session_collection}/{dest_coll}'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', replication_resc, 'replication' ], 'STDOUT_SINGLELINE', 'replication')
+            self.admin.assert_icommand(['iadmin', 'mkresc', child_resc, 'unixfilesystem', f'{lib.get_hostname()}:{child_resc_dir}'], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            self.admin.assert_icommand(['iadmin', 'mkresc', other_child_resc, 'unixfilesystem', f'{lib.get_hostname()}:{other_child_resc_dir}'], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', replication_resc, child_resc])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', replication_resc, other_child_resc])
+
+            self.admin.assert_icommand(['iput', test_file, f'{self.admin.session_collection}/{source_coll}'])
+            self.admin.assert_icommand(['iput', '-R', replication_resc, test_file, f'{self.admin.session_collection}/{dest_coll}'])
+            self.admin.assert_icommand(['ichksum', '-n', '0', f'{self.admin.session_collection}/{dest_coll}/{test_file_basename}'], 'STDOUT_SINGLELINE', test_file_basename)
+            self.admin.assert_icommand(['ichksum', '-n', '1', f'{self.admin.session_collection}/{dest_coll}/{test_file_basename}'], 'STDOUT_SINGLELINE', test_file_basename)
+
+            # Set one replica to stale
+            # rsDataObjChksum will return with CHECK_VERIFICATION_RESULTS if any replicas are skipped
+            # Previously, this was treated as a hard error, so irsync terminated early
+            # This should no longer happen
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', f'{self.admin.session_collection}/{dest_coll}/{test_file_basename}', 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
+
+            # Should no longer error out due to CHECK_VERIFICATION_RESULTS
+            self.admin.assert_icommand(['irsync', '-K', '-v', '-r', '-R', replication_resc, f'i:{source_coll}', f'i:{dest_coll}' ], 'STDOUT_SINGLELINE', test_file_basename)
+
+            # Copy should have happened and set the replica to good
+            self.assertTrue(lib.get_replica_status(self.admin, test_file_basename, 1) == '1')
+
+        finally:
+            # Clean up
+            self.admin.run_icommand(['irm', '-rf', f'{self.admin.session_collection}/{source_coll}'])
+            self.admin.run_icommand(['irm', '-rf', f'{self.admin.session_collection}/{dest_coll}'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', replication_resc, child_resc])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', replication_resc, other_child_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', child_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_child_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', replication_resc])
