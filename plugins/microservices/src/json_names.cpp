@@ -13,6 +13,8 @@
 #include "irods/rodsErrorTable.h"
 
 #include <boost/any.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
