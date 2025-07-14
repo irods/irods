@@ -14,6 +14,7 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <cstdlib>
 #include <cstring>

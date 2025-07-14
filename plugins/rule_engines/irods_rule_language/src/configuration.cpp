@@ -26,6 +26,8 @@
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_log.hpp"
 #include <boost/filesystem.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <memory>
 #include <sstream>
 #include <unordered_map>
