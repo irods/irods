@@ -7,6 +7,7 @@
 
 #include <boost/iterator/function_input_iterator.hpp>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <nanodbc/nanodbc.h>
 
 #include <cctype>

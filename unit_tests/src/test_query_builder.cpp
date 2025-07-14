@@ -58,7 +58,7 @@ TEST_CASE("query builder")
         ix::query_builder qb;
         const std::string specific_query = "ShowCollAcls";
 
-        auto query = qb.type(ix::query_type::specific)
+        auto query = qb.type(irods::query_type::specific)
                        .zone_hint(env.rodsZone)
                        .bind_arguments(args)
                        .build<RcComm>(conn, specific_query);

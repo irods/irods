@@ -63,11 +63,25 @@ namespace irods
         query_processor(const std::string& _query,
                         job _job,
                         uint32_t _limit = 0,
-                        query_type _type = query_type::GENERAL)
+                        irods::query_type _type = irods::query_type::general)
             : query_{_query}
             , job_{_job}
             , limit_{_limit}
             , type_{_type}
+        {
+        }
+
+        [[deprecated("use irods::query_type")]]
+        query_processor(const std::string& _query,
+                        job _job,
+                        uint32_t _limit,
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+                        query_type _type
+#pragma GCC diagnostic pop
+            )
+            : query_processor{_query, _job, _limit, static_cast<irods::query_type>(_type)}
         {
         }
 
@@ -108,7 +122,7 @@ namespace irods
         std::string query_;
         job job_;
         uint32_t limit_;
-        query_type type_;
+        irods::query_type type_;
     }; // class query_processor
 } // namespace irods
 

@@ -16,6 +16,7 @@
 
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 namespace irods
 {
