@@ -281,7 +281,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         query_builder qb;
 
         // clang-format off
-        qb.type(query_type::specific)
+        qb.type(irods::query_type::specific)
           .zone_hint(_user.zone.empty() ? get_local_zone(_comm) : _user.zone)
           .bind_arguments(args);
         // clang-format on

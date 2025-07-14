@@ -26,6 +26,7 @@
 #include <boost/filesystem/convenience.hpp>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <cctype>
 #include <cerrno>
@@ -81,7 +82,11 @@ auto set_session_signature_client_side(rcComm_t* _comm, const char* _buffer, std
     std::memset(_comm->session_signature, 0, sizeof(RcComm::session_signature));
 
     const std::string_view bytes{_buffer, required_size};
-    const auto* end = fmt::format_to(_comm->session_signature, "{:02x}", fmt::join(bytes, ""));
+    const auto* end = fmt::format_to(_comm->session_signature, "{:02x}", fmt::join(bytes, ""))
+#if FMT_VERSION >= 110000
+        .out
+#endif
+        ;
 
     // If the difference in position is not double the original size, something went wrong.
     // The session signature is expected to be 32 bytes long (w/o the null byte). Each byte
