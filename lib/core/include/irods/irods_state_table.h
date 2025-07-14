@@ -41,6 +41,21 @@ NEW_STATE(RULE_ENGINE_SKIP_OPERATION,        5001000)
 // clang-format on
 #ifndef MAKE_IRODS_STATE_MAP
 };
+
+#ifdef __cplusplus
+#include <fmt/format.h>
+#include <type_traits>
+
+template <>
+struct fmt::formatter<IRODS_STATE_ENUM> : fmt::formatter<std::underlying_type_t<IRODS_STATE_ENUM>>
+{
+    constexpr auto format(const IRODS_STATE_ENUM& e, format_context& ctx) const
+    {
+        return fmt::formatter<std::underlying_type_t<IRODS_STATE_ENUM>>::format(
+            static_cast<std::underlying_type_t<IRODS_STATE_ENUM>>(e), ctx);
+    }
+};
+#endif
 #endif
 
 #endif // IRODS_STATE_TABLE_H

@@ -185,6 +185,19 @@ typedef struct RsComm {
 } rsComm_t;
 
 #ifdef __cplusplus
+#include <fmt/format.h>
+#include <type_traits>
+
+template <>
+struct fmt::formatter<ProcState> : fmt::formatter<std::underlying_type_t<ProcState>>
+{
+    constexpr auto format(const ProcState& e, format_context& ctx) const
+    {
+        return fmt::formatter<std::underlying_type_t<ProcState>>::format(
+            static_cast<std::underlying_type_t<ProcState>>(e), ctx);
+    }
+};
+
 extern "C" {
 #endif
 
