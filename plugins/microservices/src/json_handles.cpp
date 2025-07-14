@@ -14,6 +14,7 @@
 #include <boost/any.hpp>
 #include <boost/safe_numerics/safe_integer.hpp>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <functional>
 #include <string>

@@ -8,7 +8,7 @@
 
 namespace irods::experimental
 {
-    enum class query_type
+    enum class [[deprecated("use irods::query_type")]] query_type
     {
         general,
         specific
@@ -17,10 +17,22 @@ namespace irods::experimental
     class query_builder
     {
     public:
-        auto type(query_type _v) noexcept -> query_builder&
+        auto type(irods::query_type _v) noexcept -> query_builder&
         {
             type_ = _v;
             return *this;
+        }
+
+        [[deprecated("use irods::query_type")]]
+        auto type(
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            query_type _v
+#pragma GCC diagnostic pop
+            ) noexcept -> query_builder&
+        {
+            return type(static_cast<irods::query_type>(_v));
         }
 
         auto zone_hint(const std::string& _v) -> query_builder&
@@ -65,7 +77,7 @@ namespace irods::experimental
             zone_hint_.clear();
             limit_ = 0;
             offset_ = 0;
-            type_ = query_type::general;
+            type_ = irods::query_type::general;
             options_ = 0;
 
             return *this;
@@ -78,15 +90,13 @@ namespace irods::experimental
                 THROW(USER_INPUT_STRING_ERR, "query string is empty");
             }
 
-            using T = typename query<ConnectionType>::query_type;
-
             return {&_conn,
                     _query,
                     args_,
                     zone_hint_,
                     limit_,
                     offset_,
-                    type_ == query_type::general ? T::GENERAL : T::SPECIFIC,
+                    type_,
                     options_};
         }
 
@@ -95,7 +105,7 @@ namespace irods::experimental
         std::string zone_hint_;
         std::uintmax_t limit_ = 0;
         std::uintmax_t offset_ = 0;
-        query_type type_ = query_type::general;
+        irods::query_type type_ = irods::query_type::general;
         int options_ = 0;
     }; // class query_builder
 } // namespace irods::experimental
