@@ -266,10 +266,8 @@ auto print_entry(const fs::client::collection_entry& e, const po::variables_map&
         if( !vm["color"].as<bool>() ) {
             fmt::print(": Owned by {}",e.owner());
         } else {
-            fmt::print(fmt::fg(fmt::color::white),": Owned By ");
-            fmt::print(
-                       fmt::fg(e.owner()==env.rodsUserName?fmt::color::green:fmt::color::red),
-                       e.owner());
+            fmt::print(fmt::fg(fmt::color::white), "{}", ": Owned By ");
+            fmt::print(fmt::fg(e.owner() == env.rodsUserName ? fmt::color::green : fmt::color::red), "{}", e.owner());
         }
     }
     if( e.is_data_object() && vm["size"].as<bool>() ) {
