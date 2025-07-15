@@ -223,8 +223,16 @@ class IrodsController(object):
         l = logging.getLogger(__name__)
         for attempt in range(retry_count):
             l.debug('Waiting for iRODS server to shut down. Attempt #%s', attempt)
-            if self.get_server_pid() is None:
+            server_pid = self.get_server_pid()
+            if server_pid is None:
                 return
+
+            # checking for a zombie process
+            proc = psutil.Process(server_pid)
+            if proc.status() == psutil.STATUS_ZOMBIE:
+                l.warning('Terminating the iRODS server referenced by the iRODS PID file resulted in a zombie process. Consider running an init-like process as PID 1.')
+                break
+
             time.sleep(1)
         raise IrodsError('iRODS server failed to shut down.')
 
