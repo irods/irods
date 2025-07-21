@@ -28,7 +28,7 @@ option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and oth
 option(IRODS_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER "Enables detection of undefined behavior provided by Undefined Behavior Sanitizer." OFF)
 option(IRODS_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER_IMPLICIT_CONVERSION_CHECK "Enables detection of implicit conversions by Undefined Behavior Sanitizer." OFF)
 
-find_package(IRODS 5.0.1 EXACT REQUIRED)
+find_package(IRODS 5.0.90 EXACT REQUIRED)
 set(IRODS_PACKAGE_PREFIX "${PACKAGE_PREFIX_DIR}")
 
 set(IRODS_PACKAGE_REVISION "0")
