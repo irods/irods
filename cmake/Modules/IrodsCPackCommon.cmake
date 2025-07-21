@@ -69,3 +69,9 @@ if (NOT DEFINED CPACK_RPM_PACKAGE_SUMMARY)
 endif()
 
 set(CPACK_RPM_SPEC_MORE_DEFINE "%global __python %{__python3}")
+
+# EL10 doesn't like our irods-externals RUNPATHs
+if (IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR GREATER_EQUAL 10)
+  set(CPACK_RPM_SPEC_MORE_DEFINE "${CPACK_RPM_SPEC_MORE_DEFINE}
+%global __brp_check_rpaths %{nil}")
+endif()
