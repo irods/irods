@@ -2335,16 +2335,8 @@ matchPathname( pathnamePatterns_t *pp, char *name, char *dirname ) {
     return 0;
 }
 
-/* resolveRodsTarget - based on srcPath and destPath, fill in targPath.
- * oprType -
- *      MOVE_OPR - do not create the target coll or dir because rename will
- *        take care of it.
- *      RSYNC_OPR - uses the destPath and the targPath if the src is a
- *        collection
- *      All other oprType will be treated as normal.
- */
-int
-resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
+static int resolveRodsTargetImpl(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType, bool dryRun)
+{
     rodsPath_t *srcPath, *destPath;
     char srcElement[MAX_NAME_LEN], destElement[MAX_NAME_LEN];
     int status;
@@ -2472,14 +2464,15 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 if (destPath->objState != EXIST_ST && destPath->objType <= COLL_OBJ_T &&
                     oprType != MOVE_OPR && rodsPathInp->numSrc != 1)
                 {
-                    // mkColl changes the values in destPath, so repopulate the structure
-                    status = mkColl( conn, destPath->outPath );
-                    if ( status < 0 ) {
-                        rodsLog( LOG_ERROR,
-                                 "resolveRodsTarget: Could not create collection %s", destPath->outPath );
-                        return status;
+                    if (!dryRun) {
+                        // mkColl changes the values in destPath, so repopulate the structure
+                        status = mkColl(conn, destPath->outPath);
+                        if (status < 0) {
+                            rodsLog(LOG_ERROR, "resolveRodsTarget: Could not create collection %s", destPath->outPath);
+                            return status;
+                        }
+                        getRodsObjType(conn, destPath);
                     }
-                    getRodsObjType( conn, destPath );
                 }
                 if ( ( destPath->objType == COLL_OBJ_T ||
                        destPath->objType == LOCAL_DIR_T ) &&
@@ -2509,8 +2502,7 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                                     // exists in this block), make sure targPath is made if it is a collection.
                                     if (targPath->objType == COLL_OBJ_T)
                                     {
-                                        if ((status = mkColl( conn, targPath->outPath )) == 0)
-                                        {
+                                        if (!dryRun && (status = mkColl(conn, targPath->outPath)) == 0) {
                                             targPath->objState = EXIST_ST;
                                         }
                                     }
@@ -2520,11 +2512,12 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                                 }
                             }
                             else {
-    #ifdef windows_platform
-                                status = iRODSNt_mkdir( targPath->outPath, 0750 );
-    #else
-                                status = mkdir( targPath->outPath, 0750 );
-    #endif
+                                if (!dryRun) {
+                                    status = mkdir(targPath->outPath, 0750);
+                                }
+                                else {
+                                    status = 0;
+                                }
                                 if ( status < 0 && errno == EEXIST ) {
                                     status = 0;
                                 }
@@ -2545,7 +2538,7 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 else {
                     /* dest coll does not exist */
                     if ( destPath->objType <= COLL_OBJ_T ) {
-                        if ( oprType != MOVE_OPR ) {
+                        if (!dryRun && oprType != MOVE_OPR) {
                             /* rename does not need to mkColl */
                             status = mkColl( conn, destPath->outPath );
                         }
@@ -2554,13 +2547,14 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                         }
                     }
                     else {
-                        /* use destPath. targPath->outPath not defined.
-                         *  status = mkdir (targPath->outPath, 0750); */
-    #ifdef windows_platform
-                        status = iRODSNt_mkdir( destPath->outPath, 0750 );
-    #else
-                        status = mkdir( destPath->outPath, 0750 );
-    #endif
+                        if (!dryRun) {
+                            /* use destPath. targPath->outPath not defined.
+                             *  status = mkdir (targPath->outPath, 0750); */
+                            status = mkdir(destPath->outPath, 0750);
+                        }
+                        else {
+                            status = 0;
+                        }
                     }
                     if ( status < 0 ) {
                         return status;
@@ -2594,4 +2588,14 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
         }
     }
     return 0;
+}
+
+int resolveRodsTarget(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType)
+{
+    return resolveRodsTargetImpl(conn, rodsPathInp, oprType, false);
+}
+
+int resolveRodsTargetDryRun(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType)
+{
+    return resolveRodsTargetImpl(conn, rodsPathInp, oprType, true);
 }
