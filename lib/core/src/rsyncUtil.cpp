@@ -44,7 +44,12 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return status;
     }
 
-    savedStatus = resolveRodsTarget( conn, rodsPathInp, RSYNC_OPR );
+    if (myRodsArgs->longOption != True) {
+        savedStatus = resolveRodsTarget(conn, rodsPathInp, RSYNC_OPR);
+    }
+    else {
+        savedStatus = resolveRodsTargetDryRun(conn, rodsPathInp, RSYNC_OPR);
+    }
     if ( savedStatus < 0 ) {
         rodsLogError( LOG_ERROR, savedStatus, "rsyncUtil: resolveRodsTarget" );
         return savedStatus;
