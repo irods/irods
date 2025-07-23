@@ -268,7 +268,22 @@ freePathnamePatterns( pathnamePatterns_t *pp );
 int
 matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
 int get_resc_hier_from_leaf_id(queryHandle_t* _query_handle, rodsLong_t _resc_id, char* _resc_hier );
+
+/// resolveRodsTarget - based on rodsPathInp->srcPath and
+/// rodsPathInp->destPath, fill in targPath.
+///
+/// oprType -
+///      MOVE_OPR - do not create the target coll or dir because rename will
+///        take care of it.
+///      RSYNC_OPR - uses the destPath and the targPath if the src is a
+///        collection
+///      All other oprType will be treated as normal.
+///
 int resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType );
+
+/// resolveRodsTargetDryRun - same as resolveRodsTarget, but do not create
+/// target collection, regardless of oprType.
+int resolveRodsTargetDryRun(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType);
 
 #ifdef __cplusplus
 }
