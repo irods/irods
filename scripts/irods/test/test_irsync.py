@@ -734,3 +734,29 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmresc', child_resc])
             self.admin.run_icommand(['iadmin', 'rmresc', other_child_resc])
             self.admin.run_icommand(['iadmin', 'rmresc', replication_resc])
+
+    def test_irsync_does_not_create_collections_nor_directories_on_dry_run_issue_7774(self):
+        source_coll = 'thesource_7774'
+        dest_coll = 'thetarget_7774'
+        source_coll_path = f'{self.user0.session_collection}/{source_coll}'
+        dest_coll_path = f'{self.user0.session_collection}/{dest_coll}'
+
+        dest_dir_should_not_exist = 'nonexistent_7774'
+        nonexistent_dir_path = os.path.join(self.testing_tmp_dir, dest_dir_should_not_exist)
+
+        self.user0.assert_icommand(['imkdir', source_coll_path])
+
+        # Make some dummy data objects
+        self.user0.assert_icommand(['itouch', f'{source_coll_path}/one'])
+        self.user0.assert_icommand(['itouch', f'{source_coll_path}/two'])
+        self.user0.assert_icommand(['itouch', f'{source_coll_path}/three'])
+
+        # Perform the irsync
+        self.user0.assert_icommand(['irsync', '-rl', f'i:{source_coll_path}', f'i:{dest_coll_path}'], 'STDOUT', ['one', 'two', 'three'])
+
+        # Assure that the target collection does not exist
+        self.user0.assert_icommand(['ils', '-L', dest_coll_path], 'STDERR_SINGLELINE', 'does not exist')
+
+        # Other case-- ensure that irods-to-local irsync do not create the target dir
+        self.user0.assert_icommand(['irsync', '-rl', f'i:{source_coll_path}', nonexistent_dir_path], 'STDOUT', ['one', 'two', 'three'])
+        self.assertFalse(os.path.exists(nonexistent_dir_path))
