@@ -1,0 +1,69 @@
+name: build-irods-enterprise-linux-10
+on: [push, pull_request]
+jobs:
+  build:
+    name: ${{ matrix.container }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    strategy:
+      matrix:
+        container: ['almalinux:10','rockylinux/rockylinux:10']
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Prerequisites
+        run:  |
+              dnf -y update ca-certificates
+              dnf -y install \
+                bind-utils \
+                wget \
+                git \
+                epel-release
+              dnf -y install \
+                dnf-plugin-config-manager \
+                dnf-plugins-core
+              dnf config-manager --set-enabled crb
+              dnf -y install \
+                gcc \
+                gcc-c++ \
+                make \
+                cmake \
+                rpm-build \
+                bzip2-devel \
+                catch2-devel \
+                curl-devel \
+                fakeroot \
+                fmt-devel \
+                nlohmann_json-devel \
+                openssl-devel \
+                pam-devel \
+                python3-devel \
+                spdlog-devel \
+                unixODBC \
+                unixODBC-devel \
+                zlib-devel \
+                python3-distro \
+                flex \
+                bison \
+                systemd-devel \
+                libarchive-devel
+      - name: Install iRODS Externals
+        run:  |
+              rpm --import https://unstable.irods.org/irods-unstable-signing-key.asc
+              dnf config-manager -y --add-repo https://unstable.irods.org/renci-irods-unstable.yum.repo
+              dnf config-manager -y --set-enabled renci-irods-unstable
+              dnf -y update
+              dnf -y install \
+                irods-externals-boost1.81.0-2 \
+                irods-externals-clang16.0.6-0 \
+                irods-externals-jsoncons0.178.0-0 \
+                irods-externals-nanodbc2.13.0-3
+      - name: Configure CMake
+        run:  |
+              mkdir build
+              cd build
+              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
+      - name: Build and Package
+        run:  |
+              cd build
+              make package
