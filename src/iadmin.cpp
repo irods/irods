@@ -2590,7 +2590,6 @@ usage( char *subOpt ) {
                        "luz",
                        "lt",
                        "lr",
-                       "ls",
                        "lz",
                        "lg",
                        "lgd",
