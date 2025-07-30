@@ -252,7 +252,7 @@ namespace irods::experimental::genquery2
 
     struct group_by
     {
-        std::vector<std::string> columns;
+        std::vector<std::variant<column, function>> expressions;
     }; // struct group_by
 
     struct order_by
