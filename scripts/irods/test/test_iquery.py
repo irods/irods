@@ -551,7 +551,7 @@ class Test_IQuery(
         self,
     ):
         # Run a basic query to get the expected output.
-        query_string = f"select date_trunc('minute', to_timestamp(cast(DATA_MODIFY_TIME as int))), count(distinct DATA_NAME), sum(DATA_SIZE) group by date_trunc('minute', to_timestamp(cast(DATA_MODIFY_TIME as int)))"
+        query_string = "select date_trunc('minute', to_timestamp(cast(DATA_MODIFY_TIME as int))), count(distinct DATA_NAME), sum(DATA_SIZE) group by date_trunc('minute', to_timestamp(cast(DATA_MODIFY_TIME as int)))"
         expected_output = "select date_trunc('minute', to_timestamp(cast(t0.modify_ts as int))), count(distinct t0.data_name), sum(t0.data_size) from R_DATA_MAIN t0 inner join R_OBJT_ACCESS pdoa on t0.data_id = pdoa.object_id inner join R_TOKN_MAIN pdt on pdoa.access_type_id = pdt.token_id inner join R_USER_GROUP pdug on pdoa.user_id = pdug.group_user_id inner join R_USER_MAIN pdu on pdug.user_id = pdu.user_id where pdoa.access_type_id >= 1000 group by date_trunc('minute', to_timestamp(cast(t0.modify_ts as int))) fetch first 256 rows only"
         self.user.assert_icommand(
             ["iquery", query_string, "--sql-only"], "STDOUT", [expected_output]
