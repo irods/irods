@@ -592,54 +592,7 @@ namespace
         return std::nullopt;
     } // get_special_table_alias_for_column
 
-    auto generate_group_by_clause(const gq_state& _state,
-                                  const gq::group_by& _group_by,
-                                  const std::map<std::string_view, gq::column_info>& _column_name_mappings)
-        -> std::string
-    {
-        if (_group_by.columns.empty()) {
-            return {};
-        }
-
-        std::vector<std::string> resolved_columns;
-        resolved_columns.reserve(_group_by.columns.size());
-
-        for (const auto& c : _group_by.columns) {
-            const auto iter = _column_name_mappings.find(c);
-
-            if (iter == std::end(_column_name_mappings)) {
-                throw std::invalid_argument{fmt::format("unknown column in group-by clause: {}", c)};
-            }
-
-            auto alias = get_special_table_alias_for_column(c);
-
-            if (!alias) {
-                alias = _state.table_aliases.at(std::string{iter->second.table});
-            }
-
-            const auto ast_iter =
-                std::find_if(std::begin(_state.ast_column_ptrs),
-                             std::end(_state.ast_column_ptrs),
-                             [&c](const irods::experimental::genquery2::column* _p) { return _p->name == c; });
-
-            if (std::end(_state.ast_column_ptrs) == ast_iter) {
-                throw std::invalid_argument{"cannot generate SQL from General Query."};
-            }
-
-            if ((*ast_iter)->type_name.empty()) {
-                resolved_columns.push_back(fmt::format("{}.{}", *alias, iter->second.name));
-            }
-            else {
-                resolved_columns.push_back(
-                    fmt::format("cast({}.{} as {})", *alias, iter->second.name, (*ast_iter)->type_name));
-            }
-        }
-
-        // All columns in the group-by clause must exist in the list of columns to project.
-        return fmt::format(" group by {}", fmt::join(resolved_columns, ", "));
-    } // generate_group_by_clause
-
-    auto to_sql_for_order_by_clause(const gq_state& _state, const irods::experimental::genquery2::column& _column)
+    auto to_sql_for_order_or_group_by_clause(const gq_state& _state, const irods::experimental::genquery2::column& _column)
         -> std::string
     {
         using irods::experimental::genquery2::column_name_mappings;
@@ -661,9 +614,9 @@ namespace
         }
 
         return fmt::format("cast({}.{} as {})", alias, iter->second.name, _column.type_name);
-    } // to_sql_for_order_by_clause
+    } // to_sql_for_order_or_group_by_clause
 
-    auto to_sql_for_order_by_clause(const gq_state& _state, const irods::experimental::genquery2::function& _function)
+    auto to_sql_for_order_or_group_by_clause(const gq_state& _state, const irods::experimental::genquery2::function& _function)
         -> std::string
     {
         std::vector<std::string> args;
@@ -676,7 +629,7 @@ namespace
             }
 
             if (const auto* p = std::get_if<irods::experimental::genquery2::function>(&_arg); p) {
-                args.emplace_back(to_sql_for_order_by_clause(_state, *p));
+                args.emplace_back(to_sql_for_order_or_group_by_clause(_state, *p));
                 return;
             }
 
@@ -708,7 +661,39 @@ namespace
         }
 
         return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
-    } // to_sql_for_order_by_clause
+    } // to_sql_for_order_or_group_by_clause
+
+
+
+    auto generate_group_by_clause(
+        gq_state& _state,
+        const gq::group_by& _group_by,
+        [[maybe_unused]] const std::map<std::string_view, gq::column_info>& _column_name_mappings) -> std::string
+    {
+        if (_group_by.expressions.empty()) {
+            return {};
+        }
+
+        std::vector<std::string> result_expr;
+        result_expr.reserve(_group_by.expressions.size());
+
+        for (const auto& ge : _group_by.expressions) {
+            if (const auto* p = std::get_if<irods::experimental::genquery2::column>(&ge); p) {
+                result_expr.emplace_back(
+                    fmt::format("{}", to_sql_for_order_or_group_by_clause(_state, *p))
+                );
+                continue;
+            }
+
+            const auto& fn = std::get<irods::experimental::genquery2::function>(ge);
+            result_expr.emplace_back(
+                fmt::format("{}", to_sql_for_order_or_group_by_clause(_state, fn))
+            );
+        }
+
+        // All columns/expressions in the order by clause must exist in the list of columns to project.
+        return fmt::format(" group by {}", fmt::join(result_expr, ", "));
+    } // generate_group_by_clause
 
     auto generate_order_by_clause(
         gq_state& _state,
@@ -727,13 +712,13 @@ namespace
         for (const auto& se : sort_expressions) {
             if (const auto* p = std::get_if<irods::experimental::genquery2::column>(&se.expr); p) {
                 sort_expr.emplace_back(
-                    fmt::format("{} {}", to_sql_for_order_by_clause(_state, *p), se.ascending_order ? "asc" : "desc"));
+                    fmt::format("{} {}", to_sql_for_order_or_group_by_clause(_state, *p), se.ascending_order ? "asc" : "desc"));
                 continue;
             }
 
             const auto& fn = std::get<irods::experimental::genquery2::function>(se.expr);
             sort_expr.emplace_back(
-                fmt::format("{} {}", to_sql_for_order_by_clause(_state, fn), se.ascending_order ? "asc" : "desc"));
+                fmt::format("{} {}", to_sql_for_order_or_group_by_clause(_state, fn), se.ascending_order ? "asc" : "desc"));
         }
 
         // All columns/expressions in the order by clause must exist in the list of columns to project.
