@@ -145,7 +145,6 @@ rules only.
 %nterm <gq2_detail::condition>                        condition;
 %nterm <gq2_detail::condition_expression>             condition_expression;
 %nterm <std::vector<std::string>>                     string_literal_list;
-%nterm <std::vector<std::string>>                     identifier_list;
 %nterm <std::string>                                  integer;
 
 %start genquery2 /* Defines where grammar starts */
@@ -292,11 +291,6 @@ condition_expression:
 string_literal_list:
   STRING_LITERAL { $$ = std::vector<std::string>{std::move($1)}; }
 | string_literal_list COMMA STRING_LITERAL { $1.push_back(std::move($3)); std::swap($$, $1); }
-;
-
-identifier_list:
-  IDENTIFIER { $$ = std::vector<std::string>{std::move($1)}; }
-| identifier_list COMMA IDENTIFIER { $1.push_back(std::move($3)); std::swap($$, $1); }
 ;
 
 integer:
