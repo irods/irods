@@ -328,24 +328,11 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
     else:
         if irods_config.catalog_database_type == 'mysql':
             l.info('Defining mysql functions...')
-            mysql_exec = shutil.which('mysql')
-            if mysql_exec is None:
-                mysql_exec = shutil.which('mariadb')
-            if mysql_exec is None:
-                raise IrodsError('Database setup failed: Could not find \'mysql\' or \'mariadb\' in PATH.')
-            with tempfile.NamedTemporaryFile() as f:
-                f.write('\n'.join([
-                        '[client]',
-                        '='.join(['user', irods_config.database_config['username']]),
-                        '='.join(['password', irods_config.database_config['password']]),
-                        '='.join(['port', str(irods_config.database_config['port'])]),
-                        '='.join(['host', irods_config.database_config['host']])
-                    ]).encode())
-                f.flush()
-                with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
-                    lib.execute_command(
-                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['name']],
-                        stdin=sql_file)
+            sql_file = os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql')
+            try:
+                execute_sql_file(sql_file, cursor, by_line=True)
+            except IrodsError as e:
+                raise IrodsError('Database setup failed while running %s:\n%s' % (sql_file, str(e)))
         l.info('Creating database tables...')
         sql_files = [
                 os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'icatSysTables.sql'),
