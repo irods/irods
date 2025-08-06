@@ -927,6 +927,21 @@ NEW_ERROR(SYS_NO_HANDLER_REPLY_MSG,                    -99999999)
 /** @} */
 #ifndef MAKE_IRODS_ERROR_MAP
 };
+
+#ifdef __cplusplus
+#include <fmt/format.h>
+#include <type_traits>
+
+template<>
+struct fmt::formatter<IRODS_ERROR_ENUM> : fmt::formatter<std::underlying_type_t<IRODS_ERROR_ENUM>>
+{
+    constexpr auto format(const IRODS_ERROR_ENUM& e, format_context& ctx) const
+    {
+        return fmt::formatter<std::underlying_type_t<IRODS_ERROR_ENUM>>::format(
+            static_cast<std::underlying_type_t<IRODS_ERROR_ENUM>>(e), ctx);
+    }
+};
+#endif
 #endif
 
 // clang-format on

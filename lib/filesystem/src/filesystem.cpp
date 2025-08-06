@@ -153,8 +153,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 try {
                     std::vector<std::string> args{_p.string()};
 
-                    qb.type(irods::experimental::query_type::specific)
-                      .bind_arguments(args);
+                    qb.type(irods::query_type::specific).bind_arguments(args);
 
                     for (const auto& row : qb.build(_comm, "ShowCollAcls")) {
                         _s.prms.push_back({row[0], row[1], to_permission_enum(row[2]), row[3]});
@@ -168,7 +167,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                     // code does not require any information from the exception object, therefore
                     // it is ignored.
 
-                    qb.type(irods::experimental::query_type::general);
+                    qb.type(irods::query_type::general);
 
                     std::string sql = "select COLL_USER_NAME, COLL_ZONE_NAME, COLL_ACCESS_NAME, USER_TYPE "
                                       "where COLL_TOKEN_NAMESPACE = 'access_type' and COLL_NAME = '";
@@ -194,7 +193,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 qb.zone_hint(*zone);
             }
 
-            qb.type(irods::experimental::query_type::general);
+            qb.type(irods::query_type::general);
 
             const auto gql = fmt::format("select COLL_INHERITANCE where COLL_NAME = '{}'", single_quotes_to_hex(_p));
 

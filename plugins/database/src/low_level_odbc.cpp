@@ -77,12 +77,15 @@ const static SQLLEN GLOBAL_SQL_NTS = SQL_NTS;
 
 SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 
-#include <stdio.h>
-#include <pwd.h>
-#include <ctype.h>
+#include <fmt/format.h>
 
-#include <vector>
+#include <pwd.h>
+
+#include <cctype>
+#include <cstdio>
 #include <string>
+#include <vector>
+#include <type_traits>
 
 #ifndef ORA_ICAT
 static int didBegin = 0;
@@ -98,6 +101,20 @@ static int noResultRowCount = 0;
 static const short MAX_NUMBER_ICAT_COLUMS = 32;
 static SQLLEN resultDataSizeArray[ MAX_NUMBER_ICAT_COLUMS ];
 
+// SQLCHAR is usually unsigned char. Newer versions of fmt don't know how to deal
+// with unsigned char strings, so let's define a formatter.
+#if FMT_VERSION >= 90000
+template <>
+struct fmt::formatter<unsigned char*> : fmt::formatter<char*>
+{
+    constexpr auto format(const unsigned char*& e, format_context& ctx) const
+    {
+        static_assert(sizeof(char) == sizeof(unsigned char)); // no funny business!
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        return fmt::formatter<const char*>::format(reinterpret_cast<const char*>(e), ctx);
+    }
+};
+#endif
 
 /*
   call SQLError to get error information and log it
@@ -129,15 +146,7 @@ logPsgError( HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         }
-        // Newer versions of fmt don't know how to deal with SQLCHAR[].
-        // Quick and dirty solution is to reinterpret_cast to char*.
-        // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}",
-                      __func__,
-                      reinterpret_cast<char*>(sqlstate),
-                      sqlcode,
-                      reinterpret_cast<char*>(psgErrorMsg));
-        // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}", __func__, sqlstate, sqlcode, psgErrorMsg);
     }
     return errorVal;
 }
@@ -217,14 +226,9 @@ cllConnect( icatSessionStruct *icss ) {
         SQLSMALLINT length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
-            // Newer versions of fmt don't know how to deal with SQLCHAR[].
-            // Quick and dirty solution is to reinterpret_cast to char*.
-            // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-            static_assert(sizeof(char) == sizeof(SQLCHAR));
-            log_db::error("{}:          SQLSTATE: {}\n", __func__, reinterpret_cast<char*>(sqlstate));
+            log_db::error("{}:          SQLSTATE: {}\n", __func__, sqlstate);
             log_db::error("{}:  Native Error Code: {}\n", __func__, sqlcode);
-            log_db::error("{}: {} \n", __func__, reinterpret_cast<char*>(buffer));
-            // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+            log_db::error("{}: {} \n", __func__, buffer);
         }
 
         SQLDisconnect( myHdbc );

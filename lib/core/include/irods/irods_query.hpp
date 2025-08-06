@@ -18,7 +18,27 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <type_traits>
 #include <vector>
+
+namespace irods
+{
+    enum class query_type
+    {
+        general = 0,
+        specific = 1
+    };
+} //namespace irods
+
+template <>
+struct fmt::formatter<irods::query_type> : fmt::formatter<std::underlying_type_t<irods::query_type>>
+{
+    constexpr auto format(const irods::query_type& e, format_context& ctx) const
+    {
+        return fmt::formatter<std::underlying_type_t<irods::query_type>>::format(
+            static_cast<std::underlying_type_t<irods::query_type>>(e), ctx);
+    }
+};
 
 namespace irods
 {
@@ -32,11 +52,11 @@ namespace irods
             SPECIFIC = 1
         };
 
-        static query_type convert_string_to_query_type(
-                const std::string& _str) {
+        static irods::query_type string_to_query_type(const std::string& _str)
+        {
             // default option
             if(_str.empty()) {
-                return GENERAL;
+                return irods::query_type::general;
             }
 
             const std::string GEN_STR{"general"};
@@ -47,17 +67,22 @@ namespace irods
                 lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
             if(GEN_STR == lowered) {
-                return GENERAL;
+                return irods::query_type::general;
             }
             else if(SPEC_STR == lowered) {
-                return SPECIFIC;
+                return irods::query_type::specific;
             }
             else {
                 THROW(
                     SYS_INVALID_INPUT_PARAM,
                     _str + " - is not a query type");
             }
-        } // convert_string_to_query_type
+        } // string_to_query_type
+
+        static query_type convert_string_to_query_type(const std::string& _str)
+        {
+            return static_cast<query_type>(string_to_query_type(_str));
+        }
 
         class query_impl_base
         {
@@ -428,12 +453,12 @@ namespace irods
               const std::string&              _zone_hint,
               uintmax_t                       _query_limit,
               uintmax_t                       _row_offset,
-              query_type                      _query_type,
+              irods::query_type               _query_type,
               int                             _options)
             : iter_{}
             , query_impl_{}
         {
-            if(_query_type == GENERAL) {
+            if (_query_type == irods::query_type::general) {
                 query_impl_ = std::make_shared<gen_query_impl>(
                                   _comm,
                                   _query_limit,
@@ -442,7 +467,7 @@ namespace irods
                                   _zone_hint,
                                   _options);
             }
-            else if(_query_type == SPECIFIC) {
+            else if (_query_type == irods::query_type::specific) {
                 query_impl_ = std::make_shared<spec_query_impl>(
                                   _comm,
                                   _query_limit,
@@ -474,9 +499,31 @@ namespace irods
               const std::string& _query_string,
               uintmax_t          _query_limit = 0,
               uintmax_t          _row_offset  = 0,
-              query_type         _query_type  = GENERAL,
+              irods::query_type  _query_type  = irods::query_type::general,
               int                _options     = 0)
             : query{_comm, _query_string, nullptr, {}, _query_limit, _row_offset, _query_type, _options}
+        {
+        } // ctor
+
+        query(connection_type*                _comm,
+              const std::string&              _query_string,
+              const std::vector<std::string>* _specific_query_args,
+              const std::string&              _zone_hint,
+              uintmax_t                       _query_limit,
+              uintmax_t                       _row_offset,
+              query_type                      _query_type,
+              int                             _options)
+            : query{_comm, _query_string, _specific_query_args, _zone_hint, _query_limit, _row_offset, static_cast<irods::query_type>(_query_type), _options}
+        {
+        } // ctor
+
+        query(connection_type*   _comm,
+              const std::string& _query_string,
+              uintmax_t          _query_limit,
+              uintmax_t          _row_offset,
+              query_type         _query_type,
+              int                _options     = 0)
+            : query{_comm, _query_string, _query_limit, _row_offset, static_cast<irods::query_type>(_query_type), _options}
         {
         } // ctor
 
