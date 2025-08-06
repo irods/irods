@@ -14,6 +14,8 @@
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <cstring>
 #include <regex>
