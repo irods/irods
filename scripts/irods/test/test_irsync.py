@@ -760,3 +760,48 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # Other case-- ensure that irods-to-local irsync do not create the target dir
         self.user0.assert_icommand(['irsync', '-rl', f'i:{source_coll_path}', nonexistent_dir_path], 'STDOUT', ['one', 'two', 'three'])
         self.assertFalse(os.path.exists(nonexistent_dir_path))
+
+    def test_irsync_with_all_keyword_does_not_fail_on_overwrite__issue_8295(self):
+        data_object_name = 'test_dataobj_8295'
+        test_data_object_path = f'{self.user0.session_collection}/{data_object_name}'
+        self.user0.assert_icommand(['itouch', test_data_object_path])
+
+        test_file_path = os.path.join(self.testing_tmp_dir, data_object_name)
+
+        with open(test_file_path, 'w') as f:
+            f.write('potato')
+
+        self.user0.assert_icommand(['irsync', '-a', test_file_path, f'i:{test_data_object_path}'])
+
+    def test_irsync_with_all_keyword__issue_8613(self):
+        data_object_name = 'all_keyword_dataobj'
+        another_resc  = 'resc_all_keyword'
+        data_object_path = f'{self.user0.session_collection}/{data_object_name}'
+
+        test_file_path = os.path.join(self.testing_tmp_dir, data_object_name)
+
+        with open(test_file_path, 'w') as f:
+            f.write('potato')
+
+        self.user0.assert_icommand(['itouch', data_object_path])
+        lib.create_ufs_resource(self.admin, another_resc)
+
+        try:
+            self.user0.assert_icommand(['irepl', '-R', another_resc, data_object_path])
+            self.user0.assert_icommand(['iput', '-f', test_file_path, data_object_path])
+
+            # Replica should be stale after the iput
+            self.assertEqual(lib.get_replica_status(self.user0, data_object_name, 1), '0')
+
+            # Edit the file, or irsync will not do the copy
+            with open(test_file_path, 'w') as f:
+                f.write('mashed potato')
+
+            self.user0.assert_icommand(['irsync', '-a', test_file_path, f'i:{data_object_path}'])
+
+            # Replica should be good after the irsync
+            self.assertEqual(lib.get_replica_status(self.user0, data_object_name, 1), '1')
+
+        finally:
+            self.user0.run_icommand(['irm', '-f', data_object_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', another_resc])
