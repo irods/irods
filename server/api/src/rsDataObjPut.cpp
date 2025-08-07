@@ -417,6 +417,12 @@ namespace
         if (getValByKey(&_inp.condInput, ALL_KW)) {
             /* update the rest of copies */
             transferStat_t *transStat{};
+
+            // rsDataObjRepl will error if ALL_KW and DEST_RESC_NAME_KW are set simultaneously
+            // It's also set by rsDataObjOpen in some cases, so it needs to be removed here,
+            // not in the client.
+            rmKeyVal(&_inp.condInput, DEST_RESC_NAME_KW);
+
             status = rsDataObjRepl(&_comm, &_inp, &transStat);
             if (transStat) {
                 free(transStat);
