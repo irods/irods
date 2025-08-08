@@ -418,6 +418,12 @@ namespace
             /* update the rest of copies */
             transferStat_t *transStat{};
 
+            char* stored_resc_name = nullptr;
+
+            if(stored_resc_name = getValByKey(&_inp.condInput, DEST_RESC_NAME_KW)) {
+               stored_resc_name = strdup(stored_resc_name);
+            }
+
             // rsDataObjRepl will error if ALL_KW and DEST_RESC_NAME_KW are set simultaneously
             // It's also set by rsDataObjOpen in some cases, so it needs to be removed here,
             // not in the client.
@@ -426,6 +432,11 @@ namespace
             status = rsDataObjRepl(&_comm, &_inp, &transStat);
             if (transStat) {
                 free(transStat);
+            }
+
+            if(stored_resc_name) {
+                addKeyVal(&_inp.condInput, DEST_RESC_NAME_KW, stored_resc_name);
+                free(stored_resc_name);
             }
         }
 
