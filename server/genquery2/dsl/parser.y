@@ -11,7 +11,7 @@ Request that symbols be handled as a whole (type, value, and possibly location)
 in the scanner. In C++, only works when variant-based semantic values are enabled.
 This option causes make_* functions to be generated for each token kind.
 */
-%define api.token.constructor 
+%define api.token.constructor
 
 /* The type used for semantic values. */
 %define api.value.type variant
@@ -119,7 +119,7 @@ This option causes make_* functions to be generated for each token kind.
 %token does not define associativity or precedence.
 %precedence does not define associativity.
 
-Operator precedence is determined by the line ordering of the declarations. 
+Operator precedence is determined by the line ordering of the declarations.
 The further down the page the line is, the higher the precedence. For example,
 NOT has higher precedence than AND.
 
@@ -134,6 +134,7 @@ rules only.
 %nterm <gq2_detail::projections>                  projection_list;
 %nterm <gq2_detail::conditions>                   condition_list;
 %nterm <gq2_detail::group_by>                     group_by;
+%nterm <std::vector<std::variant<gq2_detail::function, gq2_detail::column>>> group_expression;
 %nterm <gq2_detail::order_by>                     order_by;
 %nterm <std::vector<gq2_detail::sort_expression>> sort_expression;
 %nterm <gq2_detail::range>                        range;
@@ -144,7 +145,6 @@ rules only.
 %nterm <gq2_detail::condition>                    condition;
 %nterm <gq2_detail::condition_expression>         condition_expression;
 %nterm <std::vector<std::string>>                 string_literal_list;
-%nterm <std::vector<std::string>>                 identifier_list;
 %nterm <std::string>                              integer;
 
 %start genquery2 /* Defines where grammar starts */
@@ -168,11 +168,18 @@ select:
 
 group_by:
   %empty { /* Generates a default initialized group_by structure. */ }
-| GROUP BY identifier_list { std::swap($$.columns, $3); }
+| GROUP BY group_expression { std::swap($$.expressions, $3); }
 ;
 
 order_by:
   ORDER BY sort_expression { std::swap($$.sort_expressions, $3); }
+;
+
+group_expression:
+  column { $$.push_back($1); }
+| group_expression COMMA column { $1.push_back($3); std::swap($$, $1); }
+| function { $$.push_back($1); }
+| group_expression COMMA function { $1.push_back($3); std::swap($$, $1); }
 ;
 
 /*
@@ -192,6 +199,8 @@ The following would be possible if everything used std::variant.
     | sort_expression COMMA projection ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
     | sort_expression COMMA projection DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
     ;
+
+This also applies to the above group by clause.
 */
 sort_expression:
   column { $$.push_back(gq2_detail::sort_expression{$1, true}); }
@@ -284,11 +293,6 @@ condition_expression:
 string_literal_list:
   STRING_LITERAL { $$ = std::vector<std::string>{std::move($1)}; }
 | string_literal_list COMMA STRING_LITERAL { $1.push_back(std::move($3)); std::swap($$, $1); }
-;
-
-identifier_list:
-  IDENTIFIER { $$ = std::vector<std::string>{std::move($1)}; }
-| identifier_list COMMA IDENTIFIER { $1.push_back(std::move($3)); std::swap($$, $1); }
 ;
 
 integer:
