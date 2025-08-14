@@ -47,8 +47,19 @@ jobs:
                 libarchive-dev
       - name: Install iRODS Externals
         run:  |
-              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | apt-key add -
-              echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/renci-irods-unstable.list
+              mkdir -p /etc/apt/keyrings
+              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | \
+                gpg \
+                  --no-options \
+                  --no-default-keyring \
+                  --no-auto-check-trustdb \
+                  --homedir /dev/null \
+                  --no-keyring \
+                  --import-options import-export \
+                  --output /etc/apt/keyrings/renci-irods-unstable-archive-keyring.pgp \
+                  --import
+              echo "deb [signed-by=/etc/apt/keyrings/renci-irods-unstable-archive-keyring.pgp arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | \
+                tee /etc/apt/sources.list.d/renci-irods-unstable.list
               apt-get update -qq
               apt-get install -qq \
                 irods-externals-boost1.81.0-2 \
