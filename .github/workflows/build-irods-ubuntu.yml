@@ -15,11 +15,22 @@ jobs:
         run:  |
               apt-get update -qq
               apt-get install -qq dnsutils apt-transport-https ca-certificates
-              apt-get install -qq build-essential wget curl g++ make python3-dev unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil odbc-postgresql libkrb5-dev python3-distro flex bison libarchive-dev
+              apt-get install -qq build-essential wget curl gnupg g++ make python3-dev unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil odbc-postgresql libkrb5-dev python3-distro flex bison libarchive-dev
       - name: Install iRODS Externals
         run:  |
-              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | apt-key add -
-              echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/renci-irods-unstable.list
+              mkdir -p /etc/apt/keyrings
+              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | \
+                gpg \
+                  --no-options \
+                  --no-default-keyring \
+                  --no-auto-check-trustdb \
+                  --homedir /dev/null \
+                  --no-keyring \
+                  --import-options import-export \
+                  --output /etc/apt/keyrings/renci-irods-unstable-archive-keyring.pgp \
+                  --import
+              echo "deb [signed-by=/etc/apt/keyrings/renci-irods-unstable-archive-keyring.pgp arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | \
+                tee /etc/apt/sources.list.d/renci-irods-unstable.list
               apt-get update -qq
               apt-get install -qq \
                 irods-externals-avro-libcxx1.11.0-3 \
