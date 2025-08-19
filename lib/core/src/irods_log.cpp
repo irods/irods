@@ -1,4 +1,5 @@
 #include "irods/irods_log.hpp"
+#include "irods/rcGlobalExtern.h"
 #include "irods/rodsLog.h"
 
 namespace irods {
@@ -19,6 +20,11 @@ namespace irods {
     }
 
     void log(const irods::exception& e) {
-        log(LOG_ERROR, e.what());
+        if (CLIENT_PT == ::ProcessType) {
+            log(LOG_ERROR, e.client_display_what());
+        }
+        else {
+            log(LOG_ERROR, e.what());
+        }
     }
 }
