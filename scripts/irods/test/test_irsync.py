@@ -805,3 +805,48 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         finally:
             self.user0.run_icommand(['irm', '-f', data_object_path])
             self.admin.run_icommand(['iadmin', 'rmresc', another_resc])
+
+    def test_irsync_overwrites_stale_replicas__issue_8590(self):
+        source_coll = 'thesource_8590'
+        dest_coll = 'thetarget_8590'
+        data_object_name = 'stale_replica_file_8590'
+
+        test_file_path = os.path.join(self.testing_tmp_dir, data_object_name)
+        empty_file_path = os.path.join(self.testing_tmp_dir, 'empty_file_8590')
+
+        source_coll_path = f'{self.user0.session_collection}/{source_coll}'
+        dest_coll_path = f'{self.user0.session_collection}/{dest_coll}'
+
+        dest_data_obj_path = f'{dest_coll_path}/{data_object_name}'
+
+        with open(test_file_path, 'w') as f:
+            f.write('potato')
+
+        with open(empty_file_path, 'w') as f:
+            pass
+
+        self.user0.assert_icommand(['imkdir', source_coll_path])
+        self.user0.assert_icommand(['imkdir', dest_coll_path])
+
+        self.user0.assert_icommand(['iput', test_file_path, f'{source_coll_path}/{data_object_name}'])
+        self.user0.assert_icommand(['iput', empty_file_path, dest_data_obj_path])
+
+        # Stale the replica to check that irsync will not fail with SYS_NO_GOOD_REPLICA when the target is stale
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', dest_data_obj_path, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+
+        # Should not fail with SYS_NO_GOOD_REPLICA
+        self.user0.assert_icommand(['irsync', '-K', '-v', '-r', f'i:{source_coll_path}', f'i:{dest_coll_path}' ], 'STDOUT_SINGLELINE', data_object_name)
+
+        # Copy should have happened and set the replica to good
+        self.assertEqual(lib.get_replica_status(self.admin, data_object_name, 0), '1')
+
+        # Ensure destination has a checksum
+        self.user0.assert_icommand(['ichksum', dest_data_obj_path], 'STDOUT', [data_object_name, 'sha2:6RwlStWIYKAseI37XBpl1qiEarHcZJYxx9sW/vSvLew='])
+        # Stale the replica to check that irsync will still overwrite even when the checksums match (i.e. do not trust a stale checksum)
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', dest_data_obj_path, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+
+        # Should cause an overwrite
+        self.user0.assert_icommand(['irsync', '-K', '-v', '-r', f'i:{source_coll_path}', f'i:{dest_coll_path}' ], 'STDOUT_SINGLELINE', data_object_name)
+
+        # Copy should have happened and set the replica to good
+        self.assertEqual(lib.get_replica_status(self.admin, data_object_name, 0), '1')
