@@ -4,6 +4,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
 #include "irods/miscUtil.h"
+#include "irods/objInfo.h"
 #include "irods/checksum.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/irods_at_scope_exit.hpp"
@@ -11,6 +12,7 @@
 #include "irods/irods_hasher_factory.hpp"
 #include "irods/irods_path_recursion.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_query.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -561,7 +563,20 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
     else if ( strlen( srcPath->chksum ) > 0 && strlen( targPath->chksum ) > 0 ) {
         /* src and trg has a checksum value */
-        if ( strcmp( targPath->chksum, srcPath->chksum ) != 0 ) {
+
+        const auto path_str = std::string(targPath->outPath);
+        const auto separator_index = path_str.rfind("/");
+        const auto query_str = fmt::format("select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}'",
+                                           path_str.substr(0, separator_index),
+                                           path_str.substr(separator_index + 1));
+        irods::query qobj{conn, query_str};
+
+        rodsLog(LOG_ERROR, path_str.c_str());
+        rodsLog(LOG_ERROR, query_str.c_str());
+        if (std::find_if(qobj.begin(), qobj.end(), [](auto row) { return row[0] == std::to_string(GOOD_REPLICA); }) ==
+                qobj.end() ||
+            strcmp(targPath->chksum, srcPath->chksum) != 0)
+        {
             cpFlag = 1;
         }
     }
