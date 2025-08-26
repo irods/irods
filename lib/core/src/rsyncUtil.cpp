@@ -6,6 +6,7 @@
 #include "irods/miscUtil.h"
 #include "irods/objInfo.h"
 #include "irods/checksum.h"
+#include "irods/filesystem.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_log.hpp"
@@ -564,16 +565,14 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     else if ( strlen( srcPath->chksum ) > 0 && strlen( targPath->chksum ) > 0 ) {
         /* src and trg has a checksum value */
 
-        const auto path_str = std::string(targPath->outPath);
-        const auto separator_index = path_str.rfind("/");
+        const static auto good_replica_string = std::to_string(GOOD_REPLICA);
+        const irods::experimental::filesystem::path _path{targPath->outPath};
         const auto query_str = fmt::format("select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                                           path_str.substr(0, separator_index),
-                                           path_str.substr(separator_index + 1));
+                                           _path.parent_path().string(),
+                                           _path.object_name().string());
         irods::query qobj{conn, query_str};
 
-        rodsLog(LOG_ERROR, path_str.c_str());
-        rodsLog(LOG_ERROR, query_str.c_str());
-        if (std::find_if(qobj.begin(), qobj.end(), [](auto row) { return row[0] == std::to_string(GOOD_REPLICA); }) ==
+        if (std::find_if(qobj.begin(), qobj.end(), [](const auto& row) { return row[0] == good_replica_string; }) ==
                 qobj.end() ||
             strcmp(targPath->chksum, srcPath->chksum) != 0)
         {
