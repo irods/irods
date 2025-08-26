@@ -322,3 +322,79 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
 
         finally:
             controller.reload_configuration()
+
+    def test_rodsadmin_can_use_genquery2_to_find_data_objects_without_any_permissions__issue_8546(self):
+        # Create a data object as a rodsuser and remove their permissions from it.
+        # This results in no one having permissions on the data object.
+        data_name = 'no_perms_8546.txt'
+        self.user.assert_icommand(['itouch', data_name])
+        self.user.assert_icommand(['ichmod', 'null', self.user.username, data_name])
+
+        try:
+            # Show the data object cannot be found by the rodsuser.
+            self.user.assert_icommand(['ils', data_name], 'STDERR', ['does not exist or user lacks access permission'])
+
+            # Show the rodsuser cannot locate the data object using GenQuery2.
+            with self.subTest('rodsuser / with condition'):
+                query_string = f"select DATA_NAME where COLL_NAME = '{self.user.session_collection}' and DATA_NAME = '{data_name}'"
+                json_string = json.dumps([])
+                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            with self.subTest('rodsuser / without condition'):
+                query_string = f"select DATA_NAME"
+                json_string = json.dumps([data_name])
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertNotIn(json_string, out.strip())
+
+            # Show a rodsadmin can locate the data object just fine.
+            with self.subTest('rodsadmin / with condition'):
+                query_string = f"select DATA_NAME where COLL_NAME = '{self.user.session_collection}' and DATA_NAME = '{data_name}'"
+                json_string = json.dumps([[data_name]])
+                self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            with self.subTest('rodsadmin / without condition'):
+                query_string = f"select DATA_NAME"
+                json_string = json.dumps([data_name])
+                _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertIn(json_string, out.strip())
+
+        finally:
+            # Restore the permissions so the test framework can clean up properly.
+            self.admin.run_icommand(['ichmod', '-M', 'own', self.user.username, f'{self.user.session_collection}/{data_name}'])
+
+    def test_rodsadmin_can_use_genquery2_to_find_collections_without_any_permissions__issue_8546(self):
+        # Remove the rodsuser's permissions from their home collection.
+        # This results in no one having permissions on the collection.
+        self.user.assert_icommand(['ichmod', 'null', self.user.username, self.user.session_collection])
+
+        try:
+            # Show the collection cannot be found by the rodsuser.
+            self.user.assert_icommand(['ils'], 'STDERR', ['does not exist or user lacks access permission'])
+
+            # Show the rodsuser cannot locate the collection using GenQuery2.
+            with self.subTest('rodsuser / with condition'):
+                query_string = f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}'"
+                json_string = json.dumps([])
+                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            with self.subTest('rodsuser / without condition'):
+                query_string = f"select COLL_NAME"
+                json_string = json.dumps([self.user.session_collection])
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertNotIn(json_string, out.strip())
+
+            # Show a rodsadmin can locate the collection just fine.
+            with self.subTest('rodsadmin / with condition'):
+                query_string = f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}'"
+                json_string = json.dumps([[self.user.session_collection]])
+                self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            with self.subTest('rodsadmin / without condition'):
+                query_string = f"select COLL_NAME"
+                json_string = json.dumps([self.user.session_collection])
+                _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertIn(json_string, out.strip())
+
+        finally:
+            # Restore the permissions so the test framework can clean up properly.
+            self.admin.run_icommand(['ichmod', '-M', 'own', self.user.username, self.user.session_collection])
