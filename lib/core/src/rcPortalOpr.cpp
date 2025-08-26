@@ -14,8 +14,6 @@
 #include "irods/irods_buffer_encryption.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
 
-#include <openssl/md5.h>
-
 #include <boost/thread/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/thread/mutex.hpp>

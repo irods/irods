@@ -7,7 +7,6 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/aes.h>
-#include <openssl/md5.h>
 
 #include <cctype>
 #include <iostream>

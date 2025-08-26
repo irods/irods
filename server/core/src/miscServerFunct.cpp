@@ -52,7 +52,6 @@
 #include <fmt/format.h>
 
 #include <sys/wait.h>
-#include <openssl/md5.h>
 
 #include <cstring>
 #include <iomanip>
