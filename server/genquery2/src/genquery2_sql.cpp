@@ -257,7 +257,7 @@ namespace
 
         std::vector<std::string> processed;
         processed.reserve(_tables.size());
-        processed.emplace_back(std::string{_tables.front()});
+        processed.emplace_back(_tables.front());
         log_gq::debug(fmt::format("processed = [{}]", fmt::join(processed, ", ")));
 
         for (decltype(_tables.size()) i = 0; i < _tables.size() - 1; ++i) {
@@ -322,13 +322,13 @@ namespace
         return sql;
     } // generate_joins_for_metadata_columns
 
-    auto generate_joins_for_permissions(const std::map<std::string, std::string>& _table_aliases) -> std::string
+    auto generate_joins_for_permissions(gq_state& _state, const gq::options& _opts) -> std::string
     {
         // Always include the joins if the query involves columns related to data objects and/or collections.
         // This is required due to how columns in R_OBJT_ACCESS and other tables are handled.
         //
-        // While the additional joins aren't theoretically necessary for a rodsadmin, they are included to
-        // cover cases where the rodsadmin has requested information that only exists in the permission tables.
+        // LEFT JOIN is used instead of INNER JOIN for rodsadmins to allow discovery of data objects and
+        // collections having NO user permissions on them. Using INNER JOIN would hide these objects otherwise.
         //
         //  select d.*
         //  from R_DATA_MAIN d
@@ -342,22 +342,47 @@ namespace
         //        du.user_type_name != 'rodsgroup' and
         //        cu.user_type_name != 'rodsgroup'
         //
+        // NOTE: It turns out that using LEFT JOINs appears to work for non-admins too. Extensive testing is
+        // needed to be sure, but the idea is that non-admin queries always include a permission check. For
+        // those tables which do not contain a match, a NULL value will be returned. The NULL values will fail
+        // the permission check resulting in the same results as an INNER JOIN. This idea depends on how the
+        // database treats NULL values during filtering.
+
         std::string sql;
 
-        if (const auto iter = _table_aliases.find("R_DATA_MAIN"); iter != std::end(_table_aliases)) {
-            sql += fmt::format(" inner join R_OBJT_ACCESS pdoa on {}.data_id = pdoa.object_id"
-                               " inner join R_TOKN_MAIN pdt on pdoa.access_type_id = pdt.token_id"
-                               " inner join R_USER_GROUP pdug on pdoa.user_id = pdug.group_user_id"
-                               " inner join R_USER_MAIN pdu on pdug.user_id = pdu.user_id",
-                               iter->second);
-        }
+        if (_opts.admin_mode) {
+            if (const auto iter = _state.table_aliases.find("R_DATA_MAIN"); iter != std::end(_state.table_aliases)) {
+                sql += fmt::format(" left join R_OBJT_ACCESS pdoa on {}.data_id = pdoa.object_id"
+                                   " left join R_TOKN_MAIN pdt on pdoa.access_type_id = pdt.token_id"
+                                   " left join R_USER_GROUP pdug on pdoa.user_id = pdug.group_user_id"
+                                   " left join R_USER_MAIN pdu on pdug.user_id = pdu.user_id",
+                                   iter->second);
+            }
 
-        if (const auto iter = _table_aliases.find("R_COLL_MAIN"); iter != std::end(_table_aliases)) {
-            sql += fmt::format(" inner join R_OBJT_ACCESS pcoa on {}.coll_id = pcoa.object_id"
-                               " inner join R_TOKN_MAIN pct on pcoa.access_type_id = pct.token_id"
-                               " inner join R_USER_GROUP pcug on pcoa.user_id = pcug.group_user_id"
-                               " inner join R_USER_MAIN pcu on pcug.user_id = pcu.user_id",
-                               iter->second);
+            if (const auto iter = _state.table_aliases.find("R_COLL_MAIN"); iter != std::end(_state.table_aliases)) {
+                sql += fmt::format(" left join R_OBJT_ACCESS pcoa on {}.coll_id = pcoa.object_id"
+                                   " left join R_TOKN_MAIN pct on pcoa.access_type_id = pct.token_id"
+                                   " left join R_USER_GROUP pcug on pcoa.user_id = pcug.group_user_id"
+                                   " left join R_USER_MAIN pcu on pcug.user_id = pcu.user_id",
+                                   iter->second);
+            }
+        }
+        else {
+            if (const auto iter = _state.table_aliases.find("R_DATA_MAIN"); iter != std::end(_state.table_aliases)) {
+                sql += fmt::format(" inner join R_OBJT_ACCESS pdoa on {}.data_id = pdoa.object_id"
+                                   " inner join R_TOKN_MAIN pdt on pdoa.access_type_id = pdt.token_id"
+                                   " inner join R_USER_GROUP pdug on pdoa.user_id = pdug.group_user_id"
+                                   " inner join R_USER_MAIN pdu on pdug.user_id = pdu.user_id",
+                                   iter->second);
+            }
+
+            if (const auto iter = _state.table_aliases.find("R_COLL_MAIN"); iter != std::end(_state.table_aliases)) {
+                sql += fmt::format(" inner join R_OBJT_ACCESS pcoa on {}.coll_id = pcoa.object_id"
+                                   " inner join R_TOKN_MAIN pct on pcoa.access_type_id = pct.token_id"
+                                   " inner join R_USER_GROUP pcug on pcoa.user_id = pcug.group_user_id"
+                                   " inner join R_USER_MAIN pcu on pcug.user_id = pcu.user_id",
+                                   iter->second);
+            }
         }
 
         return sql;
@@ -378,8 +403,6 @@ namespace
         //      inner join R_OBJT_ACCESS coa on coa.object_id = c.coll_id
         //      inner join R_USER_MAIN du on du.user_id = doa.user_id
         //      inner join R_USER_MAIN cu on cu.user_id = coa.user_id
-        //      where doa.access_type_id >= ? and
-        //            coa.access_type_id >= ?
         //
         // When the user is NOT a rodsadmin, the SQL must include an additional condition which restricts
         // the user's visibility to those data objects and collections which they have permission to view.
@@ -395,21 +418,16 @@ namespace
         //      inner join R_USER_GROUP cug on coa.user_id = cug.group_user_id
         //      inner join R_USER_MAIN du on dug.user_id = du.user_id
         //      inner join R_USER_MAIN cu on cug.user_id = cu.user_id
-        //      where doa.access_type_id >= ? and
+        //      where doa.access_type_id >= 1050 and
         //            du.user_name = ? and
         //            du.zone_name = ? and
         //            du.user_type_name != 'rodsgroup' and
-        //            coa.access_type_id >= ? and
+        //            coa.access_type_id >= 1050 and
         //            cu.user_name = ? and
         //            cu.zone_name = ? and
         //            cu.user_type_name != 'rodsgroup'
 
         std::string sql;
-
-        // The permission value for "null" is 1000. Therefore, if the user is a rodsadmin, they are
-        // allowed to view all objects. We achieve this by setting the minimum permission level to the
-        // value "null". Remember, the permission model in iRODS is linear.
-        const auto min_perm_level = _opts.admin_mode ? 1000 : 1050;
 
         const auto d_iter = _state.table_aliases.find("R_DATA_MAIN");
         const auto c_iter = _state.table_aliases.find("R_COLL_MAIN");
@@ -425,53 +443,42 @@ namespace
         // - pcoa: R_OBJT_ACCESS
         // - pcu : R_USER_MAIN
 
+        // "access_type_id" represents the numeric form of a permission. The following conditions
+        // hard-code a value of 1050 as an optimization. 1050 is the numeric value for the
+        // "read_object" permission. These conditions apply to non-admin only.
+
         if (!_conditions.empty()) {
             sql += fmt::format(" where {}", _conditions);
 
-            if (_opts.admin_mode) {
-                if (d_iter != end && c_iter != end) {
-                    sql += fmt::format(" and pdoa.access_type_id >= {perm} and pcoa.access_type_id >= {perm}",
-                                       fmt::arg("perm", min_perm_level));
-                }
-                else if (d_iter != end) {
-                    sql += fmt::format(" and pdoa.access_type_id >= {}", min_perm_level);
-                }
-                else if (c_iter != end) {
-                    sql += fmt::format(" and pcoa.access_type_id >= {}", min_perm_level);
-                }
-            }
-            else {
+            if (!_opts.admin_mode) {
                 if (d_iter != end && c_iter != end) {
                     sql += fmt::format(" and pdu.user_name = ?"
                                        " and pdu.zone_name = '{zone}'"
                                        " and pdu.user_type_name != 'rodsgroup'"
-                                       " and pdoa.access_type_id >= {perm}"
+                                       " and pdoa.access_type_id >= 1050"
                                        " and pcu.user_name = ?"
                                        " and pcu.zone_name = '{zone}'"
                                        " and pcu.user_type_name != 'rodsgroup'"
-                                       " and pcoa.access_type_id >= {perm}",
-                                       fmt::arg("perm", min_perm_level),
+                                       " and pcoa.access_type_id >= 1050",
                                        fmt::arg("zone", _opts.user_zone));
-                    _state.values.emplace_back(std::string{_opts.user_name});
-                    _state.values.emplace_back(std::string{_opts.user_name});
+                    _state.values.emplace_back(_opts.user_name);
+                    _state.values.emplace_back(_opts.user_name);
                 }
                 else if (d_iter != end) {
                     sql += fmt::format(" and pdu.user_name = ?"
                                        " and pdu.zone_name = '{}'"
                                        " and pdu.user_type_name != 'rodsgroup'"
-                                       " and pdoa.access_type_id >= {}",
-                                       _opts.user_zone,
-                                       min_perm_level);
-                    _state.values.emplace_back(std::string{_opts.user_name});
+                                       " and pdoa.access_type_id >= 1050",
+                                       _opts.user_zone);
+                    _state.values.emplace_back(_opts.user_name);
                 }
                 else if (c_iter != end) {
                     sql += fmt::format(" and pcu.user_name = ?"
                                        " and pcu.zone_name = '{}'"
                                        " and pcu.user_type_name != 'rodsgroup'"
-                                       " and pcoa.access_type_id >= {}",
-                                       _opts.user_zone,
-                                       min_perm_level);
-                    _state.values.emplace_back(std::string{_opts.user_name});
+                                       " and pcoa.access_type_id >= 1050",
+                                       _opts.user_zone);
+                    _state.values.emplace_back(_opts.user_name);
                 }
             }
 
@@ -482,50 +489,35 @@ namespace
         // At this point, the user did not include any conditions.
         //
 
-        if (_opts.admin_mode) {
-            if (d_iter != end && c_iter != end) {
-                sql += fmt::format(" where pdoa.access_type_id >= {perm} and pcoa.access_type_id >= {perm}",
-                                   fmt::arg("perm", min_perm_level));
-            }
-            else if (d_iter != end) {
-                sql += fmt::format(" where pdoa.access_type_id >= {}", min_perm_level);
-            }
-            else if (c_iter != end) {
-                sql += fmt::format(" where pcoa.access_type_id >= {}", min_perm_level);
-            }
-        }
-        else {
+        if (!_opts.admin_mode) {
             if (d_iter != end && c_iter != end) {
                 sql += fmt::format(" where pdu.user_name = ?"
                                    " and pdu.zone_name = '{zone}'"
                                    " and pdu.user_type_name != 'rodsgroup'"
-                                   " and pdoa.access_type_id >= {perm}"
+                                   " and pdoa.access_type_id >= 1050"
                                    " and pcu.user_name = ?"
                                    " and pcu.zone_name = '{zone}'"
                                    " and pcu.user_type_name != 'rodsgroup'"
-                                   " and pcoa.access_type_id >= {perm}",
-                                   fmt::arg("perm", min_perm_level),
+                                   " and pcoa.access_type_id >= 1050",
                                    fmt::arg("zone", _opts.user_zone));
-                _state.values.emplace_back(std::string{_opts.user_name});
-                _state.values.emplace_back(std::string{_opts.user_name});
+                _state.values.emplace_back(_opts.user_name);
+                _state.values.emplace_back(_opts.user_name);
             }
             else if (d_iter != end) {
                 sql += fmt::format(" where pdu.user_name = ?"
                                    " and pdu.zone_name = '{}'"
                                    " and pdu.user_type_name != 'rodsgroup'"
-                                   " and pdoa.access_type_id >= {}",
-                                   _opts.user_zone,
-                                   min_perm_level);
-                _state.values.emplace_back(std::string{_opts.user_name});
+                                   " and pdoa.access_type_id >= 1050",
+                                   _opts.user_zone);
+                _state.values.emplace_back(_opts.user_name);
             }
             else if (c_iter != end) {
                 sql += fmt::format(" where pcu.user_name = ?"
                                    " and pcu.zone_name = '{}'"
                                    " and pcu.user_type_name != 'rodsgroup'"
-                                   " and pcoa.access_type_id >= {}",
-                                   _opts.user_zone,
-                                   min_perm_level);
-                _state.values.emplace_back(std::string{_opts.user_name});
+                                   " and pcoa.access_type_id >= 1050",
+                                   _opts.user_zone);
+                _state.values.emplace_back(_opts.user_name);
             }
         }
 
@@ -1289,7 +1281,7 @@ namespace irods::experimental::genquery2
             // Q. What happens if a user attempts to query data objects, collections, and tickets in the same query?
             // Q. Should these questions be handled by specific queries instead?
 
-            sql += generate_joins_for_permissions(state.table_aliases);
+            sql += generate_joins_for_permissions(state, _opts);
             sql += generate_joins_for_metadata_columns(state);
 
             if (state.add_sql_for_data_resc_hier) {
