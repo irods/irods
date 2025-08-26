@@ -51,8 +51,6 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
-#include <openssl/md5.h>
-
 #include <sys/time.h>
 #include <sys/wait.h>
 
