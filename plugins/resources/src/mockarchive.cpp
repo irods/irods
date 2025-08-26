@@ -41,7 +41,6 @@
 #include <dirent.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
-#include <openssl/md5.h>
 #if defined(osx_platform)
 #include <sys/malloc.h>
 #else
@@ -173,7 +172,8 @@ irods::error make_hashed_path(
 
     // Initialize the digest context for the derived digest implementation. Must use _ex or _ex2 to avoid
     // automatically resetting the context with EVP_MD_CTX_reset.
-    EVP_MD* message_digest = EVP_MD_fetch(nullptr, "MD5", nullptr);
+    static constexpr const char* algorithm_name = "SHA256";
+    EVP_MD* message_digest = EVP_MD_fetch(nullptr, algorithm_name, nullptr);
     EVP_MD_CTX* context = EVP_MD_CTX_new();
     const auto free_context = irods::at_scope_exit{[&context] { EVP_MD_CTX_free(context); }};
     if (0 == EVP_DigestInit_ex2(context, message_digest, nullptr)) {
@@ -184,11 +184,11 @@ irods::error make_hashed_path(
     }
     EVP_MD_free(message_digest);
 
-    char md5Buf[MAX_NAME_LEN]{};
-    std::strncpy(md5Buf, _path.c_str(), _path.size());
+    char buffer_to_hash[MAX_NAME_LEN]{};
+    std::strncpy(buffer_to_hash, _path.c_str(), _path.size());
 
     // Hash the specified buffer of bytes and store the results in the context.
-    if (0 == EVP_DigestUpdate(context, reinterpret_cast<unsigned char*>(md5Buf), _path.size())) {
+    if (0 == EVP_DigestUpdate(context, reinterpret_cast<unsigned char*>(buffer_to_hash), _path.size())) {
         const auto ssl_error_code = ERR_get_error();
         const auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
         THROW(DIGEST_UPDATE_FAILED, msg);
@@ -196,15 +196,18 @@ irods::error make_hashed_path(
 
     // Finally, retrieve the digest value from the context and place it into a buffer. Use the _ex function here
     // so that the digest context is not automatically cleaned up with EVP_MD_CTX_reset.
-    unsigned char hash[MAX_NAME_LEN];
+    static constexpr auto max_digest_length = EVP_MAX_MD_SIZE;
+    unsigned char hash[max_digest_length];
     if (0 == EVP_DigestFinal_ex(context, reinterpret_cast<unsigned char*>(hash), nullptr)) {
         const auto ssl_error_code = ERR_get_error();
         const auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
         THROW(DIGEST_FINAL_FAILED, msg);
     }
 
+    // The hash length should align with the algorithm name selected above.
+    static constexpr int hash_length_in_bytes = 32;
     std::stringstream ins;
-    for ( int i = 0; i < 16; ++i ) {
+    for (int i = 0; i < hash_length_in_bytes; ++i) {
         ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )hash[i];
     }
 
