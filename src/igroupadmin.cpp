@@ -477,7 +477,7 @@ void usageMain() {
         " ",
         "Commands are:",
         " lg [name] (list group info (user member list))",
-        " mkuser Name Password (make a user and set the initial password)",
+        " mkuser Name Password [Zone] (make a user and set the initial password)",
         " atg groupName userName[#Zone] (add to group - add a user to a group)",
         " rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
         " mkgroup groupName[#Zone] (make a new group)",
@@ -491,14 +491,15 @@ void usageMain() {
 void
 usage( char *subOpt ) {
     char *mkuserMsgs[] = {
-        " mkuser Name Group Password (make user by a group-admin)",
+        " mkuser Name Password [Zone] (make user by a group-admin)",
         "Create a new iRODS user in the ICAT database",
         " ",
         "Name is the user name to create",
-        "Group is the group to also add the user to",
         "Password is the user's initial password",
+        "Zone is the zone which the user is from (defaults to the local zone)",
         " ",
-        "The user type will be automatically set to 'rodsuser' and the zone local.",
+        "The user type will be set to 'rodsuser'. Changing the user type will require",
+        "rodsadmin privileges.",
         ""
     };
 
