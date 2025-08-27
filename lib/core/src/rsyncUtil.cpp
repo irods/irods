@@ -567,15 +567,13 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
         const static auto good_replica_string = std::to_string(GOOD_REPLICA);
         const irods::experimental::filesystem::path _path{targPath->outPath};
-        const auto query_str = fmt::format("select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                                           _path.parent_path().string(),
-                                           _path.object_name().string());
+        const auto query_str = fmt::format(
+            "select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_STATUS = '1'",
+            _path.parent_path().c_str(),
+            _path.object_name().c_str());
         irods::query qobj{conn, query_str};
 
-        if (std::find_if(qobj.begin(), qobj.end(), [](const auto& row) { return row[0] == good_replica_string; }) ==
-                qobj.end() ||
-            strcmp(targPath->chksum, srcPath->chksum) != 0)
-        {
+        if (qobj.size() == 0 || strcmp(targPath->chksum, srcPath->chksum) != 0) {
             cpFlag = 1;
         }
     }
