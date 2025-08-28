@@ -2090,9 +2090,9 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
     int udpPortBuf;
     int status;
 #if defined(aix_platform)
-    socklen_t      laddrlen = sizeof( struct sockaddr );
+    socklen_t laddrlen = sizeof(struct sockaddr);
 #else
-    uint         laddrlen = sizeof( struct sockaddr );
+    unsigned int laddrlen = sizeof(struct sockaddr);
 #endif
     int packetSize;
     char *tmpStr;
