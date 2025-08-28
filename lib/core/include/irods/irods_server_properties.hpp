@@ -275,8 +275,10 @@ namespace irods
     /// \retval 5000000          If an error occurred or the size was less than or equal to zero.
     /// \retval Configured-Value Otherwise.
     ///
+    /// \deprecated Deprecated in 4.3.5. Use #get_server_property functions.
+    ///
     /// \since 4.2.9
-    auto get_dns_cache_shared_memory_size() noexcept -> int;
+    [[deprecated("Use get_server_property functions")]] auto get_dns_cache_shared_memory_size() noexcept -> int;
 
     /// Returns the DNS cache eviction age from server_config.json.
     ///
@@ -284,8 +286,10 @@ namespace irods
     /// \retval 3600             If an error occurred or the age was less than zero.
     /// \retval Configured-Value Otherwise.
     ///
+    /// \deprecated Deprecated in 4.3.5. Use #get_server_property functions.
+    ///
     /// \since 4.2.9
-    auto get_dns_cache_eviction_age() noexcept -> int;
+    [[deprecated("Use get_server_property functions")]] auto get_dns_cache_eviction_age() noexcept -> int;
 
     /// Returns the amount of shared memory that should be allocated for the Hostname cache.
     ///
@@ -293,8 +297,10 @@ namespace irods
     /// \retval 2500000          If an error occurred or the size was less than or equal to zero.
     /// \retval Configured-Value Otherwise.
     ///
+    /// \deprecated Deprecated in 4.3.5. Use #get_server_property functions.
+    ///
     /// \since 4.2.9
-    auto get_hostname_cache_shared_memory_size() noexcept -> int;
+    [[deprecated("Use get_server_property functions")]] auto get_hostname_cache_shared_memory_size() noexcept -> int;
 
     /// Returns the hostname cache eviction age from server_config.json.
     ///
@@ -302,8 +308,10 @@ namespace irods
     /// \retval 3600             If an error occurred or the age was less than zero.
     /// \retval Configured-Value Otherwise.
     ///
+    /// \deprecated Deprecated in 4.3.5. Use #get_server_property functions.
+    ///
     /// \since 4.2.9
-    auto get_hostname_cache_eviction_age() noexcept -> int;
+    [[deprecated("Use get_server_property functions")]] auto get_hostname_cache_eviction_age() noexcept -> int;
 } // namespace irods
 
 #endif // IRODS_SERVER_PROPERTIES_HPP

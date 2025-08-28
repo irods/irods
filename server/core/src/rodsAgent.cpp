@@ -301,13 +301,19 @@ void set_eviction_age_for_dns_and_hostname_caches()
     // Update the eviction age for DNS cache entries.
     irods::set_server_property(
         key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_DNS_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         irods::get_dns_cache_eviction_age());
+#pragma GCC diagnostic pop
 
     // Update the eviction age for hostname cache entries.
     irods::set_server_property(
         key_path_t{
             irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         irods::get_hostname_cache_eviction_age());
+#pragma GCC diagnostic pop
 } // set_eviction_age_for_dns_and_hostname_caches
 
 void set_log_levels_for_all_log_categories()

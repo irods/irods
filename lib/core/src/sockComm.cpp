@@ -492,7 +492,10 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
                     std::strncpy(*addr, alias->data(), alias->size());
                 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                 const std::chrono::seconds age{irods::get_hostname_cache_eviction_age()};
+#pragma GCC diagnostic pop
                 const auto inserted = hnc::insert_or_assign("localhost", *addr, age);
 
                 rodsLog(LOG_DEBUG, "%s :: Added alias to hostname cache for localhost [alias=%s, inserted=%d].",

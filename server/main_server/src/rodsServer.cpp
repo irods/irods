@@ -1255,11 +1255,17 @@ int main(int argc, char** argv)
     create_stacktrace_directory();
 
     namespace hnc = irods::experimental::net::hostname_cache;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
+#pragma GCC diagnostic pop
     irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
     namespace dnsc = irods::experimental::net::dns_cache;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
+#pragma GCC diagnostic pop
     irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
     ix::replica_access_table::init();
@@ -1279,12 +1285,19 @@ int main(int argc, char** argv)
     // Set the default value for evicting DNS cache entries.
     irods::set_server_property(
         key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_DNS_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         irods::get_dns_cache_eviction_age());
+#pragma GCC diagnostic pop
 
     // Set the default value for evicting hostname cache entries.
     irods::set_server_property(
-        key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+        key_path_t{
+            irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         irods::get_hostname_cache_eviction_age());
+#pragma GCC diagnostic pop
 
     setup_signal_handlers();
 
