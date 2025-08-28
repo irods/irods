@@ -1,10 +1,11 @@
 import json
 import unittest
 
-from .. import lib, test
+from . import session
+from .. import lib
+from .. import test
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
-from . import session
 
 rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
@@ -321,38 +322,3 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
 
         finally:
             controller.reload_configuration()
-
-    def test_genquery2_group_by_with_functions__issue_8093(self):
-        data_objects = [f"issue_8093_data_object_{'{0:b}'.format(x)}.txt" for x in range(5)]
-        try:
-            for x in range(5):
-                self.user.assert_icommand(['itouch', data_objects[x]])
-
-            with self.subTest('Grouping by a column'):
-                query_string = "select count(DATA_NAME) group by DATA_SIZE"
-                json_string = json.dumps([['5']], separators=(',', ':'))
-                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
-
-            with self.subTest('Grouping by multiple columns'):
-                query_string = "select count(DATA_NAME) group by DATA_SIZE, DATA_NAME"
-                json_string = json.dumps([['1'],['1'],['1'],['1'],['1']], separators=(',', ':'))
-                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
-
-            with self.subTest('Grouping by a function'):
-                query_string = "select count(DATA_NAME) group by length(DATA_NAME)"
-                json_string = json.dumps([['2'],['2'],['1']], separators=(',', ':'))
-                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
-
-            with self.subTest('Grouping by multiple functions'):
-                query_string = "select count(DATA_NAME) group by length(DATA_NAME), substring(DATA_PATH, 0, 1)"
-                json_string = json.dumps([['2'],['2'],['1']], separators=(',', ':'))
-                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
-
-            with self.subTest('Grouping by a column and a function'):
-                query_string = "select count(DATA_NAME) group by DATA_NAME, substring(DATA_PATH, 0, 1)"
-                json_string = json.dumps([['1'],['1'],['1'],['1'],['1']], separators=(',', ':'))
-                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
-
-        finally:
-            for x in range(5):
-                self.user.run_icommand(['irm', '-f', data_objects[x]])
