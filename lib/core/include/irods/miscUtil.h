@@ -115,7 +115,7 @@ typedef struct CollEnt {
     objType_t objType;
     int replNum;
     int replStatus;
-    uint dataMode;
+    unsigned int dataMode;
     rodsLong_t dataSize;
     char *collName;      // valid for dataObj and collection */
     char *dataName;
@@ -234,8 +234,7 @@ int
 freeCollEnt( collEnt_t *collEnt );
 int
 clearCollEnt( collEnt_t *collEnt );
-int
-myChmod( char *inPath, uint dataMode );
+int myChmod(char* inPath, unsigned int dataMode);
 char *
 getZoneHintForGenQuery( genQueryInp_t *genQueryInp );
 int

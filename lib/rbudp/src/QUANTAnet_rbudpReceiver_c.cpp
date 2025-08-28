@@ -333,11 +333,11 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
     }
     long long remaining = filesize;
     while ( remaining > 0 ) {
-        uint toRead;
+        unsigned int toRead;
         char *buf;
 
-        if ( remaining > ( uint ) ONE_GIGA ) {
-            toRead = ( uint ) ONE_GIGA;
+        if (remaining > (unsigned int) ONE_GIGA) {
+            toRead = (unsigned int) ONE_GIGA;
         }
         else {
             toRead = remaining;

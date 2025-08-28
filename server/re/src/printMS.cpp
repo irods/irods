@@ -8,7 +8,7 @@
 #if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)
 #else
-#define CAST_PTR_INT (uint)
+#  define CAST_PTR_INT (unsigned int)
 #endif
 
 /**

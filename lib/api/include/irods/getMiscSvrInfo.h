@@ -12,7 +12,7 @@
 
 typedef struct MiscSvrInfo {
     int serverType;     // RCAT_ENABLED or RCAT_NOT_ENABLED
-    uint serverBootTime;
+    unsigned int serverBootTime;
     char relVersion[NAME_LEN];    // the release version number
     char apiVersion[NAME_LEN];    // the API version number
     char rodsZone[NAME_LEN];      // the zone of this server
