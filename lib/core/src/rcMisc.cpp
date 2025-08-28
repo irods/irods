@@ -4867,7 +4867,10 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len)
     snprintf(_buf, _len, "%s", p_addrinfo->ai_canonname);
 
     if (CLIENT_PT != ::ProcessType) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+#pragma GCC diagnostic pop
         const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
 
         rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
@@ -4908,7 +4911,10 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out)
     *_out = reinterpret_cast<struct sockaddr_in*>(p_addrinfo->ai_addr)->sin_addr;
 
     if (CLIENT_PT != ::ProcessType) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+#pragma GCC diagnostic pop
         const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
 
         rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
