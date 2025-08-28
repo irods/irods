@@ -11143,7 +11143,7 @@ irods::error db_purge_server_load_op(
     nowTime = atoll( nowStr );
     secondsAgoTime = atoll( _seconds_ago );
     thenTime = nowTime - secondsAgoTime;
-    snprintf( thenStr, sizeof thenStr, "%011d", ( uint ) thenTime );
+    snprintf(thenStr, sizeof thenStr, "%011d", (unsigned int) thenTime);
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlPurgeServerLoad SQL 1");
@@ -11282,7 +11282,7 @@ irods::error db_purge_server_load_digest_op(
     nowTime = atoll( nowStr );
     secondsAgoTime = atoll( _seconds_ago );
     thenTime = nowTime - secondsAgoTime;
-    snprintf( thenStr, sizeof thenStr, "%011d", ( uint ) thenTime );
+    snprintf(thenStr, sizeof thenStr, "%011d", (unsigned int) thenTime);
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlPurgeServerLoadDigest SQL 1");
