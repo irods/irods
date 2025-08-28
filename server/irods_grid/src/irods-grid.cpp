@@ -25,6 +25,8 @@ template <typename T>
 irods::error usage(T& ostream) {
     ostream << "Usage:  'irods-grid action [ option ] target'" << std::endl;
     ostream << " " << std::endl;
+    ostream << "Note: This command is deprecated and has been removed in iRODS 5." << std::endl;
+    ostream << " " << std::endl;
     ostream << "Sends a message on control channel for possible grid-wide operations" << std::endl;
     ostream << " " << std::endl;
     ostream << "action: ( required ) status, ping, pause, resume, shutdown" << std::endl;
