@@ -369,10 +369,10 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
 
     remaining = filesize;
     while ( remaining > 0 ) {
-        uint toSend;
+        unsigned int toSend;
 
-        if ( remaining > ( uint ) ONE_GIGA ) {
-            toSend = ( uint ) ONE_GIGA;
+        if (remaining > (unsigned int) ONE_GIGA) {
+            toSend = (unsigned int) ONE_GIGA;
         }
         else {
             toSend = remaining;
