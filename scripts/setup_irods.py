@@ -72,14 +72,13 @@ except:
 def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     l = logging.getLogger(__name__)
 
-    # Setup the hostname, FQDN, or IP to listen on for client requests.
-    setup_server_host(irods_config)
-
     if json_configuration_file is not None:
         with open(json_configuration_file) as f:
             json_configuration_dict = json.load(f)
     else:
         json_configuration_dict = None
+        # Setup the hostname, FQDN, or IP to listen on for client requests.
+        setup_server_host(irods_config)
 
     if IrodsController(irods_config).get_server_proc():
         l.info(irods.lib.get_header('Stopping iRODS...'))
