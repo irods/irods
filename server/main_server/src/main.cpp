@@ -428,6 +428,9 @@ Signals:
                  limit is reached, agents will perform the normal shutdown
                  routine as if SIGTERM was received by the server.
   SIGINT         Same as SIGTERM.
+  SIGHUP         Reload server configuration. Changes are applied if
+                 validation of server_config.json is successful. This operation
+                 does not reload zone-wide configuration stored in the catalog.
 )__");
     } // print_usage
 
