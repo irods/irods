@@ -304,7 +304,9 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 return status;
             }
         }
-        else if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && status != CAT_NO_ROWS_FOUND) {
+        else if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && status != CAT_NO_ROWS_FOUND &&
+                 status != SYS_NO_GOOD_REPLICA)
+        {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             rodsLog(LOG_ERROR,
                     "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
