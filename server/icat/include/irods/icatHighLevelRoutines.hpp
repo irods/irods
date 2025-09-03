@@ -61,7 +61,6 @@ int chlCheckAuth( rsComm_t *rsComm, const char* scheme, const char *challenge, c
                   const char *username, int *userPrivLevel, int *clientPrivLevel );
 int chlMakeTempPw( rsComm_t *rsComm, char *pwValueToHash, const char *otherUser );
 int chlMakeLimitedPw( rsComm_t *rsComm, int ttl, char *pwValueToHash );
-int decodePw( rsComm_t *rsComm, const char *in, char *out );
 int chlModUser( rsComm_t *rsComm, const char *userName, const char *option,
                 const char *newValue );
 int chlModGroup( rsComm_t *rsComm, const char *groupName, const char *option,
