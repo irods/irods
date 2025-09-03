@@ -11441,9 +11441,7 @@ irods::error db_calc_usage_and_quota_op(
     if ( logSQL != 0 ) {
         log_sql::debug("chlCalcUsageAndQuota SQL 1");
     }
-    cllBindVars[cllBindVarCount++] = myTime;
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_QUOTA_USAGE where modify_ts < ?", &icss );
+    status = cmlExecuteNoAnswerSql("delete from R_QUOTA_USAGE", &icss);
     if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         _rollback( "chlCalcUsageAndQuota" );
         return ERROR( status, "delete failed" );
