@@ -60,7 +60,7 @@ int chlDelColl( rsComm_t *rsComm, collInfo_t *collInfo );
 int chlCheckAuth( rsComm_t *rsComm, const char* scheme, const char *challenge, const char *response,
                   const char *username, int *userPrivLevel, int *clientPrivLevel );
 int chlMakeTempPw( rsComm_t *rsComm, char *pwValueToHash, const char *otherUser );
-int chlMakeLimitedPw( rsComm_t *rsComm, int ttl, char *pwValueToHash );
+int chlMakeLimitedPw(rsComm_t* rsComm, int ttl, char* pwValueToHash);
 int chlModUser( rsComm_t *rsComm, const char *userName, const char *option,
                 const char *newValue );
 int chlModGroup( rsComm_t *rsComm, const char *groupName, const char *option,
