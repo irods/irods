@@ -133,8 +133,8 @@ row to be updated. This script must be run on the catalog provider.
                 dry_run(connection, select_resc_ids, update_condition)
             else:
                 scrub_rows(connection, args.batch_size, select_resc_ids, update_columns, update_condition)
-    except (TypeError):
-        print('Failed getting database connection. Note: This script should be run on the iRODS catalog provider.')
+    except TypeError as e:
+        print('Failed getting database connection: [{}]. Note: This script should be run on the iRODS catalog provider.'.format(e))
 
 if __name__ == "__main__":
     print(f'NOTE: {__file__.split("/")[-1]} is deprecated and will be removed in an upcoming version of iRODS.')
