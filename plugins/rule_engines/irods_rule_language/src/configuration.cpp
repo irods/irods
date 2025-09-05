@@ -35,6 +35,11 @@
 using log_re = irods::experimental::log::rule_engine;
 constexpr auto err_buf_len = ERR_MSG_LEN * 1024;
 
+namespace irods
+{
+    extern const std::string SHA256_NAME;
+} // namespace irods
+
 // To clarify that ruleEngineConfig is modified throughout the execution of
 // the NREP, the variable will not be marked const.
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -334,9 +339,7 @@ std::vector<std::string> parse_irbSet(const std::string &irbSet) {
 int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string &digest) {
     int status;
     irods::Hasher hasher;
-    irods::error ret = irods::getHasher(
-                           "md5",
-                           hasher );
+    irods::error ret = irods::getHasher(irods::SHA256_NAME, hasher);
     if ( !ret.ok() ) {
         status = ret.code();
         rodsLogError(
@@ -425,7 +428,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
                          in_memory_rulebases& copy)
 {
     irods::Hasher hasher;
-    irods::error ret = irods::getHasher("md5", hasher);
+    irods::error ret = irods::getHasher(irods::SHA256_NAME, hasher);
     if (!ret.ok()) {
         int status = static_cast<int>(ret.code());
         log_re::error("hash_rules_with_copy: cannot get hasher, status = {}", status);

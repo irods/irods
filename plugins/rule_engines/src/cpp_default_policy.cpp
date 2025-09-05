@@ -19,7 +19,6 @@
 #include "irods/irods_re_structs.hpp"
 
 #include "irods/irods_hasher_factory.hpp"
-#include "irods/MD5Strategy.hpp"
 
 #include <fmt/format.h>
 
@@ -44,6 +43,11 @@
 #include "irods/query_builder.hpp"
 
 #define STATIC_PEP(NAME) static_policy_enforcement_points[#NAME] = NAME
+
+namespace irods
+{
+    extern const std::string SHA256_NAME;
+} // namespace irods
 
 using json = nlohmann::json;
 
@@ -897,9 +901,9 @@ namespace
 
     } // invoke_policy
 
-    auto rule_is_not_already_enqueued(rsComm_t* comm, const std::string& md5)
+    auto rule_is_not_already_enqueued(rsComm_t* comm, const std::string& hash)
     {
-        auto qs = fmt::format("SELECT RULE_EXEC_NAME WHERE RULE_EXEC_NAME LIKE '%{}%'", md5);
+        auto qs = fmt::format("SELECT RULE_EXEC_NAME WHERE RULE_EXEC_NAME LIKE '%{}%'", hash);
 
         irods::experimental::query_builder qb;
         return qb.build(*comm, qs).size() == 0;
@@ -923,13 +927,13 @@ namespace
         auto params = _p;
 
         irods::Hasher hasher;
-        irods::getHasher( irods::MD5_NAME, hasher );
+        irods::getHasher(irods::SHA256_NAME, hasher);
         hasher.update(params.dump().c_str());
         std::string digest;
         hasher.digest(digest);
 
         if(rule_is_not_already_enqueued(_rei->rsComm, digest)) {
-            params["md5"] = digest;
+            params["hash"] = digest;
 
             const auto delay_cond = params.contains("delay_conditions")
                                     ? params.at("delay_conditions").get<std::string>()
