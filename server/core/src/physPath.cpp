@@ -325,9 +325,15 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
         return status;
     }
 
-    snprintf( outPath, MAX_NAME_LEN,
-              "%s/%s/%d/%d/%s.%d", vaultPath, userName, dir1, dir2,
-              logicalFileName, ( uint ) time( NULL ) );
+    snprintf(outPath,
+             MAX_NAME_LEN,
+             "%s/%s/%d/%d/%s.%d",
+             vaultPath,
+             userName,
+             dir1,
+             dir2,
+             logicalFileName,
+             (unsigned int) time(NULL));
     return 0;
 }
 

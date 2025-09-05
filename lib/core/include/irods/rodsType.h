@@ -21,6 +21,7 @@ typedef int64_t u_longlong_t;
 typedef long long rodsLong_t;
 typedef unsigned long long rodsULong_t;
 #elif defined(windows_platform)
+__attribute__((deprecated("Use unsigned int directly")))
 typedef unsigned int uint;
 typedef __int64 rodsLong_t;
 typedef unsigned __int64 rodsULong_t;

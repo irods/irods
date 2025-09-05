@@ -1018,7 +1018,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
 #if defined(aix_platform)
                 socklen_t mylen = sizeof( int );
 #else
-                uint mylen = sizeof( int );
+                unsigned int mylen = sizeof(int);
 #endif
                 if ( getsockopt( sock, SOL_SOCKET, SO_ERROR, ( void* )( &myval ),
                                  &mylen ) < 0 ) {
@@ -1109,9 +1109,9 @@ setConnAddr( rcComm_t *conn ) {
 int
 setRemoteAddr( int sock, struct sockaddr_in *remoteAddr ) {
 #if defined(aix_platform)
-    socklen_t       laddrlen = sizeof( struct sockaddr );
+    socklen_t laddrlen = sizeof(struct sockaddr);
 #else
-    uint         laddrlen = sizeof( struct sockaddr );
+    unsigned int laddrlen = sizeof(struct sockaddr);
 #endif
 
     /* fill in the server address. This is for case where the conn->host
@@ -1130,9 +1130,9 @@ setRemoteAddr( int sock, struct sockaddr_in *remoteAddr ) {
 int
 setLocalAddr( int sock, struct sockaddr_in *localAddr ) {
 #if defined(aix_platform)
-    socklen_t       laddrlen = sizeof( struct sockaddr );
+    socklen_t laddrlen = sizeof(struct sockaddr);
 #else
-    uint         laddrlen = sizeof( struct sockaddr );
+    unsigned int laddrlen = sizeof(struct sockaddr);
 #endif
 
 

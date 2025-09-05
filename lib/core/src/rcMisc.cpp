@@ -1909,7 +1909,7 @@ getNowStr( char *timeStr ) {
     time_t myTime;
 
     myTime = time( NULL );
-    snprintf( timeStr, 15, "%011d", ( uint ) myTime );
+    snprintf(timeStr, 15, "%011d", (unsigned int) myTime);
 }
 
 /*
@@ -2406,7 +2406,7 @@ localToUnixTime( char * localTime, char * unixTime ) {
         snprintf( unixTime, TIME_LEN, "%lld", ( rodsLong_t ) newTime );
     }
     else {
-        snprintf( unixTime, TIME_LEN, "%d", ( uint ) newTime );
+        snprintf(unixTime, TIME_LEN, "%d", (unsigned int) newTime);
     }
     return 0;
 }

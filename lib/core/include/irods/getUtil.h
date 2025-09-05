@@ -15,10 +15,13 @@ extern "C" {
 int
 getUtil( rcComm_t **myConn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp );
-int
-getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                rodsLong_t srcSize, uint dataMode,
-                rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp );
+int getDataObjUtil(rcComm_t* conn,
+                   char* srcPath,
+                   char* targPath,
+                   rodsLong_t srcSize,
+                   unsigned int dataMode,
+                   rodsArguments_t* rodsArgs,
+                   dataObjInp_t* dataObjOprInp);
 
 int
 initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
