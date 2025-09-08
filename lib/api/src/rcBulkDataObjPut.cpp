@@ -63,7 +63,7 @@
  * \n .... handle the error
  * \n }
 
- * \n status = read (fd, bufPtr, (uint) size1);
+ * \n status = read (fd, bufPtr, (unsigned int) size1);
  * \n if (status != size1) {
  * \n .... handle the error
  * \n }
@@ -80,7 +80,7 @@
  * \n if (fd < 0) {
  * \n .... handle the error
  * \n }
- * \n status = read (fd, bufPtr, (uint) size2);
+ * \n status = read (fd, bufPtr, (unsigned int) size2);
  * \n if (status != size2) {
  * \n .... handle the error
  * \n }

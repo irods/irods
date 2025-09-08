@@ -21,8 +21,8 @@ T alignAddrToBoundary( T ptr, std::size_t boundary ) {
     return ( char * )ptr + boundary - m;
 
 #else
-    uint b, m;
-    b = ( uint ) ptr;
+    unsigned int b, m;
+    b = (unsigned int) ptr;
 
     m = b % boundary;
 

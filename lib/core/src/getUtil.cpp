@@ -197,10 +197,14 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     return status;
 }
 
-int
-getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                rodsLong_t srcSize, uint dataMode,
-                rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
+int getDataObjUtil(rcComm_t* conn,
+                   char* srcPath,
+                   char* targPath,
+                   rodsLong_t srcSize,
+                   unsigned int dataMode,
+                   rodsArguments_t* rodsArgs,
+                   dataObjInp_t* dataObjOprInp)
+{
     int status;
     struct timeval startTime, endTime;
 

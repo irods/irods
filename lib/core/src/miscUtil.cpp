@@ -22,7 +22,7 @@
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
 
-static uint Myumask = INIT_UMASK_VAL;
+static unsigned int Myumask = INIT_UMASK_VAL;
 
 // A GenQuery condition string (i.e. not equal to the root collection).
 const char NON_ROOT_COLL_CHECK_STR[] = "<>'/'";
@@ -1811,9 +1811,8 @@ clearCollEnt( collEnt_t *collEnt ) {
     return 0;
 }
 
-
-int
-myChmod( char *inPath, uint dataMode ) {
+int myChmod(char* inPath, unsigned int dataMode)
+{
     if ( dataMode < 0100 ) {
         return 0;
     }
