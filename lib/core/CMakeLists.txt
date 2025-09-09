@@ -3,6 +3,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/alignPointer.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiHandler.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authenticate.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authentication_client_utils.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authentication_plugin_framework.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/base64.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/base64.hpp"
@@ -299,6 +300,7 @@ set_target_properties(irods_common_core PROPERTIES POSITION_INDEPENDENT_CODE TRU
 set(
   IRODS_LIB_CORE_PLUGIN_DEPENDENCIES_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/apiHandler.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/authentication_client_utils.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_auth_factory.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_auth_manager.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_auth_object.cpp"

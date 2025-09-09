@@ -7,6 +7,7 @@
 #include "irods/authRequest.h"
 #include "irods/authResponse.h"
 #include "irods/authenticate.h"
+#include "irods/authentication_client_utils.hpp"
 #include "irods/base64.hpp"
 #include "irods/checksum.h" // for hashToStr
 #include "irods/getLimitedPassword.h"
@@ -88,30 +89,6 @@ namespace
             THROW(err, fmt::format("{}: Failed to save limited password to irodsA file. error: [{}]", __func__, err));
         }
     } // record_limited_password
-
-    auto get_password_from_client_stdin() -> std::string
-    {
-        termios tty{};
-        tcgetattr(STDIN_FILENO, &tty);
-        const tcflag_t oldflag = tty.c_lflag;
-        // NOLINTNEXTLINE(hicpp-signed-bitwise)
-        tty.c_lflag &= ~ECHO;
-        if (const int error = tcsetattr(STDIN_FILENO, TCSANOW, &tty); 0 != error) {
-            fmt::print("WARNING: Error {} disabling echo mode. "
-                       "Password will be displayed in plaintext.\n",
-                       errno);
-        }
-        fmt::print("Enter your current iRODS password:");
-        std::string password{};
-        getline(std::cin, password);
-        fmt::print("\n");
-        tty.c_lflag = oldflag;
-        if (0 != tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
-            fmt::print("Error reinstating echo mode.");
-        }
-
-        return password;
-    } // get_password_from_client_stdin
 
     auto forcibly_prompt_for_password(const nlohmann::json& _req) -> bool
     {
@@ -245,7 +222,8 @@ namespace irods::authentication
             }
             // If the client wants to forcibly prompt for a password, get the password from stdin.
             else if (forcibly_prompt_for_password(req)) {
-                client_provided_password = get_password_from_client_stdin();
+                fmt::print("Enter your current iRODS password:");
+                client_provided_password = irods::authentication::get_password_from_client_stdin();
             }
             // If the client has provided a password in the request, use that. Historically, we have given preference to
             // the .irodsA file, but we want to honor explicit provision of the password in the request now.
@@ -268,7 +246,8 @@ namespace irods::authentication
             }
             // If the password cannot be derived any other way, prompt from stdin.
             else {
-                client_provided_password = get_password_from_client_stdin();
+                fmt::print("Enter your current iRODS password:");
+                client_provided_password = irods::authentication::get_password_from_client_stdin();
             }
 
             // NOLINTEND(bugprone-branch-clone)
