@@ -343,8 +343,7 @@ namespace irods::authentication
     {
         for (const auto& k : _required_keys) {
             if (!_msg.contains(k.data())) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(
-                      "missing [{}] in request", __func__, __LINE__, k));
+                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("missing [{}] in request", k));
             }
         }
     } // throw_if_request_message_is_missing_key
