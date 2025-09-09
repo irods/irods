@@ -2,6 +2,7 @@
 
 #include "irods/authentication_plugin_framework.hpp"
 
+#include "irods/authentication_client_utils.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
@@ -25,30 +26,6 @@ namespace
 {
     namespace irods_auth = irods::authentication;
     using json = nlohmann::json;
-
-    auto get_password_from_client_stdin() -> std::string
-    {
-        struct termios tty;
-        tcgetattr(STDIN_FILENO, &tty);
-        tcflag_t oldflag = tty.c_lflag;
-        tty.c_lflag &= ~ECHO;
-        int error = tcsetattr(STDIN_FILENO, TCSANOW, &tty);
-        int errsv = errno;
-
-        if (error) {
-            printf("WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.\n", errsv);
-        }
-        printf("Enter your current PAM password:");
-        std::string password;
-        getline(std::cin, password);
-        printf("\n");
-        tty.c_lflag = oldflag;
-        if (tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
-            printf("Error reinstating echo mode.\n");
-        }
-
-        return password;
-    } // get_password_from_client_stdin
 
 #ifdef RODS_SERVER
     auto run_pam_auth_check(const std::string& _username, const std::string& _password) -> void
@@ -186,6 +163,7 @@ namespace irods::authentication
             // general other clients want to use the already-authenticated "session."
             const auto force_prompt = req.find(irods_auth::force_password_prompt);
             if (req.end() != force_prompt && force_prompt->get<bool>()) {
+                fmt::print("Enter your current PAM password:");
                 resp[irods::AUTH_PASSWORD_KEY] = get_password_from_client_stdin();
             }
             // If the client has provided a password in the request, use that.
@@ -201,6 +179,7 @@ namespace irods::authentication
                 }
 
                 // There's no password stored, so we need to prompt the client for it.
+                fmt::print("Enter your current PAM password:");
                 resp[irods::AUTH_PASSWORD_KEY] = get_password_from_client_stdin();
             }
 
