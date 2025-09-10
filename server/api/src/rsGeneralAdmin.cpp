@@ -909,8 +909,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
             const auto user_name = std::string_view{generalAdminInp->arg2 ?
                                                     generalAdminInp->arg2 : ""};
 
-            const auto option = std::string_view{generalAdminInp->arg3 ?
-                                                 generalAdminInp->arg3 : ""};
+            std::string_view option = (nullptr != generalAdminInp->arg3) ? generalAdminInp->arg3 : "";
 
             const auto new_value = std::string_view{generalAdminInp->arg4 ?
                                                     generalAdminInp->arg4 : ""};
@@ -941,8 +940,19 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                 return e.code();
             }
 
+            // The no-scramble option is used to indicate that the password is not obfuscated. In order to communicate
+            // this to chlModUser, we must use a slightly different option name so that the database operation does
+            // not attempt to de-obfuscate the password. This technically means that this API accepts an option called
+            // "password-unobfuscated" which is the same thing as the "password" option with an arg5 of "no-scramble".
+            const std::string_view option_modifier =
+                (nullptr != generalAdminInp->arg5) ? std::string_view{generalAdminInp->arg5} : "";
+            if ("password" == option && "no-scramble" == option_modifier) {
+                option = "password-unobfuscated";
+            }
+
             args[0] = user_name.data();
             args[1] = option.data();
+
             /* Since the obfuscated password might contain commas, single or
                double quotes, etc, it's hard to escape for processing (often
                causing a seg fault), so for now just pass in a dummy string.
