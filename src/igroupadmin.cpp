@@ -292,9 +292,26 @@ doCommand( char *cmdToken[] ) {
     }
 
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
-        char empty_string[] = "";
-        userAdmin( "mkuser", cmdToken[1], *cmdToken[2] ? setScrambledPw(cmdToken[2]) : empty_string,
-                   cmdToken[3], "", "", "", "" );
+        constexpr const char* no_scramble_option = "no-scramble";
+        char* password_string = "";
+        if (*cmdToken[2]) {
+            if (std::string_view{no_scramble_option} == cmdToken[4]) {
+                // If --no-scramble was specified, make sure the UserAdmin API of the connected server actually
+                // supports the feature. If not, exit with an error. The password will not be usable if it is set with
+                // this option and the server does not support this feature.
+                const auto version = irods::to_version(Conn->svrVersion->relVersion);
+                if (version && version.value() < irods::version{5, 0, 90}) {
+                    fmt::print("'mkuser' request failed: no-scramble option is not supported before iRODS 5.1.0.\n");
+                    return 0;
+                }
+
+                password_string = cmdToken[2];
+            }
+            else {
+                password_string = setScrambledPw(cmdToken[2]);
+            }
+        }
+        userAdmin("mkuser", cmdToken[1], password_string, cmdToken[3], cmdToken[4], "", "", "");
         return 0;
     }
     if ( strcmp( cmdToken[0], "atg" ) == 0 ) {
@@ -461,47 +478,51 @@ printMsgs( char *msgs[] ) {
 }
 
 void usageMain() {
-    char *Msgs[] = {
-        "Usage: igroupadmin [-hvV] [command]",
-        " ",
-        "This is for users of type 'groupadmin' which are allowed to perform",
-        "certain administrative functions.  It can also be used by regular",
-        "users to list groups ('lg') and by the admin for all operations.",
-        " ",
-        "A blank execute line invokes the interactive mode, where it",
-        "prompts and executes commands until 'quit' or 'q' is entered.",
-        "Single or double quotes can be used to enter items with blanks.",
-        " ",
-        "NOTE: atg and rfg have additional usage requirements. See the help text",
-        "of these subcommands for details (e.g. igroupadmin h atg).",
-        " ",
-        "Commands are:",
-        " lg [name] (list group info (user member list))",
-        " mkuser Name Password [Zone] (make a user and set the initial password)",
-        " atg groupName userName[#Zone] (add to group - add a user to a group)",
-        " rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
-        " mkgroup groupName[#Zone] (make a new group)",
-        " help (or h) [command] (this help, or more details on a command)",
-        ""
-    };
+    char* Msgs[] = {"Usage: igroupadmin [-hvV] [command]",
+                    " ",
+                    "This is for users of type 'groupadmin' which are allowed to perform",
+                    "certain administrative functions. It can also be used by regular",
+                    "users to list groups ('lg') and by the admin for all operations.",
+                    " ",
+                    "A blank execute line invokes the interactive mode, where it",
+                    "prompts and executes commands until 'quit' or 'q' is entered.",
+                    "Single or double quotes can be used to enter items with blanks.",
+                    " ",
+                    "NOTE: atg and rfg have additional usage requirements. See the help text",
+                    "of these subcommands for details (e.g. igroupadmin h atg).",
+                    " ",
+                    "Commands are:",
+                    " lg [name] (list group info (user member list))",
+                    " mkuser Name Password [Zone] [no-scramble] (make a user and set the initial password)",
+                    " atg groupName userName[#Zone] (add to group - add a user to a group)",
+                    " rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
+                    " mkgroup groupName[#Zone] (make a new group)",
+                    " help (or h) [command] (this help, or more details on a command)",
+                    ""};
     printMsgs( Msgs );
     printReleaseInfo( "igroupadmin" );
 }
 
 void
 usage( char *subOpt ) {
-    char *mkuserMsgs[] = {
-        " mkuser Name Password [Zone] (make user by a group-admin)",
-        "Create a new iRODS user in the ICAT database",
-        " ",
-        "Name is the user name to create",
-        "Password is the user's initial password",
-        "Zone is the zone which the user is from (defaults to the local zone)",
-        " ",
-        "The user type will be set to 'rodsuser'. Changing the user type will require",
-        "rodsadmin privileges.",
-        ""
-    };
+    char* mkuserMsgs[] = {" mkuser Name Password [Zone] [no-scramble] (make user by a group-admin)",
+                          "Create a new iRODS user in the ICAT database",
+                          " ",
+                          "Name is the user name to create",
+                          "Password is the user's initial password",
+                          "Zone is the zone which the user is from (defaults to the local zone)",
+                          "no-scramble specifies that the password should not be scrambled before being sent",
+                          "to the server.",
+                          " ",
+                          "NOTE: The no-scramble option causes the password to be sent in plaintext.",
+                          "Please ensure TLS is in use when using this option. Using no-scramble with any field",
+                          "other than password has no effect. Using no-scramble with servers before iRODS 5.1.0",
+                          "is not allowed. Also note that specifying the user Zone option is required in order to",
+                          "use this option.",
+                          " ",
+                          "The user type will be set to 'rodsuser'. Changing the user type will require",
+                          "rodsadmin privileges.",
+                          ""};
 
     char *lgMsgs[] = {
         " lg [name] (list group info (user member list))",
