@@ -6,6 +6,8 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 
+#include <cstring>
+
 using log_api = irods::experimental::log::api;
 
 int
@@ -68,9 +70,20 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     log_api::debug("_rsUserAdmin arg0={}", userAdminInp->arg0);
 
     if ( strcmp( userAdminInp->arg0, "userpw" ) == 0 ) {
+        std::string_view option = (nullptr != userAdminInp->arg2) ? userAdminInp->arg2 : "";
+        const std::string_view option_modifier =
+            (nullptr != userAdminInp->arg4) ? std::string_view{userAdminInp->arg4} : "";
+        // The no-scramble option is used to indicate that the password is not obfuscated. In order to communicate
+        // this to chlModUser, we must use a slightly different option name so that the database operation does
+        // not attempt to de-obfuscate the password. This technically means that this API accepts an option called
+        // "password-unobfuscated" which is the same thing as the "userpw" option with an arg4 of "no-scramble".
+        if ("no-scramble" == option_modifier) {
+            option = "password-unobfuscated";
+        }
+
         args[0] = userAdminInp->arg1; /* username */
-        args[1] = userAdminInp->arg2; /* option */
-        args[2] = userAdminInp->arg3; /* newValue */
+        args[1] = option.data(); /* option */
+        args[2] = "obfuscatedPw"; // Password does not need to be made available in the static PEPs.
         argc = 3;
         status2 = applyRuleArg( "acPreProcForModifyUser",
                                 args, argc, &rei2, NO_SAVE_REI );
@@ -85,10 +98,8 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                 status2);
             return status2;
         }
-        status = chlModUser( rsComm,
-                             userAdminInp->arg1,
-                             userAdminInp->arg2,
-                             userAdminInp->arg3 );
+
+        status = chlModUser(rsComm, userAdminInp->arg1, option.data(), userAdminInp->arg3);
         if ( status != 0 ) {
             chlRollback( rsComm );
         }
@@ -164,18 +175,25 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
             return result;
         }
 
+        // The no-scramble option is used to indicate that the password is not obfuscated. In order to communicate
+        // this to chlModUser, we must use a slightly different option name so that the database operation does
+        // not attempt to de-obfuscate the password.
+        const bool password_is_obfuscated =
+            (nullptr == userAdminInp->arg4 || "no-scramble" != std::string_view{userAdminInp->arg4});
+        const std::string option = (!password_is_obfuscated) ? "password-unobfuscated" : "password";
+
         // Initialize new user's password with the scrambled password string, but only if given and with length
         // between 1 and MAX_PASSWORD_LEN - 8 inclusive (the latter being the maximum for a scrambled password).
         // Ref: similar logic in the db_mod_user_op function, in plugins/database/src/db_plugin.cpp
-        auto scrambled_pw = userAdminInp->arg2;
-        int pw_len = scrambled_pw ? strlen(scrambled_pw) : -1;
-        if (pw_len > 0) {
-            result = (pw_len > MAX_PASSWORD_LEN - 8)
-                         ? PASSWORD_EXCEEDS_MAX_SIZE
-                         : chlModUser(rsComm, userAdminInp->arg1, "password", userAdminInp->arg2);
-            if (result != 0) {
-                chlRollback(rsComm);
-            }
+        const auto pw_len = (nullptr != userAdminInp->arg2) ? std::strlen(userAdminInp->arg2) : 0;
+        if (pw_len > MAX_PASSWORD_LEN - 8) {
+            result = PASSWORD_EXCEEDS_MAX_SIZE;
+        }
+        else if (pw_len > 0) {
+            result = chlModUser(rsComm, userAdminInp->arg1, option.c_str(), userAdminInp->arg2);
+        }
+        if (result != 0) {
+            chlRollback(rsComm);
         }
         return result;
     }

@@ -154,6 +154,9 @@ create table R_TICKET_ALLOWED_GROUPS ( ticket_id INT64TYPE not null, group_name 
 
 create table R_GRID_CONFIGURATION ( namespace varchar(2700), option_name varchar(2700), option_value varchar(2700));
 
+/* Table for storing password hashes. */
+create table R_USER_CREDENTIALS ( user_id INT64TYPE, hashed_password varchar(2700), salt varchar(32), hashing_algorithm varchar(250), hashing_parameters varchar(2700), create_time varchar(32), modify_time varchar(32), expiration_time varchar(32));
+
 #ifdef mysql
 
 /* The max size for a MySQL InnoDB index prefix is 767 bytes,

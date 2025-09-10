@@ -2,6 +2,7 @@ from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
 from . import lib
 
+import json
 import logging
 import os
 import re
@@ -224,6 +225,21 @@ def run_update(irods_config, cursor, is_upgrade):
 
                 =======================================================================
             """))
+
+    elif new_schema_version == 13:
+        # password hashing parameters
+        default_password_hashing_parameters = {
+            "algorithm": "scrypt",
+            "parameters": {
+                "N": 16384,
+                "r": 8,
+                "p": 1,
+                "key_length": 64
+            }
+        }
+        database_connect.execute_sql_statement(
+            cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_hashing_parameters', '{}');".format(
+                json.dumps(default_password_hashing_parameters)))
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))

@@ -200,5 +200,7 @@ namespace irods
     const char* const KW_CFG_TLS_VERIFY_SERVER{"verify_server"};
 
     const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME{"connection_pool_refresh_time_in_seconds"};
+
+    const char* const KW_CFG_USER_PASSWORD_STORAGE_MODE{"user_password_storage_mode"};
 } // namespace irods
 

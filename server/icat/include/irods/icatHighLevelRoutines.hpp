@@ -1,6 +1,8 @@
 #ifndef IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
 #define IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
 
+/// \file
+
 #include "irods/objInfo.h"
 #include "irods/ruleExecSubmit.h"
 #include "irods/rcConnect.h"
@@ -446,5 +448,33 @@ auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
 ///
 /// \since 5.0.0
 auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char** _output) -> int;
+
+/// \brief High-level wrapper for checking user passwords.
+///
+/// \param[in] _comm The communication object.
+/// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the user whose password is being checked:
+/// \code{.js}
+/// {
+///     "user_name": "<string>",
+///     "zone_name": "<string>",
+///     "password": "<string>
+/// }
+/// \endcode
+///
+/// \p user_name and \p zone_name are the user name and zone name of the user whose password is being checked.
+///
+/// \p password is the value of the password to check.
+/// \endparblock
+/// \param[out] _valid A pointer which will hold a value of 0 if the password check fails, or 1 if it succeeds.
+///
+/// \retval 0 On success.
+/// \retval <0 \parblock
+/// If an error occurs while querying for the provided user's password(s) in the catalog. If the search yields no
+/// results for the given inputs, this is not an error. In that case, the \p _valid out pointer will hold a value of 0.
+/// \endparblock
+///
+/// \since 5.1.0
+auto chl_check_password(RsComm* _comm, const char* _json_input, int* _valid) -> int;
 
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
