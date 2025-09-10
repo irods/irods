@@ -1,4 +1,5 @@
 #include "utility.hpp"
+#include <irods/authentication_plugin_framework.hpp>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
@@ -11,6 +12,8 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+
+namespace irods_auth = irods::authentication;
 
 void usage( char *prog );
 
@@ -37,11 +40,10 @@ main( int argc, char **argv ) {
 
     userAdminInp_t userAdminInp;
 
-    /* this is a random string used to pad, arbitrary, but must match
-       the server side: */
-    char rand[] = "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs";
+    // This must be done before parseCmdLineOpt! parseCmdLineOpt is EVIL and considers any unknown options invalid.
+    const auto no_scramble = utils::option_specified("--no-scramble", argc, argv);
 
-    status = parseCmdLineOpt( argc, argv, "ehfvVl", 0, &myRodsArgs );
+    status = parseCmdLineOpt(argc, argv, "ehfvVlZ", 0, &myRodsArgs);
     if ( status != 0 ) {
         printf( "Use -h for help.\n" );
         exit( 1 );
@@ -73,17 +75,7 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    if ( myRodsArgs.verbose == True ) {
-        i = obfSavePw( echoFlag, 1, 1, password );
-    }
-    else {
-        i = obfSavePw( echoFlag, 0, 0, password );
-    }
-
-    if ( i != 0 ) {
-        rodsLogError( LOG_ERROR, i, "Save Password failure" );
-        exit( 1 );
-    }
+    const auto using_native = std::string_view{"native"} == myEnv.rodsAuthScheme;
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
@@ -101,8 +93,41 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    /* and check that the user/password is OK */
-    status = utils::authenticate_client(Conn, myEnv);
+    // If --no-scramble was specified, make sure the UserAdmin API of the connected server actually supports the
+    // feature. If not, exit with an error. The password will not be usable if it is set with this option and the
+    // server does not support this feature.
+    if (no_scramble) {
+        const auto version = irods::to_version(Conn->svrVersion->relVersion);
+        if (version && version.value() < irods::version{5, 0, 90}) {
+            fmt::print("Setting password failed: --no-scramble option is not supported before iRODS 5.1.0.\n");
+            rcDisconnect(Conn);
+            exit(3);
+        }
+    }
+
+    // This section maintains historical ipasswd behavior for native authentication.
+    if (using_native) {
+        if (myRodsArgs.verbose == True) {
+            i = obfSavePw(echoFlag, 1, 1, password);
+        }
+        else {
+            i = obfSavePw(echoFlag, 0, 0, password);
+        }
+
+        if (i != 0) {
+            rodsLogError(LOG_ERROR, i, "Save Password failure");
+            exit(1);
+        }
+
+        /* and check that the user/password is OK */
+        status = utils::authenticate_client(Conn, myEnv);
+    }
+    else {
+        namespace ia = irods::authentication;
+        const auto ctx = nlohmann::json{
+            {ia::scheme_name, myEnv.rodsAuthScheme}, {ia::record_auth_file, true}, {ia::force_password_prompt, true}};
+        status = ia::authenticate_client(*Conn, ctx);
+    }
     if ( status != 0 ) {
         print_error_stack_to_file(Conn->rError, stderr);
         rcDisconnect( Conn );
@@ -238,25 +263,37 @@ main( int argc, char **argv ) {
     }
 #endif
 
-    strncpy( buf0, newPw, MAX_PASSWORD_LEN );
-    len = strlen( newPw );
-    lcopy = MAX_PASSWORD_LEN - 10 - len;
-    if ( lcopy > 15 ) {
-        /* server will look for 15 characters of random string */
-        strncat( buf0, rand, lcopy );
-    }
-    i = obfGetPw( buf1 );
-    if ( i != 0 ) {
-        printf( "Error getting current password\n" );
-        exit( 1 );
-    }
-    obfEncodeByKey( buf0, buf1, buf2 );
-
     userAdminInp.arg0 = "userpw";
     userAdminInp.arg1 = myEnv.rodsUserName;
     userAdminInp.arg2 = "password";
-    userAdminInp.arg3 = buf2;
-    userAdminInp.arg4 = "";
+
+    if (no_scramble) {
+        // The password should be provided in plaintext if --no-scramble is specified.
+        userAdminInp.arg3 = newPw;
+        userAdminInp.arg4 = "no-scramble";
+    }
+    else {
+        strncpy(buf0, newPw, MAX_PASSWORD_LEN);
+        len = strlen(newPw);
+        lcopy = MAX_PASSWORD_LEN - 10 - len;
+        if (lcopy > 15) {
+            // this is a random string used to pad, arbitrary, but must match the server side:
+            constexpr const char rand[] = "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs";
+
+            // server will look for 15 characters of random string
+            strncat(buf0, rand, lcopy);
+        }
+        i = obfGetPw(buf1);
+        if (i != 0) {
+            printf("Error getting current password\n");
+            exit(1);
+        }
+        obfEncodeByKey(buf0, buf1, buf2);
+
+        userAdminInp.arg3 = buf2;
+        userAdminInp.arg4 = "";
+    }
+
     userAdminInp.arg5 = "";
     userAdminInp.arg6 = "";
     userAdminInp.arg7 = "";
@@ -269,7 +306,7 @@ main( int argc, char **argv ) {
                  status );
 
     }
-    else {
+    else if (using_native) {
         /* initialize with the new password */
         i = obfSavePw( 0, 0, 0, newPw );
     }
@@ -283,15 +320,22 @@ main( int argc, char **argv ) {
 
 
 void usage( char *prog ) {
-    printf( "Changes your irods password and, like iinit, stores your new iRODS\n" );
-    printf( "password in a scrambled form to be used automatically by the icommands.\n" );
-    printf( "Prompts for your old and new passwords.\n" );
-    printf( "Usage: %s [-hvVl]\n", prog );
+    printf("Usage: %s [-ehfvVl] [--no-scramble]\n\n", prog);
+    printf("Changes your iRODS password.\n\n");
+    printf("Options:\n");
     printf( " -v  verbose\n" );
     printf( " -V  Very verbose\n" );
     printf( " -l  long format (somewhat verbose)\n" );
     printf( " -e  echo the password as entered\n" );
     printf( " -f  force: do not ask user to reenter the new password\n" );
+    printf(" --no-scramble\n");
+    printf("     Indicate that the password should not be");
+    printf("     scrambled before being sent to the server.\n");
+    printf("     NOTE: The --no-scramble option causes the password to be\n");
+    printf("     sent in plaintext. Please ensure TLS is in use when using\n");
+    printf("     this option. Using no-scramble with any field other than\n");
+    printf("     password has no effect. Using no-scramble with servers before\n");
+    printf("     iRODS 5.1.0 is not allowed.\n");
     printf( " -h  this help\n" );
     printReleaseInfo( "ipasswd" );
 }
