@@ -32,6 +32,7 @@
     "irods_metadata",
     "irods_packstruct",
     "irods_parallel_transfer_engine",
+    "irods_procApiRequest_raw",
     "irods_process_stash",
     "irods_query_builder",
     "irods_rcConnect",
