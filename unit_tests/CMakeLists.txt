@@ -76,6 +76,7 @@ set(
   metadata
   packstruct
   parallel_transfer_engine
+  procApiRequest_raw
   process_stash
   query_builder
   rcConnect
