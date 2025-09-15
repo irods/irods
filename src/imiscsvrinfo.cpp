@@ -1,17 +1,14 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
-  Simple command to get the misc server info.
-  Tests connecting to the server.
-*/
-
-#include <irods/rodsClient.h>
-#include <irods/parseCommandLine.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/packStruct.h>
+#include <irods/parseCommandLine.h>
+#include <irods/procApiRequest.h>
+#include <irods/rodsClient.h>
+#include <irods/version.hpp>
 
 #include <nlohmann/json.hpp>
 
+#include <array>
 #include <string>
 
 void usage();
@@ -60,7 +57,34 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    status = rcGetMiscSvrInfo( Conn, &miscSvrInfo );
+    if (const auto vers = irods::to_version(Conn->svrVersion->relVersion); vers && *vers < irods::version{4, 3, 4}) {
+        // iRODS 4.3.3 and earlier do not support the certinfo member variable. This if-branch
+        // allows iRODS 4.3.4 and later implementations to invoke the API without segfaulting.
+        // This is accomplished by using a custom packing instruction for deserialization of the
+        // output data structure.
+        constexpr const char* pi_name = "compat433_MiscSvrInfo_PI";
+        constexpr const char* pi_instruction = "int serverType; int serverBootTime; str relVersion[NAME_LEN]; str "
+                                               "apiVersion[NAME_LEN]; str rodsZone[NAME_LEN];";
+        // clang-format off
+        const auto pi_table = std::to_array<PackingInstruction>({
+            {pi_name, pi_instruction, nullptr},
+            {PACK_TABLE_END_PI, nullptr, nullptr}
+        });
+        // clang-format on
+        status = procApiRequest_raw(Conn,
+                                    GET_MISC_SVR_INFO_AN,
+                                    pi_table.data(),
+                                    nullptr,
+                                    nullptr,
+                                    nullptr,
+                                    pi_name,
+                                    static_cast<void**>(static_cast<void*>(&miscSvrInfo)),
+                                    nullptr);
+    }
+    else {
+        status = rcGetMiscSvrInfo(Conn, &miscSvrInfo);
+    }
+
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "rcGetMiscSvrInfo failed" );
         exit( 3 );
@@ -87,6 +111,7 @@ main( int argc, char **argv ) {
         hr = hr % 24;
         printf( "up %d days, %d:%d\n", day, hr, min );
     }
+
     if (miscSvrInfo->certinfo.len > 0) {
         printf("SSL/TLS Info:\n");
         const char* certinfobuf = static_cast<char*>(miscSvrInfo->certinfo.buf);
@@ -112,6 +137,7 @@ main( int argc, char **argv ) {
             }
         }
     }
+
     rcDisconnect( Conn );
 
     exit( 0 );
