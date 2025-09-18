@@ -764,12 +764,17 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
     def test_irsync_with_all_keyword_does_not_fail_on_overwrite__issue_8295(self):
         data_object_name = 'test_dataobj_8295'
         test_data_object_path = f'{self.user0.session_collection}/{data_object_name}'
-        self.user0.assert_icommand(['itouch', test_data_object_path])
 
         test_file_path = os.path.join(self.testing_tmp_dir, data_object_name)
+        empty_file_path = os.path.join(self.testing_tmp_dir, 'empty_file_8295')
 
         with open(test_file_path, 'w') as f:
             f.write('potato')
+
+        with open(empty_file_path, 'w') as f:
+            pass
+
+        self.user0.assert_icommand(['iput', empty_file_path, test_data_object_path])
 
         self.user0.assert_icommand(['irsync', '-a', test_file_path, f'i:{test_data_object_path}'])
 
@@ -779,11 +784,15 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         data_object_path = f'{self.user0.session_collection}/{data_object_name}'
 
         test_file_path = os.path.join(self.testing_tmp_dir, data_object_name)
+        empty_file_path = os.path.join(self.testing_tmp_dir, 'empty_file_8613')
 
         with open(test_file_path, 'w') as f:
             f.write('potato')
 
-        self.user0.assert_icommand(['itouch', data_object_path])
+        with open(empty_file_path, 'w') as f:
+            pass
+
+        self.user0.assert_icommand(['iput', empty_file_path, data_object_path])
         lib.create_ufs_resource(self.admin, another_resc)
 
         try:
