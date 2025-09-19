@@ -102,10 +102,13 @@ A LOGICAL_PATH argument that does not exist will be created as an empty
 data object, unless -c is supplied.
 
 If LOGICAL_PATH does not exist and no options are specified, the server
-will create a data object at the resource defined by msiSetDefaultResc().
+will create a new data object and store the replica in a resource of its
+choosing.
 
 If multiple replicas exist and a target replica is not specified via a
 replica number or leaf resource, the latest good replica will be updated.
+
+irods_default_resource in irods_environment.json is ignored.
 
 Mandatory arguments to long options are mandatory for short options too.
 
