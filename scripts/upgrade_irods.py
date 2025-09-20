@@ -65,7 +65,7 @@ def main():
     try:
         IrodsController(irods_config).upgrade()
     except IrodsError as e:
-        l.error('Error encountered running upgrade. Exiting...')
+        l.error('%s', e)
         return 1
 
     return 0
