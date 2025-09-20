@@ -2594,8 +2594,3 @@ int resolveRodsTarget(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType)
 {
     return resolveRodsTargetImpl(conn, rodsPathInp, oprType, false);
 }
-
-int resolveRodsTargetDryRun(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType)
-{
-    return resolveRodsTargetImpl(conn, rodsPathInp, oprType, true);
-}

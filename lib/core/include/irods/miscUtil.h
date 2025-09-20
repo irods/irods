@@ -281,10 +281,6 @@ int get_resc_hier_from_leaf_id(queryHandle_t* _query_handle, rodsLong_t _resc_id
 ///
 int resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType );
 
-/// resolveRodsTargetDryRun - same as resolveRodsTarget, but do not create
-/// target collection, regardless of oprType.
-int resolveRodsTargetDryRun(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType);
-
 #ifdef __cplusplus
 }
 #endif
