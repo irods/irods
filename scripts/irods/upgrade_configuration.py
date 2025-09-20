@@ -93,7 +93,7 @@ def raise_exception_if_downgrade_is_detected(irods_config):
 
     l.debug('Comparing version information to determine if a downgrade would occur.')
     if new_version_tuple < old_version_tuple:
-        raise IrodsError(f'Downgrade detected. Downgrading is unsupported, please reinstall iRODS version [{irods_config.version["irods_version"]}] or newer.')
+        raise IrodsError(f'Downgrade detected. Downgrading is unsupported, please reinstall iRODS version [{old_version["irods_version"]}] or newer.')
 
     l.info('No downgrade issue present.')
 
