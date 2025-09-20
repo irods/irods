@@ -816,7 +816,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             if ( status == 0 ) {
                 if ( bulkFlag == BULK_OPR_SMALL_FILES &&
                         ( rodsRestart->restartState & LAST_PATH_MATCHED ) != 0 ) {
-                    /* enable foreFlag one time */
+                    /* enable forceFlag one time */
                     setForceFlagForRestart( bulkOprInp, bulkOprInfo );
                 }
                 continue;
