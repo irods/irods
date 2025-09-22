@@ -16,16 +16,15 @@ extern "C" {
 ///
 /// \param[in]  conn        The RcComm used for communication.
 /// \param[in]  apiNumber   The integer which identifies the API to execute. See apiNumberData.h.
-/// \param[in]  inputStruct \parblock The data to serialize, typically an input data structure.
-///                         Can be passed \p NULL if no input is necessary. \endparblock
-/// \param[in]  inputBsBBuf \parblock The byte buffer to stream to the server.
-///                         Can be passed \p NULL if no input byte stream is necessary.
-///                         \endparblock
-/// \param[out] outStruct   \parblock The output data structure to be filled by the server. The
-///                         output will be heap-allocated and assigned to the pointer. Can be
-///                         passed \p NULL if no output is expected. \endparblock
-/// \param[out] outBsBBuf   \parblock The output byte buffer to be filled by the server.
-///                         Can be passed \p NULL if no output stream is expected. \endparblock
+/// \param[in]  inputStruct The data to serialize, typically an input data structure. Can be
+///                         passed \p NULL if no input is necessary.
+/// \param[in]  inputBsBBuf The byte buffer to stream to the server. Can be passed \p NULL if no
+///                         input byte stream is necessary.
+/// \param[out] outStruct   The output data structure to be filled by the server. The output will
+///                         be heap-allocated and assigned to the pointer. Can be passed \p NULL
+///                         if no output is expected.
+/// \param[out] outBsBBuf   The output byte buffer to be filled by the server. Can be passed
+///                         \p NULL if no output stream is expected.
 ///
 /// \return An integer indicating success or failure.
 /// \retval >=0 On success.
@@ -49,25 +48,23 @@ int procApiRequest(rcComm_t *conn,
 ///
 /// \param[in]  conn        The RcComm used for communication.
 /// \param[in]  apiNumber   The integer which identifies the API to execute. See apiNumberData.h.
-/// \param[in]  packingInstructionTable \parblock The table holding various packing instructions.
-///                         All packing instructions needed for serialization of the
-///                         data structure must be defined in the table. If passed \p NULL, the
-///                         global packing instruction table will be used. \endparblock
-/// \param[in]  inputPackingInstruction \parblock The packing instruction to use for serialization.
-///                         Cannot be \p NULL. \endparblock
-/// \param[in]  inputStruct \parblock The data to serialize, typically an input data structure.
-///                         Can be passed \p NULL if no input is necessary. \endparblock
-/// \param[in]  inputBsBBuf \parblock The byte buffer to stream to the server.
-///                         Can be passed \p NULL if no input byte stream is necessary.
-///                         \endparblock
-/// \param[in]  outputPackingInstruction \parblock The packing instruction to use for
-///                         deserialization. Can be set to \p NULL if no output is expected.
-///                         \endparblock
-/// \param[out] outStruct   \parblock The output data structure to be filled by the server. The
-///                         output will be heap-allocated and assigned to the pointer. Can be
-///                         passed \p NULL if no output is expected. \endparblock
-/// \param[out] outBsBBuf   \parblock The output byte buffer to be filled by the server.
-///                         Can be passed \p NULL if no output stream is expected. \endparblock
+/// \param[in]  packingInstructionTable The table holding various packing instructions. All
+///                         packing instructions needed for serialization of the data structure
+///                         must be defined in the table. If passed \p NULL, the global packing
+///                         instruction table will be used.
+/// \param[in]  inputPackingInstruction The packing instruction to use for serialization. Cannot
+///                         be \p NULL.
+/// \param[in]  inputStruct The data to serialize, typically an input data structure. Can be
+///                         passed \p NULL if no input is necessary.
+/// \param[in]  inputBsBBuf The byte buffer to stream to the server. Can be passed \p NULL if no
+///                         input byte stream is necessary.
+/// \param[in]  outputPackingInstruction The packing instruction to use for deserialization.
+///                         Can be set to \p NULL if no output is expected.
+/// \param[out] outStruct   The output data structure to be filled by the server. The output will
+///                         be heap-allocated and assigned to the pointer. Can be passed \p NULL
+///                         if no output is expected.
+/// \param[out] outBsBBuf   The output byte buffer to be filled by the server. Can be passed
+///                         \p NULL if no output stream is expected.
 ///
 /// \return An integer indicating success or failure.
 /// \retval >=0 On success.
