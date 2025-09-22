@@ -117,6 +117,40 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
         REQUIRE(ec == COLL_OBJ_T);
     }
 
+    SECTION("truncated output packing instruction")
+    {
+        constexpr const char* pi_instruction_out = "double objSize; int objType;";
+
+        // clang-format off
+        const auto pi_table = std::to_array<PackingInstruction>({
+            {pi_name_out, pi_instruction_out, nullptr},
+            {PACK_TABLE_END_PI, nullptr, nullptr}
+        });
+        // clang-format on
+
+        const auto ec = procApiRequest_raw(conn_ptr,
+                                           OBJ_STAT_AN,
+                                           pi_table.data(),
+                                           "DataObjInp_PI", // For serialization.
+                                           &input,
+                                           nullptr,
+                                           pi_name_out,
+                                           static_cast<void**>(static_cast<void*>(&output)),
+                                           nullptr);
+        REQUIRE(ec == COLL_OBJ_T);
+
+        // We expect to get the size and type back. For a collection, the size is always
+        // zero. One of the primary pieces of info we're interested in is the type. That
+        // should be extracted and stored in the output data structure.
+        CHECK(0 == output->objSize);
+        CHECK(COLL_OBJ_T == output->objType);
+
+        // The data ID should be empty because the packing instruction isn't configured to
+        // extract and store it in the output data structure. The info is in the response
+        // from the server, it's just ignored by the client.
+        CHECK(std::string_view{output->dataId}.empty());
+    }
+
     SECTION("bad input packing instruction")
     {
         constexpr const char* pi_instruction_in = "bad_type objPath[MAX_NAME_LEN];";
