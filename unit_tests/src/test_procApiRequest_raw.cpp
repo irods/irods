@@ -157,6 +157,9 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
     //
     // The other reason for disabling these tests is due to there being no known use-case
     // for truncated packing instructions.
+    //
+    // These tests exist in the source code so that we do not forget about these unusual
+    // cases.
 #if 0
     SECTION("truncated input packing instruction")
     {
