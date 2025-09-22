@@ -145,10 +145,13 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
         CHECK(0 == output->objSize);
         CHECK(COLL_OBJ_T == output->objType);
 
-        // The data ID should be empty because the packing instruction isn't configured to
-        // extract and store it in the output data structure. The info is in the response
-        // from the server, it's just ignored by the client.
-        CHECK(std::string_view{output->dataId}.empty());
+        // The remaining member variables likely contain garbage because the data was
+        // never extracted from the server's response. The reason for this is because the
+        // packing instruction does not mention those members. This behavior cannot be
+        // asserted because the output pointer will point to a heap-allocated object. We
+        // cannot know what the initial state of the heap-allocated is.
+        //
+        // With that said, the behavior has been observed to be true through manual testing.
     }
 
     SECTION("bad input packing instruction")
