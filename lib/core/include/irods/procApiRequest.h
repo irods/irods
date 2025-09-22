@@ -18,7 +18,7 @@ extern "C" {
 /// \param[in]  apiNumber   The integer which identifies the API to execute. See apiNumberData.h.
 /// \param[in]  inputStruct \parblock The data to serialize, typically an input data structure.
 ///                         Can be passed \p NULL if no input is necessary. \endparblock
-/// \param[in]  inputBsBBuf The byte buffer to stream to the server.
+/// \param[in]  inputBsBBuf \parblock The byte buffer to stream to the server.
 ///                         Can be passed \p NULL if no input byte stream is necessary.
 ///                         \endparblock
 /// \param[out] outStruct   \parblock The output data structure to be filled by the server. The
@@ -39,12 +39,13 @@ int procApiRequest(rcComm_t *conn,
 
 /// Executes an iRODS API request.
 ///
-/// Grants the caller control over which packing instructions are used during serializing and
+/// Grants the caller control over which packing instructions are used during serialization and
 /// deserialization of the data structures. This form of procApiRequest is useful for maintaining
-/// backward compartibility.
+/// backward compatibility.
 ///
-/// This function assumes the caller's only goal is to use different packing instructions. All
-/// other API specifications must remain as they are.
+/// \warning This function is provided for handling changes in packing instructions for an API
+/// only. All other properties of the original API must be honored. The behavior of this function
+/// is undefined if preconditions are violated.
 ///
 /// \param[in]  conn        The RcComm used for communication.
 /// \param[in]  apiNumber   The integer which identifies the API to execute. See apiNumberData.h.
@@ -56,7 +57,7 @@ int procApiRequest(rcComm_t *conn,
 ///                         Cannot be \p NULL. \endparblock
 /// \param[in]  inputStruct \parblock The data to serialize, typically an input data structure.
 ///                         Can be passed \p NULL if no input is necessary. \endparblock
-/// \param[in]  inputBsBBuf The byte buffer to stream to the server.
+/// \param[in]  inputBsBBuf \parblock The byte buffer to stream to the server.
 ///                         Can be passed \p NULL if no input byte stream is necessary.
 ///                         \endparblock
 /// \param[in]  outputPackingInstruction \parblock The packing instruction to use for

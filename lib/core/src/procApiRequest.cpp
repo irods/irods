@@ -24,8 +24,8 @@ namespace
 {
     auto send_api_request(rcComm_t* conn,
                           int apiInx,
-                          const PackingInstruction* _packingInstructionTable,
-                          const char* _packingInstruction,
+                          const PackingInstruction* packingInstructionTable,
+                          const char* packingInstruction,
                           const void* inputStruct,
                           const bytesBuf_t* inputBsBBuf) -> int
     {
@@ -43,15 +43,15 @@ namespace
             return SYS_UNMATCHED_API_NUM;
         }
 
-        if (_packingInstruction) {
+        if (packingInstruction) {
             if (inputStruct == nullptr) {
                 cliChkReconnAtSendEnd(conn);
                 return USER_API_INPUT_ERR;
             }
             status = pack_struct(inputStruct,
                                  &inputStructBBuf,
-                                 _packingInstruction,
-                                 _packingInstructionTable,
+                                 packingInstruction,
+                                 packingInstructionTable,
                                  0,
                                  conn->irodsProt,
                                  conn->svrVersion->relVersion);
@@ -62,9 +62,6 @@ namespace
             }
 
             myInputStructBBuf = inputStructBBuf;
-        }
-        else {
-            myInputStructBBuf = nullptr;
         }
 
         if (itr->second->inBsFlag <= 0) {
@@ -90,7 +87,7 @@ namespace
             if (conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0) {
                 const auto savedStatus = static_cast<int>(ret.code());
                 conn->thread_ctx->lock->lock();
-                int status1 = cliSwitchConnect(conn);
+                const int status1 = cliSwitchConnect(conn);
                 rodsLog(LOG_ERROR,
                         "%s: cliSwitchConnect error: [%d]; clientState=[%d], agentState=[%d]",
                         __func__,
@@ -140,7 +137,7 @@ namespace
                          bytesBuf_t* errorBBuf)
     {
         if (errorBBuf->len > 0) {
-            int status = unpack_struct(errorBBuf->buf,
+            const int status = unpack_struct(errorBBuf->buf,
                                        static_cast<void**>(static_cast<void*>(&conn->rError)),
                                        "RError_PI",
                                        RodsPackTable,
@@ -151,7 +148,7 @@ namespace
             }
         }
 
-        int retVal = myHeader->intInfo;
+        const int retVal = myHeader->intInfo;
 
         /* some sanity check */
 
@@ -180,7 +177,7 @@ namespace
         /* handle outStruct */
         if (outStructBBuf->len > 0) {
             if (outStruct != nullptr) {
-                int status = unpack_struct(outStructBBuf->buf,
+                const int status = unpack_struct(outStructBBuf->buf,
                                            outStruct,
                                            outputPackingInstruction,
                                            packingInstructionTable,
@@ -229,17 +226,10 @@ namespace
         int status = 0;
         msgHeader_t myHeader;
 
-        /* bytesBuf_t outStructBBuf, errorBBuf, myOutBsBBuf; */
-        bytesBuf_t outStructBBuf;
-        bytesBuf_t errorBBuf;
+        bytesBuf_t outStructBBuf{};
+        bytesBuf_t errorBBuf{};
 
         cliChkReconnAtReadStart(conn);
-
-        memset(&outStructBBuf, 0, sizeof(bytesBuf_t));
-        memset(&errorBBuf, 0, sizeof(bytesBuf_t));
-        /* memset (&myOutBsBBuf, 0, sizeof (bytesBuf_t)); */
-
-        /* some sanity check */
 
         irods::api_entry_table& RcApiTable = irods::get_client_api_table();
         if (outputPackingInstruction != nullptr && outStruct == nullptr) {
@@ -248,12 +238,6 @@ namespace
             return USER_API_INPUT_ERR;
         }
 
-        // TODO Do I need to require the outBsFlag be passed in too? \
-    // Then again, RcApiTable[apiInx]->outBsFlag is the apidef_t information. \
-    // Changing the packing instruction DOES NOT affect the output byte stream, so I think this is fine as is. \
-    // What if an API didn't originally have an output byte stream? Is it a different API if it does in the future? This feels like a different API. \
-    // Seems we need to define rules around all of this. Changing packing instructions clearly has downsides/challenges. \
-    // For now, let's move under the assumption that only the packing instructions are modified - i.e. byte stream properties never deviate from the original implementation.
         if (RcApiTable[apiInx]->outBsFlag > 0 && outBsBBuf == nullptr) {
             rodsLog(LOG_ERROR, "%s: outBsBBuf error for B apiNumber %d", __func__, RcApiTable[apiInx]->apiNumber);
             cliChkReconnAtReadEnd(conn);
@@ -277,7 +261,7 @@ namespace
             }
 #endif
             if (conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0) {
-                int savedStatus = static_cast<int>(ret.code());
+                const int savedStatus = static_cast<int>(ret.code());
                 /* try again. the socket might have changed */
                 conn->thread_ctx->lock->lock();
                 rodsLog(LOG_DEBUG,
@@ -323,7 +307,6 @@ namespace
         }
 
         clearBBuf(&outStructBBuf);
-        /* clearBBuf (&myOutBsBBuf); */
         clearBBuf(&errorBBuf);
 
         return status;

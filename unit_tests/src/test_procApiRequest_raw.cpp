@@ -54,9 +54,9 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding output packing instructio
 
     api_output* output{};
     // NOLINTNEXTLINE(*-owning-memory, *-no-malloc)
-    irods::at_scope_exit free_output{[&output] { std::free(output); }};
+    const irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
-    irods::experimental::client_connection conn;
+    irods::experimental::client_connection conn; // NOLINT(misc-const-correctness)
     auto* conn_ptr = static_cast<RcComm*>(conn);
 
     const auto ec = procApiRequest_raw(conn_ptr,
@@ -85,9 +85,9 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
 
     rodsObjStat* output{};
     // NOLINTNEXTLINE(*-owning-memory, *-no-malloc)
-    irods::at_scope_exit free_output{[&output] { std::free(output); }};
+    const irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
-    irods::experimental::client_connection conn;
+    irods::experimental::client_connection conn; // NOLINT(misc-const-correctness)
     auto* conn_ptr = static_cast<RcComm*>(conn);
 
     // The names associated with custom packing instructions.
