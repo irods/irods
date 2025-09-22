@@ -138,11 +138,11 @@ namespace
     {
         if (errorBBuf->len > 0) {
             const int status = unpack_struct(errorBBuf->buf,
-                                       static_cast<void**>(static_cast<void*>(&conn->rError)),
-                                       "RError_PI",
-                                       RodsPackTable,
-                                       conn->irodsProt,
-                                       conn->svrVersion->relVersion);
+                                             static_cast<void**>(static_cast<void*>(&conn->rError)),
+                                             "RError_PI",
+                                             RodsPackTable,
+                                             conn->irodsProt,
+                                             conn->svrVersion->relVersion);
             if (status < 0) {
                 rodsLogError(LOG_ERROR, status, "readAndProcApiReply:unpack_struct error. status = %d", status);
             }
@@ -178,11 +178,11 @@ namespace
         if (outStructBBuf->len > 0) {
             if (outStruct != nullptr) {
                 const int status = unpack_struct(outStructBBuf->buf,
-                                           outStruct,
-                                           outputPackingInstruction,
-                                           packingInstructionTable,
-                                           conn->irodsProt,
-                                           conn->svrVersion->relVersion);
+                                                 outStruct,
+                                                 outputPackingInstruction,
+                                                 packingInstructionTable,
+                                                 conn->irodsProt,
+                                                 conn->svrVersion->relVersion);
                 if (status < 0) {
                     rodsLogError(LOG_ERROR, status, "readAndProcApiReply:unpack_struct error. status = %d", status);
 
