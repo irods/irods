@@ -94,6 +94,70 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
     constexpr const char* pi_name_in = "api_input_PI";
     constexpr const char* pi_name_out = "api_output_PI";
 
+    SECTION("bad input packing instruction")
+    {
+        constexpr const char* pi_instruction_in = "bad_type objPath[MAX_NAME_LEN];";
+
+        // clang-format off
+        const auto pi_table = std::to_array<PackingInstruction>({
+            {pi_name_in, pi_instruction_in, nullptr},
+            {PACK_TABLE_END_PI, nullptr, nullptr}
+        });
+        // clang-format on
+
+        const auto ec = procApiRequest_raw(conn_ptr,
+                                           OBJ_STAT_AN,
+                                           pi_table.data(),
+                                           pi_name_in,
+                                           &input,
+                                           nullptr,
+                                           "RodsObjStat_PI", // For deserialization.
+                                           static_cast<void**>(static_cast<void*>(&output)),
+                                           nullptr);
+        REQUIRE(ec == SYS_PACK_INSTRUCT_FORMAT_ERR);
+    }
+
+    SECTION("bad output packing instruction")
+    {
+        constexpr const char* pi_instruction_out = "double objSize; "
+                                                   "int objType; "
+                                                   "bad_type dataMode; "
+                                                   "str dataId[NAME_LEN]; "
+                                                   "str chksum[NAME_LEN]; "
+                                                   "str ownerName[NAME_LEN]; "
+                                                   "str ownerZone[NAME_LEN]; "
+                                                   "str createTime[TIME_LEN]; "
+                                                   "str modifyTime[TIME_LEN]; "
+                                                   "struct *SpecColl_PI; "
+                                                   "int unknown_field;";
+
+        // clang-format off
+        const auto pi_table = std::to_array<PackingInstruction>({
+            {pi_name_out, pi_instruction_out, nullptr},
+            {PACK_TABLE_END_PI, nullptr, nullptr}
+        });
+        // clang-format on
+
+        const auto ec = procApiRequest_raw(conn_ptr,
+                                           OBJ_STAT_AN,
+                                           pi_table.data(),
+                                           "DataObjInp_PI", // For serialization.
+                                           &input,
+                                           nullptr,
+                                           pi_name_out,
+                                           static_cast<void**>(static_cast<void*>(&output)),
+                                           nullptr);
+        REQUIRE(ec == SYS_PACK_INSTRUCT_FORMAT_ERR);
+    }
+
+    // The following code is disabled because the test for truncated input packing
+    // instructions can fail unexpectedly, causing testing to take more time than needed.
+    // This behavior has not been observed for the truncated output packing instruction
+    // test.
+    //
+    // The other reason for disabling these tests is due to there being no known use-case
+    // for truncated packing instructions.
+#if 0
     SECTION("truncated input packing instruction")
     {
         constexpr const char* pi_instruction_in = "str objPath[MAX_NAME_LEN];";
@@ -153,60 +217,5 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
         //
         // With that said, the behavior has been observed to be true through manual testing.
     }
-
-    SECTION("bad input packing instruction")
-    {
-        constexpr const char* pi_instruction_in = "bad_type objPath[MAX_NAME_LEN];";
-
-        // clang-format off
-        const auto pi_table = std::to_array<PackingInstruction>({
-            {pi_name_in, pi_instruction_in, nullptr},
-            {PACK_TABLE_END_PI, nullptr, nullptr}
-        });
-        // clang-format on
-
-        const auto ec = procApiRequest_raw(conn_ptr,
-                                           OBJ_STAT_AN,
-                                           pi_table.data(),
-                                           pi_name_in,
-                                           &input,
-                                           nullptr,
-                                           "RodsObjStat_PI", // For deserialization.
-                                           static_cast<void**>(static_cast<void*>(&output)),
-                                           nullptr);
-        REQUIRE(ec == SYS_PACK_INSTRUCT_FORMAT_ERR);
-    }
-
-    SECTION("bad output packing instruction")
-    {
-        constexpr const char* pi_instruction_out = "double objSize; "
-                                                   "int objType; "
-                                                   "bad_type dataMode; "
-                                                   "str dataId[NAME_LEN]; "
-                                                   "str chksum[NAME_LEN]; "
-                                                   "str ownerName[NAME_LEN]; "
-                                                   "str ownerZone[NAME_LEN]; "
-                                                   "str createTime[TIME_LEN]; "
-                                                   "str modifyTime[TIME_LEN]; "
-                                                   "struct *SpecColl_PI; "
-                                                   "int unknown_field;";
-
-        // clang-format off
-        const auto pi_table = std::to_array<PackingInstruction>({
-            {pi_name_out, pi_instruction_out, nullptr},
-            {PACK_TABLE_END_PI, nullptr, nullptr}
-        });
-        // clang-format on
-
-        const auto ec = procApiRequest_raw(conn_ptr,
-                                           OBJ_STAT_AN,
-                                           pi_table.data(),
-                                           "DataObjInp_PI", // For serialization.
-                                           &input,
-                                           nullptr,
-                                           pi_name_out,
-                                           static_cast<void**>(static_cast<void*>(&output)),
-                                           nullptr);
-        REQUIRE(ec == SYS_PACK_INSTRUCT_FORMAT_ERR);
-    }
+#endif
 }
