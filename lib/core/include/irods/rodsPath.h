@@ -17,7 +17,7 @@ typedef struct RodsPath {
     objType_t objType;
     objStat_t objState;
     rodsLong_t size;
-    uint objMode;
+    unsigned int objMode;
     char inPath[MAX_NAME_LEN];	 /* input from command line */
     char outPath[MAX_NAME_LEN];	 /* the path after parsing the inPath */
     char dataId[NAME_LEN];
