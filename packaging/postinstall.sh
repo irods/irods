@@ -35,16 +35,6 @@ fi
 # detect operating system
 DETECTEDOS=`bash $IRODS_HOME/packaging/find_os.sh`
 
-# =-=-=-=-=-=-=-
-# setup runlevels and aliases (use os-specific tools)
-if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-    update-rc.d irods defaults
-elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    /sbin/chkconfig --add irods
-elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    /sbin/chkconfig --add irods
-fi
-
 if [ -f /etc/irods/service_account.config ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
