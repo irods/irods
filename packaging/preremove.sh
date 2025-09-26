@@ -97,16 +97,6 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
                            # groupdel is not necessary on Ubuntu, apparently...
     fi
 
-    # =-=-=-=-=-=-=-
-    # remove runlevels and aliases (use os-specific tools)
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        update-rc.d -f irods remove
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        /sbin/chkconfig --del irods
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        /sbin/chkconfig --del irods
-    fi
-
 fi
 
 # =-=-=-=-=-=-=-
