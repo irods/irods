@@ -216,7 +216,7 @@ TEST_CASE("#8653: procApiRequest_raw allows overriding packing instructions")
         // never extracted from the server's response. The reason for this is because the
         // packing instruction does not mention those members. This behavior cannot be
         // asserted because the output pointer will point to a heap-allocated object. We
-        // cannot know what the initial state of the heap-allocated is.
+        // cannot know what the initial state of the heap-allocated object is.
         //
         // With that said, the behavior has been observed to be true through manual testing.
     }
