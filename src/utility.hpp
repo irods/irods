@@ -28,6 +28,23 @@ namespace utils
         const auto ctx = nlohmann::json{{ia::scheme_name, _env.rodsAuthScheme}};
         return ia::authenticate_client(*_comm, ctx);
     } // authenticate_client
+
+    inline auto option_specified(std::string_view _option, int argc, char** argv) -> bool
+    {
+        for (int arg = 0; arg < argc; ++arg) {
+            if (!argv[arg]) {
+                continue;
+            }
+
+            if (_option == argv[arg]) {
+                // parseCmdLineOpt is EVIL and requires this. Please don't ask why.
+                argv[arg] = "-Z";
+                return true;
+            }
+        }
+
+        return false;
+    } // option_specified
 } // namespace utils
 
 #endif // IRODS_ICOMMANDS_UTILITY_HPP

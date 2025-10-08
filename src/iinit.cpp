@@ -1,3 +1,5 @@
+#include "utility.hpp"
+
 #include <irods/authentication_plugin_framework.hpp>
 #include <irods/irods_auth_constants.hpp>
 #include <irods/irods_client_api_table.hpp>
@@ -121,23 +123,6 @@ namespace
             fmt::print("Failed to save environment file [{}]\n", env_file);
         }
     } // save_updates_to_irods_environment
-
-    auto option_specified(std::string_view _option, int argc, char** argv) -> bool
-    {
-        for (int arg = 0; arg < argc; ++arg) {
-            if (!argv[arg]) {
-                continue;
-            }
-
-            if (_option == argv[arg]) {
-                // parseCmdLineOpt is EVIL and requires this. Please don't ask why.
-                argv[arg] = "-Z";
-                return true;
-            }
-        }
-
-        return false;
-    } // option_specified
 
     auto set_env_from_prompt(char _setting[], const char* _prompt, std::size_t _len) -> void
     {
@@ -305,8 +290,9 @@ int main( int argc, char **argv )
 
     // THESE MUST BE DONE HERE! parseCmdLineOpt is EVIL and considers any unknown options invalid.
     // TODO: use boost::program_options
-    const auto configure_tls = option_specified("--with-ssl", argc, argv);
-    const auto prompt_auth_scheme = option_specified("--prompt-auth-scheme", argc, argv);
+    const auto configure_tls = utils::option_specified("--with-ssl", argc, argv);
+    const auto prompt_auth_scheme = utils::option_specified("--prompt-auth-scheme", argc, argv);
+    const auto session_token_expires = !utils::option_specified("--no-token-expiration", argc, argv);
 
     auto status = parseCmdLineOpt(argc, argv, "hvVlZ", 1, &myRodsArgs);
     if ( status != 0 ) {
@@ -401,7 +387,8 @@ int main( int argc, char **argv )
     auto ctx = nlohmann::json{{irods::AUTH_TTL_KEY, std::to_string(ttl)},
                               {ia::record_auth_file, true},
                               {ia::force_password_prompt, true},
-                              {ia::scheme_name, my_env.rodsAuthScheme}};
+                              {ia::scheme_name, my_env.rodsAuthScheme},
+                              {"session_token_expires", session_token_expires}};
 
     if (const int ec = ia::authenticate_client(*Conn, ctx); ec != 0) {
         print_error_stack_to_file(Conn->rError, stderr);
@@ -418,10 +405,10 @@ int main( int argc, char **argv )
 
 
 void usage( char *prog ) {
-    printf( "Creates a file containing your iRODS password in a scrambled form,\n" );
-    printf( "to be used automatically by the icommands.\n" );
+    printf("For native authentication, creates a file containing your iRODS password in\n");
+    printf("a scrambled form, to be used automatically by the icommands.\n");
     printf( "\n" );
-    printf( "Usage: %s [-hvVl] [--ttl TTL] [--with-ssl] [--prompt-auth-scheme]\n", prog );
+    printf("Usage: %s [-hvVl] [--ttl TTL] [--with-ssl] [--prompt-auth-scheme] [--no-token-expiration]\n", prog);
     printf( "\n" );
     printf( "iinit loads environment information from the following locations, with\n" );
     printf( "priority being given to the top of the list:\n" );
@@ -447,7 +434,7 @@ void usage( char *prog ) {
     printf( "Of course, if there are missing client environment configuration values,\n" );
     printf( "these will need to be addressed in the piped input first.\n" );
     printf( "\n" );
-    printf( "When using regular iRODS passwords you can use --ttl (Time To Live)\n" );
+    printf("When using native iRODS passwords you can use --ttl (Time To Live)\n");
     printf( "to request a credential (a temporary password) that will be valid\n" );
     printf( "for only the number of hours you specify (up to a limit set by the\n" );
     printf( "administrator).  This is more secure, as this temporary password\n" );
@@ -459,19 +446,32 @@ void usage( char *prog ) {
     printf( "administrator (usually a few days).  With the --ttl option, you can\n" );
     printf( "specify how long this derived password will be valid, within the\n" );
     printf( "limits set by the administrator.\n" );
-    printf( "\n" );
+    printf("\n");
+    printf("When using authentication schemes which use session tokens, the iRODS\n");
+    printf("server will generate and return a session token which expires at a\n");
+    printf("time in the future determined by the server. This session token is\n");
+    printf("recorded in a file for use in lieu of the scrambled password. A rodsadmin\n");
+    printf("may request a session token which does not expire with --no-token-expiration.\n");
+    printf("\n");
     printf( "Options:\n" );
     printf( " -l  list the iRODS environment variables (only)\n" );
     printf( " -v  verbose\n" );
     printf( " -V  Very verbose\n" );
     printf( " --ttl TTL\n" );
     printf( "     set the password Time To Live (specified in hours)\n" );
+    printf("     This option only has an effect for authentication schemes which do not\n");
+    printf("     use session tokens.\n");
     printf(" --with-ssl\n");
     printf("      Include prompts which will set up TLS communications in the\n");
     printf("      client environment.\n");
     printf(" --prompt-auth-scheme\n");
     printf("      Include a prompt to select the authentication scheme. If not specified\n");
     printf("      and no active client environment file exists, the default is 'native'.\n");
+    printf(" --no-token-expiration\n");
+    printf("      For authentication schemes which use session tokens, the returned\n");
+    printf("      session token will have no expiration time. Only rodsadmins can use\n");
+    printf("      this feature. This option only has an effect for authentication\n");
+    printf("      schemes which use session tokens.\n");
     printf( " -h  this help\n" );
     printReleaseInfo( "iinit" );
 }
