@@ -477,4 +477,100 @@ auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char
 /// \since 5.1.0
 auto chl_check_password(RsComm* _comm, const char* _json_input, int* _valid) -> int;
 
+/// \brief High-level wrapper for checking session tokens.
+///
+/// \param[in] _comm The communication object.
+/// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the session token being checked:
+/// \code{.js}
+/// {
+///     "user_name": "<string>",
+///     "zone_name": "<string>",
+///     "auth_scheme": "<string>",
+///     "session_token": "<string>
+/// }
+/// \endcode
+///
+/// \p user_name and \p zone_name are the user name and zone name of the user with whom the session token to check is
+/// associated.
+///
+/// \p auth_scheme indicates the name of the authentication scheme with which this session token is being used.
+///
+/// \p session_token is the value of the session token to check. This should be a 36-character UUID.
+/// \endparblock
+/// \param[out] _valid A pointer which will hold a value of 0 if the session token check fails, or 1 if it succeeds.
+///
+/// \retval 0 On success.
+/// \retval <0 \parblock
+/// If an error occurs while querying for the provided session token in the catalog. If the search yields no results
+/// for the given inputs, this is not an error. In that case, the \p _valid out pointer will hold a value of 0.
+/// \endparblock
+///
+/// \since 5.1.0
+auto chl_check_session_token(RsComm* _comm, const char* _json_input, int* _valid) -> int;
+
+/// \brief High-level wrapper for creating session tokens.
+///
+/// \param[in] _comm The communication object.
+/// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the session token being made:
+/// \code{.js}
+/// {
+///     "user_name": "<string>",
+///     "zone_name": "<string>",
+///     "auth_scheme": "<string>",
+///     "expires": <bool>
+/// }
+/// \endcode
+///
+/// \p user_name and \p zone_name are the user name and zone name of the user with whom the session token to be created
+/// should be associated.
+///
+/// \p auth_scheme indicates the name of the authentication scheme with which this session token should be used.
+///
+/// \p expires is an optional parameter. If specified and set to false, the new session token will never expire. If
+/// the option is not specified or set to true, the session token will expire. Note: Only rodsadmins are allowed to
+/// request session tokens which do not expire.
+/// \endparblock
+/// \param[out] _token A pointer which will hold the value of the newly created session token.
+///
+/// \retval 0 On success.
+/// \retval <0 On failure.
+///
+/// \since 5.1.0
+auto chl_make_session_token(RsComm* _comm, const char* _json_input, char** _token) -> int;
+
+/// \brief High-level wrapper for removing session tokens.
+///
+/// \param[in] _comm The communication object.
+/// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the session tokens to delete:
+/// \code{.js}
+/// {
+///     "user_name": "<string>",
+///     "zone_name": "<string>",
+///     "expired_only": <bool>
+/// }
+/// \endcode
+///
+/// If \p expired_only is true, only expired session tokens associated with the specified user will be deleted. Else,
+/// all session tokens associated with the specified user will be deleted.
+///
+/// \p user_name and \p zone_name are the user name and zone name of the user with whom the session tokens to be deleted
+/// are associated. If no \p user_name or \p zone_name are specified, session tokens belonging to any user will be
+/// deleted. Not specifying a user should be done deliberately and with caution. If either \p user_name or \p zone_name
+/// are empty strings, the parameters are considered specified and will result in no session tokens being deleted
+/// because no user ID will be found with which to select session tokens to delete.
+/// \endparblock
+///
+/// \retval 0 On success. Note: Does not necessarily mean that any session tokens were deleted.
+/// \retval <0 \parblock
+/// If an error occurs. If no session tokens are selected for deletion as a result of the request, an error does not
+/// occur. An error only occurs if there are session tokens selected for deletion and the deletion fails for some
+/// reason. For example, if the specified user has no session tokens, no session tokens will be selected for deletion.
+/// \endparblock
+///
+/// \since 5.1.0
+auto chl_remove_session_tokens(RsComm* _comm, const char* _json_input) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

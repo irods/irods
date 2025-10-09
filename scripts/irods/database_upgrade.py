@@ -241,6 +241,15 @@ def run_update(irods_config, cursor, is_upgrade):
             cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_hashing_parameters', '{}');".format(
                 json.dumps(default_password_hashing_parameters)))
 
+        # token lifetime
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'token_lifetime_in_seconds', '1209600');")
+
+        # Add new column to R_USER_SESSION_KEY for storing salts.
+        if "oracle" == irods_config.catalog_database_type:
+            database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add (salt varchar2(32));")
+        else:
+            database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add column salt varchar(32);")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 

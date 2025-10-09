@@ -1404,6 +1404,43 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         return rs_set_delay_server_migration_info(rsComm, &input);
     }
 
+    if (0 == std::strcmp(generalAdminInp->arg0, "remove_session_tokens")) {
+        if (nullptr == generalAdminInp->arg1 || 0 == std::strlen(generalAdminInp->arg1)) {
+            log_api::error("Invalid type_option argument provided: null pointer or empty string.");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        const char* type_option = generalAdminInp->arg1;
+        nlohmann::json input;
+        if (std::string_view{"all"} == type_option) {
+            input = nlohmann::json{{"expired_only", false}};
+        }
+        else if (std::string_view{"expired"} == type_option) {
+            input = nlohmann::json{{"expired_only", true}};
+        }
+        else {
+            log_api::error(R"(Must provide either "all" or "expired". Value received: [{}])", type_option);
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if (nullptr != generalAdminInp->arg2 && std::strlen(generalAdminInp->arg2) > 0) {
+            std::vector<char> user_name(NAME_LEN + 1, '\0');
+            std::vector<char> zone_name(NAME_LEN + 1, '\0');
+            if (const auto parse_err = parseUserName(generalAdminInp->arg2, user_name.data(), zone_name.data());
+                parse_err < 0)
+            {
+                const auto msg = fmt::format("Invalid user_name argument provided: Could not parse [{}].", user_name);
+                log_api::error("{}: {}", __func__, msg);
+                addRErrorMsg(&rsComm->rError, parse_err, msg.c_str());
+                return parse_err;
+            }
+            input["user_name"] = user_name.data();
+            input["zone_name"] = ('\0' == zone_name.at(0)) ? getLocalZoneName() : zone_name.data();
+        }
+
+        return chl_remove_session_tokens(rsComm, input.dump().c_str());
+    }
+
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {
         status = CAT_INVALID_ARGUMENT;
         if ( strcmp( generalAdminInp->arg1, "resc_type" ) == 0 ) {
