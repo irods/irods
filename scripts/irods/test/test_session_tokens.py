@@ -263,7 +263,7 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
-class test_delete_session_tokens(unittest.TestCase):
+class test_remove_session_tokens(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
 		# Create an admin user / session for all the tests so we don't have to keep making it for each test.
@@ -338,7 +338,7 @@ class test_delete_session_tokens(unittest.TestCase):
 		# running as the service account Linux user and this causes iexit to print a warning which does not apply here.
 		for user in self.test_users:
 			user.assert_icommand(["iexit", "--remove-session-token-file", "-f"], "STDOUT")
-			self.admin.assert_icommand(["iadmin", "delete_session_tokens", "all", user.username])
+			self.admin.assert_icommand(["iadmin", "remove_session_tokens", "all", user.username])
 
 	def get_session_tokens_for_user(self, user):
 		session_tokens = self.admin.assert_icommand(
@@ -348,15 +348,15 @@ class test_delete_session_tokens(unittest.TestCase):
 		return session_tokens.split("\n----\n")
 
 	def test_error_occurs_when_no_type_is_specified(self):
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens"], "STDERR", "-130000 SYS_INVALID_INPUT_PARAM")
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens"], "STDERR", "-130000 SYS_INVALID_INPUT_PARAM")
 
 	def test_error_occurs_when_invalid_type_is_specified(self):
 		self.admin.assert_icommand(
-			["iadmin", "delete_session_tokens", "nope"], "STDERR", "-130000 SYS_INVALID_INPUT_PARAM")
+			["iadmin", "remove_session_tokens", "nope"], "STDERR", "-130000 SYS_INVALID_INPUT_PARAM")
 
 	def test_error_occurs_when_specified_user_name_is_incorrectly_formatted(self):
 		self.admin.assert_icommand(
-			["iadmin", "delete_session_tokens", "all", "nope##"], "STDERR", "Invalid username format.")
+			["iadmin", "remove_session_tokens", "all", "nope##"], "STDERR", "Invalid username format.")
 
 	def test_nothing_happens_when_specified_user_name_does_not_exist(self):
 		# Create a map of test usernames to lists of session tokens.
@@ -366,7 +366,7 @@ class test_delete_session_tokens(unittest.TestCase):
 			self.assertEqual(1, len(tokens))
 
 		# The user specified does not exist, so no session tokens will be deleted.
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens", "all", "nope"])
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens", "all", "nope"])
 
 		# No session tokens should have been deleted.
 		for user in self.test_users:
@@ -378,7 +378,7 @@ class test_delete_session_tokens(unittest.TestCase):
 
 		# The zone name being empty just means that the local zone will be used. The specified user exists in the
 		# local zone, so all of that user's session tokens will be deleted.
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens", "all", self.test_users[0].username])
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens", "all", self.test_users[0].username])
 
 		# Ensure that the user's session tokens are all deleted.
 		self.assertEqual(0, len(self.get_session_tokens_for_user(self.test_users[0])))
@@ -392,7 +392,7 @@ class test_delete_session_tokens(unittest.TestCase):
 
 		# The zone name being empty just means that the local zone will be used. The specified user exists in the
 		# local zone, so all of that user's session tokens will be deleted.
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens", "all", f"{self.test_users[0].username}#"])
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens", "all", f"{self.test_users[0].username}#"])
 
 		# Ensure that the user's session tokens are all deleted.
 		self.assertEqual(0, len(self.get_session_tokens_for_user(self.test_users[0])))
@@ -409,7 +409,7 @@ class test_delete_session_tokens(unittest.TestCase):
 
 		# The specified user exists in the specified zone, so all of that user's session tokens will be deleted.
 		self.admin.assert_icommand(
-			["iadmin", "delete_session_tokens", "all", f"{self.test_users[0].username}#{self.test_users[0].zone_name}"])
+			["iadmin", "remove_session_tokens", "all", f"{self.test_users[0].username}#{self.test_users[0].zone_name}"])
 
 		# Ensure that the user's session tokens are all deleted.
 		self.assertEqual(0, len(self.get_session_tokens_for_user(self.test_users[0])))
@@ -417,7 +417,7 @@ class test_delete_session_tokens(unittest.TestCase):
 		for user in self.test_users[1:]:
 			self.assertEqual(session_tokens[user.username], self.get_session_tokens_for_user(user))
 
-	def test_delete_all_session_tokens_for_all_users(self):
+	def test_remove_all_session_tokens_for_all_users(self):
 		# Create a map of test usernames to lists of session tokens.
 		session_tokens = {user.username: self.get_session_tokens_for_user(user) for user in self.test_users}
 		# Ensure that each test user has one session token.
@@ -425,13 +425,13 @@ class test_delete_session_tokens(unittest.TestCase):
 			self.assertEqual(1, len(session_tokens[user.username]))
 
 		# Delete all session tokens for all users.
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens", "all"])
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens", "all"])
 
 		# Ensure that all of the session tokens are gone.
 		for user in self.test_users:
 			self.assertEqual(0, len(self.get_session_tokens_for_user(user)))
 
-	def test_delete_expired_session_tokens_for_all_users(self):
+	def test_remove_expired_session_tokens_for_all_users(self):
 		time_between_expiration_and_making_new_tokens = 2
 
 		# Let the existing session tokens almost expire by waiting until just before they expire.
@@ -452,7 +452,7 @@ class test_delete_session_tokens(unittest.TestCase):
 		time.sleep(time_between_expiration_and_making_new_tokens)
 
 		# Delete expired session tokens for all users.
-		self.admin.assert_icommand(["iadmin", "delete_session_tokens", "expired"])
+		self.admin.assert_icommand(["iadmin", "remove_session_tokens", "expired"])
 
 		# Ensure that only expired session tokens are gone.
 		for user in self.test_users:

@@ -117,6 +117,9 @@ namespace irods
     const std::string DATABASE_OP_DELAY_RULE_UNLOCK{"database_delay_rule_unlock"};
     const std::string DATABASE_OP_UPDATE_REPLICA_ACCESS_TIME{"database_update_replica_access_time"};
     const std::string DATABASE_OP_CHECK_PASSWORD{"database_check_password"};
+    const std::string DATABASE_OP_MAKE_SESSION_TOKEN{"database_make_session_token"};
+    const std::string DATABASE_OP_CHECK_SESSION_TOKEN{"database_check_session_token"};
+    const std::string DATABASE_OP_REMOVE_SESSION_TOKENS{"database_remove_session_tokens"};
 }; // namespace irods
 
 #endif // IRODS_DATABASE_CONSTANTS_HPP

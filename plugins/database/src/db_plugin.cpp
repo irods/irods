@@ -1,5 +1,6 @@
 #include "irods/administration_utilities.hpp"
 #include "irods/authenticate.h"
+#include "irods/authentication_server_utils.hpp"
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
 #include "irods/checksum.h"
@@ -13,6 +14,7 @@
 #include "irods/irods_children_parser.hpp"
 #include "irods/irods_database_constants.hpp"
 #include "irods/irods_database_plugin.hpp"
+#include "irods/irods_hasher_factory.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_logger.hpp"
@@ -80,6 +82,11 @@ extern int icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 );
 static char prevChalSig[200]; // A 'signature' of the previous challenge.
                               // This is used as a sessionSignature on the catalog provider server
                               // side. Also see getSessionSignatureClientside function. */
+
+namespace irods
+{
+    extern const std::string SHA256_NAME;
+} // namespace irods
 
 // Legal values for accessLevel in chlModAccessControl (Access Parameter).
 // Defined here since other code does not need them (except for help messages)
@@ -234,6 +241,83 @@ namespace
 
         return SUCCESS();
     } // get_auth_config
+
+    auto get_token_lifetime_configuration(std::int32_t& _out) -> irods::error
+    {
+        constexpr auto default_token_lifetime_in_seconds = 1209600; // 2 weeks
+        constexpr const char* config_namespace = "authentication";
+        constexpr const char* config_option_name = "token_lifetime_in_seconds";
+
+        constexpr auto int32_max_digits = 11; // To match other timestamp buffers with a leading 0.
+        std::array<char, int32_max_digits + 1> lifetime_in_seconds_str{};
+        std::vector<std::string> bindVars{"authentication", "token_lifetime_in_seconds"};
+
+        // The cValSize parameter eventually is used in a call to sprintf, so at most cValSize - 1 characters are
+        // printed to the buffer. This ensures that the lifetime_in_seconds_str string will be null terminated.
+        const int status = cmlGetStringValueFromSql(
+            "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
+            lifetime_in_seconds_str.data(),
+            lifetime_in_seconds_str.size(),
+            bindVars,
+            &icss);
+
+        if (status < 0) {
+            if (CAT_NO_ROWS_FOUND == status) {
+                log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}]. Using "
+                             "default value [{}]",
+                             config_namespace,
+                             config_option_name,
+                             lifetime_in_seconds_str.data());
+                _out = default_token_lifetime_in_seconds;
+                return SUCCESS();
+            }
+            log_db::info("{}: cmlGetStringValueFromSql failure: {}", __func__, status);
+            return ERROR(status, "Failed to get auth token lifetime configuration.");
+        }
+
+        try {
+            _out = std::stoi(lifetime_in_seconds_str.data());
+            if (_out <= 0) {
+                _out = default_token_lifetime_in_seconds;
+                log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
+                             "default value [{}].",
+                             config_namespace,
+                             config_option_name,
+                             lifetime_in_seconds_str.data(),
+                             _out);
+            }
+        }
+        catch (const std::exception& e) {
+            _out = default_token_lifetime_in_seconds;
+            log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
+                         "Using default value [{}]. error:[{}]",
+                         config_namespace,
+                         config_option_name,
+                         lifetime_in_seconds_str.data(),
+                         _out,
+                         e.what());
+        }
+
+        return SUCCESS();
+    } // get_token_lifetime_configuration
+
+    // Computes SHA256 hash of the provided token and salt.
+    auto hash_session_token(const std::string& _token, const std::string& _salt) -> std::string
+    {
+        irods::Hasher hasher;
+        if (const auto err = irods::getHasher(irods::SHA256_NAME, hasher); !err.ok()) {
+            THROW(err.code(), err.result());
+        }
+        if (const auto err = hasher.update(fmt::format("{}{}", _salt, _token)); !err.ok()) {
+            THROW(err.code(), err.result());
+        }
+        std::string digest;
+        if (const auto err = hasher.digest(digest); !err.ok()) {
+            THROW(err.code(), err.result());
+        }
+        // The SHA256Strategy adds a "sha2:" prefix - let's chop that off.
+        return digest.substr(std::strlen(SHA256_CHKSUM_PREFIX));
+    } // hash_session_token
 } // anonymous namespace
 
 // =-=-=-=-=-=-=-
@@ -4282,6 +4366,15 @@ irods::error db_del_user_re_op(
     status = cmlExecuteNoAnswerSql("delete from R_USER_CREDENTIALS where user_id=?", &icss);
     if (status < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != status) {
         auto msg = fmt::format("Failed to delete user credentials. ec: {}", status);
+        addRErrorMsg(&_ctx.comm()->rError, 0, msg.c_str());
+        _rollback("chlDelUserRE");
+        return ERROR(status, std::move(msg));
+    }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    cllBindVars[cllBindVarCount++] = iValStr;
+    status = cmlExecuteNoAnswerSql("delete from R_USER_SESSION_KEY where user_id=?", &icss);
+    if (status < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != status) {
+        auto msg = fmt::format("Failed to delete user session tokens. ec: {}", status);
         addRErrorMsg(&_ctx.comm()->rError, 0, msg.c_str());
         _rollback("chlDelUserRE");
         return ERROR(status, std::move(msg));
@@ -15634,6 +15727,283 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
     return SUCCESS();
 } // db_check_password_op
 
+auto db_make_session_token_op(irods::plugin_context& _ctx, const char* _json_input, char** _token) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+    if (nullptr == _json_input || nullptr == _token) {
+        return ERROR(
+            INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: One or more input pointers are null.", __func__));
+    }
+
+    try {
+        const auto json_input = nlohmann::json::parse(_json_input);
+        const auto& user_name = json_input.at("user_name").get_ref<const std::string&>();
+        const auto& zone_name = json_input.at("zone_name").get_ref<const std::string&>();
+        const auto& auth_scheme = json_input.at("auth_scheme").get_ref<const std::string&>();
+
+        using std::chrono::duration_cast;
+
+        const auto now = std::chrono::system_clock::now();
+        const auto now_seconds = duration_cast<std::chrono::seconds>(now.time_since_epoch());
+
+        // The token will expire unless the caller explicitly specified the expires option as false.
+        std::chrono::seconds expiration;
+        if (const auto expires_iter = json_input.find("expires");
+            expires_iter != json_input.end() && !expires_iter->get<bool>())
+        {
+            constexpr auto eternity = 99999999999;
+            expiration = std::chrono::seconds{eternity};
+        }
+        else {
+            std::int32_t configured_duration{};
+            if (const auto err = get_token_lifetime_configuration(configured_duration); !err.ok()) {
+                return PASS(err);
+            }
+            if (configured_duration > 0) {
+                expiration = now_seconds + std::chrono::seconds{configured_duration};
+            }
+        }
+
+        const auto current_time_str = fmt::format("{:011}", now_seconds.count());
+        const auto expiration_time_str = fmt::format("{:011}", expiration.count());
+
+        // Generate a session token and a salt.
+        const auto token = irods::authentication::generate_session_token();
+        const auto salt = irods::generate_salt();
+
+        // SHA256 hash the token with a salt because it is supposed to be a secret.
+        const auto hash = hash_session_token(token, salt);
+
+        // Set up the SQL...
+        constexpr const char* make_session_token_sql =
+            "insert into R_USER_SESSION_KEY (user_id, session_key, auth_scheme, session_expiry_ts, create_ts, "
+            "modify_ts, salt) values ((select user_id from R_USER_MAIN where user_name = ? and zone_name = ?), ?, ?, "
+            "?, ?, ?, ?)";
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+        cllBindVars[cllBindVarCount++] = user_name.c_str();
+        cllBindVars[cllBindVarCount++] = zone_name.c_str();
+        cllBindVars[cllBindVarCount++] = hash.c_str();
+        cllBindVars[cllBindVarCount++] = auth_scheme.c_str();
+        cllBindVars[cllBindVarCount++] = expiration_time_str.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_str.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_str.c_str();
+        cllBindVars[cllBindVarCount++] = salt.c_str();
+        // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
+
+        // Execute the SQL...
+        if (const auto insert_err = cmlExecuteNoAnswerSql(make_session_token_sql, &icss); 0 != insert_err) {
+            _rollback("make_session_token");
+            return ERROR(insert_err, "Failed to create session token in database.");
+        }
+
+        // Aaaaand commit.
+        if (const auto commit_err = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_err) {
+            _rollback("make_session_token");
+            return ERROR(commit_err, "Commit to create session token failed.");
+        }
+
+        // Return the generated token value in the out variable.
+        *_token = strdup(token.c_str());
+    }
+    catch (const nlohmann::json::exception& e) {
+        auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
+    }
+    catch (const irods::exception& e) {
+        auto msg = fmt::format("{} - iRODS exception occurred: [{}]", __func__, e.client_display_what());
+        log_db::error(msg);
+        return ERROR(e.code(), std::move(msg));
+    }
+    catch (const std::exception& e) {
+        auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_INTERNAL_ERR, std::move(msg));
+    }
+
+    return SUCCESS();
+} // db_make_session_token_op
+
+auto db_check_session_token_op(irods::plugin_context& _ctx, const char* _json_input, int* _valid) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+    if (nullptr == _json_input || nullptr == _valid) {
+        return ERROR(
+            INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: One or more input pointers are null.", __func__));
+    }
+
+    *_valid = 0;
+
+    try {
+        const auto json_input = nlohmann::json::parse(_json_input);
+        const auto& user_name = json_input.at("user_name").get_ref<const std::string&>();
+        const auto& zone_name = json_input.at("zone_name").get_ref<const std::string&>();
+        const auto& session_token = json_input.at("session_token").get_ref<const std::string&>();
+
+        struct session_token_info
+        {
+            std::string hash;
+            std::int64_t expiration_timestamp;
+            std::string salt;
+        };
+
+        std::vector<session_token_info> tokens;
+        try {
+            auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+            nanodbc::statement stmt{db_conn};
+            nanodbc::prepare(
+                stmt,
+                "select R_USER_SESSION_KEY.session_key, R_USER_SESSION_KEY.session_expiry_ts, R_USER_SESSION_KEY.salt "
+                "from R_USER_SESSION_KEY, "
+                "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_SESSION_KEY.user_id");
+            stmt.bind(0, user_name.c_str());
+            stmt.bind(1, zone_name.c_str());
+            for (auto result = nanodbc::execute(stmt); result.next();) {
+                const auto token = result.get<std::string>(0);
+                const auto expiration = std::stoll(result.get<std::string>(1));
+                const auto salt = result.get<std::string>(2);
+                tokens.emplace_back(session_token_info{token, expiration, salt});
+            }
+        }
+        catch (const std::exception& e) {
+            log_db::error("{}: Error occurred fetching session token information for user [{}#{}]: {}",
+                          __func__,
+                          user_name,
+                          zone_name,
+                          e.what());
+            return ERROR(SYS_LIBRARY_ERROR, e.what());
+        }
+
+        if (tokens.empty()) {
+            // The user does not have any stored tokens. This operation does not care whether this is an invalid user or
+            // there are no tokens stored for the user.
+            return SUCCESS();
+        }
+
+        const auto now = std::chrono::system_clock::now();
+        const auto now_duration = duration_cast<std::chrono::seconds>(now.time_since_epoch());
+        for (const auto& token : tokens) {
+            const auto hash = hash_session_token(session_token, token.salt);
+            if (hash == token.hash && now_duration < std::chrono::seconds{token.expiration_timestamp}) {
+                *_valid = 1;
+                return SUCCESS();
+            }
+        }
+    }
+    catch (const nlohmann::json::exception& e) {
+        auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
+    }
+    catch (const irods::exception& e) {
+        auto msg = fmt::format("{} - iRODS exception occurred: [{}]", __func__, e.client_display_what());
+        log_db::error(msg);
+        return ERROR(e.code(), std::move(msg));
+    }
+    catch (const std::exception& e) {
+        auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_INTERNAL_ERR, std::move(msg));
+    }
+
+    // Reaching this point means that the provided user and non-expired token combination did not match anything.
+    return SUCCESS();
+} // db_check_session_token_op
+
+auto db_remove_session_tokens_op(irods::plugin_context& _ctx, const char* _json_input) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+    if (nullptr == _json_input) {
+        return ERROR(INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: JSON input is null.", __func__));
+    }
+
+    try {
+        const auto json_input = nlohmann::json::parse(_json_input);
+
+        int bind_var_index{};
+
+        // Construct the appropriate SQL statement based on whether the caller requested deleting all session tokens
+        // or just expired ones, and whether or not a user was specified.
+        std::stringstream delete_sql;
+        delete_sql << "delete from R_USER_SESSION_KEY";
+
+        // Construct the expiration string even if it's not going to be used because the string must stay alive until
+        // the SQL is executed since it is being added to the bind variables.
+        const auto now = std::chrono::system_clock::now();
+        const auto now_duration = duration_cast<std::chrono::seconds>(now.time_since_epoch());
+        const auto now_str = fmt::format("{:011}", now_duration.count());
+        const auto expired_only = json_input.at("expired_only").get<bool>();
+        if (expired_only) {
+            delete_sql << " where ";
+#if MY_ICAT
+            delete_sql << "cast(session_expiry_ts as signed integer)<?";
+#else
+            delete_sql << "cast(session_expiry_ts as integer)<?";
+#endif
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[bind_var_index++] = now_str.c_str();
+        }
+
+        // User name and zone name must both be specified in order to clear session tokens for a specific user.
+        const auto user_name_iter = json_input.find("user_name");
+        const auto zone_name_iter = json_input.find("zone_name");
+        if (json_input.end() != user_name_iter && json_input.end() != zone_name_iter) {
+            if (expired_only) {
+                delete_sql << " and ";
+            }
+            else {
+                delete_sql << " where ";
+            }
+            delete_sql << "user_id=(select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+            // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[bind_var_index++] = user_name_iter->get_ref<const std::string&>().c_str();
+            cllBindVars[bind_var_index++] = zone_name_iter->get_ref<const std::string&>().c_str();
+            // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
+        }
+
+        cllBindVarCount = bind_var_index;
+
+        // Execute the appropriate delete statement.
+        if (int delete_err = cmlExecuteNoAnswerSql(delete_sql.str().c_str(), &icss); 0 != delete_err) {
+            if (CAT_SUCCESS_BUT_WITH_NO_INFO == delete_err) {
+                log_db::debug("{}: No session tokens were valid for removal.", __func__);
+            }
+            else {
+                _rollback("remove_session_tokens");
+                auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", delete_err);
+                log_db::error(msg);
+                return ERROR(delete_err, std::move(msg));
+            }
+        }
+
+        // Commit the changes.
+        if (const auto commit_err = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_err) {
+            _rollback("remove_session_tokens");
+            auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", commit_err);
+            log_db::error(msg);
+            return ERROR(commit_err, std::move(msg));
+        }
+    }
+    catch (const nlohmann::json::exception& e) {
+        auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
+    }
+    catch (const std::exception& e) {
+        auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
+        log_db::error(msg);
+        return ERROR(SYS_INTERNAL_ERR, std::move(msg));
+    }
+
+    return SUCCESS();
+} // db_remove_session_tokens_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -16041,6 +16411,12 @@ irods::database* plugin_factory(
         function<error(plugin_context&, const char*, char**)>(db_update_replica_access_time));
     pg->add_operation(
         DATABASE_OP_CHECK_PASSWORD, function<error(plugin_context&, const char*, int*)>(db_check_password_op));
+    pg->add_operation(DATABASE_OP_MAKE_SESSION_TOKEN,
+                      function<error(plugin_context&, const char*, char**)>(db_make_session_token_op));
+    pg->add_operation(DATABASE_OP_CHECK_SESSION_TOKEN,
+                      function<error(plugin_context&, const char*, int*)>(db_check_session_token_op));
+    pg->add_operation(
+        DATABASE_OP_REMOVE_SESSION_TOKENS, function<error(plugin_context&, const char*)>(db_remove_session_tokens_op));
 
     return pg;
 } // plugin_factory

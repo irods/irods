@@ -128,7 +128,7 @@ set(IRODS_PACKAGE_REVISION "0")
 # Consider bumping this variable anytime the following requirements are satisfied:
 # - The catalog schema has been modified
 # - The next release involves a change in the major version number or backwards compatibility cannot be maintained
-set(IRODS_CATALOG_SCHEMA_VERSION "12")
+set(IRODS_CATALOG_SCHEMA_VERSION "13")
 # Consider bumping this variable anytime the following requirements are satisfied:
 # - A JSON schema has been modified
 # - The next release involves a change in the major version number or backwards compatibility cannot be maintained

@@ -134,7 +134,7 @@
     "test_rulebase.Test_Rulebase",
     "test_session_tokens.test_session_token_lifetime_configuration",
     "test_session_tokens.test_password_authentication_returning_session_tokens",
-    "test_session_tokens.test_delete_session_tokens",
+    "test_session_tokens.test_remove_session_tokens",
     "test_setting_user_password.test_modifying_user_password",
     "test_setting_user_password.test_igroupadmin_mkuser",
     "test_setting_user_password.test_invalid_configurations_and_options",
