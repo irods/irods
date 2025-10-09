@@ -43,6 +43,8 @@ auto rs_get_library_features(RsComm* _comm, char** _features) -> int
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_GENQUERY2)
 
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_DELAY_RULE_LOCKING)
+
+        IRODS_FEATURE(IRODS_LIBRARY_FEATURE_IRODS_AUTHENTICATION)
     }.dump().c_str());
     // clang-format on
 

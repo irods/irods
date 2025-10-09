@@ -107,6 +107,19 @@
 /// \since 5.0.0
 #define IRODS_LIBRARY_FEATURE_DELAY_RULE_LOCKING      202411L
 
+/// Defined if the "irods" authentication scheme and plugin are supported.
+///
+/// This feature flag covers the following features as well:
+/// - Session token support
+///   - remove_session_tokens option for GeneralAdmin API
+///   - Library free functions for reading and writing session tokens to a local file for client use
+/// - Hashed password support
+/// - no-scramble option for GeneralAdmin and UserAdmin API's password-setting functionality
+/// - remove_password functionality for GeneralAdmin API's "modify" option for "user" entities
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_IRODS_AUTHENTICATION    202512L
+
 // NOLINTEND
 
 #endif // IRODS_LIBRARY_FEATURES_H
