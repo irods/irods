@@ -267,6 +267,17 @@ int setRescQuota(
     }
 
     rodsLong_t compare_overrun = resc_quota->quotaOverrun;
+    rescQuota_t* iterator = resc_quota;
+
+    // Traverse the quota result linked list and find the
+    // "most egregious" overrun: i.e., if there are
+    // two groups with quotas on the same resource, find
+    // the one most in violation.
+    while (iterator = iterator->next) {
+        if (compare_overrun < iterator->quotaOverrun) {
+            compare_overrun = iterator->quotaOverrun;
+        }
+    }
     freeAllRescQuota(resc_quota);
     if ( compare_overrun != 0 && // disabled if 0
          compare_overrun + resc_overrun + _data_size > 0 ) {
