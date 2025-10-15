@@ -895,3 +895,11 @@ def calculate_crc64_nvme(data: bytes, initial_crc = 0):
     # Byteorder defaults to 'big' in some versions of Python but not all.  Setting this
     # to 'big' so it's consistent with CRC64NVMEStrategy.cpp.
     return (crc ^ 0xFFFFFFFFFFFFFFFF).to_bytes(8, byteorder='big') # Final XOR with all ones and return bytes
+
+
+def user_exists(session, user_name, zone_name=None):
+    if zone_name is None:
+        zone_name = session.zone_name
+    out = session.run_icommand(
+        ['iquest', f"select USER_ID where USER_NAME = '{user_name}' and USER_ZONE = '{zone_name}'"])[0]
+    return 'CAT_NO_ROWS_FOUND' not in out
