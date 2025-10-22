@@ -1045,7 +1045,7 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
         } // else
     }
     else if ( status == USER_INVALID_USERNAME_FORMAT ) {
-        fprintf( stderr, "Invalid username format." );
+        fprintf( stderr, "Invalid username format.\n" );
     }
     else if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         char *mySubName = NULL;
@@ -1696,6 +1696,10 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                                "", "", "", "", "", "", "", "" );
     }
 
+    if (0 == strcmp(cmdToken[0], "remove_session_tokens")) {
+        return generalAdmin(0, "remove_session_tokens", cmdToken[1], cmdToken[2], "", "", "", "", "", "", "");
+    }
+
     /* test is only used for testing so is not included in the help */
     if ( strcmp( cmdToken[0], "test" ) == 0 ) {
         char* result;
@@ -1967,6 +1971,7 @@ void usageMain() {
         " set_delay_server HOSTNAME",
         " get_grid_configuration NAMESPACE OPTION_NAME",
         " set_grid_configuration NAMESPACE OPTION_NAME OPTION_VALUE",
+        " remove_session_tokens expired|all [user[#zone]]",
         " help (or h) [command] (this help, or more details on a command)",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
         "similar admin modes in irepl, iphymv, and itrim.",
@@ -2616,6 +2621,28 @@ usage( char *subOpt ) {
         ""
     };
 
+    char* remove_session_tokens_usage[] = {
+        "remove_session_tokens expired|all [user[#zone]]",
+        " ",
+        "Remove session tokens from the catalog.",
+        " ",
+        "If 'expired' is specified, only expired session tokens will be removed.",
+        "If 'all' is specified, all session tokens will be removed.",
+        " ",
+        "If a user is specified, only session tokens belonging to that user will be removed.",
+        "The user's zone can optionally be specified in '#'-delimited format.",
+        " ",
+        "Examples:",
+        "To remove all session tokens:",
+        " $ iadmin remove_session_tokens all",
+        "To remove all expired session tokens:",
+        " $ iadmin remove_session_tokens expired",
+        "To remove all session tokens for user alice:",
+        " $ iadmin remove_session_tokens all alice",
+        "To remove all expired session tokens for user alice:",
+        " $ iadmin remove_session_tokens expired alice",
+        ""};
+
     char *helpMsgs[] = {
         " help (or h) [command] (general help, or more details on a command)",
         " If you specify a command, a brief description of that command",
@@ -2668,6 +2695,7 @@ usage( char *subOpt ) {
                        "set_delay_server",
                        "get_grid_configuration",
                        "set_grid_configuration",
+                       "remove_session_tokens",
                        "help",
                        "h"};
 
@@ -2716,6 +2744,7 @@ usage( char *subOpt ) {
                       set_delay_server_usage,
                       get_grid_configuration_usage,
                       set_grid_configuration_usage,
+                      remove_session_tokens_usage,
                       helpMsgs,
                       helpMsgs};
 
