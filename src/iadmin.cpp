@@ -1935,7 +1935,7 @@ void usageMain() {
         " lg [name] (list group info (user member list))",
         " lgd name  (list group details)",
         " mkuser Name[#Zone] Type (make user)",
-        " moduser Name[#Zone] [ type | comment | info | password ] newValue",
+        " moduser Name[#Zone] [ type | comment | info | password | remove_password ] newValue",
         " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
         " rpp Name  (remove PAM-derived Password for user Name)",
@@ -2085,7 +2085,7 @@ usage( char *subOpt ) {
         ""
     };
 
-    char* moduserMsgs[] = {" moduser Name[#Zone] [ type | comment | info | password ] newValue [no-scramble]",
+    char* moduserMsgs[] = {" moduser Name[#Zone] [ type | comment | info | password | remove_password ] newValue [no-scramble]",
                            "Modifies a field of an existing user definition.",
                            " ",
                            "For password authentication, use moduser to set the password.",
@@ -2098,6 +2098,9 @@ usage( char *subOpt ) {
                            "Please ensure TLS is in use when using this option. Using no-scramble with any",
                            "field other than password has no effect. Using no-scramble with servers before",
                            "iRODS 5.1.0 will result in users not being able to authenticate with that password.",
+                           " ",
+                           "remove_password does not require a newValue and simply deletes the user's current",
+                           "password for the irods authentication scheme.",
                            " ",
                            "Long forms of the field names may also be used:",
                            "user_name, user_type_name, zone_name, user_info, or ",
