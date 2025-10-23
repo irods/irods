@@ -114,7 +114,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                 group_name = 'test_group_case_10_11_12'
                 file_name = 'test_file_case_10_11_12'
                 resc_name = 'ufs0_quota_case_10_11_12'
-                lib.make_file(file_name, 4096, contents='arbitrary')
+                lib.make_file(os.path.join(self.user0.local_session_dir, file_name), 4096, contents='arbitrary')
                 lib.create_ufs_resource(self.admin, resc_name)
 
                 self.admin.assert_icommand(['iadmin', 'mkgroup', f'{group_name}_1'])
@@ -125,25 +125,94 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['iadmin', 'atg', f'{group_name}_1', self.user0.username])
                 self.admin.assert_icommand(['iadmin', 'atg', f'{group_name}_2', self.user0.username])
 
-                self.user0.assert_icommand(['iput', '-R', self.testresc, file_name])
+                self.user0.assert_icommand(['iput', '-R', self.testresc, os.path.join(self.user0.local_session_dir, file_name)])
                 self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -5000\n', '\nquota_over: -10000\n'])
 
                 # Case 10: under quota succeeds
                 with self.subTest(testcase=10, desc="Under quota before and after"):
                     self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_10'])
                     self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -904\n', '\nquota_over: -5904\n'])
 
                 # Case 11: crossing quota succeeds
                 with self.subTest(testcase=11, desc="Crossing quota"):
                     self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_11'])
                     self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3192\n', '\nquota_over: -1808\n'])
 
                 # Case 12: should fail with just a single quota violated
                 with self.subTest(testcase=12, desc="Violating quota"):
                     self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_12'], 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3192\n', '\nquota_over: -1808\n'])
         finally:
             self.admin.run_icommand(['irm', '-f', f'{file_name}_case_10', f'{file_name}_case_11', f'{file_name}_case_12'])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
             self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
             self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_2'])
+            IrodsController().restart(test_mode=True)
+
+    # The following test covers case 40, 41, 42
+    def test_physical_resource_and_total_quota_simultaneously__issue_4089(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acRescQuotaPolicy {
+                    msiSetRescQuotaPolicy("on");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acRescQuotaPolicy(rule_args, callback, rei):
+                    callback.msiSetRescQuotaPolicy('on')
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().restart(test_mode=True)
+
+                group_name = 'test_group_case_40_41_42'
+                file_name = 'test_file_case_40_41_42'
+                resc_name = 'ufs0_quota_case_40_41_42'
+                lib.make_file(os.path.join(self.user0.local_session_dir, file_name), 4096, contents='arbitrary')
+                lib.create_ufs_resource(self.admin, resc_name)
+
+                self.admin.assert_icommand(['iadmin', 'mkgroup', f'{group_name}_1'])
+                self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', resc_name, '5000'])
+                self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', 'total', '15000'])
+
+                self.admin.assert_icommand(['iadmin', 'atg', f'{group_name}_1', self.user0.username])
+
+                self.user0.assert_icommand(['iput', '-R', self.testresc, os.path.join(self.user0.local_session_dir, file_name)])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -5000\n', '\nquota_over: -10904\n'])
+
+                # Case 40: under quota succeeds
+                with self.subTest(testcase=40, desc="Under quota before and after"):
+                    self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_40'])
+                    self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -904\n', '\nquota_over: -6808\n'])
+
+                # Case 41: crossing quota succeeds
+                with self.subTest(testcase=41, desc="Crossing quota"):
+                    self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_41'])
+                    self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3192\n', '\nquota_over: -2712\n'])
+
+                # Case 42: should fail with just a single quota violated, regardless of which
+                with self.subTest(testcase=42, desc="Violating resc quota"):
+                    self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_42'], 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+                # Swap quotas to check other quota being violated
+                with self.subTest(testcase=42, desc="Violating total quota"):
+                    self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', resc_name, '10000'])
+                    self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', 'total', '10000'])
+                    self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -1808\n', '\nquota_over: 2288\n'])
+                    self.user0.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_case_42a'], 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -1808\n', '\nquota_over: 2288\n'])
+        finally:
+            self.admin.run_icommand(['irm', '-f', f'{file_name}_case_40', f'{file_name}_case_41', f'{file_name}_case_42', f'{file_name}_case_42a'])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
             IrodsController().restart(test_mode=True)
