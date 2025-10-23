@@ -120,6 +120,7 @@ namespace irods
     const std::string DATABASE_OP_MAKE_SESSION_TOKEN{"database_make_session_token"};
     const std::string DATABASE_OP_CHECK_SESSION_TOKEN{"database_check_session_token"};
     const std::string DATABASE_OP_REMOVE_SESSION_TOKENS{"database_remove_session_tokens"};
+    const std::string DATABASE_OP_REMOVE_PASSWORD{"database_remove_password"};
 }; // namespace irods
 
 #endif // IRODS_DATABASE_CONSTANTS_HPP

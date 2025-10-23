@@ -573,4 +573,26 @@ auto chl_make_session_token(RsComm* _comm, const char* _json_input, char** _toke
 /// \since 5.1.0
 auto chl_remove_session_tokens(RsComm* _comm, const char* _json_input) -> int;
 
+/// \brief High-level wrapper for removing passwords.
+///
+/// \param[in] _comm The communication object.
+/// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the user whose password is to be deleted:
+/// \code{.js}
+/// {
+///     "user_name": "<string>",
+///     "zone_name": "<string>"
+/// }
+/// \endcode
+/// \endparblock
+///
+/// \retval 0 On success. Note: Does not necessarily mean that any passwords were deleted.
+/// \retval <0 \parblock
+/// If an error occurs. If no password is found for the specified user, an error does not occur. An error only occurs if
+/// there is a password for the specified user and the deletion fails for some reason.
+/// \endparblock
+///
+/// \since 5.1.0
+auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
