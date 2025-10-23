@@ -911,6 +911,25 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
             std::string_view option = (nullptr != generalAdminInp->arg3) ? generalAdminInp->arg3 : "";
 
+            // TODO(#8697): Should we prevent clearing the current user's password? What about rodsadmin accounts?
+            if ("remove_password" == option) {
+                std::vector<char> just_user_name(NAME_LEN + 1, '\0');
+                std::vector<char> zone_name(NAME_LEN + 1, '\0');
+                if (const auto parse_err = parseUserName(user_name.data(), just_user_name.data(), zone_name.data());
+                    parse_err < 0)
+                {
+                    const auto msg =
+                        fmt::format("Invalid user_name argument provided: Could not parse [{}].", user_name);
+                    log_api::error("{}: {}", __func__, msg);
+                    addRErrorMsg(&rsComm->rError, parse_err, msg.c_str());
+                    return parse_err;
+                }
+                const auto input =
+                    nlohmann::json{{"user_name", just_user_name.data()},
+                                   {"zone_name", ('\0' == zone_name.at(0)) ? getLocalZoneName() : zone_name.data()}};
+                return chl_remove_password(rsComm, input.dump().c_str());
+            }
+
             const auto new_value = std::string_view{generalAdminInp->arg4 ?
                                                     generalAdminInp->arg4 : ""};
 
