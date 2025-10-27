@@ -2583,6 +2583,7 @@ class test_moduser_user(unittest.TestCase):
         with session.make_session_for_existing_user(self.username, pw3, host, self.admin.zone_name) as user_session:
             user_session.assert_icommand(['ils'], 'STDOUT_SINGLELINE', '/tempZone/home/%s' % self.username)
 
+
 class test_moduser_group(unittest.TestCase):
     """Test modifying a group."""
     @classmethod
@@ -2946,3 +2947,143 @@ class test_modzone_conn_str_validation(unittest.TestCase):
                                    'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
         self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
                                    'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+class test_moduser_remove_password__issue_2899(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        # Create an admin user / session for all the tests so we don't have to keep making it for each test.
+        self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+
+        # Define the user_id subselect so we can reuse it.
+        self.test_user_name = "bilbo"
+        user_id_subselect = "select user_id from R_USER_MAIN where user_name = '{}' and zone_name = '{}'".format(
+            self.test_user_name, self.admin.zone_name)
+
+        # Configure a specific query to get the test user's native passwords. NOTE: DO NOT DO THIS IN PRODUCTION!!!
+        self.get_test_user_native_password_query = "get_test_user_native_password"
+        self.admin.assert_icommand(
+            [
+                "iadmin",
+                "asq",
+                f"select rcat_password from R_USER_PASSWORD where user_id=({user_id_subselect})",
+                self.get_test_user_native_password_query
+            ]
+        )
+
+        # Configure a specific query to get the test user's irods password. NOTE: DO NOT DO THIS IN PRODUCTION!!!
+        self.get_test_user_irods_password_query = "get_test_user_irods_password"
+        self.admin.assert_icommand(
+            [
+                "iadmin",
+                "asq",
+                f"select hashed_password from R_USER_CREDENTIALS where user_id=({user_id_subselect})",
+                self.get_test_user_irods_password_query
+            ]
+        )
+
+        # Make a backup of the server_config and configure insecure mode for irods authentication scheme if the tests
+        # are not being run with TLS enabled.
+        if False == test.settings.USE_SSL:
+            self.server_config_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(paths.server_config_path())).name
+            shutil.copyfile(paths.server_config_path(), self.server_config_backup)
+            with open(paths.server_config_path()) as f:
+                server_config = json.load(f)
+            server_config['plugin_configuration']['authentication']['irods'] = {
+                'insecure_mode': True
+            }
+            lib.update_json_file_from_dict(paths.server_config_path(), server_config)
+            IrodsController().reload_configuration()
+
+    @classmethod
+    def tearDownClass(self):
+        # Restore the original server configuration if necessary.
+        if False == test.settings.USE_SSL:
+            shutil.copyfile(self.server_config_backup, paths.server_config_path())
+            IrodsController().reload_configuration()
+
+        # Remove the specific queries.
+        self.admin.assert_icommand(["iadmin", "rsq", self.get_test_user_native_password_query])
+        self.admin.assert_icommand(["iadmin", "rsq", self.get_test_user_irods_password_query])
+
+        # Exit the test admin session and remove the user.
+        self.admin.__exit__()
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(["iadmin", "rmuser", self.admin.username])
+
+    def setUp(self):
+        # Make a test user without a password. The method being called here will not authenticate the user because
+        # there will not be a password set. This ensures that the user has no password set in any table.
+        self.test_user = session.mkuser_and_return_session("rodsuser", self.test_user_name, None, lib.get_hostname())
+
+    def tearDown(self):
+        # Exit the test user session and remove the user.
+        self.test_user.__exit__()
+        self.admin.assert_icommand(['iadmin', 'rmuser', self.test_user.username])
+
+    def user_has_native_password(self):
+        _, out, _ = self.admin.assert_icommand(["iquest", "--sql", self.get_test_user_native_password_query], "STDOUT")
+        return "CAT_NO_ROWS_FOUND" not in out
+
+    def user_has_irods_password(self):
+        _, out, _ = self.admin.assert_icommand(["iquest", "--sql", self.get_test_user_irods_password_query], "STDOUT")
+        return "CAT_NO_ROWS_FOUND" not in out
+
+    def test_moduser_remove_password_for_invalid_user_results_in_an_error(self):
+        nonexistent_user_name = "imaginary"
+        self.assertFalse(lib.user_exists(self.admin, nonexistent_user_name))
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", nonexistent_user_name, "remove_password"], "STDERR", "-827000 CAT_INVALID_USER")
+
+    def test_moduser_remove_password_for_user_without_a_password_does_not_result_in_an_error(self):
+        self.admin.assert_icommand(["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
+
+    def test_moduser_remove_password_for_user_with_a_legacy_password(self):
+        native_password = "native_password"
+        irods_password = "irods_password"
+        try:
+            config = IrodsConfig()
+            with lib.file_backed_up(paths.server_config_path()):
+                with self.subTest("native password only is not affected by remove_password"):
+                    # Configure the password storage mode to legacy, just in case.
+                    config.server_config["user_password_storage_mode"] = "legacy"
+                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                    IrodsController(config).reload_configuration()
+
+                    # Set the user's password for native authentication.
+                    self.admin.assert_icommand(
+                        ['iadmin', 'moduser', self.test_user.username, "password", native_password])
+                    self.assertTrue(self.user_has_native_password())
+
+                    # Now run remove_password, to no effect (and no errors). The user should still be able use native
+                    # authentication.
+                    self.admin.assert_icommand(
+                        ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
+                    self.assertTrue(self.user_has_native_password())
+
+                with self.subTest("irods and native passwords set is only affected by remove_password for irods auth"):
+                    # Configure the password storage mode to hashed so that setting the password updates the irods
+                    # password and not the native password.
+                    config.server_config["user_password_storage_mode"] = "hashed"
+                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                    IrodsController(config).reload_configuration()
+
+                    # Ensure that the user does not have a password for use with irods authentication.
+                    self.assertFalse(self.user_has_irods_password())
+
+                    # Set the user's password for irods authentication and confirm that the user has passwords set for
+                    # both the irods and native authentication schemes.
+                    self.admin.assert_icommand(
+                        ['iadmin', 'moduser', self.test_user.username, "password", irods_password, "no-scramble"])
+                    self.assertTrue(self.user_has_native_password())
+                    self.assertTrue(self.user_has_irods_password())
+
+                    # Now run remove_password. The user should only have a password set for native authentication again.
+                    self.admin.assert_icommand(
+                        ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
+                    self.assertTrue(self.user_has_native_password())
+                    self.assertFalse(self.user_has_irods_password())
+
+        finally:
+            IrodsController().reload_configuration()
