@@ -21,6 +21,7 @@
     "test_iadmin.test_making_groups",
     "test_iadmin.test_mkzone_conn_str_validation",
     "test_iadmin.test_moduser_group",
+    "test_iadmin.test_moduser_remove_password__issue_2899",
     "test_iadmin.test_moduser_user",
     "test_iadmin.test_modzone_conn_str_validation",
     "test_iadmin_set_grid_configuration.test_get_grid_configuration",
