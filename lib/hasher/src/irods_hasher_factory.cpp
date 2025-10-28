@@ -5,6 +5,7 @@
 #include "irods/SHA512Strategy.hpp"
 #include "irods/ADLER32Strategy.hpp"
 #include "irods/SHA1Strategy.hpp"
+#include "irods/CRC64NVMEStrategy.hpp"
 #include "irods/rodsErrorTable.h"
 
 #include <boost/container_hash/hash.hpp>
@@ -20,6 +21,7 @@ namespace irods {
         const ADLER32Strategy _adler32;
         const MD5Strategy _md5;
         const SHA1Strategy _sha1;
+        const CRC64NVMEStrategy _crc64nvme;
 
         auto make_map() {
             std::unordered_map<const std::string, const HashStrategy*, boost::hash<const std::string>> map;
@@ -28,6 +30,7 @@ namespace irods {
             map[ MD5_NAME ] = &_md5;
             map[ ADLER32_NAME ] = &_adler32;
             map[ SHA1_NAME ] = &_sha1;
+            map[CRC64NVME_NAME] = &_crc64nvme;
             return map;
         }
 
