@@ -44,4 +44,8 @@ irods::error fileRegistered( rsComm_t* _comm, irods::first_class_object_ptr _obj
 irods::error fileUnregistered( rsComm_t* _comm, irods::first_class_object_ptr _object );
 irods::error fileModified( rsComm_t* _comm, irods::first_class_object_ptr _object );
 irods::error fileNotify( rsComm_t* _comm, irods::first_class_object_ptr _object , const std::string& );
+irods::error fileChecksumFromStorageDevice(rsComm_t* _comm,
+                                           irods::first_class_object_ptr _object,
+                                           const std::string&,
+                                           std::string&);
 #endif	/* FILE_DRIVER_H */

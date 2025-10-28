@@ -72,6 +72,7 @@ namespace irods
     extern const std::string RESOURCE_OP_RESOLVE_RESC_HIER;
     extern const std::string RESOURCE_OP_REBALANCE;
     extern const std::string RESOURCE_OP_NOTIFY;
+    extern const std::string RESOURCE_OP_READ_CHECKSUM_FROM_STORAGE_DEVICE;
 
     // =-=-=-=-=-=-=-
     /// @brief constants for icat resource properties

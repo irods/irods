@@ -779,3 +779,26 @@ irods::error fileNotify(
     return result;
 
 } // fileNotify
+
+// =-=-=-=-=-=-=-
+// Get the checksum directly from the resource plugin if possible.
+// _returned_checksum is set if and only if an error is not returned.
+irods::error fileChecksumFromStorageDevice(rsComm_t* _comm,
+                                           irods::first_class_object_ptr _object,
+                                           const std::string& _checksum_scheme,
+                                           std::string& _returned_checksum)
+{
+    irods::plugin_ptr ptr;
+    irods::resource_ptr resc;
+    irods::error ret_err = _object->resolve(irods::RESOURCE_INTERFACE, ptr);
+    if (!ret_err.ok()) {
+        irods::log(ret_err);
+        return PASSMSG("failed to resolve resource", ret_err);
+    }
+
+    resc = boost::dynamic_pointer_cast<irods::resource>(ptr);
+    ret_err = resc->call<const std::string*, std::string*>(
+        _comm, irods::RESOURCE_OP_READ_CHECKSUM_FROM_STORAGE_DEVICE, _object, &_checksum_scheme, &_returned_checksum);
+
+    return ret_err;
+} // fileChecksumFromStorageDevice
