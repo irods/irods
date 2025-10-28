@@ -42,6 +42,7 @@ namespace irods
     const std::string RESOURCE_OP_RESOLVE_RESC_HIER( "resource_resolve_hierarchy" );
     const std::string RESOURCE_OP_REBALANCE( "resource_rebalance" );
     const std::string RESOURCE_OP_NOTIFY( "resource_notify" );
+    const std::string RESOURCE_OP_READ_CHECKSUM("resource_read_checksum");
 
     const std::string RESOURCE_HOST( "resource_property_host" );
     const std::string RESOURCE_ID( "resource_property_id" );

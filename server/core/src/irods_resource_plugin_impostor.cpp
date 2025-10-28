@@ -159,6 +159,13 @@ irods::error impostor_file_rebalance(
     return SUCCESS();
 } // impostor_file_rebalance_plugin
 
+irods::error imposter_file_read_checksum(irods::plugin_context& _ctx,
+                                         const std::string* checksum_scheme,
+                                         const std::string* returned_checksum)
+{
+    return irods::impostor_resource::report_error(_ctx);
+} // imposter_file_read_checksum
+
 namespace irods {
 
     impostor_resource::impostor_resource(
@@ -289,6 +296,10 @@ namespace irods {
             irods::RESOURCE_OP_REBALANCE,
             function<error(plugin_context&)>(
                 impostor_file_rebalance ) );
+
+        add_operation(irods::RESOURCE_OP_READ_CHECKSUM,
+                      std::function<irods::error(irods::plugin_context&, const std::string*, std::string*)>(
+                          imposter_file_read_checksum));
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
