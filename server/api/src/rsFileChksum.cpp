@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
+#include <cstring>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -181,6 +182,7 @@ int fileChksum(rsComm_t* rsComm,
             fileName,
             rescHier,
             -1, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
+
     irods::error ret = fileOpen( rsComm, file_obj );
     if ( !ret.ok() ) {
         int status = UNIX_FILE_OPEN_ERR - errno;
@@ -334,6 +336,26 @@ int file_checksum(RsComm* _comm,
     rodsLog(LOG_DEBUG, "file_checksum :: final_scheme [%s]  chkstr_scheme [%s]  hash_policy [%s]",
             final_scheme.data(), chkstr_scheme.c_str(), hash_policy.data());
 
+    irods::file_object_ptr file_ptr{
+        new irods::file_object{_comm, _logical_path, _filename, _resource_hierarchy, -1, 0, O_RDONLY}};
+
+    // Ask resource server if it can read the checksum directly, any error would go
+    // through the normal file read
+    std::string checksum_from_resource;
+    std::string final_scheme_str(final_scheme);
+    irods::error ret_err = fileChecksumFromStorageDevice(_comm, file_ptr, final_scheme_str, checksum_from_resource);
+    if (ret_err.ok()) {
+        std::strncpy(_calculated_checksum, checksum_from_resource.c_str(), CHKSUM_LEN);
+        return 0;
+    }
+    else {
+        log_api::trace(
+            "{} ::  Negligible error calling RESOURCE_OP_READ_CHECKSUM_FROM_STORAGE_DEVICE most likely due to "
+            "checksum read not supported by resource.  Checksum will be calculated by a full file read.  {}",
+            __func__,
+            ret_err.result());
+    }
+
     // Create a hasher object and init given a scheme if it is unsupported then default to md5.
     irods::Hasher hasher;
     if (const auto error = irods::getHasher(final_scheme.data(), hasher); !error.ok()) {
@@ -347,9 +369,6 @@ int file_checksum(RsComm* _comm,
     if (const auto error = hp.last_resc(leaf_resc); !error.ok()) {
         return error.code();
     }
-
-    irods::file_object_ptr file_ptr{new irods::file_object{
-        _comm, _logical_path, _filename, _resource_hierarchy, -1, 0, O_RDONLY}};
 
     if (const auto error = fileOpen(_comm, file_ptr); !error.ok()) {
         if (const auto ec = UNIX_FILE_OPEN_ERR - errno; error.code() != DIRECT_ARCHIVE_ACCESS) {
