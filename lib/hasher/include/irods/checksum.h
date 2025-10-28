@@ -11,6 +11,7 @@ extern "C" {
 #define SHA512_CHKSUM_PREFIX    "sha512:"
 #define ADLER32_CHKSUM_PREFIX   "adler32:"
 #define SHA1_CHKSUM_PREFIX      "sha1:"
+#define CRC64NVME_CHKSUM_PREFIX "crc64nvme:"
 
 int verifyChksumLocFile(char *fileName, const char *myChksum, char *chksumStr);
 
