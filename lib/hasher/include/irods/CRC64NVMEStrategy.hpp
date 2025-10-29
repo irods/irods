@@ -1,7 +1,10 @@
-#ifndef _CRC64NVME_STRATEGY_HPP_
-#define _CRC64NVME_STRATEGY_HPP_
+#ifndef IRODS_HASHER_CRC64NVME_STRATEGY_HPP
+#define IRODS_HASHER_CRC64NVME_STRATEGY_HPP
 
 #include "irods/HashStrategy.hpp"
+
+#include <boost/any.hpp>
+#include <string>
 
 namespace irods
 {
@@ -20,7 +23,10 @@ namespace irods
         error update(const std::string&, boost::any& context) const override;
         error digest(std::string& messageDigest, boost::any& context) const override;
         bool isChecksum(const std::string&) const override;
+
+      private:
+        static constexpr size_t crc_bits = 64;
     };
 } // namespace irods
 
-#endif // _CRC64NVME_STRATEGY_HPP_
+#endif // IRODS_HASHER_CRC64NVME_STRATEGY_HPP
