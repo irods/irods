@@ -354,13 +354,11 @@ int file_checksum(RsComm* _comm,
             strncpy(_calculated_checksum, checksum_from_resource.c_str(), NAME_LEN);
             return 0;
         }
-        else {
-            log_api::trace(fmt::format(
-                "{} ::  Negligible error calling RESOURCE_OP_READ_CHECKSUM most likely due to "
-                "checksum read not supported by resource.  Checksum will be calculated by a full file read.  {}",
-                __func__,
-                ret_err.result()));
-        }
+        log_api::trace(fmt::format(
+            "{} ::  Negligible error calling RESOURCE_OP_READ_CHECKSUM most likely due to "
+            "checksum read not supported by resource.  Checksum will be calculated by a full file read.  {}",
+            __func__,
+            ret_err.result()));
     }
     // ----------
 
