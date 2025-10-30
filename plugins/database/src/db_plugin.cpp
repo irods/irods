@@ -1607,8 +1607,8 @@ int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, 
 
 /*
   Set the over_quota values (if any) using the limits and
-  and the current usage; handling the various types: per-user per-resource,
-  per-user total-usage, group per-resource, and group-total.
+  and the current usage; handling the various types: 
+  group per-resource, and group-total.
 
   The over_quota column is positive if over_quota and the negative value
   indicates how much space is left before reaching the quota.
@@ -1628,7 +1628,7 @@ int setOverQuota( rsComm_t *rsComm ) {
     char mySQL2a[] = "select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s group by UM1.user_id,  R_QUOTA_MAIN.quota_limit";
     char mySQL2b[MAX_SQL_SIZE];
 
-    char mySQL3a[] = "update R_QUOTA_MAIN set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over";
+    char mySQL3a[] = "update R_QUOTA_MAIN set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over and resc_id = %s";
     char mySQL3b[MAX_SQL_SIZE];
 
 
@@ -1756,15 +1756,15 @@ int setOverQuota( rsComm_t *rsComm ) {
     snprintf( mySQL2b, sizeof mySQL2b, mySQL2a,
               "cast('0' as integer)", "cast('0' as integer)" );
     snprintf( mySQL3b, sizeof mySQL3b, mySQL3a,
-              "cast(? as integer)", "cast(? as integer)" );
+              "cast(? as integer)", "cast(? as integer)", "cast('0' as integer)" );
 #elif MY_ICAT
     snprintf( mySQL2b, sizeof mySQL2b, mySQL2a, "'0'", "'0'" );
-    snprintf( mySQL3b, sizeof mySQL3b, mySQL3a, "?", "?" );
+    snprintf( mySQL3b, sizeof mySQL3b, mySQL3a, "?", "?", "'0'" );
 #else
     snprintf( mySQL2b, sizeof mySQL2b, mySQL2a,
               "cast('0' as bigint)", "cast('0' as bigint)" );
     snprintf( mySQL3b, sizeof mySQL3b, mySQL3a,
-              "cast(? as bigint)", "cast(? as bigint)" );
+              "cast(? as bigint)", "cast(? as bigint)", "cast('0' as bigint)" );
 #endif
     if ( logSQL != 0 ) {
         log_sql::debug("setOverQuota SQL 7");
