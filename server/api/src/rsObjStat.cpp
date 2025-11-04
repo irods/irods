@@ -282,8 +282,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                         strtoll( &dataSize->value[dataSize->len * i], 0, 0 );
                     ( *rodsObjStatOut )->dataMode =
                         atoi( &dataMode->value[dataMode->len * i] );
-                    rstrcpy( ( *rodsObjStatOut )->chksum,
-                             &chksum->value[chksum->len * i], NAME_LEN );
+                    rstrcpy((*rodsObjStatOut)->chksum, &chksum->value[chksum->len * i], CHKSUM_LEN);
                     rstrcpy( ( *rodsObjStatOut )->ownerName,
                              &ownerName->value[ownerName->len * i], NAME_LEN );
                     rstrcpy( ( *rodsObjStatOut )->ownerZone,
@@ -302,7 +301,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 /* just use the first one */
                 rstrcpy( ( *rodsObjStatOut )->dataId, dataId->value, NAME_LEN );
                 ( *rodsObjStatOut )->objSize = strtoll( dataSize->value, 0, 0 );
-                rstrcpy( ( *rodsObjStatOut )->chksum, chksum->value, NAME_LEN );
+                rstrcpy((*rodsObjStatOut)->chksum, chksum->value, CHKSUM_LEN);
                 rstrcpy( ( *rodsObjStatOut )->ownerName, ownerName->value,
                          NAME_LEN );
                 rstrcpy( ( *rodsObjStatOut )->ownerZone, ownerZone->value,

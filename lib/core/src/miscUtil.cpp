@@ -246,7 +246,7 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
             rodsPath->objMode = rodsObjStatOut->dataMode;
             rstrcpy( rodsPath->dataId, rodsObjStatOut->dataId, NAME_LEN );
             rodsPath->size = rodsObjStatOut->objSize;
-            rstrcpy( rodsPath->chksum, rodsObjStatOut->chksum, NAME_LEN );
+            rstrcpy(rodsPath->chksum, rodsObjStatOut->chksum, CHKSUM_LEN);
         }
     }
     if (nullptr != rodsPath->rodsObjStat) {

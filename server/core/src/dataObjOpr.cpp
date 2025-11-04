@@ -372,7 +372,7 @@ getDataObjInfo(
 
         rstrcpy( dataObjInfo->dataType, tmpDataType, NAME_LEN );
         dataObjInfo->dataSize = strtoll( tmpDataSize, 0, 0 );
-        rstrcpy( dataObjInfo->chksum, tmpChksum, NAME_LEN );
+        rstrcpy(dataObjInfo->chksum, tmpChksum, CHKSUM_LEN);
         rstrcpy( dataObjInfo->version, tmpVersion, NAME_LEN );
         rstrcpy( dataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN );
         rstrcpy( dataObjInfo->dataOwnerName, tmpDataOwnerName, NAME_LEN );
@@ -523,7 +523,7 @@ int create_and_sort_data_obj_info_for_open(
 	        snprintf(data_obj_info->dataOwnerName, NAME_LEN, "%s", replica.owner_name().c_str());
 	        snprintf(data_obj_info->dataOwnerZone, NAME_LEN, "%s", replica.owner_zone().c_str());
 	        snprintf(data_obj_info->statusString, NAME_LEN, "%s", replica.status().c_str());
-	        snprintf(data_obj_info->chksum, NAME_LEN, "%s", replica.checksum().c_str());
+	        snprintf(data_obj_info->chksum, CHKSUM_LEN, "%s", replica.checksum().c_str());
 	        snprintf(data_obj_info->dataExpiry, TIME_LEN, "%s", replica.expiry_ts().c_str());
 	        snprintf(data_obj_info->dataMode, SHORT_STR_LEN, "%s", replica.mode().c_str());
 	        snprintf(data_obj_info->dataComments, LONG_NAME_LEN, "%s", replica.r_comment().c_str());

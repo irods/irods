@@ -1006,7 +1006,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
 
     if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
             getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
-        char chksumStr[NAME_LEN];
+        char chksumStr[CHKSUM_LEN];
 
         rodsEnv env;
         int ret = getRodsEnv( &env );

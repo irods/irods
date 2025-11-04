@@ -16,11 +16,16 @@ typedef struct FileChksumInp {
     char objPath[MAX_NAME_LEN];
     int flag;                   // Not used for now.
     char in_pdmo[MAX_NAME_LEN]; // Flag indicating if we are being executed from a pdmo.
-    char orig_chksum[NAME_LEN]; // Original incoming checksum.
+    char orig_chksum[CHKSUM_LEN]; // Original incoming checksum.
     rodsLong_t dataSize;
     struct KeyValPair condInput;
 } fileChksumInp_t;
 
+// NAME_LEN is used in packing instructions instead of CHKSUM_LEN for compatibility reasons.
+// They are both defined to the same value (at time of writing) and are both in PackConstantTable,
+// so, in theory, we should be able to swap them in the packing instructions, but we don't
+// currently have a practical way to verify that doing so would not break compatibility.
+// Since they are both defined to the same value, the mismatch isn't currently an issue.
 #define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN]; str orig_chksum[NAME_LEN]; double dataSize; struct KeyValPair_PI;"
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 
