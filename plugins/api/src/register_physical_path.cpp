@@ -629,7 +629,7 @@ namespace
                     status = filePathReg(_comm, &subPhyPathRegInp, _resc_name, &out);
                 }
 
-                std::free(out);
+                freeBBuf(out);
                 out = nullptr;
 
                 if ( status != 0 ) {
