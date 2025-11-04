@@ -248,8 +248,6 @@ void clearAuthResponseInp(void* myInStruct);
 
 int isInteger(const char* inStr);
 
-int addIntArray(intArray_t* intArray, int value);
-
 int getMountedSubPhyPath(char* logMountPoint, char* phyMountPoint, char* logSubPath, char* phySubPathOut);
 
 int resolveSpecCollType(char* type, char* collection, char* collInfo1, char* collInfo2, specColl_t* specColl);
