@@ -119,8 +119,6 @@ char* getValByKey(const keyValPair_t* condInput, const char* keyWord);
 
 int getIvalByInx(inxIvalPair_t* inxIvalPair, int inx, int* outValue);
 
-char* getValByInx(inxValPair_t* inxValPair, int inx);
-
 int replKeyVal(const keyValPair_t* srcCondInput, keyValPair_t* destCondInput);
 
 int copyKeyVal(const keyValPair_t* srcCondInput, keyValPair_t* destCondInput);
