@@ -59,6 +59,11 @@
 
 #define PortList_PI "int portNum; int cookie; int sock; int windowSize; str hostAddr[LONG_NAME_LEN];"
 
+// NAME_LEN is used in packing instructions instead of CHKSUM_LEN for compatibility reasons.
+// They are both defined to the same value (at time of writing) and are both in PackConstantTable,
+// so, in theory, we should be able to swap them in the packing instructions, but we don't
+// currently have a practical way to verify that doing so would not break compatibility.
+// Since they are both defined to the same value, the mismatch isn't currently an issue.
 #define PortalOprOut_PI "int status; int l1descInx; int numThreads; str chksum[NAME_LEN]; struct PortList_PI;"
 
 #define DataOprInp_PI "int oprType; int numThreads; int srcL3descInx; int destL3descInx; int srcRescTypeInx; int destRescTypeInx; double offset; double dataSize; struct KeyValPair_PI;"

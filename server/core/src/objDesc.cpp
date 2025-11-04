@@ -319,12 +319,12 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
     if ( condInput != NULL && condInput->len > 0 ) {
         if ( ( tmpPtr = getValByKey( condInput, REG_CHKSUM_KW ) ) != NULL ) {
             L1desc[l1descInx].chksumFlag = REG_CHKSUM;
-            rstrcpy( L1desc[l1descInx].chksum, tmpPtr, NAME_LEN );
+            rstrcpy(L1desc[l1descInx].chksum, tmpPtr, CHKSUM_LEN);
         }
         else if ( ( tmpPtr = getValByKey( condInput, VERIFY_CHKSUM_KW ) ) !=
                   NULL ) {
             L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
-            rstrcpy( L1desc[l1descInx].chksum, tmpPtr, NAME_LEN );
+            rstrcpy(L1desc[l1descInx].chksum, tmpPtr, CHKSUM_LEN);
         }
     }
 

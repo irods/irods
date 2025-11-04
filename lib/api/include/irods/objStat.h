@@ -10,7 +10,7 @@ typedef struct rodsObjStat {
     objType_t           objType;        // DATA_OBJ_T or COLL_OBJ_T
     uint                dataMode;
     char                dataId[NAME_LEN];
-    char                chksum[NAME_LEN];
+    char                chksum[CHKSUM_LEN];
     char                ownerName[NAME_LEN];
     char                ownerZone[NAME_LEN];
     char                createTime[TIME_LEN];

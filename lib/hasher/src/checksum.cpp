@@ -71,9 +71,7 @@ int chksumLocFile(
     // =-=-=-=-=-=-=-
     // capture the incoming scheme if it is valid
     std::string hash_scheme;
-    if ( _hash_scheme &&
-            strlen( _hash_scheme ) > 0 &&
-            strlen( _hash_scheme ) < NAME_LEN ) {
+    if (_hash_scheme && strlen(_hash_scheme) > 0 && strlen(_hash_scheme) < CHKSUM_LEN) {
         hash_scheme = _hash_scheme;
         // =-=-=-=-=-=-=-
         // hash scheme keywords are all lowercase
@@ -252,7 +250,7 @@ hashToStr( unsigned char *digest, char *digestStr ) {
 
 int
 rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, const char* _scheme ) {
-    char chksumStr[NAME_LEN];
+    char chksumStr[CHKSUM_LEN];
     int status;
 
     if ( condInput == NULL || chksumFlag == NULL || fileName == NULL ) {

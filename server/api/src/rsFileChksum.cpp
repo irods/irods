@@ -95,7 +95,7 @@ int remoteFileChksum(rsComm_t* rsComm,
 int _rsFileChksum(rsComm_t* rsComm, fileChksumInp_t* fileChksumInp, char** chksumStr)
 {
     if (!*chksumStr) {
-        *chksumStr = static_cast<char*>(std::malloc(sizeof(char) * NAME_LEN));
+        *chksumStr = static_cast<char*>(std::malloc(sizeof(char) * CHKSUM_LEN));
     }
 
     const auto ec = file_checksum(rsComm,
@@ -292,7 +292,7 @@ int fileChksum(rsComm_t* rsComm,
         log_api::error("{}: error on hash digest, result = {}", __func__, ret.result());
         return ret.code();
     }
-    strncpy( chksumStr, digest.c_str(), NAME_LEN );
+    strncpy(chksumStr, digest.c_str(), CHKSUM_LEN);
 
     return 0;
 } // fileChksum
@@ -446,7 +446,7 @@ int file_checksum(RsComm* _comm,
         log_api::error("{}: error on hash digest, result = {}", __func__, error.result());
         return error.code();
     }
-    strncpy(_calculated_checksum, digest.c_str(), NAME_LEN);
+    strncpy(_calculated_checksum, digest.c_str(), CHKSUM_LEN);
 
     return 0;
 } // file_checksum
