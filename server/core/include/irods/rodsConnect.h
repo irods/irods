@@ -142,8 +142,6 @@ int getAndDisconnRcatHost(int rcatType,
 /// \endparblock
 int disconnectAllSvrToSvrConn();
 
-int svrReconnect(rsComm_t *rsComm);
-
 int getAndConnRemoteZone(rsComm_t *rsComm,
                          dataObjInp_t *dataObjInp,
                          rodsServerHost_t **rodsServerHost,
