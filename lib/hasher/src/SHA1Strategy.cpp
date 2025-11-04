@@ -32,8 +32,8 @@ namespace irods {
             EVP_MD_free(message_digest);
             EVP_MD_CTX_free(context);
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_INIT_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_INIT_FAILED, std::move(msg));
         }
 
         _context = context;
@@ -55,8 +55,8 @@ namespace irods {
             EVP_MD_CTX_free(context);
             _context = nullptr;
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_UPDATE_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_UPDATE_FAILED, std::move(msg));
         }
 
         return SUCCESS();
@@ -76,8 +76,8 @@ namespace irods {
             EVP_MD_CTX_free(context);
             _context = nullptr;
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_FINAL_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_FINAL_FAILED, std::move(msg));
         }
 
         // The digest has been extracted from the context and placed in a buffer. The context is no longer needed, so
@@ -90,7 +90,11 @@ namespace irods {
         unsigned long out_len = CHKSUM_LEN - len;
 
         unsigned char out_buffer[CHKSUM_LEN];
-        base64_encode( final_buffer, SHA_DIGEST_LENGTH, out_buffer, &out_len );
+        int rc = base64_encode(final_buffer, SHA_DIGEST_LENGTH, out_buffer, &out_len);
+        if (0 != rc) {
+            auto msg = fmt::format("{}: Failed to base64 encode hash.", __func__);
+            return ERROR(rc, std::move(msg));
+        }
 
         _messageDigest = SHA1_CHKSUM_PREFIX;
         _messageDigest += std::string( ( char* )out_buffer, out_len );
