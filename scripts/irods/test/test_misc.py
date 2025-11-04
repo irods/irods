@@ -540,3 +540,15 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         finally:
             self.admin.run_icommand(['irm', '-f', os.path.basename(local_file)])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
+
+class test_server_side_libraries(unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
+    @unittest.skipUnless(plugin_name == "irods_rule_engine_plugin-irods_rule_language", "Not implemented for other REPs.")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    def test_server_side_password_hashing_function(self):
+        rep = "irods_rule_engine_plugin-irods_rule_language-instance"
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(["irule", "-r", rep, "msi_test_password_hashing", "null", "ruleExecOut"])
