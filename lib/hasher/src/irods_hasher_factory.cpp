@@ -47,8 +47,7 @@ namespace irods {
             msg << "Unknown hashing scheme [" << _name << "]";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
-        _hasher.init( it->second );
-        return SUCCESS();
+        return PASS(_hasher.init(it->second));
     }
 
     error
