@@ -33,8 +33,6 @@ int splitPathByKey(const char *srcPath,
                    size_t maxFileLen,
                    char key);
 
-int getParentPathlen(char *path);
-
 int trimQuotes(char *s);
 
 int checkStringForSystem(const char *inString);
