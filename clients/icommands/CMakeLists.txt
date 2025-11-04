@@ -1,6 +1,8 @@
 set(ICOMMANDS_INSTALL_DIRECTORY "${IRODS_CLIENTS_DIRECTORY}/icommands" CACHE PATH "Path to install icommands executables")
 set(ICOMMANDS_INSTALL_SYMLINKS TRUE CACHE BOOL "Choose whether to install symlinks to icommands in CMAKE_INSTALL_BINDIR.")
 
+add_custom_target(icommands)
+
 if (DEFINED BUILD_DOCS AND NOT BUILD_DOCS)
   set(IRODS_BUILD_ICOMMANDS_DOCS_DEFAULT OFF)
 else()
@@ -69,13 +71,14 @@ if (NOT DEFINED IRODS_BUILD_ICOMMANDS_DOCS OR IRODS_BUILD_ICOMMANDS_DOCS)
   endif()
 endif()
 
-set(IRODS_BUILD_ICOMMANDS_DOCS "${IRODS_BUILD_ICOMMANDS_DOCS_DEFAULT}" CACHE BOOL ""Build icommands documentation"")
+set(IRODS_BUILD_ICOMMANDS_DOCS "${IRODS_BUILD_ICOMMANDS_DOCS_DEFAULT}" CACHE BOOL "Build icommands documentation")
 if (IRODS_BUILD_ICOMMANDS_DOCS)
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man")
   add_custom_target(icommands-docs ALL)
+  add_dependencies(icommands icommands-docs)
 endif()
 
-add_custom_target(icommands)
+add_dependencies(all-clients icommands)
 
 set(
   IRODS_CLIENT_ICOMMANDS_EXECUTABLES
@@ -153,10 +156,15 @@ foreach(EXECUTABLE IN LISTS IRODS_CLIENT_ICOMMANDS_EXECUTABLES)
   target_include_directories(
     ${EXECUTABLE}
     PRIVATE
-    ${IRODS_INCLUDE_DIRS}
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     )
-  target_compile_definitions(${EXECUTABLE} PRIVATE ${IRODS_COMPILE_DEFINITIONS} ${IRODS_COMPILE_DEFINITIONS_PRIVATE} BOOST_SYSTEM_NO_DEPRECATED)
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    ${IRODS_COMPILE_DEFINITIONS_PUBLIC}
+    ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+    BOOST_SYSTEM_NO_DEPRECATED
+    )
   if (CMAKE_VERSION VERSION_LESS "3.13.0")
     set_property(TARGET ${EXECUTABLE} APPEND PROPERTY LINK_FLAGS "-Wl,-z,origin")
   else()
@@ -168,7 +176,7 @@ foreach(EXECUTABLE IN LISTS IRODS_CLIENT_ICOMMANDS_EXECUTABLES)
     ${EXECUTABLE}
     RUNTIME
     DESTINATION "${ICOMMANDS_INSTALL_DIRECTORY}"
-    COMPONENT icommands
+    COMPONENT ${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}
     )
 
   if (${EXECUTABLE} STREQUAL "iapitest")
@@ -190,12 +198,12 @@ foreach(EXECUTABLE IN LISTS IRODS_CLIENT_ICOMMANDS_EXECUTABLES)
       COMMAND "${GZIP}" -f < "${EXECUTABLE_MANPAGE}" > "${EXECUTABLE_MANPAGE}.gz"
       )
     add_custom_target(${EXECUTABLE}-manpage DEPENDS ${EXECUTABLE_MANPAGE}.gz)
-    add_dependencies(docs ${EXECUTABLE}-manpage)
+    add_dependencies(icommands-docs ${EXECUTABLE}-manpage)
     install(
       FILES
       ${EXECUTABLE_MANPAGE}.gz
       DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-      COMPONENT icommands
+      COMPONENT ${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}
       )
   endif()
 endforeach()
@@ -243,6 +251,7 @@ if (ICOMMANDS_INSTALL_SYMLINKS)
       endif()
 
       add_custom_target(icommands-links ALL)
+      add_dependencies(icommands icommands-links)
 
       set(ICOMMANDS_LINK_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/links-staging")
       add_custom_command(
@@ -272,7 +281,7 @@ if (ICOMMANDS_INSTALL_SYMLINKS)
           PROGRAMS "${EXECUTABLE_LINK_STAGING}"
           DESTINATION "${CMAKE_INSTALL_BINDIR}"
           RENAME "${EXECUTABLE_LINK_NAME}"
-          COMPONENT icommands
+          COMPONENT ${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}
         )
       endforeach()
     endif()
@@ -282,134 +291,5 @@ endif()
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test
   DESTINATION ${IRODS_HOME_DIRECTORY}/clients/icommands
-  COMPONENT icommands
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}
   )
-
-
-if(NOT ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME)
-  if(IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME AND NOT IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME STREQUAL "none")
-    set(ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME "${IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME}")
-  elseif(IRODS_LINUX_DISTRIBUTION_NAME)
-    if(IRODS_LINUX_DISTRIBUTION_VERSION AND NOT IRODS_LINUX_DISTRIBUTION_VERSION STREQUAL "none")
-      set(ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME "${IRODS_LINUX_DISTRIBUTION_NAME}${IRODS_LINUX_DISTRIBUTION_VERSION}")
-    else()
-      set(ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME "${IRODS_LINUX_DISTRIBUTION_NAME}")
-    endif()
-  else()
-    set(ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME "${CMAKE_SYSTEM_NAME}")
-  endif()
-endif()
-
-set(ICOMMANDS_USERSPACE_TARBALL_FILENAME
-    "irods-icommands-${icommands_VERSION}-${ICOMMANDS_USERSPACE_TARBALL_PLATFORM_NAME}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}.tar.gz"
-    CACHE STRING
-    "Filename of userspace tarball package to generate")
-set(ICOMMANDS_USERSPACE_TARBALL_ROOT_DIRNAME
-    "irods-icommands-${icommands_VERSION}"
-    CACHE STRING
-    "Name of userspace tarball package's root directory. Set to empty string to use the root of the tarball as the root directory.")
-
-set(ICOMMANDS_USERSPACE_TARBALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${ICOMMANDS_USERSPACE_TARBALL_FILENAME}")
-
-# fetch the parts of irods-runtime currently exposed
-set(irods_runtime_components "irods_client;irods_common;irods_plugin_dependencies")
-foreach(irods_runtime_component ${irods_runtime_components})
-  unset(iimported_location)
-  get_target_property(iimported_location ${irods_runtime_component} LOCATION)
-  list(APPEND IRODS_RUNTIME_LIBRARY_PATHS "${iimported_location}")
-  unset(iimported_location)
-endforeach()
-
-file(
-  GLOB ICOMMANDS_USERSPACE_TARBALL_INSTRUMENTATION
-  LIST_DIRECTORIES false
-  "${CMAKE_CURRENT_SOURCE_DIR}/packaging/userspace/*"
-  )
-
-add_custom_command(
-  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/packaging/userspace/userspace-packager.py" -v
-    "--cmake-path=${CMAKE_COMMAND}"
-    "$<$<BOOL:${CMAKE_OBJDUMP}>:--objdump-path=${CMAKE_OBJDUMP}>"
-    "$<$<BOOL:${CMAKE_READELF}>:--readelf-path=${CMAKE_READELF}>"
-    "$<$<BOOL:${CMAKE_STRIP}>:--strip-path=${CMAKE_STRIP}>"
-    "$<$<BOOL:${IRODS_LINUX_DISTRIBUTION_NAME}>:--target-platform=${IRODS_LINUX_DISTRIBUTION_NAME}>"
-    "$<$<BOOL:${IRODS_LINUX_DISTRIBUTION_VERSION}>:--target-platform-variant=${IRODS_LINUX_DISTRIBUTION_VERSION}>"
-    "--cmake-install-prefix=${CMAKE_INSTALL_PREFIX}"
-    "--cmake-install-bindir=${CMAKE_INSTALL_BINDIR}"
-    "--cmake-install-sbindir=${CMAKE_INSTALL_SBINDIR}"
-    "--cmake-install-libdir=${CMAKE_INSTALL_LIBDIR}"
-    "--irods-package-prefix=${IRODS_PACKAGE_PREFIX}"
-    "--irods-install-prefix=${IRODS_INSTALL_PREFIX}"
-    "--irods-install-bindir=${IRODS_INSTALL_BINDIR}"
-    "--irods-install-sbindir=${IRODS_INSTALL_SBINDIR}"
-    "--irods-install-libdir=${IRODS_INSTALL_LIBDIR}"
-    "--irods-home-dir=${IRODS_HOME_DIRECTORY}"
-    "--irods-pluginsdir=${IRODS_PLUGINS_DIRECTORY}"
-    "$<$<BOOL:${CMAKE_SHARED_LIBRARY_SUFFIX}>:--sharedlib-suffix=${CMAKE_SHARED_LIBRARY_SUFFIX}>"
-    "$<$<BOOL:${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}>:--sharedlib-suffix=$<JOIN:${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES},;--sharedlib-suffix=>>"
-    "$<$<BOOL:${IRODS_RUNTIME_LIBRARY_PATHS}>:--irods-runtime-lib=$<JOIN:${IRODS_RUNTIME_LIBRARY_PATHS},;--irods-runtime-lib=>>"
-    "$<$<BOOL:${LIBCXX_LIBRARIES}>:--libcxx-libpath=$<JOIN:${LIBCXX_LIBRARIES},;--libcxx-libpath=>>"
-    "--build-dir=${CMAKE_CURRENT_BINARY_DIR}"
-    "--work-dir=${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/userspace-tarball"
-    "--cmake-tmpdir=${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp"
-    "--install-component=icommands"
-    "$<$<BOOL:${IRODS_CLIENT_ICOMMANDS_SCRIPTS}>:--script-icommand=$<JOIN:${IRODS_CLIENT_ICOMMANDS_SCRIPTS},;--script-icommand=>>"
-    "$<$<BOOL:${ICOMMANDS_USERSPACE_TARBALL_ROOT_DIRNAME}>:--tarball-root-dir-name=${ICOMMANDS_USERSPACE_TARBALL_ROOT_DIRNAME}>"
-    "--output=${ICOMMANDS_USERSPACE_TARBALL_PATH}"
-  DEPENDS icommands "${ICOMMANDS_USERSPACE_TARBALL_INSTRUMENTATION}"
-  OUTPUT "${ICOMMANDS_USERSPACE_TARBALL_PATH}"
-  JOB_POOL console
-  COMMAND_EXPAND_LISTS
-  )
-add_custom_target(userspace-tarball DEPENDS "${ICOMMANDS_USERSPACE_TARBALL_PATH}")
-
-include(IrodsCPackCommon)
-
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_COMPONENTS_GROUPING IGNORE)
-set(CPACK_PACKAGE_VERSION ${IRODS_VERSION})
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The integrated Rule-Oriented Data System")
-
-set(CPACK_DEB_COMPONENT_INSTALL OFF)
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
-set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-
-set(CPACK_RPM_COMPONENT_INSTALL OFF)
-set(CPACK_RPM_PACKAGE_LICENSE "BSD-3-Clause")
-set(CPACK_RPM_PACKAGE_AUTOREQ 0)
-set(CPACK_RPM_PACKAGE_AUTOPROV 0)
-set(CPACK_RPM_PACKAGE_RELOCATABLE ON)
-set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
-set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/packaging/postinst")
-
-set(CPACK_ARCHIVE_COMPONENT_INSTALL OFF)
-
-set(CPACK_DEBIAN_PACKAGE_NAME "irods-icommands")
-if (OPENSSL_VERSION VERSION_LESS "3.0.0")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libc6, libssl1.1")
-else()
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libc6, libssl3")
-endif()
-set(CPACK_DEBIAN_PACKAGE_PROVIDES "irods-icommands (= ${IRODS_VERSION})")
-set(CPACK_DEBIAN_PACKAGE_REPLACES "irods-icat, irods-resource")
-set(CPACK_DEBIAN_PACKAGE_CONFLICTS "irods-experimental-api-plugin-genquery2")
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/packaging/postinst;")
-
-set(CPACK_RPM_PACKAGE_NAME "irods-icommands")
-set(CPACK_RPM_PACKAGE_OBSOLETES "irods-icat, irods-resource")
-set(CPACK_RPM_PACKAGE_CONFLICTS "irods-experimental-api-plugin-genquery2")
-set(CPACK_RPM_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}")
-if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
-  set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}, libopenssl1_0_0")
-else()
-  set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}, openssl")
-endif()
-
-if (NOT CPACK_GENERATOR)
-  set(CPACK_GENERATOR ${IRODS_CPACK_GENERATOR} CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
-  message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
-endif()
-
-include(CPack)

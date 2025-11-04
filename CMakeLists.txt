@@ -311,6 +311,7 @@ endif()
 
 # Define our component names here so they're defined everywhere
 set(IRODS_PACKAGE_COMPONENT_RUNTIME_NAME "irods-runtime")
+set(IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME "irods-icommands")
 set(IRODS_PACKAGE_COMPONENT_SERVER_NAME "irods-server")
 set(IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME "irods-dev")
 set(IRODS_PACKAGE_COMPONENT_POSTGRES_NAME "irods-database-plugin-postgres")
@@ -329,6 +330,7 @@ configure_file(
 )
 
 add_subdirectory(lib)
+add_subdirectory(clients)
 add_subdirectory(server)
 add_subdirectory(plugins)
 add_subdirectory(test/c_api_test)
