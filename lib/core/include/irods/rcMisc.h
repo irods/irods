@@ -264,8 +264,6 @@ int getIrodsErrno(int irodError);
 
 structFileOprType_t getSpecCollOpr(keyValPair_t* condInput, specColl_t* specColl);
 
-void resolveStatForStructFileOpr(keyValPair_t* condInput, rodsObjStat_t* rodsObjStatOut);
-
 int keyValToString(keyValPair_t* list, char** string);
 
 int keyValFromString(char* string, keyValPair_t** list);
