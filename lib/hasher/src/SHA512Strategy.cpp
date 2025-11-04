@@ -17,6 +17,9 @@
 
 #include <fmt/format.h>
 
+// CHKSUM_LEN is too small for SHA512
+#define LONG_CHKSUM_LEN (CHKSUM_LEN * 2)
+
 namespace irods {
 
     const std::string SHA512_NAME("sha512");
@@ -87,9 +90,9 @@ namespace irods {
         _context = nullptr;
 
         int len = strlen( SHA512_CHKSUM_PREFIX );
-        unsigned long out_len = CHKSUM_LEN - len;
+        unsigned long out_len = LONG_CHKSUM_LEN - len;
 
-        unsigned char out_buffer[CHKSUM_LEN];
+        unsigned char out_buffer[LONG_CHKSUM_LEN];
         int rc = base64_encode(final_buffer, SHA512_DIGEST_LENGTH, out_buffer, &out_len);
         if (0 != rc) {
             auto msg = fmt::format("{}: Failed to base64 encode hash.", __func__);
