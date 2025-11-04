@@ -145,6 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('--xml_output', action='store_true', dest='xml_output', default=False)
     parser.add_argument('--federation', nargs=3, metavar='<remote irods version, remote zone, remote host>')
     parser.add_argument('--hostnames', nargs=4, metavar='<ICAT_HOSTNAME HOSTNAME_1 HOSTNAME_2 HOSTNAME_3>')
+    parser.add_argument('test_list', nargs='*')
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -197,7 +198,7 @@ if __name__ == '__main__':
             irods.test.settings.HOSTNAME_2 = 'resource2.example.org'
             irods.test.settings.HOSTNAME_3 = 'resource3.example.org'
 
-    test_identifiers = []
+    test_identifiers = [*args.test_list] if args.test_list else []
     if args.run_specific_test:
         test_identifiers.append(args.run_specific_test)
     if args.include_auth_tests:
