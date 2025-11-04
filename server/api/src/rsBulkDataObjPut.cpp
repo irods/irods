@@ -600,7 +600,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
         }
         else {
             if ( ( flags & VERIFY_CHKSUM_FLAG ) != 0 && myChksum != NULL ) {
-                char chksumStr[NAME_LEN];
+                char chksumStr[CHKSUM_LEN];
                 /* verify the chksum */
                 status = verifyChksumLocFile( dataObjInfo.filePath, myChksum, chksumStr );
                 if ( status < 0 ) {
@@ -667,11 +667,10 @@ fillBulkDataObjRegInp( const char * rescName, const char* rescHier, char * objPa
     snprintf( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
               NAME_LEN, "%d", replNum );
     if ( chksum != NULL && strlen( chksum ) > 0 ) {
-        rstrcpy( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
-                 chksum, NAME_LEN );
+        rstrcpy(&bulkDataObjRegInp->sqlResult[8].value[CHKSUM_LEN * rowCnt], chksum, CHKSUM_LEN);
     }
     else {
-        bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt] = '\0';
+        bulkDataObjRegInp->sqlResult[8].value[CHKSUM_LEN * rowCnt] = '\0';
     }
 
     rodsLong_t resc_id = 0;
@@ -945,7 +944,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         if ( chksum != NULL ) {
             tmpChksum = &chksum->value[chksum->len * i];
             if ( strlen( tmpChksum ) > 0 ) {
-                rstrcpy( tmpDataObjInfo->chksum, tmpChksum, NAME_LEN );
+                rstrcpy(tmpDataObjInfo->chksum, tmpChksum, CHKSUM_LEN);
             }
         }
         initReiWithDataObjInp( &rei, rsComm, &dataObjInp );

@@ -837,7 +837,7 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
 
     if ( strcmp( varName, "chksum" ) == 0 ) {
 
-        i = setStrLeafValue( rei->chksum, NAME_LEN, newVarValue );
+        i = setStrLeafValue(rei->chksum, CHKSUM_LEN, newVarValue);
 
         return i;
     }

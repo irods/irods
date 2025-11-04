@@ -199,7 +199,7 @@ int _rsBulkDataObjReg(
             if ( chksum != NULL ) {
                 tmpChksum = &chksum->value[chksum->len * i];
                 if ( strlen( tmpChksum ) > 0 ) {
-                    rstrcpy( dataObjInfo.chksum, tmpChksum, NAME_LEN );
+                    rstrcpy(dataObjInfo.chksum, tmpChksum, CHKSUM_LEN);
                 }
             }
 

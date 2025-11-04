@@ -61,7 +61,7 @@ struct l1desc
     int replStatus; /* the replica status */
     int chksumFlag; /* parsed from condition */
     int srcL1descInx;
-    char chksum[NAME_LEN]; /* the input chksum */
+    char chksum[CHKSUM_LEN]; /* the input chksum */
     int remoteL1descInx;
     int stageFlag;
     int purgeCacheFlag;

@@ -1029,7 +1029,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 rstrcpy( mySrcPath.dataId, collEnt.dataId, NAME_LEN );
             }
             mySrcPath.size = collEnt.dataSize;
-            rstrcpy( mySrcPath.chksum, collEnt.chksum, NAME_LEN );
+            rstrcpy(mySrcPath.chksum, collEnt.chksum, CHKSUM_LEN);
             mySrcPath.objState = EXIST_ST;
 
             getRodsObjType( conn, &myTargPath );

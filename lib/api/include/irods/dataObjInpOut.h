@@ -106,7 +106,7 @@ typedef struct portalOprOut {
     int status;
     int l1descInx;
     int numThreads;
-    char chksum[NAME_LEN];
+    char chksum[CHKSUM_LEN];
     portList_t portList;
 } portalOprOut_t;
 
