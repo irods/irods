@@ -204,7 +204,9 @@ int fileChksum(rsComm_t* rsComm,
     ret = irods::getHasher( final_scheme, hasher );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        irods::getHasher( irods::MD5_NAME, hasher );
+        if (!irods::getHasher(irods::MD5_NAME, hasher).ok()) {
+            return ret.code();
+        }
     }
 
     // get the buffer size from server configuration - default to 1 MiB
@@ -246,7 +248,11 @@ int fileChksum(rsComm_t* rsComm,
     while ( read_err.ok() && bytes_read > 0 ) {
         // =-=-=-=-=-=-=-
         // update hasher
-        hasher.update(std::string(buffer.data(), bytes_read));
+        ret = hasher.update(std::string(buffer.data(), bytes_read));
+        if (!ret.ok()) {
+            log_api::error("{}: error on hasher update, result = {}", __func__, ret.result());
+            return ret.code();
+        }
 
         // =-=-=-=-=-=-=-
         // read some more
@@ -279,7 +285,11 @@ int fileChksum(rsComm_t* rsComm,
     // extract the digest from the hasher object
     // and copy to outgoing string
     std::string digest;
-    hasher.digest( digest );
+    ret = hasher.digest(digest);
+    if (!ret.ok()) {
+        log_api::error("{}: error on hash digest, result = {}", __func__, ret.result());
+        return ret.code();
+    }
     strncpy( chksumStr, digest.c_str(), NAME_LEN );
 
     return 0;
@@ -338,7 +348,9 @@ int file_checksum(RsComm* _comm,
     irods::Hasher hasher;
     if (const auto error = irods::getHasher(final_scheme.data(), hasher); !error.ok()) {
         irods::log(PASS(error));
-        irods::getHasher(irods::MD5_NAME, hasher);
+        if (!irods::getHasher(irods::MD5_NAME, hasher).ok()) {
+            return error.code();
+        }
     }
 
     irods::hierarchy_parser hp{_resource_hierarchy};
@@ -400,13 +412,21 @@ int file_checksum(RsComm* _comm,
         }
 
         _data_size -= error.code();
-        hasher.update(std::string(buffer.data(), error.code()));
+        error = hasher.update(std::string(buffer.data(), error.code()));
+        if (!error.ok()) {
+            log_api::error("{}: error on hasher update, result = {}", __func__, error.result());
+            return error.code();
+        }
     }
 
     // extract the digest from the hasher object
     // and copy to outgoing string
     std::string digest;
-    hasher.digest(digest);
+    error = hasher.digest(digest);
+    if (!error.ok()) {
+        log_api::error("{}: error on hash digest, result = {}", __func__, error.result());
+        return error.code();
+    }
     strncpy(_calculated_checksum, digest.c_str(), NAME_LEN);
 
     return 0;

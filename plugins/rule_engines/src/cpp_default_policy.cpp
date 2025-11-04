@@ -4,6 +4,7 @@
 #include "irods/private/re/reGlobalsExtern.hpp"
 #include "irods/generalAdmin.h"
 #include "irods/miscServerFunct.hpp"
+#include "irods/irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods/irods_resource_plugin.hpp"
@@ -927,10 +928,19 @@ namespace
         auto params = _p;
 
         irods::Hasher hasher;
-        irods::getHasher(irods::SHA256_NAME, hasher);
-        hasher.update(params.dump().c_str());
+        irods::error ret = irods::getHasher(irods::SHA256_NAME, hasher);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+        ret = hasher.update(params.dump().c_str());
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
         std::string digest;
-        hasher.digest(digest);
+        ret = hasher.digest(digest);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
 
         if(rule_is_not_already_enqueued(_rei->rsComm, digest)) {
             params["hash"] = digest;

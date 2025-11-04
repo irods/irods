@@ -372,13 +372,23 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
         buffer_read.resize( HASH_BUF_SZ );
 
         while ( in_file.read( &buffer_read[0], HASH_BUF_SZ ) ) {
-            hasher.update( buffer_read );
+            ret = hasher.update(buffer_read);
+            if (!ret.ok()) {
+                status = static_cast<int>(ret.code());
+                log_re::error("{}: failed on hasher update, status = {}", __func__, status);
+                return status;
+            }
         }
 
         if ( in_file.eof() ) {
             if ( in_file.gcount() > 0 ) {
                 buffer_read.resize( in_file.gcount() );
-                hasher.update( buffer_read );
+                ret = hasher.update(buffer_read);
+                if (!ret.ok()) {
+                    status = static_cast<int>(ret.code());
+                    log_re::error("{}: failed on hasher update, status = {}", __func__, status);
+                    return status;
+                }
             }
         } else {
             status = UNIX_FILE_READ_ERR - errno;
@@ -392,7 +402,12 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
         }
     }
 
-    hasher.digest( digest );
+    ret = hasher.digest(digest);
+    if (!ret.ok()) {
+        status = static_cast<int>(ret.code());
+        log_re::error("{}: failed on hash digest, status = {}", __func__, status);
+        return status;
+    }
 
     return 0;
 }
@@ -437,14 +452,24 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
 
     for (auto const& irb : irods_rule_bases) {
         try {
-            hasher.update(copy.get_rulebase(irb));
+            ret = hasher.update(copy.get_rulebase(irb));
         }
         catch (std::out_of_range& ex) {
             log_re::warn("hash_rules_with_copy: attempted to access nonexistent rulebase [{}]", irb);
         }
+        if (!ret.ok()) {
+            int status = static_cast<int>(ret.code());
+            log_re::error("{}: failed on hasher update, rulebase = [{}], status = {}", __func__, irb, status);
+            return status;
+        }
     }
 
-    hasher.digest(digest);
+    ret = hasher.digest(digest);
+    if (!ret.ok()) {
+        int status = static_cast<int>(ret.code());
+        log_re::error("{}: failed on hash digest, status = {}", __func__, status);
+        return status;
+    }
 
     log_re::debug("hash_rules_with_copy: rulebases = [{}]; digest = [{}]", fmt::join(irods_rule_bases, ", "), digest);
 
