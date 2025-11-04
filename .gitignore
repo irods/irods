@@ -1,20 +1,25 @@
 tags
 .dir-locals.el
+__pycache__
 .project
 .cproject
+.qtcreator
+.spyproject
 *.swp
 *.pyc
 *.un~
 *.swp~
 *.~undo-tree~
+*.wpr
+*.wpu
 
 # iRODS
 /irods_schema_messaging
 packaging/unattended_setup.json
 
 # clangd
-.cache/
-.clangd/
+.cache
+.clangd
 
 # CMake
 CMakeLists.txt.user
