@@ -68,8 +68,6 @@ int connectToRhostPortal(char *rodsHost, int rodsPort, int cookie, int windowSiz
 
 int rsAcceptConn(struct RsComm *comm);
 
-int irodsCloseSock(int sock);
-
 int getTcpPortFromPortList(struct PortList *thisPortList);
 
 int getTcpSockFromPortList(struct PortList *thisPortList);
