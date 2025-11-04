@@ -75,6 +75,7 @@ set(
   get_delay_rule_info
   get_file_descriptor_info
   get_resource_info_for_operation
+  hashers
   hierarchy_parser
   host_list_context_string
   hostname_cache
