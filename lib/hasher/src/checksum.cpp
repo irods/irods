@@ -210,7 +210,7 @@ int verifyChksumLocFile(
         //irods::log( PASS( ret ) );
     }
 
-    char chksumBuf[CHKSUM_LEN];
+    char chksumBuf[LONG_CHKSUM_LEN];
     if ( chksumStr == NULL ) {
         chksumStr = chksumBuf;
     }
@@ -249,7 +249,7 @@ hashToStr( unsigned char *digest, char *digestStr ) {
 
 int
 rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, const char* _scheme ) {
-    char chksumStr[CHKSUM_LEN];
+    char chksumStr[LONG_CHKSUM_LEN];
     int status;
 
     if ( condInput == NULL || chksumFlag == NULL || fileName == NULL ) {

@@ -600,7 +600,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
         }
         else {
             if ( ( flags & VERIFY_CHKSUM_FLAG ) != 0 && myChksum != NULL ) {
-                char chksumStr[CHKSUM_LEN];
+                char chksumStr[LONG_CHKSUM_LEN];
                 /* verify the chksum */
                 status = verifyChksumLocFile( dataObjInfo.filePath, myChksum, chksumStr );
                 if ( status < 0 ) {

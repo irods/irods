@@ -17,9 +17,6 @@
 
 #include <fmt/format.h>
 
-// CHKSUM_LEN is too small for SHA512
-#define LONG_CHKSUM_LEN (CHKSUM_LEN * 2)
-
 namespace irods {
 
     const std::string SHA512_NAME("sha512");
