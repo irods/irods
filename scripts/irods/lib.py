@@ -868,3 +868,28 @@ def set_replica_status(session, logical_path, replica_number, replica_status):
         'replica_number', str(replica_number),
         'DATA_REPL_STATUS', str(replica_status)
     ])
+
+def calculate_crc64_nvme(data: bytes, initial_crc = 0):
+    """
+    Calculates the CRC64-NVMe checksum for the given data.
+
+    Args:
+        data: The bytes object for which to calculate the CRC.
+        initial_crc: The starting CRC value for incremental calculations.
+                     Defaults to 0 for a fresh calculation.
+
+    Returns:
+        The 64-bit unsigned integer representing the CRC64-NVMe checksum.
+    """
+    polynomial = 0x9a6c9329ac4bc9b5
+    crc = initial_crc ^ 0xFFFFFFFFFFFFFFFF  # Initial XOR with all ones
+
+    for byte in data:
+        crc ^= byte
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ polynomial
+            else:
+                crc >>= 1
+
+    return (crc ^ 0xFFFFFFFFFFFFFFFF).to_bytes(8) # Final XOR with all ones and return bytes 

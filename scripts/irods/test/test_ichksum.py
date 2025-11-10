@@ -12,6 +12,8 @@ import hashlib
 import base64
 import json
 import psutil
+import copy
+import inspect
 
 from . import session
 from . import settings
@@ -571,3 +573,38 @@ C- {5}:
         finally:
             os.unlink(local_file)
             self.admin.assert_icommand(['irm', '-f', object_name])
+
+    def test_ichksum_with_crc64nvme__issue_8554(self):
+        file1 = f'{inspect.currentframe().f_code.co_name}_f1'
+        file1_size = 2*1024
+
+        config = IrodsConfig()
+
+        try:
+            # create file1
+            lib.make_arbitrary_file(file1, file1_size)
+
+            with lib.file_backed_up(config.server_config_path):
+                config.server_config['default_hash_scheme'] = 'crc64nvme'
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+                with lib.file_backed_up(config.client_environment_path):
+                    client_update = {
+                        'irods_default_hash_scheme': 'crc64nvme',
+                    }
+                    session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+                    self.admin.environment_file_contents.update(client_update)
+
+                    IrodsController().reload_configuration()
+
+                    # calculate the crc64nvme checksum for comparison
+                    checksum_str = 'crc64nvme:'
+                    with open(file1, 'rb') as f:
+                        checksum_str += base64.b64encode(lib.calculate_crc64_nvme(f.read())).decode()
+
+                    self.admin.assert_icommand(['iput', file1])
+                    self.admin.assert_icommand(['ichksum', file1], 'STDOUT_SINGLELINE', checksum_str)
+        finally:
+            self.admin.assert_icommand(['irm', '-f', file1])
+            lib.remove_file_if_exists(file1)
+            IrodsController().reload_configuration()
