@@ -600,20 +600,11 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
         }
         else {
             if ( ( flags & VERIFY_CHKSUM_FLAG ) != 0 && myChksum != NULL ) {
-                char chksumStr[LONG_CHKSUM_LEN];
                 /* verify the chksum */
-                status = verifyChksumLocFile( dataObjInfo.filePath, myChksum, chksumStr );
+                status = verifyChksumLocFile(dataObjInfo.filePath, myChksum, nullptr);
                 if ( status < 0 ) {
                     log_api::error("bulkProcAndRegSubfile: chksumLocFile error for {} ", dataObjInfo.filePath);
                     return status;
-                }
-                if ( strcmp( myChksum, chksumStr ) != 0 ) {
-                    log_api::error(
-                        "bulkProcAndRegSubfile: chksum of {} {} != input {}",
-                        dataObjInfo.filePath,
-                        chksumStr,
-                        myChksum);
-                    return USER_CHKSUM_MISMATCH;
                 }
             }
         }
