@@ -16,13 +16,11 @@
 
 namespace
 {
+    // These are useful as valid inputs for scrypt-specific tests.
     // See "STRONGER KEY DERIVATION VIA SEQUENTIAL MEMORY-HARD FUNCTIONS", Appendix B, test vector 3.
     constexpr const char* normal_password = "pleaseletmein";
     constexpr const char* normal_salt = "SodiumChloride";
-
-    // These are useful as valid inputs for scrypt-specific tests.
     constexpr const char* scrypt_algorithm_name = "scrypt";
-
     constexpr auto maximum_password_length = 1024 * 1024;
 
     auto scrypt_test_params() -> const nlohmann::json*
@@ -37,17 +35,17 @@ namespace
 
         IRODS_MSI_TEST_BEGIN("test empty parameters given to irods::hash_password result in errors")
 
+        constexpr const char* empty_msg = "hash_password: Cannot derive key from password - password or salt is empty.";
+
         // Empty password.
-        IRODS_MSI_THROWS(
-            irods::hash_password("", normal_salt, scrypt_algorithm_name, *scrypt_test_params()), irods::exception)
+        IRODS_MSI_THROWS_MSG(irods::hash_password("", normal_salt, scrypt_algorithm_name, *scrypt_test_params()),
+                             irods::exception,
+                             empty_msg)
 
         // Empty salt.
-        IRODS_MSI_THROWS(
-            irods::hash_password(normal_password, "", scrypt_algorithm_name, *scrypt_test_params()), irods::exception)
-
-        // Empty algorithm name.
-        IRODS_MSI_THROWS(
-            irods::hash_password(normal_password, normal_salt, "", *scrypt_test_params()), irods::exception)
+        IRODS_MSI_THROWS_MSG(irods::hash_password(normal_password, "", scrypt_algorithm_name, *scrypt_test_params()),
+                             irods::exception,
+                             empty_msg)
 
         // The configuration for the algorithm depends heavily on the algorithm, so this does not test an empty
         // configuration.
@@ -59,8 +57,18 @@ namespace
     {
         IRODS_MSI_TEST_BEGIN("test unsupported algorithm name results in error")
 
-        IRODS_MSI_THROWS(
-            irods::hash_password(normal_password, normal_salt, "unsupported", *scrypt_test_params()), irods::exception)
+        constexpr const char* unsupported_algorithm_name_msg_template =
+            "get_kdf: Hashing algorithm [{}] not supported.";
+
+        constexpr const char* unsupported_algorithm_name = "unsupported_algorithm_name";
+        IRODS_MSI_THROWS_MSG(
+            irods::hash_password(normal_password, normal_salt, unsupported_algorithm_name, *scrypt_test_params()),
+            irods::exception,
+            fmt::format(unsupported_algorithm_name_msg_template, unsupported_algorithm_name).c_str())
+
+        IRODS_MSI_THROWS_MSG(irods::hash_password(normal_password, normal_salt, "", *scrypt_test_params()),
+                             irods::exception,
+                             fmt::format(unsupported_algorithm_name_msg_template, "").c_str())
 
         IRODS_MSI_TEST_END
     } // test_unsupported_algorithm_name_results_in_error
@@ -70,8 +78,9 @@ namespace
         IRODS_MSI_TEST_BEGIN("test invalid configurations for scrypt results in errors")
 
         // Empty JSON object should fail.
-        IRODS_MSI_THROWS(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, nlohmann::json{{}}),
-                         irods::exception)
+        IRODS_MSI_THROWS_CODE(
+            irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, nlohmann::json{{}}),
+            SYS_INVALID_INPUT_PARAM)
 
         // The parameters all have a bunch of shared invalid values.
         constexpr std::array<const char*, 4> int32_params = {"key_length", "N", "r", "p"};
@@ -83,33 +92,38 @@ namespace
 
             // Parameter missing
             config.erase(param);
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config),
+                                  SYS_INVALID_INPUT_PARAM)
 
             // Wrong type
             config[param] = param;
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config),
+                                  SYS_INVALID_INPUT_PARAM)
 
-            // Underflow - use std::int64_t to hold a value that will underflow with std::int32_t.
+            // Underflow - use std::int64_t to hold a value that will underflow with std::int32_t. This cannot be
+            // detected because there is no upper limit on these values. The value is large enough that OpenSSL returns
+            // an error. key_length does have an upper limit because OpenSSL will just sit there and try to compute a
+            // key that's 2GiB large if you ask it to. Therefore, it has a different error code for this case.
+            const auto expected_error_code =
+                ("key_length" == std::string_view{param}) ? SYS_INVALID_INPUT_PARAM : CAT_PASSWORD_ENCODING_ERROR;
             config[param] = static_cast<std::int64_t>(INT32_MIN) - 1;
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(
+                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), expected_error_code)
 
             // Negative value
             config[param] = -1;
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config),
+                                  SYS_INVALID_INPUT_PARAM)
 
             // Zero
             config[param] = 0;
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config),
+                                  SYS_INVALID_INPUT_PARAM)
 
             // Overflow - use std::int64_t to hold a value that will overflow with std::int32_t.
             config[param] = static_cast<std::int64_t>(INT32_MAX) + 1;
-            IRODS_MSI_THROWS(
-                irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config), irods::exception)
+            IRODS_MSI_THROWS_CODE(irods::hash_password(normal_password, normal_salt, scrypt_algorithm_name, config),
+                                  SYS_INVALID_INPUT_PARAM)
         }
 
         IRODS_MSI_TEST_END
@@ -121,9 +135,10 @@ namespace
 
         const auto toolong_password = std::string(maximum_password_length + 1, 'a');
 
-        IRODS_MSI_THROWS(
+        IRODS_MSI_THROWS_MSG(
             irods::hash_password(toolong_password, normal_salt, scrypt_algorithm_name, *scrypt_test_params()),
-            irods::exception)
+            irods::exception,
+            "hash_password: Cannot derive key from password - password length exceeds maximum size.")
 
         IRODS_MSI_TEST_END
     } // test_password_that_is_one_character_too_long_results_in_an_error
