@@ -22,7 +22,7 @@ namespace irods
     /// \brief Cryptographically hash the provided password using the provided salt.
     ///
     /// \param[in] _password The password to hash.
-    /// \param[in] _salt The salt to combine with _password for the hash.
+    /// \param[in] _salt The salt to combine with \p _password for the hash.
     /// \param[in] _algorithm The name of the KDF algorithm to use.
     /// \param[in] _parameters JSON object containing parameters for specified \p _algorithm.
     ///

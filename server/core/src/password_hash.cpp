@@ -54,60 +54,91 @@ namespace
             , keylen{}
             , algorithm_params{}
         {
-            log_server::trace("params: {}", _parameters.dump());
+            log_server::trace("{}: params={}", __func__, _parameters.dump());
 
-            // Get the desired key length (dkLen).
-            const auto keylen_iter = _parameters.find("key_length");
-            if (keylen_iter == _parameters.end()) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: key_length missing from scrypt parameters.", __func__));
-            }
-            const auto keylen_input = keylen_iter->get<std::int32_t>();
-            // Even though there is no practical maximum to the desired key length, a maximum of 1 GiB is decided
-            // arbitrarily here because it is so large as to be impractical as a password hashing key length. The KDF
-            // derive function allows for larger values than this, but this was done so that underflows are detected.
-            constexpr std::int32_t maximum_key_length_in_bytes = 1073741824;
-            if (keylen_input < 1 || keylen_input > maximum_key_length_in_bytes) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: key_length must be a positive integer.", __func__));
-            }
-            keylen = static_cast<std::uint32_t>(keylen_input);
+            constexpr const char* missing_parameter_msg = "{}: {} scrypt parameter is missing.";
+            constexpr const char* value_error_msg = "{}: {} must be a positive 32-bit integer.";
+            constexpr const char* json_error_msg =
+                "{}: JSON error occurred getting value for {} scrypt parameter. error: [{}]";
 
-            // Get the cost factor parameter (N).
-            const auto n_iter = _parameters.find("N");
-            if (n_iter == _parameters.end()) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: N missing from scrypt parameters.", __func__));
+            constexpr const char* keylen_key = "key_length";
+            try {
+                // Get the desired key length (dkLen).
+                const auto keylen_iter = _parameters.find(keylen_key);
+                if (keylen_iter == _parameters.end()) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(missing_parameter_msg, __func__, keylen_key));
+                }
+                const auto keylen_input = keylen_iter->get<std::int32_t>();
+                // Even though there is no practical maximum to the desired key length, a maximum of 1 GiB is decided
+                // arbitrarily here because it is so large as to be impractical as a password hashing key length. The
+                // KDF derive function allows for larger values than this, but this was done so that underflows are
+                // detected.
+                constexpr std::int32_t maximum_key_length_in_bytes = 1073741824;
+                if (keylen_input < 1 || keylen_input > maximum_key_length_in_bytes) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(value_error_msg, __func__, keylen_key));
+                }
+                keylen = static_cast<std::uint32_t>(keylen_input);
             }
-            // Although this parameter is ultimately a std::uint64_t, use a std::int32_t to detect overflow/underflow.
-            // The maximum value that this allows, then, is 2^31 (2147483648). This value and even larger ones are
-            // allowed by the algorithm with the right combination of configuration values. However, the time spent
-            // calculating the key is impractical for use with password hashing, so nobody should be using a value that
-            // large anyway. The values are only enforced here insofar as the types themselves are concerned.
-            const auto n_input = n_iter->get<std::int32_t>();
-            if (n_input < 1) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: N must be a positive 32-bit interger.", __func__));
+            catch (const nlohmann::json::exception& e) {
+                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(json_error_msg, __func__, keylen_key, e.what()));
             }
-            work_factor = static_cast<std::uint64_t>(n_input);
 
-            // Get the resources parameter (r).
-            const auto r_iter = _parameters.find("r");
-            if (r_iter == _parameters.end()) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: r missing from scrypt parameters.", __func__));
+            constexpr const char* n_key = "N";
+            try {
+                // Get the cost factor parameter (N).
+                const auto n_iter = _parameters.find(n_key);
+                if (n_iter == _parameters.end()) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(missing_parameter_msg, __func__, n_key));
+                }
+                // Although this parameter is ultimately a std::uint64_t, use a std::int32_t to detect
+                // overflow/underflow. The maximum value that this allows, then, is 2^31 (2147483648). This value and
+                // even larger ones are allowed by the algorithm with the right combination of configuration values.
+                // However, the time spent calculating the key is impractical for use with password hashing, so nobody
+                // should be using a value that large anyway. The values are only enforced here insofar as the types
+                // themselves are concerned.
+                const auto n_input = n_iter->get<std::int32_t>();
+                if (n_input < 1) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(value_error_msg, __func__, n_key));
+                }
+                work_factor = static_cast<std::uint64_t>(n_input);
             }
-            const auto r_input = r_iter->get<std::int32_t>();
-            if (r_input < 1) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: r must be a positive 32-bit integer.", __func__));
+            catch (const nlohmann::json::exception& e) {
+                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(json_error_msg, __func__, n_key, e.what()));
             }
-            resources = static_cast<std::uint32_t>(r_input);
 
-            // Get the parallelization parameter (p).
-            const auto p_iter = _parameters.find("p");
-            if (p_iter == _parameters.end()) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: p missing from scrypt parameters.", __func__));
+            constexpr const char* r_key = "r";
+            try {
+                // Get the resources parameter (r).
+                const auto r_iter = _parameters.find(r_key);
+                if (r_iter == _parameters.end()) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(missing_parameter_msg, __func__, r_key));
+                }
+                const auto r_input = r_iter->get<std::int32_t>();
+                if (r_input < 1) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(value_error_msg, __func__, r_key));
+                }
+                resources = static_cast<std::uint32_t>(r_input);
             }
-            const auto p_input = p_iter->get<std::int32_t>();
-            if (p_input < 1) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("{}: p must be a positive 32-bit integer.", __func__));
+            catch (const nlohmann::json::exception& e) {
+                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(json_error_msg, __func__, r_key, e.what()));
             }
-            parallelism = static_cast<std::uint32_t>(p_input);
+
+            constexpr const char* p_key = "p";
+            try {
+                // Get the parallelization parameter (p).
+                const auto p_iter = _parameters.find(p_key);
+                if (p_iter == _parameters.end()) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(missing_parameter_msg, __func__, p_key));
+                }
+                const auto p_input = p_iter->get<std::int32_t>();
+                if (p_input < 1) {
+                    THROW(SYS_INVALID_INPUT_PARAM, fmt::format(value_error_msg, __func__, p_key));
+                }
+                parallelism = static_cast<std::uint32_t>(p_input);
+            }
+            catch (const nlohmann::json::exception& e) {
+                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(json_error_msg, __func__, p_key, e.what()));
+            }
 
             // Initialize the KDF context.
             reset();
@@ -172,7 +203,7 @@ namespace
                 OSSL_KDF_PARAM_PASSWORD, static_cast<void*>(password_buf.data()), _password.size());
 
             // Construct salt parameter. The string must be copied to avoid const_cast in the octet string construction.
-            std::vector<char> salt_buf(_password.size() + 1, '\0');
+            std::vector<char> salt_buf(_salt.size() + 1, '\0');
             std::strncpy(salt_buf.data(), _salt.c_str(), _salt.size());
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             *param++ = OSSL_PARAM_construct_octet_string(
@@ -188,7 +219,7 @@ namespace
                 THROW(SYS_INTERNAL_ERR, fmt::format("{}: Failed to merge OpenSSL parameters.", __func__));
             }
 
-            log_server::trace("keylen={}, N={}, r={}, p={}", keylen, work_factor, resources, parallelism);
+            log_server::trace("{}: keylen={}, N={}, r={}, p={}", __func__, keylen, work_factor, resources, parallelism);
 
             // Derive the key using the parameters constructed above. The result will be held in a buffer.
             std::vector<unsigned char> hash_buf(keylen, 0);
@@ -221,6 +252,7 @@ namespace
         {
             if (nullptr != kctx) {
                 EVP_KDF_CTX_free(kctx);
+                kctx = nullptr;
             }
         } // free_kdf_context
 
@@ -265,14 +297,15 @@ namespace irods
     {
         // Make sure the provided strings are not empty.
         if (_password.empty() || _salt.empty()) {
-            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Cannot derive key from password - password or salt is empty."));
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: Cannot derive key from password - password or salt is empty.", __func__));
         }
 
         // Make sure the length of the provided password does not exceed the allowed maximum.
         constexpr auto maximum_password_length = 1024 * 1024;
         if (_password.size() > maximum_password_length) {
             THROW(PASSWORD_EXCEEDS_MAX_SIZE,
-                  fmt::format("Cannot derive key from password - password length exceeds maximum size."));
+                  fmt::format("{}: Cannot derive key from password - password length exceeds maximum size.", __func__));
         }
 
         // Salt is generated by the server and its length is not configurable. Therefore, we do not check it here.
@@ -289,9 +322,9 @@ namespace irods
             // a little over (4/3) times the space.
             std::uint64_t out_len = derived_key.size() * 2;
             std::vector<unsigned char> out(out_len, 0);
-            auto err = base64_encode(derived_key.data(), derived_key.size(), out.data(), &out_len);
-            if (err < 0) {
-                THROW(err, "base64 encoding of digest failed.");
+            const auto base64_encode_err = base64_encode(derived_key.data(), derived_key.size(), out.data(), &out_len);
+            if (base64_encode_err < 0) {
+                THROW(base64_encode_err, fmt::format("{}: base64 encoding of digest failed.", __func__));
             }
 
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
