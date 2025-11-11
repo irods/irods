@@ -18,6 +18,8 @@
 #  include "irods/user_administration.hpp"
 #endif // RODS_SERVER
 
+#include <fmt/format.h>
+
 #include <unistd.h>
 
 #include <cstring>
@@ -25,8 +27,6 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
-
-#include <fmt/format.h>
 
 namespace
 {
