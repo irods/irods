@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# If this file doesn't exist, it means the server package is not installed.
+# Directory ownership only really matters if the server package is installed,
+# and the server package also does its own chown-ing,
+# so it's safe to do it this way.
+if [ -f /var/lib/irods/scripts/chown_directories_for_postinstall.py ] ; then
+    python3 /var/lib/irods/scripts/chown_directories_for_postinstall.py
+fi
