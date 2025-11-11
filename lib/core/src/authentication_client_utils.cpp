@@ -69,10 +69,9 @@ namespace irods::authentication
 
         std::ifstream session_token_file_stream{session_token_file_path.c_str()};
         if (!session_token_file_stream.is_open()) {
-            const auto irods_error_code = UNIX_FILE_OPEN_ERR - errno;
+            const auto irods_error_code = UNIX_FILE_OPEN_ERR;
             THROW(irods_error_code,
-                  fmt::format(
-                      "Failed to open session token file [{}]. errno:[{}]", session_token_file_path.c_str(), errno));
+                  fmt::format("Failed to open session token file [{}].", session_token_file_path.c_str()));
         }
 
         std::string session_token_file_contents;
@@ -80,7 +79,8 @@ namespace irods::authentication
         session_token_file_stream.close();
         if (session_token_file_contents.size() != session_token_length) {
             THROW(SYS_INVALID_INPUT_PARAM,
-                  fmt::format("Session token must be a 36-character UUID, but had length [{}].",
+                  fmt::format("Session token expected to be length [{}], but had length [{}].",
+                              session_token_length,
                               session_token_file_contents.size()));
         }
         return session_token_file_contents;
@@ -97,10 +97,9 @@ namespace irods::authentication
         const auto session_token_file_path = get_session_token_file_path();
         std::ofstream session_token_file_stream{session_token_file_path.c_str()};
         if (!session_token_file_stream.is_open()) {
-            const auto irods_error_code = UNIX_FILE_OPEN_ERR - errno;
+            const auto irods_error_code = UNIX_FILE_OPEN_ERR;
             THROW(irods_error_code,
-                  fmt::format(
-                      "Failed to open session token file [{}]. errno:[{}]", session_token_file_path.c_str(), errno));
+                  fmt::format("Failed to open session token file [{}].", session_token_file_path.c_str()));
         }
 
         session_token_file_stream << _session_token;
@@ -114,7 +113,7 @@ namespace irods::authentication
     {
         try {
             if (!std::filesystem::remove(get_session_token_file_path())) {
-                return static_cast<int>(USER_FILE_DOES_NOT_EXIST);
+                return static_cast<int>(UNIX_FILE_UNLINK_ERR);
             }
             return 0;
         }

@@ -16,19 +16,26 @@ namespace irods::authentication
 
     /// Get the user's stored session token from the session token file.
     ///
+    /// The session token file is typically found in \p $HOME/.irods/.irods_secret. The environment variable
+    /// \p IRODS_SESSION_TOKEN_FILE_PATH can be used to set to an alternative location. If \p $HOME or
+    /// \p IRODS_SESSION_TOKEN_FILE_PATH are not set, the location of the session token file is unknown.
+    /// If the session token file cannot be determined, this function does nothing.
+    ///
     /// \throws \p irods::exception if the session token file fails to open.
     ///
     /// \retval The session token as a string.
-    /// \retval \p std::nullopt if the session token file cannot be found.
     ///
     /// \since 5.1.0
     auto read_session_token_from_file() -> std::string;
 
     /// Write the provided session token to the session token file.
     ///
+    /// The session token file is typically found in \p $HOME/.irods/.irods_secret. The environment variable
+    /// \p IRODS_SESSION_TOKEN_FILE_PATH can be used to set to an alternative location. If \p $HOME or
+    /// \p IRODS_SESSION_TOKEN_FILE_PATH are not set, the location of the session token file is unknown.
     /// If the session token file cannot be determined, this function does nothing.
     ///
-    /// \param[in] _session_token The session token to record. Session token must be a 36-character UUID.
+    /// \param[in] _session_token The session token to record.
     ///
     /// \throws \p irods::exception if the session token file fails to open.
     ///

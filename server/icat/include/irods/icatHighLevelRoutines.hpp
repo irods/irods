@@ -481,6 +481,7 @@ auto chl_check_password(RsComm* _comm, const char* _json_input, int* _valid) -> 
 ///
 /// \param[in] _comm The communication object.
 /// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the session token being checked:
 /// \code{.js}
 /// {
 ///     "user_name": "<string>",
@@ -512,6 +513,7 @@ auto chl_check_session_token(RsComm* _comm, const char* _json_input, int* _valid
 ///
 /// \param[in] _comm The communication object.
 /// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the session token being made:
 /// \code{.js}
 /// {
 ///     "user_name": "<string>",

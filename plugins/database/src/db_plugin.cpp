@@ -15950,12 +15950,12 @@ auto db_delete_session_tokens_op(irods::plugin_context& _ctx, const char* _json_
         // Execute the appropriate delete statement.
         if (int ec = cmlExecuteNoAnswerSql(delete_sql.str().c_str(), &icss); 0 != ec) {
             if (CAT_SUCCESS_BUT_WITH_NO_INFO == ec) {
-                log_db::debug("No session tokens were valid for removal.");
+                log_db::debug("{}: No session tokens were valid for removal.", __func__);
             }
             else {
                 _rollback("delete_session_tokens");
                 const auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", ec);
-                log_db::info(msg);
+                log_db::error(msg);
                 return ERROR(ec, msg);
             }
         }
@@ -15964,7 +15964,7 @@ auto db_delete_session_tokens_op(irods::plugin_context& _ctx, const char* _json_
         if (const auto ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != ec) {
             _rollback("delete_session_tokens");
             const auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", ec);
-            log_db::info(msg);
+            log_db::error(msg);
             return ERROR(ec, msg);
         }
     }

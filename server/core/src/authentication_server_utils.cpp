@@ -10,13 +10,13 @@
 #define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #include "irods/user_administration.hpp"
 
-#include <string>
-
 #include <fmt/format.h>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+
+#include <string>
 
 namespace irods::authentication
 {
