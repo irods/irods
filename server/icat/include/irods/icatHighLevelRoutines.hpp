@@ -453,6 +453,7 @@ auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char
 ///
 /// \param[in] _comm The communication object.
 /// \param[in] _json_input \parblock
+/// A JSON string of the following form containing information about the user whose password is being checked:
 /// \code{.js}
 /// {
 ///     "user_name": "<string>",
