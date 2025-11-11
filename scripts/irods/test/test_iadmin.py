@@ -2958,7 +2958,7 @@ class test_moduser_remove_password(unittest.TestCase):
 
         # Define the user_id subselect so we can reuse it.
         self.test_user_name = "bilbo"
-        user_id_subselect = "SELECT user_id FROM r_user_main WHERE user_name = '{}' AND zone_name = '{}'".format(
+        user_id_subselect = "select user_id from R_USER_MAIN where user_name = '{}' and zone_name = '{}'".format(
             self.test_user_name, self.admin.zone_name)
 
         # Configure a specific query to get the test user's native passwords. NOTE: DO NOT DO THIS IN PRODUCTION!!!1
@@ -2967,7 +2967,7 @@ class test_moduser_remove_password(unittest.TestCase):
             [
                 "iadmin",
                 "asq",
-                f"SELECT rcat_password FROM r_user_password WHERE user_id=({user_id_subselect})",
+                f"select rcat_password from R_USER_PASSWORD where user_id=({user_id_subselect})",
                 self.get_test_user_native_password_query
             ]
         )
@@ -2978,7 +2978,7 @@ class test_moduser_remove_password(unittest.TestCase):
             [
                 "iadmin",
                 "asq",
-                f"SELECT hashed_password FROM r_user_credentials WHERE user_id=({user_id_subselect})",
+                f"select hashed_password from R_USER_CREDENTIALS where user_id=({user_id_subselect})",
                 self.get_test_user_irods_password_query
             ]
         )
