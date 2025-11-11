@@ -317,8 +317,7 @@ namespace
             THROW(err.code(), err.result());
         }
         // The SHA256Strategy adds a "sha2:" prefix - let's chop that off.
-        static constexpr std::string prefix = "sha2:";
-        return digest.substr(prefix.size());
+        return digest.substr(std::strlen(SHA256_CHKSUM_PREFIX));
     } // hash_session_token
 } // anonymous namespace
 
