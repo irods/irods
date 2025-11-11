@@ -296,9 +296,9 @@ class test_delete_session_tokens(unittest.TestCase):
 			user.environment_file_contents.update(client_update)
 
 		# Add a specific query so that we can see what session tokens exist for this user.
-		query = "select session_expiry_ts from r_user_session_key " \
+		query = "select session_expiry_ts from R_USER_SESSION_KEY " \
 				"where user_id = (" \
-				"select user_id from r_user_main where user_name = '{}' and zone_name = '{}'" \
+				"select user_id from R_USER_MAIN where user_name = '{}' and zone_name = '{}'" \
 				")"
 		for user in self.test_users:
 			self.admin.assert_icommand(
