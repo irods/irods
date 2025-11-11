@@ -16033,7 +16033,7 @@ auto db_remove_password_op(irods::plugin_context& _ctx, const char* _json_input)
             else {
                 _rollback("remove_password");
                 const auto msg = fmt::format("Failed to remove user password. ec=[{}]", ec);
-                log_db::info(msg);
+                log_db::error(msg);
                 return ERROR(ec, msg);
             }
         }
@@ -16042,7 +16042,7 @@ auto db_remove_password_op(irods::plugin_context& _ctx, const char* _json_input)
         if (const auto ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != ec) {
             _rollback("delete_session_tokens");
             const auto msg = fmt::format("Failed to remove user password. ec=[{}]", ec);
-            log_db::info(msg);
+            log_db::error(msg);
             return ERROR(ec, msg);
         }
     }
