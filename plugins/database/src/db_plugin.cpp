@@ -4357,18 +4357,19 @@ irods::error db_del_user_re_op(
     }
     status = cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where user_id=?", &icss);
     if (status < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != status) {
-        const auto msg = fmt::format("chlDelUserRE delete password failure {}", status);
+        auto msg = fmt::format("chlDelUserRE delete password failure {}", status);
         addRErrorMsg(&_ctx.comm()->rError, 0, msg.c_str());
         _rollback( "chlDelUserRE" );
-        return ERROR(status, msg.c_str());
+        return ERROR(status, std::move(msg));
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
     cllBindVars[cllBindVarCount++] = iValStr;
     status = cmlExecuteNoAnswerSql("delete from R_USER_CREDENTIALS where user_id=?", &icss);
     if (status < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != status) {
-        const auto msg = fmt::format("Failed to delete user credentials. ec: {}", status);
+        auto msg = fmt::format("Failed to delete user credentials. ec: {}", status);
         addRErrorMsg(&_ctx.comm()->rError, 0, msg.c_str());
         _rollback("chlDelUserRE");
-        return ERROR(status, msg.c_str());
+        return ERROR(status, std::move(msg));
     }
     cllBindVars[cllBindVarCount++] = iValStr;
     status = cmlExecuteNoAnswerSql("delete from R_USER_SESSION_KEY where user_id=?", &icss);
@@ -7171,17 +7172,18 @@ irods::error db_mod_user_op(
     }
     if (strcmp(_option, "password") == 0 || strcmp(_option, "password-unobfuscated") == 0) {
         char userIdStr[MAX_NAME_LEN];
-        char decoded[MAX_PASSWORD_LEN + 20];
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+        std::array<char, MAX_PASSWORD_LEN + 20> decoded_password{};
         const auto clear_decoded_password_buffer =
-            irods::at_scope_exit{[&decoded] { std::memset(decoded, 0, sizeof(decoded)); }};
+            irods::at_scope_exit{[&decoded_password] { decoded_password.fill('\0'); }};
         int i = 0;
         if (0 == strcmp(_option, "password-unobfuscated")) {
-            std::strncpy(decoded, _new_value, sizeof(decoded));
+            std::strncpy(decoded_password.data(), _new_value, decoded_password.size() - 1);
         }
         else {
-            i = decodePw(_ctx.comm(), _new_value, decoded);
+            i = decodePw(_ctx.comm(), _new_value, decoded_password.data());
         }
-        if (i == CAT_PASSWORD_ENCODING_ERROR || strlen(decoded) > MAX_PASSWORD_LEN - 8) {
+        if (i == CAT_PASSWORD_ENCODING_ERROR || std::strlen(decoded_password.data()) > MAX_PASSWORD_LEN - 8) {
             // Password encoding error occurs when the password is not of the correct
             // length.  Pop the existing CAT_PASSWORD_ENCODING_ERROR and return PASSWORD_EXCEEDS_MAX_SIZE
             // error.  See issue 6764.
@@ -7190,7 +7192,7 @@ irods::error db_mod_user_op(
             irods::pop_error_message(_ctx.comm()->rError);
             return ERROR(PASSWORD_EXCEEDS_MAX_SIZE, "Password must be between 3 and 42 characters");
         }
-        int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
+        int status2 = icatApplyRule(_ctx.comm(), const_cast<char*>("acCheckPasswordStrength"), decoded_password.data());
         if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
             addRErrorMsg( &_ctx.comm()->rError, 0, "acCheckPasswordStrength rule not found" );
         }
@@ -7218,18 +7220,18 @@ irods::error db_mod_user_op(
                 constexpr auto max_size_for_params = 2700;
                 std::vector<char> params_str(max_size_for_params + 1);
                 {
-                    const int ec = cmlGetStringValueFromSql(
+                    const int select_err = cmlGetStringValueFromSql(
                         "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
                         params_str.data(),
                         max_size_for_params,
                         bindVars,
                         &icss);
 
-                    if (ec < 0) {
+                    if (select_err < 0) {
                         auto msg = fmt::format(
                             "{}: Failed to get configuration for hashing parameters. Cannot set password.", __func__);
                         log_db::error(msg);
-                        return ERROR(ec, std::move(msg));
+                        return ERROR(select_err, std::move(msg));
                     }
                 }
 
@@ -7262,7 +7264,8 @@ irods::error db_mod_user_op(
                 // Generate a salt and hash the user's password with the generated salt using the configured hashing
                 // algorithm and its parameters.
                 const auto salt = irods::generate_salt();
-                const auto hashed_password = irods::hash_password(decoded, salt, algorithm, hashing_parameters);
+                const auto hashed_password =
+                    irods::hash_password(decoded_password.data(), salt, algorithm, hashing_parameters);
 
                 if (0 == password_lookup_ec) {
                     // This overwrites an existing password hash.
@@ -7274,12 +7277,14 @@ irods::error db_mod_user_op(
                                  "update R_USER_CREDENTIALS set hashed_password = ?, salt = ?, hashing_algorithm = ?, "
                                  "hashing_parameters = ?, modify_time = ? where user_id = ?",
                                  MAX_SQL_SIZE);
+                    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
                     cllBindVars[cllBindVarCount++] = hashed_password.c_str();
                     cllBindVars[cllBindVarCount++] = salt.c_str();
                     cllBindVars[cllBindVarCount++] = algorithm.c_str();
                     cllBindVars[cllBindVarCount++] = hashing_parameters_str.c_str();
                     cllBindVars[cllBindVarCount++] = myTime;
                     cllBindVars[cllBindVarCount++] = user_id;
+                    // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
                 }
                 else {
                     // This inserts a new password hash.
@@ -7290,6 +7295,7 @@ irods::error db_mod_user_op(
                                  "R_USER_MAIN where "
                                  "user_name = ? and zone_name = ?), ?, ?, ?, ?, ?, ?)",
                                  MAX_SQL_SIZE);
+                    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
                     cllBindVars[cllBindVarCount++] = userName2;
                     cllBindVars[cllBindVarCount++] = zoneName;
                     cllBindVars[cllBindVarCount++] = hashed_password.c_str();
@@ -7298,6 +7304,7 @@ irods::error db_mod_user_op(
                     cllBindVars[cllBindVarCount++] = hashing_parameters_str.c_str();
                     cllBindVars[cllBindVarCount++] = myTime;
                     cllBindVars[cllBindVarCount++] = myTime;
+                    // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
                     // Expiration time intentionally left null as it is unused.
                 }
                 status = cmlExecuteNoAnswerSql(tSQL, &icss);
@@ -7313,7 +7320,7 @@ irods::error db_mod_user_op(
         }
 
         if (0 == status && store_scrambled_password) {
-            icatScramble(decoded);
+            icatScramble(decoded_password.data());
             if (i) {
                 // Rollback the hashed password change, if needed.
                 if (store_hashed_password) {
@@ -7326,8 +7333,8 @@ irods::error db_mod_user_op(
             }
             {
                 std::vector<std::string> bindVars;
-                bindVars.push_back(userName2);
-                bindVars.push_back(zoneName);
+                bindVars.emplace_back(userName2);
+                bindVars.emplace_back(zoneName);
                 i = cmlGetStringValueFromSql(
                     "select R_USER_PASSWORD.user_id from R_USER_PASSWORD, R_USER_MAIN where R_USER_MAIN.user_name=? "
                     "and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
@@ -7353,9 +7360,11 @@ irods::error db_mod_user_op(
                     return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level");
                 }
                 rstrcpy(tSQL, form3, MAX_SQL_SIZE);
-                cllBindVars[cllBindVarCount++] = decoded;
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[cllBindVarCount++] = decoded_password.data();
                 cllBindVars[cllBindVarCount++] = myTime;
                 cllBindVars[cllBindVarCount++] = userIdStr;
+                // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
                 if (logSQL != 0) {
                     log_sql::debug("chlModUser SQL 9");
                 }
@@ -7363,12 +7372,14 @@ irods::error db_mod_user_op(
             else {
                 opType = 4;
                 rstrcpy(tSQL, form4, MAX_SQL_SIZE);
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
                 cllBindVars[cllBindVarCount++] = userName2;
                 cllBindVars[cllBindVarCount++] = zoneName;
-                cllBindVars[cllBindVarCount++] = decoded;
+                cllBindVars[cllBindVarCount++] = decoded_password.data();
                 cllBindVars[cllBindVarCount++] = "9999-12-31-23.59.01";
                 cllBindVars[cllBindVarCount++] = myTime;
                 cllBindVars[cllBindVarCount++] = myTime;
+                // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
                 if (logSQL != 0) {
                     log_sql::debug("chlModUser SQL 10");
                 }
@@ -15634,8 +15645,9 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
     }
-    if (!_json_input || !_valid) {
-        return ERROR(CAT_INVALID_ARGUMENT, fmt::format("{}: One or more input pointers are null.", __func__));
+    if (nullptr == _json_input || nullptr == _valid) {
+        return ERROR(
+            INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: One or more input pointers are null.", __func__));
     }
 
     *_valid = 0;
@@ -15688,21 +15700,22 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
             return SUCCESS();
         }
 
-        for (const auto& c : credentials) {
-            const auto hashed_password = irods::hash_password(password, c.salt, c.algorithm, c.hash_parameters);
-            if (hashed_password == c.hashed_password) {
+        for (const auto& credential : credentials) {
+            const auto hashed_password =
+                irods::hash_password(password, credential.salt, credential.algorithm, credential.hash_parameters);
+            if (hashed_password == credential.hashed_password) {
                 *_valid = 1;
                 return SUCCESS();
             }
         }
     }
     catch (const nlohmann::json::exception& e) {
-        const auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
+        auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
         log_db::error(msg);
         return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
     }
     catch (const std::exception& e) {
-        const auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
+        auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
         log_db::error(msg);
         return ERROR(SYS_INTERNAL_ERR, std::move(msg));
     }
