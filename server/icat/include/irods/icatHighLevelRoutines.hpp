@@ -560,7 +560,7 @@ auto chl_make_session_token(RsComm* _comm, const char* _json_input, char** _toke
 /// \p user_name and \p zone_name are the user name and zone name of the user with whom the session tokens to be deleted
 /// are associated. If no \p user_name or \p zone_name are specified, session tokens belonging to any user will be
 /// deleted. Not specifying a user should be done deliberately and with caution. If either \p user_name or \p zone_name
-/// are empty strings, the parameters are considered specified and will result in a no session tokens being deleted
+/// are empty strings, the parameters are considered specified and will result in no session tokens being deleted
 /// because no user ID will be found with which to select session tokens to delete.
 /// \endparblock
 ///
