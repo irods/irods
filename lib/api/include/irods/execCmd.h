@@ -1,7 +1,11 @@
 #ifndef EXEC_CMD_H__
 #define EXEC_CMD_H__
 
-#include "irods/rodsConnect.h"
+// Remove in iRODS 6.0
+#if __has_include("irods/rodsConnect.h")
+#  include "irods/rodsConnect.h"
+#endif
+
 #include "irods/procApiRequest.h"
 #include "irods/dataObjInpOut.h"
 
