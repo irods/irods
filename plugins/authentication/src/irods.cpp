@@ -245,13 +245,14 @@ namespace irods::authentication
             // Even though getAndConnRcatHostNoLogin does not modify the zone name parameter, it uses a pointer-to-char
             // parameter instead of pointer-to-const-char parameter, so we must cast the const away on the c_str() call
             // here. It is safe to do so - just ugly.
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
             if (const auto connect_err =
                     getAndConnRcatHostNoLogin(&_comm, PRIMARY_RCAT, const_cast<char*>(zone_name.c_str()), &host);
                 connect_err < 0)
             {
                 THROW(connect_err, fmt::format("Failed to connect to catalog service provider: [{}]", connect_err));
             }
+            // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
             // What follows in this operation requires access to database operations, so continue on the catalog
             // provider.
             if (LOCAL_HOST != host->localFlag) {
@@ -370,13 +371,14 @@ namespace irods::authentication
             // Even though getAndConnRcatHostNoLogin does not modify the zone name parameter, it uses a pointer-to-char
             // parameter instead of pointer-to-const-char parameter, so we must cast the const away on the c_str() call
             // here. It is safe to do so - just ugly.
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
             if (const auto connect_err =
                     getAndConnRcatHostNoLogin(&_comm, PRIMARY_RCAT, const_cast<char*>(zone_name.c_str()), &host);
                 connect_err < 0)
             {
                 THROW(connect_err, fmt::format("Failed to connect to catalog service provider: [{}]", connect_err));
             }
+            // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
             // What follows in this operation requires access to database operations, so continue on the catalog
             // provider.
             if (LOCAL_HOST != host->localFlag) {
