@@ -4798,6 +4798,7 @@ auto chl_check_session_token(RsComm* _comm, const char* _json_input, int* _valid
         irods::log(PASSMSG("failed to resolve database interface", ret));
         return static_cast<int>(ret.code());
     }
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
     // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
@@ -4817,6 +4818,7 @@ auto chl_make_session_token(RsComm* _comm, const char* _json_input, char** _toke
         irods::log(PASSMSG("failed to resolve database interface", ret));
         return static_cast<int>(ret.code());
     }
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
     // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
@@ -4836,6 +4838,7 @@ auto chl_delete_session_tokens(RsComm* _comm, const char* _json_input) -> int
         irods::log(PASSMSG("failed to resolve database interface", ret));
         return static_cast<int>(ret.code());
     }
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
     // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);

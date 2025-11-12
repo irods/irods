@@ -248,17 +248,16 @@ namespace
         constexpr const char* config_namespace = "authentication";
         constexpr const char* config_option_name = "token_lifetime_in_seconds";
 
-        // 12 is one more than number of digits for max int32 which will prevent erroneous truncations and detect
-        // overflows and underflows, plus null terminator.
-        char lifetime_in_seconds_str[12];
+        constexpr auto int32_max_digits = 10;
+        std::array<char, int32_max_digits + 1> lifetime_in_seconds_str{};
         std::vector<std::string> bindVars{"authentication", "token_lifetime_in_seconds"};
 
         // The cValSize parameter eventually is used in a call to sprintf, so at most cValSize - 1 characters are
         // printed to the buffer. This ensures that the lifetime_in_seconds_str string will be null terminated.
         const int status = cmlGetStringValueFromSql(
             "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
-            lifetime_in_seconds_str,
-            sizeof(lifetime_in_seconds_str),
+            lifetime_in_seconds_str.data(),
+            lifetime_in_seconds_str.size(),
             bindVars,
             &icss);
 
@@ -268,7 +267,7 @@ namespace
                              "default value [{}]",
                              config_namespace,
                              config_option_name,
-                             lifetime_in_seconds_str);
+                             lifetime_in_seconds_str.data());
                 _out = default_token_lifetime_in_seconds;
                 return SUCCESS();
             }
@@ -277,14 +276,14 @@ namespace
         }
 
         try {
-            _out = std::stol(lifetime_in_seconds_str);
+            _out = std::stoi(lifetime_in_seconds_str.data());
             if (_out <= 0) {
                 _out = default_token_lifetime_in_seconds;
                 log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
                              "default value [{}].",
                              config_namespace,
                              config_option_name,
-                             lifetime_in_seconds_str,
+                             lifetime_in_seconds_str.data(),
                              _out);
             }
         }
@@ -294,7 +293,7 @@ namespace
                          "Using default value [{}]. error:[{}]",
                          config_namespace,
                          config_option_name,
-                         lifetime_in_seconds_str,
+                         lifetime_in_seconds_str.data(),
                          _out,
                          e.what());
         }
@@ -4371,13 +4370,14 @@ irods::error db_del_user_re_op(
         _rollback("chlDelUserRE");
         return ERROR(status, std::move(msg));
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
     cllBindVars[cllBindVarCount++] = iValStr;
     status = cmlExecuteNoAnswerSql("delete from R_USER_SESSION_KEY where user_id=?", &icss);
     if (status < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != status) {
-        const auto msg = fmt::format("Failed to delete user session tokens. ec: {}", status);
+        auto msg = fmt::format("Failed to delete user session tokens. ec: {}", status);
         addRErrorMsg(&_ctx.comm()->rError, 0, msg.c_str());
         _rollback("chlDelUserRE");
-        return ERROR(status, msg.c_str());
+        return ERROR(status, std::move(msg));
     }
 
     // Remove any ACLs associated with the user
@@ -15729,8 +15729,9 @@ auto db_make_session_token_op(irods::plugin_context& _ctx, const char* _json_inp
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
     }
-    if (!_json_input || !_token) {
-        return ERROR(CAT_INVALID_ARGUMENT, fmt::format("{}: One or more input pointers are null.", __func__));
+    if (nullptr == _json_input || nullptr == _token) {
+        return ERROR(
+            INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: One or more input pointers are null.", __func__));
     }
 
     try {
@@ -15749,10 +15750,11 @@ auto db_make_session_token_op(irods::plugin_context& _ctx, const char* _json_inp
         if (const auto expires_iter = json_input.find("expires");
             expires_iter != json_input.end() && !expires_iter->get<bool>())
         {
-            expiration = std::chrono::seconds{99999999999};
+            constexpr auto eternity = 99999999999;
+            expiration = std::chrono::seconds{eternity};
         }
         else {
-            std::int32_t configured_duration;
+            std::int32_t configured_duration{};
             if (const auto err = get_token_lifetime_configuration(configured_duration); !err.ok()) {
                 return PASS(err);
             }
@@ -15772,10 +15774,11 @@ auto db_make_session_token_op(irods::plugin_context& _ctx, const char* _json_inp
         const auto hash = hash_session_token(token, salt);
 
         // Set up the SQL...
-        constexpr const char* make_session_key_sql =
+        constexpr const char* make_session_token_sql =
             "insert into R_USER_SESSION_KEY (user_id, session_key, auth_scheme, session_expiry_ts, create_ts, "
             "modify_ts, salt) values ((select user_id from R_USER_MAIN where user_name = ? and zone_name = ?), ?, ?, "
             "?, ?, ?, ?)";
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
         cllBindVars[cllBindVarCount++] = user_name.c_str();
         cllBindVars[cllBindVarCount++] = zone_name.c_str();
         cllBindVars[cllBindVarCount++] = hash.c_str();
@@ -15784,17 +15787,18 @@ auto db_make_session_token_op(irods::plugin_context& _ctx, const char* _json_inp
         cllBindVars[cllBindVarCount++] = current_time_str.c_str();
         cllBindVars[cllBindVarCount++] = current_time_str.c_str();
         cllBindVars[cllBindVarCount++] = salt.c_str();
+        // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
 
         // Execute the SQL...
-        if (const auto ec = cmlExecuteNoAnswerSql(make_session_key_sql, &icss); 0 != ec) {
+        if (const auto insert_err = cmlExecuteNoAnswerSql(make_session_token_sql, &icss); 0 != insert_err) {
             _rollback("make_session_token");
-            return ERROR(ec, "Failed to create session token in database.");
+            return ERROR(insert_err, "Failed to create session token in database.");
         }
 
         // Aaaaand commit.
-        if (const auto ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != ec) {
+        if (const auto commit_err = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_err) {
             _rollback("make_session_token");
-            return ERROR(ec, "Commit to create session token failed.");
+            return ERROR(commit_err, "Commit to create session token failed.");
         }
 
         // Return the generated token value in the out variable.
@@ -15824,7 +15828,7 @@ auto db_check_session_token_op(irods::plugin_context& _ctx, const char* _json_in
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
     }
-    if (!_json_input || !_valid) {
+    if (nullptr == _json_input || nullptr == _valid) {
         return ERROR(
             INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: One or more input pointers are null.", __func__));
     }
@@ -15912,14 +15916,14 @@ auto db_delete_session_tokens_op(irods::plugin_context& _ctx, const char* _json_
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
     }
-    if (!_json_input) {
-        return ERROR(CAT_INVALID_ARGUMENT, fmt::format("{}: JSON input is null.", __func__));
+    if (nullptr == _json_input) {
+        return ERROR(INVALID_INPUT_ARGUMENT_NULL_POINTER, fmt::format("{}: JSON input is null.", __func__));
     }
 
     try {
         const auto json_input = nlohmann::json::parse(_json_input);
 
-        int i{};
+        int bind_var_index{};
 
         // Construct the appropriate SQL statement based on whether the caller requested deleting all session tokens
         // or just expired ones, and whether or not a user was specified.
@@ -15939,7 +15943,8 @@ auto db_delete_session_tokens_op(irods::plugin_context& _ctx, const char* _json_
 #else
             delete_sql << "cast(session_expiry_ts as integer)<?";
 #endif
-            cllBindVars[i++] = now_str.c_str();
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[bind_var_index++] = now_str.c_str();
         }
 
         // User name and zone name must both be specified in order to clear session tokens for a specific user.
@@ -15953,40 +15958,42 @@ auto db_delete_session_tokens_op(irods::plugin_context& _ctx, const char* _json_
                 delete_sql << " where ";
             }
             delete_sql << "user_id=(select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
-            cllBindVars[i++] = user_name_iter->get_ref<const std::string&>().c_str();
-            cllBindVars[i++] = zone_name_iter->get_ref<const std::string&>().c_str();
+            // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[bind_var_index++] = user_name_iter->get_ref<const std::string&>().c_str();
+            cllBindVars[bind_var_index++] = zone_name_iter->get_ref<const std::string&>().c_str();
+            // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
         }
 
-        cllBindVarCount = i;
+        cllBindVarCount = bind_var_index;
 
         // Execute the appropriate delete statement.
-        if (int ec = cmlExecuteNoAnswerSql(delete_sql.str().c_str(), &icss); 0 != ec) {
-            if (CAT_SUCCESS_BUT_WITH_NO_INFO == ec) {
+        if (int delete_err = cmlExecuteNoAnswerSql(delete_sql.str().c_str(), &icss); 0 != delete_err) {
+            if (CAT_SUCCESS_BUT_WITH_NO_INFO == delete_err) {
                 log_db::debug("{}: No session tokens were valid for removal.", __func__);
             }
             else {
                 _rollback("delete_session_tokens");
-                const auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", ec);
+                auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", delete_err);
                 log_db::error(msg);
-                return ERROR(ec, msg);
+                return ERROR(delete_err, std::move(msg));
             }
         }
 
         // Commit the changes.
-        if (const auto ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != ec) {
+        if (const auto commit_err = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_err) {
             _rollback("delete_session_tokens");
-            const auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", ec);
+            auto msg = fmt::format("Failed to remove session tokens. ec=[{}]", commit_err);
             log_db::error(msg);
-            return ERROR(ec, msg);
+            return ERROR(commit_err, std::move(msg));
         }
     }
     catch (const nlohmann::json::exception& e) {
-        const auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
+        auto msg = fmt::format("{} - JSON error occurred: [{}]", __func__, e.what());
         log_db::error(msg);
         return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
     }
     catch (const std::exception& e) {
-        const auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
+        auto msg = fmt::format("{} - Exception occurred: [{}]", __func__, e.what());
         log_db::error(msg);
         return ERROR(SYS_INTERNAL_ERR, std::move(msg));
     }
