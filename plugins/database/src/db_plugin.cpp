@@ -7192,7 +7192,9 @@ irods::error db_mod_user_op(
             irods::pop_error_message(_ctx.comm()->rError);
             return ERROR(PASSWORD_EXCEEDS_MAX_SIZE, "Password must be between 3 and 42 characters");
         }
-        int status2 = icatApplyRule(_ctx.comm(), const_cast<char*>("acCheckPasswordStrength"), decoded_password.data());
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const int status2 =
+            icatApplyRule(_ctx.comm(), const_cast<char*>("acCheckPasswordStrength"), decoded_password.data());
         if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
             addRErrorMsg( &_ctx.comm()->rError, 0, "acCheckPasswordStrength rule not found" );
         }

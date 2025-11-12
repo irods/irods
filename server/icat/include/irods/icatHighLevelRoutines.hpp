@@ -462,8 +462,7 @@ auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char
 /// }
 /// \endcode
 ///
-/// \p user_name and \p zone_name are the user name and zone name of the user with whom the session token to check is
-/// associated.
+/// \p user_name and \p zone_name are the user name and zone name of the user whose password is being checked.
 ///
 /// \p password is the value of the password to check.
 /// \endparblock
