@@ -248,7 +248,7 @@ namespace
         constexpr const char* config_namespace = "authentication";
         constexpr const char* config_option_name = "token_lifetime_in_seconds";
 
-        constexpr auto int32_max_digits = 10;
+        constexpr auto int32_max_digits = 11; // To match other timestamp buffers with a leading 0.
         std::array<char, int32_max_digits + 1> lifetime_in_seconds_str{};
         std::vector<std::string> bindVars{"authentication", "token_lifetime_in_seconds"};
 
