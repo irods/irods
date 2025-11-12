@@ -148,7 +148,7 @@ if __name__ == "__main__":
 		"--forever-passwords-only", dest="forever_passwords_only", action="store_true", default=False,
 		help=textwrap.dedent("""\
 			If specified, only passwords used in native authentication which do not expire will be removed. This means
-			that passwords with a Time-To-Live (TTL) such as those used by pam_password auth scheme will not will not be
+			that passwords with a Time-To-Live (TTL) such as those used by pam_password auth scheme will not be
 			removed from the catalog.""")
 	)
 	args = parser.parse_args()
