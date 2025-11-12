@@ -69,11 +69,12 @@ namespace
                     THROW(SYS_INVALID_INPUT_PARAM, fmt::format(missing_parameter_msg, __func__, keylen_key));
                 }
                 const auto keylen_input = keylen_iter->get<std::int32_t>();
-                // Even though there is no practical maximum to the desired key length, a maximum of 1 GiB is decided
-                // arbitrarily here because it is so large as to be impractical as a password hashing key length. The
-                // KDF derive function allows for larger values than this, but this was done so that underflows are
-                // detected.
-                constexpr std::int32_t maximum_key_length_in_bytes = 1073741824;
+                // Even though there is technically no maximum to the desired key length, a maximum of 2025 bytes is
+                // declared here because the base64-encoded string produced by such a key is 2700 bytes. The maximum
+                // number of characters for the database column holding the password hashes is 2700 characters. Even
+                // though this class is meant to be more general purpose, we impose this limit here for now because
+                // the class has not been exposed for public use outside of the context of password hashing.
+                constexpr std::int32_t maximum_key_length_in_bytes = 2025;
                 if (keylen_input < 1 || keylen_input > maximum_key_length_in_bytes) {
                     THROW(SYS_INVALID_INPUT_PARAM, fmt::format(value_error_msg, __func__, keylen_key));
                 }
