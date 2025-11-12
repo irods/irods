@@ -7226,10 +7226,10 @@ irods::error db_mod_user_op(
                         &icss);
 
                     if (ec < 0) {
-                        const auto msg = fmt::format(
+                        auto msg = fmt::format(
                             "{}: Failed to get configuration for hashing parameters. Cannot set password.", __func__);
-                        log_db::info(msg);
-                        return ERROR(ec, msg);
+                        log_db::error(msg);
+                        return ERROR(ec, std::move(msg));
                     }
                 }
 
@@ -7396,14 +7396,14 @@ irods::error db_mod_user_op(
             std::vector<std::string> bindVars;
             bindVars.emplace_back(userName2);
             bindVars.emplace_back(zoneName);
-            const int ec = cmlGetIntegerValueFromSql(
+            const int select_err = cmlGetIntegerValueFromSql(
                 "select user_id from R_USER_MAIN where user_name=? and zone_name=?", &iVal, bindVars, &icss);
-            if (0 != ec) {
-                log_db::info("chlModUser invalid user {} zone {}", userName2, zoneName);
+            if (select_err < 0) {
+                log_db::error("chlModUser invalid user {} zone {}", userName2, zoneName);
                 return ERROR(CAT_INVALID_USER, "invalid user");
             }
         }
-        log_db::info("Failed to update password for user [{}#{}]: [{}]", userName2, zoneName, status);
+        log_db::error("Failed to update password for user [{}#{}]: [{}]", userName2, zoneName, status);
         return ERROR(status, "Failed to update user password.");
     }
 
@@ -15665,7 +15665,6 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
                              "where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_CREDENTIALS.user_id");
             stmt.bind(0, user_name.c_str());
             stmt.bind(1, zone_name.c_str());
-            // Maybe only expect one password? And salt cannot be null or empty?
             for (auto result = nanodbc::execute(stmt); result.next();) {
                 const auto hashed_password = result.get<std::string>(0);
                 const auto salt = result.get<std::string>(1);
