@@ -245,6 +245,7 @@ namespace irods::authentication
             // Even though getAndConnRcatHostNoLogin does not modify the zone name parameter, it uses a pointer-to-char
             // parameter instead of pointer-to-const-char parameter, so we must cast the const away on the c_str() call
             // here. It is safe to do so - just ugly.
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
             if (const auto connect_err =
                     getAndConnRcatHostNoLogin(&_comm, PRIMARY_RCAT, const_cast<char*>(zone_name.c_str()), &host);
                 connect_err < 0)
@@ -369,6 +370,7 @@ namespace irods::authentication
             // Even though getAndConnRcatHostNoLogin does not modify the zone name parameter, it uses a pointer-to-char
             // parameter instead of pointer-to-const-char parameter, so we must cast the const away on the c_str() call
             // here. It is safe to do so - just ugly.
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
             if (const auto connect_err =
                     getAndConnRcatHostNoLogin(&_comm, PRIMARY_RCAT, const_cast<char*>(zone_name.c_str()), &host);
                 connect_err < 0)
