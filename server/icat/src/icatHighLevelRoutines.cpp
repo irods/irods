@@ -4858,6 +4858,7 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int
         irods::log(PASSMSG("failed to resolve database interface", ret));
         return static_cast<int>(ret.code());
     }
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
     // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
