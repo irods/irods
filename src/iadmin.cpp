@@ -2559,6 +2559,8 @@ usage( char *subOpt ) {
         "authentication   password_extend_lifetime",
         "authentication   password_max_time",
         "authentication   password_min_time",
+        "authentication   password_hashing_parameters",
+        "authentication   token_lifetime_in_seconds",
         ""};
 
     char* get_grid_configuration_usage[] = {
@@ -2585,6 +2587,8 @@ usage( char *subOpt ) {
         "authentication   password_extend_lifetime",
         "authentication   password_max_time",
         "authentication   password_min_time",
+        "authentication   password_hashing_parameters",
+        "authentication   token_lifetime_in_seconds",
         "database         schema_version",
         "delay_server     leader",
         "delay_server     successor",
