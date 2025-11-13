@@ -26,7 +26,7 @@ namespace irods::authentication
         uuid.reserve(session_token_length);
         uuid = to_string(boost::uuids::random_generator{}());
         return uuid;
-    } // generate_unique_key
+    } // generate_session_token
 
     // The implementation for this function is based on that found in native authentication.
     auto set_privileges_in_rs_comm(RsComm& _comm, const std::string& _user_name, const std::string& _zone_name) -> void
