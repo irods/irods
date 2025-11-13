@@ -148,7 +148,7 @@ namespace
         IRODS_MSI_TEST_BEGIN("test basic scrypt password hashing from scrypt paper")
 
         // These test cases come from the scrypt paper "Stronger Key Derivation via Sequential Memory-hard Functions"
-        // written by Colin Percival. To compare results, please consult the paper and find Appendix B: "Test Vectors".
+        // by Colin Percival (2009). To compare results, please consult the paper and find Appendix B: "Test Vectors".
         // Each expected result is a base64-encoded string of the key derived with the specified parameters and are
         // labeled as "vX" where X is the test vector from the paper represented here.
 
