@@ -138,7 +138,7 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 		self.test_groupadmin = session.mkuser_and_return_session(
 			"groupadmin", "test_groupadmin", "groupadminpass", lib.get_hostname())
 
-		# Change the user"s authentication scheme to irods authentication because that's what all of these tests use.
+		# Change the user's authentication scheme to irods authentication because that's what all of these tests use.
 		client_update = {"irods_authentication_scheme": self.authentication_scheme}
 		self.test_rodsadmin.environment_file_contents.update(client_update)
 		self.test_rodsuser.environment_file_contents.update(client_update)
@@ -265,7 +265,7 @@ class test_delete_session_tokens(unittest.TestCase):
 		# Create an admin user / session for all the tests so we don't have to keep making it for each test.
 		self.admin = session.mkuser_and_return_session("rodsadmin", "otherrods", "rods", lib.get_hostname())
 
-		# Configure password storage mode to "hashed" so that we can get some session tokens to test with.
+		# Configure password storage mode to set both native and irods auth passwords.
 		self.server_config_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(paths.server_config_path())).name
 		shutil.copyfile(paths.server_config_path(), self.server_config_backup)
 		with open(paths.server_config_path()) as f:
@@ -289,7 +289,7 @@ class test_delete_session_tokens(unittest.TestCase):
 		for username in ["bilbo", "smeagol"]:
 			self.test_users.append(session.mkuser_and_return_session("rodsuser", username, f"{username}_pass", lib.get_hostname()))
 
-		# Change the user"s authentication scheme to irods authentication because that's what all of these tests use.
+		# Change the user's authentication scheme to irods authentication because that's what all of these tests use.
 		self.authentication_scheme = "irods"
 		client_update = {"irods_authentication_scheme": self.authentication_scheme}
 		for user in self.test_users:
