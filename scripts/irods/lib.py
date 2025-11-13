@@ -868,3 +868,11 @@ def set_replica_status(session, logical_path, replica_number, replica_status):
         'replica_number', str(replica_number),
         'DATA_REPL_STATUS', str(replica_status)
     ])
+
+
+def user_exists(session, user_name, zone_name=None):
+    if zone_name is None:
+        zone_name = session.zone_name
+    out = session.run_icommand(
+        ['iquest', f"select USER_ID where USER_NAME = '{user_name}' and USER_ZONE = '{zone_name}'"])[0]
+    return 'CAT_NO_ROWS_FOUND' not in out

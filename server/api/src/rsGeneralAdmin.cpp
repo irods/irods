@@ -907,8 +907,26 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
             const auto user_name = std::string_view{generalAdminInp->arg2 ?
                                                     generalAdminInp->arg2 : ""};
 
-            const auto option = std::string_view{generalAdminInp->arg3 ?
-                                                 generalAdminInp->arg3 : ""};
+            std::string_view option = (nullptr != generalAdminInp->arg3) ? generalAdminInp->arg3 : "";
+
+            // TODO(#8697): Should we prevent clearing the current user's password? What about rodsadmin accounts?
+            if ("remove_password" == option) {
+                std::vector<char> just_user_name(NAME_LEN + 1, '\0');
+                std::vector<char> zone_name(NAME_LEN + 1, '\0');
+                if (const auto parse_err = parseUserName(user_name.data(), just_user_name.data(), zone_name.data());
+                    parse_err < 0)
+                {
+                    const auto msg =
+                        fmt::format("Invalid user_name argument provided: Could not parse [{}].", user_name);
+                    log_api::error("{}: {}", __func__, msg);
+                    addRErrorMsg(&rsComm->rError, parse_err, msg.c_str());
+                    return parse_err;
+                }
+                const auto input =
+                    nlohmann::json{{"user_name", just_user_name.data()},
+                                   {"zone_name", ('\0' == zone_name.at(0)) ? getLocalZoneName() : zone_name.data()}};
+                return chl_remove_password(rsComm, input.dump().c_str());
+            }
 
             const auto new_value = std::string_view{generalAdminInp->arg4 ?
                                                     generalAdminInp->arg4 : ""};
@@ -939,8 +957,19 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                 return e.code();
             }
 
+            // The no-scramble option is used to indicate that the password is not obfuscated. In order to communicate
+            // this to chlModUser, we must use a slightly different option name so that the database operation does
+            // not attempt to de-obfuscate the password. This technically means that this API accepts an option called
+            // "password-unobfuscated" which is the same thing as the "password" option with an arg5 of "no-scramble".
+            const std::string_view option_modifier =
+                (nullptr != generalAdminInp->arg5) ? std::string_view{generalAdminInp->arg5} : "";
+            if ("password" == option && "no-scramble" == option_modifier) {
+                option = "password-unobfuscated";
+            }
+
             args[0] = user_name.data();
             args[1] = option.data();
+
             /* Since the obfuscated password might contain commas, single or
                double quotes, etc, it's hard to escape for processing (often
                causing a seg fault), so for now just pass in a dummy string.
@@ -1390,6 +1419,43 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         std::strcpy(input.successor, generalAdminInp->arg1);
 
         return rs_set_delay_server_migration_info(rsComm, &input);
+    }
+
+    if (0 == std::strcmp(generalAdminInp->arg0, "delete_session_tokens")) {
+        if (nullptr == generalAdminInp->arg1 || 0 == std::strlen(generalAdminInp->arg1)) {
+            log_api::error("Invalid type_option argument provided: null pointer or empty string.");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        const char* type_option = generalAdminInp->arg1;
+        nlohmann::json input;
+        if (std::string_view{"all"} == type_option) {
+            input = nlohmann::json{{"expired_only", false}};
+        }
+        else if (std::string_view{"expired"} == type_option) {
+            input = nlohmann::json{{"expired_only", true}};
+        }
+        else {
+            log_api::error(R"(Must provide either "all" or "expired". Value received: [{}])", type_option);
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if (nullptr != generalAdminInp->arg2 && std::strlen(generalAdminInp->arg2) > 0) {
+            std::vector<char> user_name(NAME_LEN + 1, '\0');
+            std::vector<char> zone_name(NAME_LEN + 1, '\0');
+            if (const auto parse_err = parseUserName(generalAdminInp->arg2, user_name.data(), zone_name.data());
+                parse_err < 0)
+            {
+                const auto msg = fmt::format("Invalid user_name argument provided: Could not parse [{}].", user_name);
+                log_api::error("{}: {}", __func__, msg);
+                addRErrorMsg(&rsComm->rError, parse_err, msg.c_str());
+                return parse_err;
+            }
+            input["user_name"] = user_name.data();
+            input["zone_name"] = ('\0' == zone_name.at(0)) ? getLocalZoneName() : zone_name.data();
+        }
+
+        return chl_delete_session_tokens(rsComm, input.dump().c_str());
     }
 
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {

@@ -33,6 +33,7 @@ drop table R_TICKET_ALLOWED_GROUPS;
 drop table R_TICKET_ALLOWED_USERS;
 drop table R_TICKET_ALLOWED_HOSTS;
 drop table R_GRID_CONFIGURATION;
+drop table R_USER_CREDENTIALS;
 drop sequence R_ObjectId;
 drop index idx_zone_main1;
 drop index idx_zone_main2;

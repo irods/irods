@@ -131,7 +131,7 @@ class IrodsController(object):
         self.stop()
         self.start(write_to_stdout, test_mode)
 
-    def reload_configuration(self):
+    def reload_configuration(self, max_retries=60):
         """Send the SIGHUP signal to the server, causing it to reload the configuration."""
         l = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ class IrodsController(object):
             if (new_agent_factory_pid is None) or (new_agent_factory_pid == old_agent_factory_pid):
                 time.sleep(1)
                 loop_counter += 1
-                if loop_counter == 60:
+                if loop_counter == max_retries:
                     raise IrodsError('Reload may have failed. Please check log file and configuration.')
                 continue
             l.debug('New agent factory detected [pid=%s].', new_agent_factory_pid)

@@ -6,6 +6,7 @@ add_dependencies(all-plugins_no_database all-plugins-auth)
 
 set(
   IRODS_AUTH_PLUGINS
+  irods
   native
   pam_password
 )

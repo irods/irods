@@ -209,6 +209,8 @@ namespace irods
     extern const char* const KW_CFG_TLS_VERIFY_SERVER;
 
     extern const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME;
+
+    extern const char* const KW_CFG_USER_PASSWORD_STORAGE_MODE;
 } // namespace irods
 
 #endif // IRODS_CONFIGURATION_KEYWORDS_HPP
