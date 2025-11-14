@@ -1383,13 +1383,21 @@ int setOverQuota( rsComm_t *rsComm ) {
     int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     char myTime[50];
 
+#ifdef ORA_ICAT
+#    define IRODS_INT_TO_STRING(x) " TO_CHAR(" x ") "
+#elif MY_ICAT
+#    define IRODS_INT_TO_STRING(x) " CAST(" x " AS CHAR) "
+#else
+#    define IRODS_INT_TO_STRING(x) " CAST(" x " AS TEXT) "
+#endif
+
     /* For each defined group limit (if any), get a total usage on that
      * resource for all users in that group: */
     char mySQL1[] = "select sum(quota_usage), UM1.user_id, R_QUOTA_USAGE.resc_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id group by UM1.user_id, R_QUOTA_USAGE.resc_id";
 
     /* For each defined group limit on total usage (if any), get a
      * total usage on any resource for all users in that group: */
-    char mySQL2a[] = "select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s group by UM1.user_id,  R_QUOTA_MAIN.quota_limit";
+    char mySQL2a[] = "select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s AND NOT EXISTS (SELECT resc_id FROM R_RESC_MAIN WHERE resc_parent = " IRODS_INT_TO_STRING("R_QUOTA_USAGE.resc_id") ") group by UM1.user_id, R_QUOTA_MAIN.quota_limit";
     char mySQL2b[MAX_SQL_SIZE];
 
     char mySQL3a[] = "update R_QUOTA_MAIN set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over and resc_id = %s";
@@ -1441,8 +1449,9 @@ int setOverQuota( rsComm_t *rsComm ) {
     for ( rowsFound = 0;; rowsFound++ ) {
         int status2;
         if ( rowsFound == 0 ) {
-            status = cmlGetFirstRowFromSql( "select sum(quota_usage), R_QUOTA_MAIN.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = '0' group by R_QUOTA_MAIN.user_id",
+            status = cmlGetFirstRowFromSql( "select sum(quota_usage), R_QUOTA_MAIN.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = '0' AND NOT EXISTS (SELECT resc_id FROM R_RESC_MAIN WHERE resc_parent = " IRODS_INT_TO_STRING("R_QUOTA_USAGE.resc_id") ") group by R_QUOTA_MAIN.user_id",
                                             &statementNum, 0, &icss );
+#undef IRODS_INT_TO_STRING
         }
         else {
             status = cmlGetNextRowFromStatement( statementNum, &icss );
@@ -11452,9 +11461,40 @@ irods::error db_calc_usage_and_quota_op(
         log_sql::debug("chlCalcUsageAndQuota SQL 2");
     }
     cllBindVars[cllBindVarCount++] = myTime;
+
+#ifdef ORA_ICAT
+// Oracle does not like WITH RECURSIVE
+#    define IRODS_QUOTA_WITH_RECURSIVE " WITH "
+// Cast "as integer" for oracle
+#    define IRODS_QUOTA_CAST_TYPE_AS " AS INTEGER "
+#elif MY_ICAT
+#    define IRODS_QUOTA_WITH_RECURSIVE " WITH RECURSIVE "
+// Cast "as signed" for MySQL/MariaDB
+#    define IRODS_QUOTA_CAST_TYPE_AS " AS SIGNED "
+#else
+#    define IRODS_QUOTA_WITH_RECURSIVE " WITH RECURSIVE "
+// Case "as bigint" for postgres
+#    define IRODS_QUOTA_CAST_TYPE_AS " AS BIGINT "
+#endif
+
     status =  cmlExecuteNoAnswerSql(
-                  "insert into R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) (select sum(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_USER_MAIN.user_id, ? from R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name and R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone and R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id group by R_RESC_MAIN.resc_id, user_id)",
+                  "INSERT INTO R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) "
+                  IRODS_QUOTA_WITH_RECURSIVE
+                  // Begin CTE: recursive table
+                  "resc_usage(quota_usage, resc_id, resc_parent, user_id) AS ("
+                  // Base case: "old" query that calculates usage on storage resources only
+                  "SELECT SUM(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_RESC_MAIN.resc_parent, R_USER_MAIN.user_id FROM R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN WHERE R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name AND R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone AND R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id GROUP BY R_RESC_MAIN.resc_id, user_id, R_RESC_MAIN.resc_parent UNION ALL "
+                  // Recursive case: each parent of a storage resource gets a corresponding usage row for a child usage row
+                  "SELECT resc_usage.quota_usage, (CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE CAST(resc_usage.resc_parent "
+                  IRODS_QUOTA_CAST_TYPE_AS
+                  ") END ), R_RESC_MAIN.resc_parent, resc_usage.user_id FROM resc_usage, R_RESC_MAIN WHERE R_RESC_MAIN.resc_id = (CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE CAST(resc_usage.resc_parent "
+                  IRODS_QUOTA_CAST_TYPE_AS
+                  ") END )) "
+                  // Sum up usage rows by resource and user id
+                  "SELECT SUM(quota_usage), resc_id, user_id, ? FROM resc_usage GROUP BY resc_id, user_id",
                   &icss );
+#undef IRODS_QUOTA_CAST_TYPE_AS_STRING
+#undef IRODS_QUOTA_WITH_RECURSIVE
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         status = 0;    /* no files, OK */
     }

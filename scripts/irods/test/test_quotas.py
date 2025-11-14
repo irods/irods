@@ -228,3 +228,68 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
             self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
             IrodsController().reload_configuration()
+
+    # The following test covers case 3, 4, 5
+    def test_physical_resource_with_coordinating_resources_issue_8667(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acRescQuotaPolicy {
+                    msiSetRescQuotaPolicy("on");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acRescQuotaPolicy(rule_args, callback, rei):
+                    callback.msiSetRescQuotaPolicy('on')
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                group_name = 'test_group_case_3_4_5'
+                file_name = 'test_file_case_3_4_5'
+                resc_name = 'ufs0_quota_case_3_4_5'
+                other_resc_name = 'ufs1_quota_case_3_4_5'
+                repl_resc_name = 'repl_quota_case_3_4_5'
+                lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
+                lib.create_ufs_resource(self.admin, resc_name)
+                lib.create_ufs_resource(self.admin, other_resc_name)
+                lib.create_replication_resource(self.admin, repl_resc_name)
+
+                self.admin.assert_icommand(['iadmin', 'addchildtoresc', repl_resc_name, resc_name])
+                self.admin.assert_icommand(['iadmin', 'addchildtoresc', repl_resc_name, other_resc_name])
+
+                self.admin.assert_icommand(['iadmin', 'mkgroup', f'{group_name}_1'])
+                self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', repl_resc_name, '10000'])
+                self.admin.assert_icommand(['iadmin', 'atg', f'{group_name}_1', self.quota_user.username])
+
+                self.quota_user.assert_icommand(['iput', '-R', self.testresc, os.path.join(self.quota_user.local_session_dir, file_name)])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -10000\n'])
+                # Case 3: under quota succeeds
+                with self.subTest(testcase=3, desc="Under quota before and after"):
+                    self.quota_user.assert_icommand(['icp', '-R', repl_resc_name, file_name, f'{file_name}_case_3'])
+                    self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -1808\n'])
+
+                # Case 4: crossing quota succeeds
+                with self.subTest(testcase=4, desc="Crossing quota"):
+                    self.quota_user.assert_icommand(['icp', '-R', repl_resc_name, file_name, f'{file_name}_case_4'])
+                    self.admin.assert_icommand(['iadmin', 'cu'])
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 6384\n'])
+
+                # Case 5: violating quota fails
+                with self.subTest(testcase=5, desc="Violating resc quota"):
+                    self.quota_user.assert_icommand(['icp', '-R', repl_resc_name, file_name, f'{file_name}_case_5'], 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+                    self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 6384\n'])
+        finally:
+            self.admin.run_icommand(['irm', '-f', f'{file_name}_case_3', f'{file_name}_case_4', f'{file_name}_case_5'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', repl_resc_name, resc_name])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', repl_resc_name, other_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', repl_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
+            IrodsController().reload_configuration()
