@@ -27,8 +27,8 @@ namespace irods {
             EVP_MD_free(message_digest);
             EVP_MD_CTX_free(context);
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_INIT_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_INIT_FAILED, std::move(msg));
         }
 
         _context = context;
@@ -50,8 +50,8 @@ namespace irods {
             EVP_MD_CTX_free(context);
             _context = nullptr;
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_UPDATE_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_UPDATE_FAILED, std::move(msg));
         }
 
         return SUCCESS();
@@ -71,8 +71,8 @@ namespace irods {
             EVP_MD_CTX_free(context);
             _context = nullptr;
             const auto ssl_error_code = ERR_get_error();
-            const auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
-            return ERROR(DIGEST_FINAL_FAILED, msg);
+            auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
+            return ERROR(DIGEST_FINAL_FAILED, std::move(msg));
         }
 
         // The digest has been extracted from the context and placed in a buffer. The context is no longer needed, so

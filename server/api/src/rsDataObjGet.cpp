@@ -96,7 +96,7 @@ namespace
         L1desc[_fd].oprStatus = bytes_read;
 
         if (bytes_read >= 0 && !checksum.empty()) {
-            rstrcpy((*_out_for_checksum)->chksum, checksum.data(), NAME_LEN);
+            rstrcpy((*_out_for_checksum)->chksum, checksum.data(), CHKSUM_LEN);
         }
 
         const auto ec = close_replica(_comm, _fd);
@@ -145,7 +145,7 @@ namespace
 
                     return status;
                 }
-                rstrcpy( dataObjInfo->chksum, chksumStr, NAME_LEN );
+                rstrcpy(dataObjInfo->chksum, chksumStr, CHKSUM_LEN);
             }
         }
 
@@ -160,7 +160,7 @@ namespace
 
         status = _fd;         /* means file not included */
         if ( chksumStr != NULL ) {
-            rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
+            rstrcpy((*portalOprOut)->chksum, chksumStr, CHKSUM_LEN);
         }
 
         /* return portalOprOut to the client and wait for the rcOprComplete

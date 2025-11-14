@@ -130,7 +130,7 @@ typedef struct DataObjInfo {
     char rescHier[MAX_NAME_LEN];   // The hierarchy of resources within which the object resides
     char dataType[NAME_LEN];
     rodsLong_t dataSize;
-    char chksum[NAME_LEN];
+    char chksum[CHKSUM_LEN];
     char version[NAME_LEN];
     char filePath[MAX_NAME_LEN];
     char dataOwnerName[NAME_LEN];

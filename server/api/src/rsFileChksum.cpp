@@ -95,7 +95,7 @@ int remoteFileChksum(rsComm_t* rsComm,
 int _rsFileChksum(rsComm_t* rsComm, fileChksumInp_t* fileChksumInp, char** chksumStr)
 {
     if (!*chksumStr) {
-        *chksumStr = static_cast<char*>(std::malloc(sizeof(char) * NAME_LEN));
+        *chksumStr = static_cast<char*>(std::malloc(sizeof(char) * CHKSUM_LEN));
     }
 
     const auto ec = file_checksum(rsComm,
@@ -206,7 +206,9 @@ int fileChksum(rsComm_t* rsComm,
     ret = irods::getHasher( final_scheme, hasher );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        irods::getHasher( irods::MD5_NAME, hasher );
+        if (!irods::getHasher(irods::MD5_NAME, hasher).ok()) {
+            return ret.code();
+        }
     }
 
     // get the buffer size from server configuration - default to 1 MiB
@@ -248,7 +250,11 @@ int fileChksum(rsComm_t* rsComm,
     while ( read_err.ok() && bytes_read > 0 ) {
         // =-=-=-=-=-=-=-
         // update hasher
-        hasher.update(std::string(buffer.data(), bytes_read));
+        ret = hasher.update(std::string(buffer.data(), bytes_read));
+        if (!ret.ok()) {
+            log_api::error("{}: error on hasher update, result = {}", __func__, ret.result());
+            return ret.code();
+        }
 
         // =-=-=-=-=-=-=-
         // read some more
@@ -281,8 +287,12 @@ int fileChksum(rsComm_t* rsComm,
     // extract the digest from the hasher object
     // and copy to outgoing string
     std::string digest;
-    hasher.digest( digest );
-    strncpy( chksumStr, digest.c_str(), NAME_LEN );
+    ret = hasher.digest(digest);
+    if (!ret.ok()) {
+        log_api::error("{}: error on hash digest, result = {}", __func__, ret.result());
+        return ret.code();
+    }
+    strncpy(chksumStr, digest.c_str(), CHKSUM_LEN);
 
     return 0;
 } // fileChksum
@@ -360,7 +370,9 @@ int file_checksum(RsComm* _comm,
     irods::Hasher hasher;
     if (const auto error = irods::getHasher(final_scheme.data(), hasher); !error.ok()) {
         irods::log(PASS(error));
-        irods::getHasher(irods::MD5_NAME, hasher);
+        if (!irods::getHasher(irods::MD5_NAME, hasher).ok()) {
+            return error.code();
+        }
     }
 
     irods::hierarchy_parser hp{_resource_hierarchy};
@@ -419,14 +431,22 @@ int file_checksum(RsComm* _comm,
         }
 
         _data_size -= error.code();
-        hasher.update(std::string(buffer.data(), error.code()));
+        error = hasher.update(std::string(buffer.data(), error.code()));
+        if (!error.ok()) {
+            log_api::error("{}: error on hasher update, result = {}", __func__, error.result());
+            return error.code();
+        }
     }
 
     // extract the digest from the hasher object
     // and copy to outgoing string
     std::string digest;
-    hasher.digest(digest);
-    strncpy(_calculated_checksum, digest.c_str(), NAME_LEN);
+    error = hasher.digest(digest);
+    if (!error.ok()) {
+        log_api::error("{}: error on hash digest, result = {}", __func__, error.result());
+        return error.code();
+    }
+    strncpy(_calculated_checksum, digest.c_str(), CHKSUM_LEN);
 
     return 0;
 } // file_checksum

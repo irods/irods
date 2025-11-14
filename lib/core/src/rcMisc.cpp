@@ -3787,11 +3787,11 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
     std::memset( bulkDataObjRegInp->sqlResult[7].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[8].attriInx = COL_D_DATA_CHECKSUM;
-    bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[8].len = CHKSUM_LEN;
     bulkDataObjRegInp->sqlResult[8].value =
-        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+        ( char * )malloc( CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES );
     std::memset( bulkDataObjRegInp->sqlResult[8].value, 0,
-           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+           CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_RESC_ID;
     bulkDataObjRegInp->sqlResult[9].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
@@ -3868,11 +3868,11 @@ initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
             getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
         i = attriArray->attriCnt;
         attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
-        attriArray->sqlResult[i].len = NAME_LEN;
+        attriArray->sqlResult[i].len = CHKSUM_LEN;
         attriArray->sqlResult[i].value =
-            ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+            ( char * )malloc( CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES );
         std::memset( attriArray->sqlResult[i].value, 0,
-               NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+               CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES );
         attriArray->attriCnt++;
     }
     attriArray->continueInx = -1;
@@ -3906,7 +3906,7 @@ fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
             return UNMATCHED_KEY_OR_INDEX;
         }
         else {
-            rstrcpy( &chksum->value[NAME_LEN * rowCnt], inpChksum, NAME_LEN );
+            rstrcpy(&chksum->value[CHKSUM_LEN * rowCnt], inpChksum, CHKSUM_LEN);
         }
     }
     else {

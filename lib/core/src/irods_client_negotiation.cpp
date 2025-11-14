@@ -103,8 +103,14 @@ namespace irods
         if (const auto err = getHasher(MD5_NAME, hasher); !err.ok()) {
             return PASS(err);
         }
-        hasher.update( std::string( reinterpret_cast<char*>( out_buf.data() ), out_buf.size() ) );
-        hasher.digest( _signed_zone_key );
+        if (const auto err = hasher.update(std::string(reinterpret_cast<char*>(out_buf.data()), out_buf.size()));
+            !err.ok())
+        {
+            return PASS(err);
+        }
+        if (const auto err = hasher.digest(_signed_zone_key); !err.ok()) {
+            return PASS(err);
+        }
 
         return SUCCESS();
     } // sign_server_sid
