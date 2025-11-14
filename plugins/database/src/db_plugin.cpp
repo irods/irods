@@ -1469,13 +1469,43 @@ int setOverQuota( rsComm_t *rsComm ) {
     int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     char myTime[50];
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+#ifdef ORA_ICAT
+#  define IRODS_INT_TO_STRING(x) " TO_CHAR(" x ") "
+#elif MY_ICAT
+#  define IRODS_INT_TO_STRING(x) " CAST(" x " AS CHAR) "
+#else
+#  define IRODS_INT_TO_STRING(x) " CAST(" x " AS TEXT) "
+#endif
+    // NOLINTEND(cppcoreguidelines-macro-usage)
+
     /* For each defined group limit (if any), get a total usage on that
      * resource for all users in that group: */
     char mySQL1[] = "select sum(quota_usage), UM1.user_id, R_QUOTA_USAGE.resc_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id group by UM1.user_id, R_QUOTA_USAGE.resc_id";
 
     /* For each defined group limit on total usage (if any), get a
-     * total usage on any resource for all users in that group: */
-    char mySQL2a[] = "select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s group by UM1.user_id,  R_QUOTA_MAIN.quota_limit";
+     * total usage on any resource for all users in that group.
+     * The query will sum up total usage for all groups across all resources.
+     * UM1.user_id is a group (filtered by WHERE clause) so the query generates
+     * one row for total usage and links the usage to a quota in R_QUOTA_MAIN
+     * Essentially, this does two things: it gets a total usage and a
+     * defined quota limit. It will use this row later to compute and set
+     * quota_over. Additionally, to avoid multiple counting, this query
+     * will only count totals of leaf (non-coordinating) resources by excluding
+     * any resource that is parent to another (i.e. there exists a resource that
+     * has this resource as a parent)
+     *
+     * This query can be optimized by adding an index on R_RESC_MAIN.resc_parent
+     * to speed up the subquery SELECT. */
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    char mySQL2a[] =
+        "select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN "
+        "UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = "
+        "'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and "
+        "R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s AND NOT "
+        "EXISTS (SELECT resc_id FROM R_RESC_MAIN WHERE resc_parent = " IRODS_INT_TO_STRING(
+            "R_QUOTA_USAGE.resc_id") ") group by UM1.user_id, R_QUOTA_MAIN.quota_limit";
     char mySQL2b[MAX_SQL_SIZE];
 
     char mySQL3a[] = "update R_QUOTA_MAIN set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over and resc_id = %s";
@@ -1527,8 +1557,20 @@ int setOverQuota( rsComm_t *rsComm ) {
     for ( rowsFound = 0;; rowsFound++ ) {
         int status2;
         if ( rowsFound == 0 ) {
-            status = cmlGetFirstRowFromSql( "select sum(quota_usage), R_QUOTA_MAIN.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = '0' group by R_QUOTA_MAIN.user_id",
-                                            &statementNum, 0, &icss );
+            /* This query fetches the total usage of a user and matches it
+               to a defined total quota. It's similar to mySQL2a above, but
+               it only works per-user. Since user quotas are officially
+               deprecated, it sees nearly no use, but it also has the updated
+               anti-double counting logic added to it for completeness. */
+            status = cmlGetFirstRowFromSql(
+                "select sum(quota_usage), R_QUOTA_MAIN.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN where "
+                "R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = '0' AND NOT EXISTS (SELECT "
+                "resc_id FROM R_RESC_MAIN WHERE resc_parent = " IRODS_INT_TO_STRING(
+                    "R_QUOTA_USAGE.resc_id") ") group by R_QUOTA_MAIN.user_id",
+                &statementNum,
+                0,
+                &icss);
+#undef IRODS_INT_TO_STRING
         }
         else {
             status = cmlGetNextRowFromStatement( statementNum, &icss );
@@ -11731,9 +11773,79 @@ irods::error db_calc_usage_and_quota_op(
         log_sql::debug("chlCalcUsageAndQuota SQL 2");
     }
     cllBindVars[cllBindVarCount++] = myTime;
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) (select sum(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_USER_MAIN.user_id, ? from R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name and R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone and R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id group by R_RESC_MAIN.resc_id, user_id)",
-                  &icss );
+
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+#ifdef ORA_ICAT
+// Oracle does not like WITH RECURSIVE
+#  define IRODS_QUOTA_WITH_RECURSIVE " WITH "
+// Cast "as integer" for oracle
+#  define IRODS_QUOTA_CAST_TYPE_AS   " AS INTEGER "
+#elif MY_ICAT
+#  define IRODS_QUOTA_WITH_RECURSIVE " WITH RECURSIVE "
+// Cast "as signed" for MySQL/MariaDB
+#  define IRODS_QUOTA_CAST_TYPE_AS   " AS SIGNED "
+#else
+#  define IRODS_QUOTA_WITH_RECURSIVE " WITH RECURSIVE "
+// Case "as bigint" for postgres
+#  define IRODS_QUOTA_CAST_TYPE_AS   " AS BIGINT "
+#endif
+    // NOLINTEND(cppcoreguidelines-macro-usage)
+
+    /* This query sums up data object sizes and groups them by resource and user.
+       This gets a total usage per resource for each user. This is inserted into
+       R_QUOTA_USAGE. Additionally, after adding the total storage resource
+       usage for each user in the base case, it will recursively add
+       more rows with the same usage for each resource's parent,
+       effectively generating a usage row for each coordinating resource equal to
+       the sum of its child hierarchy. This repeats leaf-to-root.
+       The rows are totaled at the end by resource, because aggregates are not
+       allowed in the recursive statement of a CTE.
+       The COALESCE/casting is required because resc_parent is a nullable varchar,
+       so it is needed to catch both cases.
+       Suppose you have a coordinating resource c0 with two children: s0, s1
+
+       Suppose there are two data objects owned by user_id 10001 of size 4096
+       on ids s0, s1.
+       The base case query will generate:
+       quota_usage, resc_id, resc_parent, user_id
+       4096, s0_id, c0_id, 10001
+       4096, s1_id, c0_id, 10001
+
+       The recursive case query will generate:
+       quota_usage, resc_id, resc_parent, user_id
+       4096, c0_id, NULL or '', 10001
+       4096, c0_id, NULL or '', 10001
+
+       The recursive case query will then generate no rows, because
+       there are no R_RESC_MAIN.resc_id = NULL, so the WHERE clause will fail.
+
+       (Duplicated rows are expected here: it's one for s0 and one for s1)
+       Thus, after summing, the final rows going into R_QUOTA_USAGE become:
+       quota_usage, resc_id, user_id, modify_ts
+       4096, s0_id, 10001, timestamp
+       4096, s1_id, 10001, timestamp
+       8192, c0_id, 10001, timestamp */
+
+    status = cmlExecuteNoAnswerSql(
+        "INSERT INTO R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) " IRODS_QUOTA_WITH_RECURSIVE
+        // Begin CTE: recursive table
+        "resc_usage(quota_usage, resc_id, resc_parent, user_id) AS ("
+        // Base case: "old" query that calculates usage on storage resources only
+        "SELECT SUM(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_RESC_MAIN.resc_parent, R_USER_MAIN.user_id FROM "
+        "R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN WHERE R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name AND "
+        "R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone AND R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id GROUP BY "
+        "R_RESC_MAIN.resc_id, user_id, R_RESC_MAIN.resc_parent UNION ALL "
+        // Recursive case: each parent of a storage resource gets a corresponding usage row for a child usage row
+        "SELECT resc_usage.quota_usage, (CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE "
+        "CAST(resc_usage.resc_parent " IRODS_QUOTA_CAST_TYPE_AS
+        ") END ), R_RESC_MAIN.resc_parent, resc_usage.user_id FROM resc_usage, R_RESC_MAIN WHERE R_RESC_MAIN.resc_id = "
+        "(CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE "
+        "CAST(resc_usage.resc_parent " IRODS_QUOTA_CAST_TYPE_AS ") END )) "
+        // Sum up usage rows by resource and user id
+        "SELECT SUM(quota_usage), resc_id, user_id, ? FROM resc_usage GROUP BY resc_id, user_id",
+        &icss);
+#undef IRODS_QUOTA_CAST_TYPE_AS_STRING
+#undef IRODS_QUOTA_WITH_RECURSIVE
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         status = 0;    /* no files, OK */
     }
