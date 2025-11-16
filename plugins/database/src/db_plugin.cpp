@@ -11499,7 +11499,7 @@ irods::error db_calc_usage_and_quota_op(
        This gets a total usage per resource for each user. This is inserted into
        R_QUOTA_USAGE. Additionally, after adding the total storage resource
        usage for each user in the base case, it will recursively add
-       more rows with the same usage for each leaf resource's parent,
+       more rows with the same usage for each resource's parent,
        effectively generating a usage row for each coordinating resource equal to
        the sum of its child hierarchy. This repeats leaf-to-root.
        The rows are totaled at the end by resource, because aggregates are not
