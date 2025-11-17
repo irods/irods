@@ -11512,13 +11512,13 @@ irods::error db_calc_usage_and_quota_op(
        on ids s0, s1.
        The base case query will generate:
        quota_usage, resc_id, resc_parent, user_id
-       4096, s0, c0, 10001
-       4096, s1, c0, 10001
+       4096, s0_id, c0_id, 10001
+       4096, s1_id, c0_id, 10001
 
        The recursive case query will generate:
        quota_usage, resc_id, resc_parent, user_id
-       4096, c0, NULL or '', 10001
-       4096, c0, NULL or '', 10001
+       4096, c0_id, NULL or '', 10001
+       4096, c0_id, NULL or '', 10001
 
        The recursive case query will then generate no rows, because
        there are no R_RESC_MAIN.resc_id = NULL, so the WHERE clause will fail.
@@ -11526,9 +11526,9 @@ irods::error db_calc_usage_and_quota_op(
        (Duplicated rows are expected here: it's one for s0 and one for s1)
        Thus, after summing, the final rows going into R_QUOTA_USAGE become:
        quota_usage, resc_id, user_id, modify_ts
-       4096, s0, 10001, timestamp
-       4096, s1, 10001, timestamp
-       8192, c0, 10001, timestamp */
+       4096, s0_id, 10001, timestamp
+       4096, s1_id, 10001, timestamp
+       8192, c0_id, 10001, timestamp */
 
     status =  cmlExecuteNoAnswerSql(
                   "INSERT INTO R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) "
