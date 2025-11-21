@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-from __future__ import print_function
 
-import os, sys, optparse
+import argparse, os, sys
+
 import irods.setup_options
 
-def parse_options():
-    parser = optparse.OptionParser()
+def parse_arguments():
+    parser = argparse.ArgumentParser()
     irods.setup_options.add_options(parser)
 
     return parser.parse_args()
@@ -14,9 +14,9 @@ def get_ld_library_path_list():
 
     ld_library_path_list = []
 
-    (options, _) = parse_options()
-    if options.ld_library_path:
-        ld_library_path_list = [p for p in options.ld_library_path.split(':') if p]
+    args = parse_arguments()
+    if args.ld_library_path:
+        ld_library_path_list = [p for p in args.ld_library_path.split(':') if p]
 
     return ld_library_path_list
 
@@ -496,34 +496,34 @@ def main():
 
     irods.log.register_tty_handler(sys.stderr, logging.WARNING, None)
 
-    (options, _) = parse_options()
+    args = parse_arguments()
 
     irods_config = IrodsConfig()
 
     irods.log.register_file_handler(irods_config.setup_log_path)
-    if options.verbose > 0:
+    if None != args.verbose and args.verbose > 0:
         llevel = logging.NOTSET
-        if options.verbose == 1:
+        if args.verbose == 1:
             llevel = logging.INFO
-        elif options.verbose == 2:
+        elif args.verbose == 2:
             llevel = logging.DEBUG
         irods.log.register_tty_handler(sys.stdout, llevel, logging.WARNING)
 
-    if options.server_log_level != None:
-        irods_config.injected_environment['spLogLevel'] = str(options.server_log_level)
-    if options.sql_log_level != None:
-        irods_config.injected_environment['spLogSql'] = str(options.sql_log_level)
-    if options.days_per_log != None:
-        irods_config.injected_environment['logfileInt'] = str(options.days_per_log)
-    if options.rule_engine_server_options != None:
-        irods_config.injected_environment['reServerOption'] = options.rule_engine_server_options
-    if options.server_reconnect_flag:
+    if args.server_log_level != None:
+        irods_config.injected_environment['spLogLevel'] = str(args.server_log_level)
+    if args.sql_log_level != None:
+        irods_config.injected_environment['spLogSql'] = str(args.sql_log_level)
+    if args.days_per_log != None:
+        irods_config.injected_environment['logfileInt'] = str(args.days_per_log)
+    if args.rule_engine_server_options != None:
+        irods_config.injected_environment['reServerOption'] = args.rule_engine_server_options
+    if args.server_reconnect_flag:
         irods_config.injected_environment['irodsReconnect'] = ''
 
     try:
         setup_server(irods_config,
-                     json_configuration_file=options.json_configuration_file,
-                     test_mode=options.test_mode)
+                     json_configuration_file=args.json_configuration_file,
+                     test_mode=args.test_mode)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')

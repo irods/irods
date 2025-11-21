@@ -1,10 +1,10 @@
 from __future__ import print_function
 
+import argparse
 import glob
 import itertools
 import logging
 import multiprocessing
-import optparse
 import os
 import sys
 import tempfile
@@ -147,38 +147,38 @@ def register_log_handler():
     logging.getLogger().addHandler(logging_handler)
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('--debug_build', default='false')
-    parser.add_option('--icommands_git_commitish')
-    parser.add_option('--icommands_git_repository')
-    parser.add_option('--externals_packages_directory')
-    parser.add_option('--output_root_directory')
-    parser.add_option('--just_install_dependencies', action='store_true', default=False)
-    parser.add_option('--verbose', action='store_true', default=False)
-    options, _ = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug_build', default='false')
+    parser.add_argument('--icommands_git_commitish')
+    parser.add_argument('--icommands_git_repository')
+    parser.add_argument('--externals_packages_directory')
+    parser.add_argument('--output_root_directory')
+    parser.add_argument('--just_install_dependencies', action='store_true', default=False)
+    parser.add_argument('--verbose', action='store_true', default=False)
+    args = parser.parse_args()
 
-    if options.verbose:
+    if args.verbose:
         register_log_handler()
 
-    if options.just_install_dependencies:
-        install_building_dependencies(options.externals_packages_directory)
+    if args.just_install_dependencies:
+        install_building_dependencies(args.externals_packages_directory)
         return
 
-    if options.debug_build not in ['false', 'true']:
+    if args.debug_build not in ['false', 'true']:
         print('--debug_build must be either "false" or "true"', file=sys.stderr)
         sys.exit(1)
 
-    if not options.icommands_git_repository:
+    if not args.icommands_git_repository:
         print('--icommands_git_repository must be provided', file=sys.stderr)
         sys.exit(1)
 
-    if not options.icommands_git_commitish:
+    if not args.icommands_git_commitish:
         print('--icommands_git_commitish must be provided', file=sys.stderr)
         sys.exit(1)
 
     build(
-        options.icommands_git_repository, options.icommands_git_commitish,
-        options.debug_build == 'true', options.output_root_directory, options.externals_packages_directory)
+        args.icommands_git_repository, args.icommands_git_commitish,
+        args.debug_build == 'true', args.output_root_directory, args.externals_packages_directory)
 
 if __name__ == '__main__':
     main()
