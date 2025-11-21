@@ -164,3 +164,24 @@ class Test_Izonereport(unittest.TestCase):
         _, stdout, _ = self.admin.assert_icommand('izonereport', 'STDOUT')
         zone_info = json.loads(stdout)['zones'][0]
         self.assertEqual(len(zone_info['servers']), 4 if test.settings.RUN_IN_TOPOLOGY else 1)
+
+    def test_servers_json_objects_when_connection_failure_occurs__issue_8607(self):
+        bad_resc = "badResc"
+        bad_resc_host = "irods.org"
+
+        try:
+            # Create a resource with a hostname with no iRODS server running on it.
+            lib.create_ufs_resource(self.admin, bad_resc, hostname=bad_resc_host)
+
+            # Generate a zone report...
+            _, stdout, _ = self.admin.assert_icommand("izonereport", "STDOUT")
+
+            # Ensure that all of the listed servers are JSON objects. In #3682, resources with hosts that failed to
+            # establish a connection with the server generating the zone report would be a JSON array with an error
+            # message.
+            for server in json.loads(stdout)["zones"][0]["servers"]:
+                # JSON objects have a "keys" attribute. JSON arrays do not.
+                self.assertTrue(hasattr(server, "keys"), msg=f"'server' entry is not a JSON object:{server}")
+
+        finally:
+            self.admin.run_icommand(["iadmin", "rmresc", bad_resc])
