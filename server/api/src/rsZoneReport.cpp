@@ -76,7 +76,7 @@ static void report_server_connect_error(
     irods::error err = ERROR(_error, msg.str());
     irods::log( err );
 
-    _resc_arr.push_back({"ERROR", msg.str()});
+    _resc_arr.emplace_back(json{{"ERROR", msg.str()}});
 }
 
 static
