@@ -124,6 +124,8 @@ namespace
             }
         }
         catch (const nlohmann::json::exception& e) {
+            log_api::error(
+                "{}: JSON error occurred. Check your zone report for server configuration errors.", __func__);
             THROW(SYS_LIBRARY_ERROR, e.what()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         }
     } // throw_if_downgrading_irods_service_account_rodsadmin
