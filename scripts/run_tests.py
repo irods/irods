@@ -5,9 +5,9 @@ try:
     import importlib
 except ImportError:
     from __builtin__ import __import__
+import argparse
 import itertools
 import logging
-import optparse
 import os
 import shutil
 import subprocess
@@ -28,21 +28,6 @@ import irods.paths
 import irods.test
 import irods.test.settings
 
-def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
-    unittest.installHandler()
-
-def optparse_callback_use_ssl(*args, **kwargs):
-    irods.test.settings.USE_SSL = True
-
-def optparse_callback_use_mungefs(*args, **kwargs):
-    irods.test.settings.USE_MUNGEFS = True
-
-def optparse_callback_federation(option, opt_str, value, parser):
-    irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
-    irods.test.settings.FEDERATION.REMOTE_ZONE = value[1]
-    irods.test.settings.FEDERATION.REMOTE_HOST = value[2]
-    if irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4,2):
-        irods.test.settings.FEDERATION.REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
 
 def add_class_path_prefix(name):
     return "irods.test." + name
@@ -145,26 +130,35 @@ if __name__ == '__main__':
     irods.log.register_tty_handler(sys.stderr, logging.WARNING, None)
     irods.log.register_file_handler(IrodsConfig().test_log_path)
 
-    parser = optparse.OptionParser()
-    parser.add_option('--run_specific_test', metavar='dotted name')
-    parser.add_option('--skip_until', action="store")
-    parser.add_option('--run_python_suite', action='store_true')
-    parser.add_option('--run_plugin_tests', action='store_true')
-    parser.add_option('--include_auth_tests', action='store_true')
-    parser.add_option('--include_timing_tests', action='store_true')
-    parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], metavar='<icat|resource>')
-    parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
-    parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
-    parser.add_option('--use_mungefs', action='callback', callback=optparse_callback_use_mungefs)
-    parser.add_option('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
-    parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
-    parser.add_option('--federation', type='str', nargs=3, action='callback', callback=optparse_callback_federation, metavar='<remote irods version, remote zone, remote host>')
-    parser.add_option('--hostnames', type='str', nargs=4, metavar='<ICAT_HOSTNAME HOSTNAME_1 HOSTNAME_2 HOSTNAME_3>')
-    options, _ = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--run_specific_test', metavar='dotted name')
+    parser.add_argument('--skip_until', action="store")
+    parser.add_argument('--run_python_suite', action='store_true')
+    parser.add_argument('--run_plugin_tests', action='store_true')
+    parser.add_argument('--include_auth_tests', action='store_true')
+    parser.add_argument('--include_timing_tests', action='store_true')
+    parser.add_argument('--topology_test', choices=['icat', 'resource'], metavar='<icat|resource>')
+    parser.add_argument('--catch_keyboard_interrupt', action='store_true')
+    parser.add_argument('--use_ssl', action='store_true')
+    parser.add_argument('--use_mungefs', action='store_true')
+    parser.add_argument('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
+    parser.add_argument('--xml_output', action='store_true', dest='xml_output', default=False)
+    parser.add_argument('--federation', nargs=3, metavar='<remote irods version, remote zone, remote host>')
+    parser.add_argument('--hostnames', nargs=4, metavar='<ICAT_HOSTNAME HOSTNAME_1 HOSTNAME_2 HOSTNAME_3>')
+    args = parser.parse_args()
 
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(0)
+
+    if args.catch_keyboard_interrupt:
+        unittest.installHandler()
+
+    if args.use_ssl:
+        irods.test.settings.USE_SSL = True
+
+    if args.use_mungefs:
+        irods.test.settings.USE_MUNGEFS = True
 
     univmss_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh')
     if not os.path.exists(univmss_testing):
@@ -181,14 +175,22 @@ if __name__ == '__main__':
         shutil.copyfile(hello_template, hello_testing)
         os.chmod(hello_testing, 0o544)
 
-    if options.topology_test:
+    if args.federation:
+        value = args.federation
+        irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
+        irods.test.settings.FEDERATION.REMOTE_ZONE = value[1]
+        irods.test.settings.FEDERATION.REMOTE_HOST = value[2]
+        if irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4,2):
+            irods.test.settings.FEDERATION.REMOTE_VAULT = '/var/lib/irods/Vault'
+
+    if args.topology_test:
         irods.test.settings.RUN_IN_TOPOLOGY = True
-        irods.test.settings.TOPOLOGY_FROM_RESOURCE_SERVER = options.topology_test == 'resource'
-        if options.hostnames:
-            irods.test.settings.ICAT_HOSTNAME = options.hostnames[0]
-            irods.test.settings.HOSTNAME_1 = options.hostnames[1]
-            irods.test.settings.HOSTNAME_2 = options.hostnames[2]
-            irods.test.settings.HOSTNAME_3 = options.hostnames[3]
+        irods.test.settings.TOPOLOGY_FROM_RESOURCE_SERVER = args.topology_test == 'resource'
+        if args.hostnames:
+            irods.test.settings.ICAT_HOSTNAME = args.hostnames[0]
+            irods.test.settings.HOSTNAME_1 = args.hostnames[1]
+            irods.test.settings.HOSTNAME_2 = args.hostnames[2]
+            irods.test.settings.HOSTNAME_3 = args.hostnames[3]
         else:
             irods.test.settings.ICAT_HOSTNAME = 'icat.example.org'
             irods.test.settings.HOSTNAME_1 = 'resource1.example.org'
@@ -196,16 +198,16 @@ if __name__ == '__main__':
             irods.test.settings.HOSTNAME_3 = 'resource3.example.org'
 
     test_identifiers = []
-    if options.run_specific_test:
-        test_identifiers.append(options.run_specific_test)
-    if options.include_auth_tests:
+    if args.run_specific_test:
+        test_identifiers.append(args.run_specific_test)
+    if args.include_auth_tests:
         test_identifiers.append('test_auth')
-    if options.include_timing_tests:
+    if args.include_timing_tests:
         test_identifiers.append('timing_tests')
-    if options.run_python_suite:
+    if args.run_python_suite:
         with open(os.path.join(IrodsConfig().scripts_directory, 'core_tests_list.json'), 'r') as f:
             test_identifiers.extend(json.loads(f.read()))
-    if options.run_plugin_tests:
+    if args.run_plugin_tests:
         test_identifiers.extend(get_plugin_tests())
 
     IrodsController().stop()
@@ -220,7 +222,7 @@ if __name__ == '__main__':
     os.environ['PATH'] = ':'.join([irods.paths.server_bin_directory(), os.environ['PATH']])
 
     IrodsController().start(test_mode=True)
-    results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output, options.skip_until)
+    results = run_tests_from_names(test_identifiers, args.buffer_test_output, args.xml_output, args.skip_until)
     print(results)
 
     os.remove(univmss_testing)

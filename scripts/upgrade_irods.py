@@ -56,7 +56,7 @@ def main():
         logging.INFO,
         logging.DEBUG,
     ]
-    lvl = max(0, min(args.verbose, len(log_levels) - 1))
+    lvl = max(0, min(args.verbose or 0, len(log_levels) - 1))
     irods.log.register_tty_handler(sys.stdout, log_levels[lvl], logging.WARNING)
 
     irods_config = IrodsConfig()
