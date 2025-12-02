@@ -185,6 +185,7 @@ namespace irods::experimental::genquery2
         {"DATA_ACCESS_PERM_NAME", {"R_TOKN_MAIN", "token_name"}},
         {"DATA_ACCESS_USER_ID", {"R_OBJT_ACCESS", "user_id"}},
         {"DATA_ACCESS_USER_NAME", {"R_USER_MAIN", "user_name"}}, // What about groups?
+        {"DATA_ACCESS_USER_TYPE", {"R_USER_MAIN", "user_type_name"}},
         {"DATA_ACCESS_USER_ZONE", {"R_USER_MAIN", "zone_name"}},
         //{"DATA_ACCESS_DATA_ID",  {"R_OBJT_ACCESS", "object_id"}},
         //{"DATA_ACCESS_NAME",     {"R_TOKN_MAIN", "token_name"}}, // special?
@@ -194,6 +195,7 @@ namespace irods::experimental::genquery2
         {"COLL_ACCESS_PERM_NAME", {"R_TOKN_MAIN", "token_name"}},
         {"COLL_ACCESS_USER_ID", {"R_OBJT_ACCESS", "user_id"}},
         {"COLL_ACCESS_USER_NAME", {"R_USER_MAIN", "user_name"}},
+        {"COLL_ACCESS_USER_TYPE", {"R_USER_MAIN", "user_type_name"}},
         {"COLL_ACCESS_USER_ZONE", {"R_USER_MAIN", "zone_name"}},
         //{"COLL_ACCESS_COLL_ID",  {"R_OBJT_ACCESS", "object_id"}},
         //{"COLL_ACCESS_NAME",     {"R_TOKN_MAIN", "token_name"}}, // special?
