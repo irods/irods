@@ -555,7 +555,7 @@ namespace
             }
 
             // The alias for R_USER_MAIN as it relates to data objects.
-            if (tail == "USER_NAME" || tail == "USER_ZONE") {
+            if (tail == "USER_NAME" || tail == "USER_ZONE" || tail == "USER_TYPE") {
                 return "pdu";
             }
 
@@ -573,7 +573,7 @@ namespace
             }
 
             // The alias for R_USER_MAIN as it relates to collections.
-            if (tail == "USER_NAME" || tail == "USER_ZONE") {
+            if (tail == "USER_NAME" || tail == "USER_ZONE" || tail == "USER_TYPE") {
                 return "pcu";
             }
 
@@ -868,7 +868,9 @@ namespace irods::experimental::genquery2
                 add_r_data_main = true;
                 table_alias = "pdt"; // The alias for R_TOKN_MAIN as it relates to data objects.
             }
-            else if (_column.name == "DATA_ACCESS_USER_NAME" || _column.name == "DATA_ACCESS_USER_ZONE") {
+            else if (_column.name == "DATA_ACCESS_USER_NAME" || _column.name == "DATA_ACCESS_USER_ZONE" ||
+                     _column.name == "DATA_ACCESS_USER_TYPE")
+            {
                 add_r_data_main = true;
                 table_alias = "pdu"; // The alias for R_USER_MAIN as it relates to data objects.
             }
@@ -885,7 +887,9 @@ namespace irods::experimental::genquery2
                 add_r_coll_main = true;
                 table_alias = "pct"; // The alias for R_TOKN_MAIN as it relates to collections.
             }
-            else if (_column.name == "COLL_ACCESS_USER_NAME" || _column.name == "COLL_ACCESS_USER_ZONE") {
+            else if (_column.name == "COLL_ACCESS_USER_NAME" || _column.name == "COLL_ACCESS_USER_ZONE" ||
+                     _column.name == "COLL_ACCESS_USER_TYPE")
+            {
                 add_r_coll_main = true;
                 table_alias = "pcu"; // The alias for R_USER_MAIN as it relates to collections.
             }
