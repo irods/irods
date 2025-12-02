@@ -15,3 +15,6 @@ CMakeLists.txt.user
 
 # old submodule
 /irods_schema_messaging
+
+# clangd
+.cache/
