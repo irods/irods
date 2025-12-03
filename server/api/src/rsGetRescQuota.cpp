@@ -217,10 +217,7 @@ int setRescQuota(
     }
 
     rodsLong_t resc_overrun = 0;
-    ret = irods::get_resource_property<rodsLong_t>(
-                           resc_id,
-                           irods::RESOURCE_QUOTA_OVERRUN,
-                           resc_overrun );
+    ret = irods::get_resource_property<rodsLong_t>(resc_id, irods::RESOURCE_QUOTA_OVERRUN, resc_overrun);
 
     // fetch a global quota for the user if it exists
     getRescQuotaInp_t get_resc_quota_inp;
@@ -235,23 +232,6 @@ int setRescQuota(
         _comm->clientUser.userName,
         _comm->clientUser.rodsZone );
 
-    rescQuota_t *total_quota = NULL;
-    status = rsGetRescQuota(
-                 _comm,
-                 &get_resc_quota_inp,
-                 &total_quota );
-    if ( status >= 0 && total_quota ) {
-        rodsLong_t compare_overrun = total_quota->quotaOverrun;
-        freeAllRescQuota(total_quota);
-        if ( compare_overrun != 0 && // disabled if 0
-             compare_overrun + resc_overrun + _data_size > 0 ) {
-            return SYS_RESC_QUOTA_EXCEEDED;
-        }
-    } else {
-        log_api::debug("{} rsGetRescQuota for total quota - status {}", __FUNCTION__, status);
-    }
-
-    // if no global enforcement was successful try per resource
     rstrcpy(
         get_resc_quota_inp.rescName,
         _resc_name,
@@ -267,17 +247,7 @@ int setRescQuota(
     }
 
     rodsLong_t compare_overrun = resc_quota->quotaOverrun;
-    rescQuota_t* iterator = resc_quota;
 
-    // Traverse the quota result linked list and find the
-    // "most egregious" overrun: i.e., if there are
-    // two groups with quotas on the same resource, find
-    // the one most in violation.
-    while (iterator = iterator->next) {
-        if (compare_overrun < iterator->quotaOverrun) {
-            compare_overrun = iterator->quotaOverrun;
-        }
-    }
     freeAllRescQuota(resc_quota);
     if ( compare_overrun != 0 && // disabled if 0
          compare_overrun + resc_overrun + _data_size > 0 ) {
