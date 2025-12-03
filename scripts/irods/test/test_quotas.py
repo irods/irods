@@ -72,7 +72,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                         lib.make_file(filename_2, 1024, contents='arbitrary')
                         cmd = 'iput -R {0} {1}'.format(self.testresc, filename_2) # should fail
                         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
-                        cmd = 'istream write nopes'
+                        cmd = 'istream -R {0} write nopes'.format(self.testresc)
                         self.admin.assert_icommand(cmd.split(), 'STDERR', 'Error: Cannot open data object.', input='some data')
                         cmd = 'iadmin {0} {1} {2} 0'.format(quotatype[0], quotatype[1], quotaresc) # remove quota
                         self.admin.assert_icommand(cmd.split())
@@ -226,5 +226,55 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             self.admin.run_icommand(['irm', '-f', f'{file_name}_case_40', f'{file_name}_case_41', f'{file_name}_case_42', f'{file_name}_case_42a'])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
+            IrodsController().reload_configuration()
+
+    def test_single_resource_quota_violation_does_not_affect_other_resources__issue_8758(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acRescQuotaPolicy {
+                    msiSetRescQuotaPolicy("on");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acRescQuotaPolicy(rule_args, callback, rei):
+                    callback.msiSetRescQuotaPolicy('on')
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                group_name = 'test_group_issue_8758'
+                file_name = 'test_file_issue_8758'
+                resc_name = 'ufs0_quota_issue_8758'
+                other_resc_name = 'ufs1_quota_issue_8758'
+                lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
+                lib.create_ufs_resource(self.admin, resc_name)
+                lib.create_ufs_resource(self.admin, other_resc_name)
+
+                self.admin.assert_icommand(['iadmin', 'mkgroup', f'{group_name}_1'])
+                self.admin.assert_icommand(['iadmin', 'sgq', f'{group_name}_1', resc_name, '1000'])
+
+                self.admin.assert_icommand(['iadmin', 'atg', f'{group_name}_1', self.quota_user.username])
+
+                self.quota_user.assert_icommand(['iput', '-R', self.testresc, os.path.join(self.quota_user.local_session_dir, file_name)])
+
+                self.quota_user.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_on_{resc_name}'])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3096\n'])
+
+                # Should pass and be unaffected by the other quota violation
+                self.quota_user.assert_icommand(['icp', '-R', other_resc_name, file_name, f'{file_name}_on_{other_resc_name}'])
+
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3096\n'])
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', f'{file_name}_on_{other_resc_name}', f'{file_name}_on_{resc_name}'])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_resc_name])
             self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
             IrodsController().reload_configuration()
