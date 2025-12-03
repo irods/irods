@@ -432,3 +432,54 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         finally:
             # Restore the permissions so the test framework can clean up properly.
             self.admin.run_icommand(['ichmod', '-M', 'own', self.user.username, self.user.session_collection])
+
+    def test_genquery2_exposes_user_type_through_permission_related_columns__issue_8754(self):
+        # Create some data objects for the rodsadmin and rodsuser.
+        data_objects = ['data_object_0.8754', 'data_object_1.8754']
+        for name in data_objects:
+            self.user.assert_icommand(['itouch', name])
+            self.admin.assert_icommand(['itouch', name])
+
+        # Give the rodsuser permission to read the rodsadmin's session collection and one data object.
+        # This makes sure that the rodsadmin has some variation in the query results.
+        self.admin.assert_icommand(['ichmod', 'read_object', self.user.username, self.admin.session_collection])
+        self.admin.assert_icommand(['ichmod', 'read_object', self.user.username, data_objects[0]])
+
+        with self.subTest('rodsuser can use user type column for data objects'):
+            perms = [
+                [self.user.username, self.user.zone_name, 'own', 'rodsuser'],
+                [self.user.username, self.user.zone_name, 'own', 'rodsuser'],
+                [self.user.username, self.user.zone_name, 'read_object', 'rodsuser']
+            ]
+            json_string = json.dumps(perms, separators=(',', ':'))
+            query_string = "select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, DATA_ACCESS_USER_TYPE order by DATA_ACCESS_PERM_NAME"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', json_string)
+
+        with self.subTest('rodsuser can use user type column for collections'):
+            query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, COLL_ACCESS_PERM_NAME, COLL_ACCESS_USER_TYPE where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([self.user.username, self.user.zone_name, 'own', 'rodsuser'], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        with self.subTest('rodsadmin can use user type column for data objects'):
+            query_string = "select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, DATA_ACCESS_USER_TYPE where DATA_NAME like '%.8754'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            rows = json.loads(out.strip())
+            self.assertEqual(len(rows), 5) # Includes duplicates.
+
+            # Dedup rows and assert the number of rows is what we expect.
+            unique_tuples = {tuple(r) for r in rows}
+            unique_rows = [list(t) for t in unique_tuples]
+            self.assertEqual(len(unique_rows), 3)
+
+            # Assert the results contain the expected permissions.
+            self.assertIn([self.admin.username, self.admin.zone_name, "own", "rodsadmin"], unique_rows)
+            self.assertIn([self.user.username, self.user.zone_name, "own", "rodsuser"], unique_rows)
+            self.assertIn([self.user.username, self.user.zone_name, "read_object", "rodsuser"], unique_rows)
+
+        with self.subTest('rodsadmin can use user type column for collections'):
+            query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, COLL_ACCESS_PERM_NAME, COLL_ACCESS_USER_TYPE where COLL_NAME in ('{self.admin.session_collection}', '{self.user.session_collection}')"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out.strip())), 3)
+            self.assertIn(f'["{self.user.username}","{self.user.zone_name}","own","rodsuser"]', out)
+            self.assertIn(f'["{self.user.username}","{self.user.zone_name}","read_object","rodsuser"]', out)
+            self.assertIn(f'["{self.admin.username}","{self.admin.zone_name}","own","rodsadmin"]', out)
