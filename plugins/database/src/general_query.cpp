@@ -1757,10 +1757,15 @@ int specialQueryIx( int ix ) {
 
  The caller specifies a user (COL_USER_NAME) and optionally a resource
  (COL_R_RESC_NAME).  Rows are returned with the quotas that apply,
- most severe (most over or closest to going over) first, if any.  For
+ least severe (least over or farthest to going over) first, if any.  For
  global-usage quotas, the returned RESC_ID is 0.  If the user is a
  member of a group with a quota (per-resource or total-usage) a row is
  returned for that quota too.  All in the appropriate order.
+
+ Note: We return rows least-severe first because the linked list of
+ quota structures is generated tail-to-head, so the head of the linked list
+ becomes the most-severe quota. See queRescQuota in rsGetRescQuota.cpp for
+ more details.
  */
 int
 generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
@@ -1768,10 +1773,120 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
     static char userName[NAME_LEN] = "";
     static char userZone[NAME_LEN] = "";
 
-    char quotaQuery1[] = "( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where QM.resc_id = RM.resc_id AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id )) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_GROUP UG, R_USER_MAIN UM2, R_RESC_MAIN RM where QM.resc_id = '0' AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id)) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM WHERE (QM.resc_id = RM.resc_id or QM.resc_id = '0') AND (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ? )) order by quota_over DESC";
+    // Fetches all resource and total quotas for the given user (accounting for the user's group as well).
+    // clang-format off
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    char quotaQuery1[] =
+        // Fetch all group resource quotas for a user.
+        // Notice that UM2 is the user and is linked to UG to look up group membership.
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_RESC_MAIN RM, "
+                "R_USER_GROUP UG, "
+                "R_USER_MAIN UM2 "
+           "WHERE QM.resc_id = RM.resc_id "
+             "AND (QM.user_id = UG.group_user_id "
+                  "AND UM2.user_name = ? "
+                  "AND UM2.zone_name = ? "
+                  "AND UG.user_id = UM2.user_id)) "
+        "UNION "
+        // Fetch all group total quotas for a user.
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_USER_GROUP UG, "
+                "R_USER_MAIN UM2, "
+                "R_RESC_MAIN RM "
+           "WHERE QM.resc_id = '0' "
+             "AND (QM.user_id = UG.group_user_id "
+                  "AND UM2.user_name = ? "
+                  "AND UM2.zone_name = ? "
+                  "AND UG.user_id = UM2.user_id)) "
+        "UNION "
+        // Fetch all user quotas for a particular user.
+        // Eventually can be removed - only group quotas can be set since 5.0.
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_USER_MAIN UM, "
+                "R_RESC_MAIN RM "
+           "WHERE (QM.resc_id = RM.resc_id "
+                  "OR QM.resc_id = '0') "
+             "AND (QM.user_id = UM.user_id "
+                  "AND UM.user_name = ? "
+                  "AND UM.zone_name = ?)) "
+        "ORDER BY quota_over ASC";
 
-    char quotaQuery2[] = "( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where QM.resc_id = RM.resc_id AND RM.resc_name = ? AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id )) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_GROUP UG, R_USER_MAIN UM2, R_RESC_MAIN RM where QM.resc_id = '0' AND RM.resc_name = ? AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id)) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM WHERE (QM.resc_id = RM.resc_id or QM.resc_id = '0') AND RM.resc_name = ? AND (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ? )) order by quota_over DESC";
-
+    // Fetches both resource quotas for the given COL_R_RESC_NAME and total quotas for the given user
+    // (accounting for the user's group as well).
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    char quotaQuery2[] =
+        // Fetch all group resource quotas for a user and a particular resource.
+        // (Note the RM.resc_name = ? condition)
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_RESC_MAIN RM, "
+                "R_USER_GROUP UG, "
+                "R_USER_MAIN UM2 "
+           "WHERE QM.resc_id = RM.resc_id "
+             "AND RM.resc_name = ? "
+             "AND (QM.user_id = UG.group_user_id "
+                  "AND UM2.user_name = ? "
+                  "AND UM2.zone_name = ? "
+                  "AND UG.user_id = UM2.user_id)) "
+        "UNION "
+        // Fetch all total quotas for a user and a particular resource.
+        // Note that this seems like it should always return 0 rows, but due to there being
+        // no join condition between QM.resc_id and RM.resc_id, this will indiscriminately return all
+        // total quotas for the group.
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_USER_GROUP UG, "
+                "R_USER_MAIN UM2, "
+                "R_RESC_MAIN RM "
+           "WHERE QM.resc_id = '0' "
+             "AND RM.resc_name = ? "
+             "AND (QM.user_id = UG.group_user_id "
+                  "AND UM2.user_name = ? "
+                  "AND UM2.zone_name = ? "
+                  "AND UG.user_id = UM2.user_id)) "
+        "UNION "
+        // Fetch all user quotas for a user and a particular resource.
+        // Eventually can be removed - only group quotas can be set since 5.0.
+          "(SELECT DISTINCT QM.user_id, "
+                           "RM.resc_name, "
+                           "QM.quota_limit, "
+                           "QM.quota_over, "
+                           "QM.resc_id "
+           "FROM R_QUOTA_MAIN QM, "
+                "R_USER_MAIN UM, "
+                "R_RESC_MAIN RM "
+           "WHERE (QM.resc_id = RM.resc_id "
+                  "OR QM.resc_id = '0') "
+             "AND RM.resc_name = ? "
+             "AND (QM.user_id = UM.user_id "
+                  "AND UM.user_name = ? "
+                  "AND UM.zone_name = ?)) "
+        "ORDER BY quota_over ASC";
+    // clang-format on
     int i, valid = 0;
     int cllCounter = cllBindVarCount;
 
