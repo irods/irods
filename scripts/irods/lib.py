@@ -892,4 +892,6 @@ def calculate_crc64_nvme(data: bytes, initial_crc = 0):
             else:
                 crc >>= 1
 
-    return (crc ^ 0xFFFFFFFFFFFFFFFF).to_bytes(8) # Final XOR with all ones and return bytes 
+    # Byteorder defaults to 'big' in some versions of Python but not all.  Setting this
+    # to 'big' so it's consistent with CRC64NVMEStrategy.cpp.
+    return (crc ^ 0xFFFFFFFFFFFFFFFF).to_bytes(8, byteorder='big') # Final XOR with all ones and return bytes
