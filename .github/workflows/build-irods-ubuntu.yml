@@ -70,7 +70,7 @@ jobs:
         run:  |
               mkdir build
               cd build
-              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
+              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON -DIRODS_ENABLE_ALL_TESTS=YES ../
       - name: Build and Package
         run:  |
               cd build
