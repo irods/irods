@@ -269,6 +269,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                 # Should pass and be unaffected by the other quota violation
                 self.quota_user.assert_icommand(['icp', '-R', other_resc_name, file_name, f'{file_name}_on_{other_resc_name}'])
 
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 3096\n'])
+
         finally:
             self.admin.run_icommand(['irm', '-f', f'{file_name}_on_{other_resc_name}', f'{file_name}_on_{resc_name}'])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
