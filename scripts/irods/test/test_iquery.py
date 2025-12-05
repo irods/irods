@@ -463,11 +463,18 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         with self.subTest('rodsadmin can use user type column for data objects'):
             query_string = "select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, DATA_ACCESS_USER_TYPE where DATA_NAME like '%.8754'"
             _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
-            self.assertEqual(len(json.loads(out.strip())), 5) # Includes duplicates.
-            self.assertEqual(len(list(set(json.loads(out.strip())))), 3) # Dedup list.
-            self.assertIn(f'["{self.user.username}","{self.user.zone_name}","own","rodsuser"]', out)
-            self.assertIn(f'["{self.admin.username}","{self.admin.zone_name}","own","rodsadmin"]', out)
-            self.assertIn(f'["{self.user.username}","{self.user.zone_name}","read_object","rodsuser"]', out)
+            rows = json.loads(out.strip())
+            self.assertEqual(len(rows), 5) # Includes duplicates.
+
+            # Dedup rows and assert the number of rows is what we expect.
+            unique_tuples = {tuple(r) for r in rows}
+            unique_rows = [list(t) for t in unique_tuples]
+            self.assertEqual(len(unique_rows), 3)
+
+            # Assert the results contain the expected permissions.
+            self.assertIn([self.admin.username, self.admin.zone_name, "own", "rodsadmin"], unique_rows)
+            self.assertIn([self.user.username, self.user.zone_name, "own", "rodsuser"], unique_rows)
+            self.assertIn([self.user.username, self.user.zone_name, "read_object", "rodsuser"], unique_rows)
 
         with self.subTest('rodsadmin can use user type column for collections'):
             query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, COLL_ACCESS_PERM_NAME, COLL_ACCESS_USER_TYPE where COLL_NAME in ('{self.admin.session_collection}', '{self.user.session_collection}')"
