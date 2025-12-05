@@ -1092,6 +1092,9 @@ rclOpenCollection( rcComm_t *conn, char *collection, int flags,
                  MAX_NAME_LEN );
     };
 
+    if (nullptr != collHandle->rodsObjStat) {
+        freeRodsObjStat(collHandle->rodsObjStat);
+    }
     collHandle->rodsObjStat = rodsObjStatOut;
 
     collHandle->state = COLL_OPENED;
