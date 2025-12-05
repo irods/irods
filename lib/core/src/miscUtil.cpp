@@ -15,9 +15,12 @@
 
 #include "irods/get_hier_from_leaf_id.h"
 
-#include <fstream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
 
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
@@ -26,6 +29,41 @@ static uint Myumask = INIT_UMASK_VAL;
 
 // A GenQuery condition string (i.e. not equal to the root collection).
 const char NON_ROOT_COLL_CHECK_STR[] = "<>'/'";
+
+namespace
+{
+    auto copyRodsPath(rodsPath_t* to, const rodsPath_t* from) -> int
+    {
+        // No nullptrs allowed.
+        if (nullptr == to || nullptr == from) {
+            return static_cast<int>(INVALID_INPUT_ARGUMENT_NULL_POINTER);
+        }
+
+        // Make sure the existing "to" structure is cleared/freed properly.
+        clearRodsPath(to);
+
+        // Copy in the non-pointer members.
+        *to = *from;
+
+        // If the rodsObjStat is valid, make a deep copy.
+        if (nullptr != from->rodsObjStat) {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            to->rodsObjStat = static_cast<rodsObjStat_t*>(std::malloc(sizeof(rodsObjStat_t)));
+            std::memset(to->rodsObjStat, 0, sizeof(rodsObjStat_t));
+            *(to->rodsObjStat) = *(from->rodsObjStat);
+
+            // If the specColl member of the rodsObjStat member is valid, make a deep copy.
+            if (nullptr != from->rodsObjStat->specColl) {
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+                to->rodsObjStat->specColl = static_cast<specColl_t*>(std::malloc(sizeof(specColl_t)));
+                std::memset(to->rodsObjStat->specColl, 0, sizeof(specColl_t));
+                *(to->rodsObjStat->specColl) = *(from->rodsObjStat->specColl);
+            }
+        }
+
+        return 0;
+    } // copyRodsPath
+} // anonymous namespace
 
 int
 mkColl( rcComm_t *conn, char *collection ) {
@@ -2338,6 +2376,7 @@ matchPathname( pathnamePatterns_t *pp, char *name, char *dirname ) {
     return 0;
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 static int resolveRodsTargetImpl(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int oprType, bool dryRun)
 {
     rodsPath_t *srcPath, *destPath;
@@ -2394,7 +2433,9 @@ static int resolveRodsTargetImpl(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int
                          srcPath->outPath );
                 return USER_INPUT_PATH_ERR;
             }
-            *targPath = *destPath;
+            if (const auto copy_ec = copyRodsPath(targPath, destPath); copy_ec < 0) {
+                return copy_ec;
+            }
             targPath->objType = LOCAL_FILE_T;
         }
         else if ( srcPath->objType == DATA_OBJ_T ||
@@ -2427,7 +2468,9 @@ static int resolveRodsTargetImpl(rcComm_t* conn, rodsPathInp_t* rodsPathInp, int
             }
             else if ( destPath->objType == DATA_OBJ_T ||
                       destPath->objType == LOCAL_FILE_T || rodsPathInp->numSrc == 1 ) {
-                *targPath = *destPath;
+                if (const auto copy_ec = copyRodsPath(targPath, destPath); copy_ec < 0) {
+                    return copy_ec;
+                }
                 if ( destPath->objType <= COLL_OBJ_T ) {
                     targPath->objType = DATA_OBJ_T;
                 }
