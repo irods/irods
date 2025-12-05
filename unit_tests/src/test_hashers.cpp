@@ -15,7 +15,7 @@
 #include <tuple>
 #include <vector>
 
-TEST_CASE("checksum hashers", "[string]")
+TEST_CASE("checksum hashers - strings")
 {
     // clang-format off
     const std::tuple<const std::string, const std::string, const std::string> hash_test_vals = GENERATE(
@@ -71,7 +71,7 @@ TEST_CASE("checksum hashers", "[string]")
 const std::vector<unsigned char> test_nonstring_1{0x00, 0x00, 0x00, 0x00, 0xF0, 0xA4, 0xAD, 0xA2, 0xC3, 0x28, 0xA0,
                                                   0xA1, 0xF0, 0x90, 0x28, 0xBC, 0xF0, 0x28, 0x8C, 0x28, 0xFF};
 
-TEST_CASE("checksum hashers", "[nonstring]")
+TEST_CASE("checksum hashers - nonstrings")
 {
     // clang-format off
     const std::tuple<const std::vector<unsigned char>, const std::string, const std::string> hash_test_vals = GENERATE(
