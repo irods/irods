@@ -12,9 +12,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-getUtil( rcComm_t **myConn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
-         rodsPathInp_t *rodsPathInp );
+
+int getUtil(rcComm_t** myConn, rodsEnv* myRodsEnv, rodsArguments_t* myRodsArgs, rodsPathInp_t* rodsPathInp);
+
 int
 getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
                 rodsLong_t srcSize, uint dataMode,

@@ -11,6 +11,7 @@
 #include "irods/rcPortalOpr.h"
 #include "irods/sockComm.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <cstring>
 
@@ -32,14 +33,13 @@ setSessionTicket( rcComm_t *myConn, char *ticket ) {
     return status;
 }
 
-int
-getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-         rodsPathInp_t *rodsPathInp ) {
+// NOLINTNEXTLINE(readability-function-cognitive-complexity, misc-no-recursion)
+auto getUtil(rcComm_t** myConn, rodsEnv* myRodsEnv, rodsArguments_t* myRodsArgs, rodsPathInp_t* rodsPathInp) -> int
+{
     int i = 0;
     int status = 0;
     int savedStatus = 0;
-    rodsPath_t *targPath = 0;
-    dataObjInp_t dataObjOprInp;
+    rodsPath_t* targPath{};
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;
 
@@ -58,6 +58,8 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
+    dataObjInp_t dataObjOprInp{};
+    const auto clear_cond_input = irods::at_scope_exit{[&dataObjOprInp] { clearKeyVal(&dataObjOprInp.condInput); }};
     initCondForGet( conn, myRodsArgs, &dataObjOprInp, &rodsRestart );
 
     if ( rodsPathInp->resolved == False ) {
