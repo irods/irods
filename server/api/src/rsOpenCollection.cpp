@@ -56,6 +56,9 @@ int rsOpenCollection(rsComm_t* rsComm, collInp_t* openCollInp)
         rstrcpy( collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath, MAX_NAME_LEN );
     };
 
+    if (nullptr != collHandle->rodsObjStat) {
+        freeRodsObjStat(collHandle->rodsObjStat);
+    }
     collHandle->rodsObjStat = rodsObjStatOut;
 
     collHandle->state = COLL_OPENED;
