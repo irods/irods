@@ -463,10 +463,9 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         with self.subTest('rodsadmin can use user type column for data objects'):
             query_string = "select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, DATA_ACCESS_USER_TYPE where DATA_NAME like '%.8754'"
             _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
-            self.assertEqual(len(json.loads(out.strip())), 5)
+            self.assertEqual(len(json.loads(out.strip())), 5) # Includes duplicates.
+            self.assertEqual(len(list(set(json.loads(out.strip())))), 3) # Dedup list.
             self.assertIn(f'["{self.user.username}","{self.user.zone_name}","own","rodsuser"]', out)
-            self.assertIn(f'["{self.user.username}","{self.user.zone_name}","own","rodsuser"]', out)
-            self.assertIn(f'["{self.admin.username}","{self.admin.zone_name}","own","rodsadmin"]', out)
             self.assertIn(f'["{self.admin.username}","{self.admin.zone_name}","own","rodsadmin"]', out)
             self.assertIn(f'["{self.user.username}","{self.user.zone_name}","read_object","rodsuser"]', out)
 
