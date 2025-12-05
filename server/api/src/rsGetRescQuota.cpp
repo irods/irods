@@ -220,9 +220,10 @@ int setRescQuota(
     ret = irods::get_resource_property<rodsLong_t>(resc_id, irods::RESOURCE_QUOTA_OVERRUN, resc_overrun);
 
     // KEY_NOT_FOUND is not an error here, since it just means the property is unset
-    if ( !ret.ok() && ret.code() != KEY_NOT_FOUND) {
-        log_api::error("{}: error in get_resource_property for RESOURCE_QUOTA_OVERRUN, status = [{}]", __func__, ret.code());
-        return ret.code();
+    if (!ret.ok() && ret.code() != KEY_NOT_FOUND) {
+        log_api::error(
+            "{}: error in get_resource_property for RESOURCE_QUOTA_OVERRUN, status = [{}]", __func__, ret.code());
+        return static_cast<int>(ret.code());
     }
 
     // fetch a global quota for the user if it exists
