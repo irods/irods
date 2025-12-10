@@ -574,6 +574,7 @@ C- {5}:
             os.unlink(local_file)
             self.admin.assert_icommand(['irm', '-f', object_name])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "TODO(#6835): Requires support for modifying configuration of remote servers")
     def test_ichksum_with_crc64nvme__issue_8554(self):
         file1 = f'{inspect.currentframe().f_code.co_name}_f1'
         file1_size = 2*1024
