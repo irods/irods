@@ -497,6 +497,7 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(datafilename):
             os.unlink(datafilename)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "TODO(#6835): Requires support for modifying configuration of remote servers")
     def test_server_side_calculates_crc64nvme_checksum_on_put_operation__issue_8554(self):
         file1 = f'{inspect.currentframe().f_code.co_name}_f1'
         file1_size = 2*1024
@@ -532,6 +533,7 @@ class ResourceSuite(ResourceBase):
             lib.remove_file_if_exists(file1)
             IrodsController().reload_configuration()
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "TODO(#6835): Requires support for modifying configuration of remote servers")
     def test_client_side_and_server_side_verify_crc64nvme_checksums_on_put_operation__issue_8554(self):
         file1 = f'{inspect.currentframe().f_code.co_name}_f1'
         file1_size = 2*1024
