@@ -11826,24 +11826,52 @@ irods::error db_calc_usage_and_quota_op(
        4096, s1_id, 10001, timestamp
        8192, c0_id, 10001, timestamp */
 
+    // clang-format off
     status = cmlExecuteNoAnswerSql(
-        "INSERT INTO R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) " IRODS_QUOTA_WITH_RECURSIVE
         // Begin CTE: recursive table
-        "resc_usage(quota_usage, resc_id, resc_parent, user_id) AS ("
+        "INSERT INTO R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts)" IRODS_QUOTA_WITH_RECURSIVE "resc_usage(quota_usage, resc_id, resc_parent, user_id) AS "
         // Base case: "old" query that calculates usage on storage resources only
-        "SELECT SUM(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_RESC_MAIN.resc_parent, R_USER_MAIN.user_id FROM "
-        "R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN WHERE R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name AND "
-        "R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone AND R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id GROUP BY "
-        "R_RESC_MAIN.resc_id, user_id, R_RESC_MAIN.resc_parent UNION ALL "
+        // Usage is calculated by any user with the "own" permission
+          "(SELECT SUM(R_DATA_MAIN.data_size), "
+                  "R_RESC_MAIN.resc_id, "
+                  "R_RESC_MAIN.resc_parent, "
+                  "R_USER_MAIN.user_id "
+           "FROM R_DATA_MAIN, "
+                "R_USER_MAIN, "
+                "R_RESC_MAIN, "
+                "R_OBJT_ACCESS, "
+                "R_TOKN_MAIN "
+           "WHERE R_DATA_MAIN.data_id = R_OBJT_ACCESS.object_id "
+             "AND R_OBJT_ACCESS.user_id = R_USER_MAIN.user_id "
+             "AND R_TOKN_MAIN.token_namespace = 'access_type' "
+             "AND R_OBJT_ACCESS.access_type_id = R_TOKN_MAIN.token_id "
+             "AND R_TOKN_MAIN.token_name = 'own' "
+             "AND R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id "
+           "GROUP BY R_RESC_MAIN.resc_id, "
+                    "R_USER_MAIN.user_id, "
+                    "R_RESC_MAIN.resc_parent "
         // Recursive case: each parent of a storage resource gets a corresponding usage row for a child usage row
-        "SELECT resc_usage.quota_usage, (CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE "
-        "CAST(resc_usage.resc_parent " IRODS_QUOTA_CAST_TYPE_AS
-        ") END ), R_RESC_MAIN.resc_parent, resc_usage.user_id FROM resc_usage, R_RESC_MAIN WHERE R_RESC_MAIN.resc_id = "
-        "(CASE WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL ELSE "
-        "CAST(resc_usage.resc_parent " IRODS_QUOTA_CAST_TYPE_AS ") END )) "
+           "UNION ALL SELECT resc_usage.quota_usage, (CASE "
+                                                         "WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL "
+                                                         "ELSE CAST(resc_usage.resc_parent" IRODS_QUOTA_CAST_TYPE_AS ") "
+                                                     "END), R_RESC_MAIN.resc_parent, "
+                                                           "resc_usage.user_id "
+           "FROM resc_usage, "
+                "R_RESC_MAIN "
+           "WHERE R_RESC_MAIN.resc_id = (CASE "
+                                            "WHEN COALESCE(resc_usage.resc_parent, '') = '' THEN NULL "
+                                            "ELSE CAST(resc_usage.resc_parent" IRODS_QUOTA_CAST_TYPE_AS ") "
+                                        "END)) "
         // Sum up usage rows by resource and user id
-        "SELECT SUM(quota_usage), resc_id, user_id, ? FROM resc_usage GROUP BY resc_id, user_id",
+        "SELECT SUM(quota_usage), "
+               "resc_id, "
+               "user_id, "
+               "? "
+        "FROM resc_usage "
+        "GROUP BY resc_id, "
+                 "user_id",
         &icss);
+    // clang-format on
 #undef IRODS_QUOTA_CAST_TYPE_AS_STRING
 #undef IRODS_QUOTA_WITH_RECURSIVE
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {

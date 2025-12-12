@@ -349,3 +349,68 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmresc', passthru_resc_name])
             self.admin.run_icommand(['iadmin', 'rmgroup', f'{group_name}_1'])
             IrodsController().reload_configuration()
+
+    def test_quota_cares_about_acl_own_permission__issue_8750(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acRescQuotaPolicy {
+                    msiSetRescQuotaPolicy("on");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acRescQuotaPolicy(rule_args, callback, rei):
+                    callback.msiSetRescQuotaPolicy('on')
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                group_name = 'test_group_acl'
+                file_name = 'test_file_acl'
+                resc_name = 'ufs0_quota_acl'
+                user_name = 'test_user_acl'
+
+                self.admin.assert_icommand(['iadmin', 'mkuser', user_name, 'rodsuser'])
+                lib.create_ufs_resource(self.admin, resc_name)
+                lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
+
+                self.admin.assert_icommand(['iadmin', 'mkgroup', group_name])
+                self.admin.assert_icommand(['iadmin', 'sgq', group_name, resc_name, '10000'])
+                self.admin.assert_icommand(['iadmin', 'atg', group_name, self.quota_user.username])
+                self.admin.assert_icommand(['iadmin', 'atg', group_name, user_name])
+
+                self.quota_user.assert_icommand(['iput', '-R', self.testresc, os.path.join(self.quota_user.local_session_dir, file_name)])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -10000\n'])
+
+                # Creator is given "own", so should count against quota
+                self.quota_user.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_new'])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -5904\n'])
+
+                # Granting another user "own" should count against quota
+                self.quota_user.assert_icommand(['ichmod', 'own', user_name, f'{file_name}_new'])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -1808\n'])
+
+                # Granting the group "own" should count against quota
+                self.quota_user.assert_icommand(['ichmod', 'own', group_name, f'{file_name}_new'])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: 2288\n'])
+                self.quota_user.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_shouldntexist'], 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+                # Removing owner's "own" permission should no longer count against quota
+                self.quota_user.assert_icommand(['ichmod', 'modify_object', self.quota_user.username, f'{file_name}_new'])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+                self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', ['\nquota_over: -1808\n'])
+                self.quota_user.assert_icommand(['icp', '-R', resc_name, file_name, f'{file_name}_shouldnowexist'])
+        finally:
+            self.admin.run_icommand(['ichmod', 'own', self.quota_user.username, f'{self.quota_user.session_collection}/{file_name}_new'])
+            self.quota_user.run_icommand(['irm', '-f', file_name, f'{file_name}_new', f'{file_name}_shouldntexist', f'{file_name}_shouldnowexist'])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmuser', user_name])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_name])
+            IrodsController().reload_configuration()
