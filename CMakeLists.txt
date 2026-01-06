@@ -335,6 +335,10 @@ add_subdirectory(test/c_api_test)
 add_subdirectory(test/post_install_test)
 add_subdirectory(unit_tests)
 
+if (IRODS_ENABLE_ALL_TESTS OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_subdirectory(test/issue_8733)
+endif()
+
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/packaging.cmake")
 
 include(CMakePackageConfigHelpers)
