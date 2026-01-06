@@ -1,8 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-#ifndef RE_DATA_OBJ_OPR_HPP
-#define RE_DATA_OBJ_OPR_HPP
+#ifndef IRODS_RE_DATA_OBJ_OPR_HPP
+#define IRODS_RE_DATA_OBJ_OPR_HPP
 
 #include "irods/rods.h"
 #include "irods/objMetaOpr.hpp"
@@ -98,4 +95,5 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
               char *srcColl, char *destColl );
 
 auto msi_replica_truncate(MsParam* _inp, MsParam* _out, RuleExecInfo* _rei) -> int;
-#endif	/* RE_DATA_OBJ_OPR_H */
+
+#endif // IRODS_RE_DATA_OBJ_OPR_HPP
