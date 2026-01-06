@@ -1275,7 +1275,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int
 msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
