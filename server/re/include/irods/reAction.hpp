@@ -177,7 +177,10 @@ namespace irods
         table_[ "msiSetKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiSetKeyValuePairsToObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetKeyValuePairsToObj ) );
         table_[ "msiExtractTemplateMDFromBuf" ] = new irods::ms_table_entry( "msiExtractTemplateMDFromBuf", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExtractTemplateMDFromBuf ) );
         table_[ "msiReadMDTemplateIntoTagStruct" ] = new irods::ms_table_entry( "msiReadMDTemplateIntoTagStruct", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiReadMDTemplateIntoTagStruct ) );
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         table_[ "msiDataObjPut" ] = new irods::ms_table_entry( "msiDataObjPut", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjPut ) );
+#pragma GCC diagnostic pop
         table_[ "msiDataObjGet" ] = new irods::ms_table_entry( "msiDataObjGet", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjGet ) );
         table_[ "msiDataObjChksum" ] = new irods::ms_table_entry( "msiDataObjChksum", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjChksum ) );
         table_[ "msiDataObjPhymv" ] = new irods::ms_table_entry( "msiDataObjPhymv", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjPhymv ) );
