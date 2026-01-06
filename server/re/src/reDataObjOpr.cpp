@@ -1225,6 +1225,8 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
  * \brief This microservice requests the client to call a rcDataObjPut API
  *   as part of a workflow execution.
  *
+ * \deprecated Deprecated in 4.3.5.
+ *
  * \module core
  *
  * \since pre-2.1

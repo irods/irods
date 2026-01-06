@@ -37,9 +37,11 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *inpParam2,
 int
 msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
                 msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei );
-int
-msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
-               msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei );
+[[deprecated]] int msiDataObjPut(msParam_t* inpParam1,
+                                 msParam_t* inpParam2,
+                                 msParam_t* inpParam3,
+                                 msParam_t* outParam,
+                                 ruleExecInfo_t* rei);
 int
 msiDataObjGet( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *outParam, ruleExecInfo_t *rei );
