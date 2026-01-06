@@ -64,6 +64,7 @@
     "test_iphymv.test_iphymv_exit_codes",
     "test_iphymv.test_iphymv_repl_status",
     "test_iphymv.test_iphymv_with_two_basic_ufs_resources",
+    "test_ips",
     "test_iput.Test_Iput",
     "test_iput.test_iput_with_checksums",
     "test_iput_options.Test_iPut_Options",
