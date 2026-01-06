@@ -9,9 +9,10 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <algorithm>
+#include <charconv>
 #include <cstdio>
 #include <ctime>
-#include <charconv>
 #include <fstream>
 
 int
@@ -91,15 +92,21 @@ logAgentProc( rsComm_t *rsComm ) {
         return UNIX_FILE_OPEN_ERR - errno;
     }
 
+    const auto replace_spaces = [](char* _s, std::size_t _size) -> char* {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        std::replace(_s, _s + _size, ' ', '-');
+        return _s;
+    };
+
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
     std::fprintf(fptr,
                  "%s %s %s %s %s %s %u\n",
-                 rsComm->clientUser.userName,
-                 clientZone,
-                 rsComm->proxyUser.userName,
-                 proxyZone,
-                 progName,
-                 remoteAddr,
+                 replace_spaces(rsComm->clientUser.userName, std::strlen(rsComm->clientUser.userName)),
+                 replace_spaces(clientZone, std::strlen(clientZone)),
+                 replace_spaces(rsComm->proxyUser.userName, std::strlen(rsComm->proxyUser.userName)),
+                 replace_spaces(proxyZone, std::strlen(proxyZone)),
+                 replace_spaces(progName, std::strlen(progName)),
+                 replace_spaces(remoteAddr, std::strlen(remoteAddr)),
                  static_cast<unsigned int>(std::time(nullptr)));
 
     rsComm->procLogFlag = PROC_LOG_DONE;
