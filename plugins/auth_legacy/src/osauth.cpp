@@ -13,6 +13,10 @@
 #include "irods/rsAuthCheck.hpp"
 #include "irods/rsAuthRequest.hpp"
 
+#ifdef RODS_SERVER
+#  include "irods/irods_logger.hpp"
+#endif // RODS_SERVER
+
 // =-=-=-=-=-=-=-
 #include "irods/irods_auth_plugin.hpp"
 #include "irods/irods_auth_constants.hpp"
@@ -672,12 +676,12 @@ irods::error osauth_auth_agent_auth_verify(
 // =-=-=-=-=-=-=-
 // stub for ops that the native plug does
 // not need to support
-irods::error osauth_auth_agent_start(
-    irods::plugin_context&,
-    const char*) {
+irods::error osauth_auth_agent_start(irods::plugin_context&, const char*)
+{
+    irods::experimental::log::authentication::warn(
+        "{}: [osauth] is deprecated and will be removed in a future release.", __func__);
     return SUCCESS();
-
-} // osauth_auth_success_stub
+} // osauth_auth_agent_start
 
 irods::error osauth_auth_agent_verify(
     irods::plugin_context& ,
