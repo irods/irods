@@ -36,7 +36,7 @@
   - #msiDataObjRepl - Replicate a data object
   - #msiDataObjCopy - Copy a data object
   - #msiDataObjGet - Get a data object
-  - #msiDataObjPut -(Deprecated) Put a data object
+  - #msiDataObjPut - (Deprecated) Put a data object
   - #msiDataObjChksum - Checksum a data object
   - #msiDataObjPhymv - Move a data object from one resource to another
   - #msiDataObjRename - Rename a data object
