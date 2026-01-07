@@ -52,6 +52,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <chrono>
@@ -1134,14 +1135,19 @@ namespace
         const auto proc_dir = irods::get_irods_proc_directory();
         const auto pid_file = fmt::format("{}/{}", proc_dir.c_str(), getpid());
 
+        const auto replace_spaces = [](std::string _s) -> std::string {
+            std::replace(std::begin(_s), std::end(_s), ' ', '-');
+            return _s;
+        };
+
         if (std::ofstream out{pid_file}; out) {
             out << fmt::format("{} {} {} {} {} {} {}\n",
-                               _comm.clientUser.userName,
-                               client_zone,
-                               _comm.proxyUser.userName,
-                               proxy_zone,
-                               client_program_name,
-                               _comm.clientAddr,
+                               replace_spaces(_comm.clientUser.userName),
+                               replace_spaces(std::string{client_zone}),
+                               replace_spaces(_comm.proxyUser.userName),
+                               replace_spaces(std::string{proxy_zone}),
+                               replace_spaces(std::string{client_program_name}),
+                               replace_spaces(_comm.clientAddr),
                                static_cast<unsigned int>(_created_at));
         }
         else {
