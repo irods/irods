@@ -6925,7 +6925,7 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
         cVal[0] = password_in_database_buffer.data();
         iVal[0] = MAX_PASSWORD_LEN;
         cVal[1] = passwordModifyTime;
-        iVal[1] = sizeof( passwordModifyTime );
+        iVal[1] = sizeof(passwordModifyTime);
         {
             std::vector<std::string> bindVars;
             bindVars.emplace_back(selUserId);
@@ -6933,16 +6933,23 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
             bindVars.emplace_back(password_max_time_str.c_str());
             status = cmlGetStringValuesFromSql(
 #if MY_ICAT
-                         "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+                "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like "
+                "'9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) "
+                "<= ?",
 #else
-                         "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+                "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like "
+                "'9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 #endif
-                         cVal, iVal, 2, bindVars, &icss );
+                cVal,
+                iVal,
+                2,
+                bindVars,
+                &icss);
         }
 
-        if ( status == 0 ) {
+        if (status == 0) {
             if (ac.password_extend_lifetime) {
-                if ( logSQL != 0 ) {
+                if (logSQL != 0) {
                     log_sql::debug("chlUpdateIrodsPamPassword SQL 4");
                 }
                 cllBindVars[cllBindVarCount++] = myTime;
@@ -6950,16 +6957,17 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
                 cllBindVars[cllBindVarCount++] = selUserId;
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
                 cllBindVars[cllBindVarCount++] = password_in_database_buffer.data();
-                status =  cmlExecuteNoAnswerSql( "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
-                                                 &icss );
-                if ( status ) {
-                    return ERROR( status, "password update error" );
+                status = cmlExecuteNoAnswerSql(
+                    "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
+                    &icss);
+                if (status) {
+                    return ERROR(status, "password update error");
                 }
 
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                if ( status != 0 ) {
+                status = cmlExecuteNoAnswerSql("commit", &icss);
+                if (status != 0) {
                     log_db::info("chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure {}", status);
-                    return ERROR( status, "commit failure" );
+                    return ERROR(status, "commit failure");
                 }
             }
 
