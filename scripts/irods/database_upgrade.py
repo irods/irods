@@ -250,6 +250,8 @@ def run_update(irods_config, cursor, is_upgrade):
         else:
             database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add column salt varchar(32);")
 
+        # pam password reuse setting
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_reuse_previous', '1');")
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
