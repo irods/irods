@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import unittest
 
 from . import session
@@ -29,23 +27,26 @@ class test_get_grid_configuration(unittest.TestCase):
         really_long_namespace = 'this_is_27_characters_long_' * 100
         option_name = 'password_max_time'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', really_long_namespace, option_name],
             'STDERR', 'Error: namespace must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_nonexistent_namespace(self):
         bad_namespace = 'nopes'
         option_name = 'password_max_time'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', bad_namespace, option_name], 'STDERR',
             f'Failed to get grid configuration for namespace [{bad_namespace}] and option [{option_name}] [ec=-808000]')
+        self.assertNotEqual(ec, 0)
 
     def test_no_option_name(self):
         namespace = 'authentication'
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', namespace],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_really_long_option_name(self):
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
@@ -54,17 +55,19 @@ class test_get_grid_configuration(unittest.TestCase):
         namespace = 'authentication'
         really_long_option_name = 'this_is_27_characters_long_' * 100
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, really_long_option_name],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_nonexistent_option_name(self):
         namespace = 'authentication'
         bad_option_name = 'nopes'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', namespace, bad_option_name], 'STDERR',
             f'Failed to get grid configuration for namespace [{namespace}] and option [{bad_option_name}] [ec=-808000]')
+        self.assertNotEqual(ec, 0)
 
     def test_get_grid_configuration_valid(self):
         namespace = 'authentication'
@@ -86,9 +89,10 @@ class test_set_grid_configuration(unittest.TestCase):
             admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
 
     def test_no_namespace(self):
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration'],
             'STDERR', 'Error: namespace must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_really_long_namespace(self):
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
@@ -98,24 +102,27 @@ class test_set_grid_configuration(unittest.TestCase):
         option_name = 'password_max_time'
         option_value = '1000'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', really_long_namespace, option_name, option_value],
             'STDERR', 'Error: namespace must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_nonexistent_namespace(self):
         bad_namespace = 'nopes'
         option_name = 'password_max_time'
         option_value = '1000'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', bad_namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{bad_namespace}] and option [{option_name}] [ec=-808000]')
+        self.assertNotEqual(ec, 0)
 
     def test_no_option_name(self):
         namespace = 'authentication'
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_really_long_option_name(self):
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
@@ -125,25 +132,28 @@ class test_set_grid_configuration(unittest.TestCase):
         really_long_option_name = 'this_is_27_characters_long_' * 100
         option_value = '1000'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, really_long_option_name, option_value],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_nonexistent_option_name(self):
         namespace = 'authentication'
         bad_option_name = 'nopes'
         option_value = '1000'
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, bad_option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{bad_option_name}] [ec=-808000]')
+        self.assertNotEqual(ec, 0)
 
     def test_no_option_value(self):
         namespace = 'authentication'
         option_name = 'password_max_time'
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name],
             'STDERR', 'Error: option value must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
     def test_really_long_option_value(self):
         namespace = 'authentication'
@@ -157,9 +167,10 @@ class test_set_grid_configuration(unittest.TestCase):
         original_value = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1]
 
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, really_long_option_value],
             'STDERR', 'Error: option value must be between 1 and 2699 characters.')
+        self.assertNotEqual(ec, 0)
 
         # Assert that nothing changed due to the error.
         self.assertEqual(
@@ -192,9 +203,10 @@ class test_set_grid_configuration(unittest.TestCase):
         option_name = 'schema_version'
 
         # Make sure this namespace doesn't have the option_name used in the test...
-        self.admin.assert_icommand(
+        ec, _, _ = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', namespace, option_name], 'STDERR',
             f'Failed to get grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-808000]')
+        self.assertNotEqual(ec, 0)
 
         other_namespace = 'database'
         original_value = self.admin.assert_icommand(
@@ -205,9 +217,10 @@ class test_set_grid_configuration(unittest.TestCase):
         try:
             # The failure to set the configuration is due to the option name not existing in the namespace, not due to
             # its being protected in another namespace.
-            self.admin.assert_icommand(
+            ec, _, _ = self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
                 f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-808000]')
+            self.assertNotEqual(ec, 0)
 
             # Assert that the value was appropriately not updated.
             self.assertEqual(
@@ -229,9 +242,10 @@ class test_set_grid_configuration(unittest.TestCase):
 
         self.assertNotEqual(option_value, original_leader)
 
-        _, out, _ = self.admin.assert_icommand(
+        ec, out, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-169000]')
+        self.assertNotEqual(ec, 0)
         self.assertIn('Specified grid configuration is not allowed to be modified.', out)
 
         # Assert that the value was appropriately not updated.
@@ -250,9 +264,10 @@ class test_set_grid_configuration(unittest.TestCase):
 
         self.assertNotEqual(option_value, original_successor)
 
-        _, out, _ = self.admin.assert_icommand(
+        ec, out, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-169000]')
+        self.assertNotEqual(ec, 0)
         self.assertIn('Specified grid configuration is not allowed to be modified.', out)
 
         # Assert that the value was appropriately not updated.
@@ -267,9 +282,10 @@ class test_set_grid_configuration(unittest.TestCase):
         option_value = 'iwillfollow'
 
         # The error message will remain the same because the namespace is protected.
-        _, out, _ = self.admin.assert_icommand(
+        ec, out, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-169000]')
+        self.assertNotEqual(ec, 0)
         self.assertIn('Specified grid configuration is not allowed to be modified.', out)
 
     def test_set_delay_server_namespace_is_protected_even_with_option_name_from_unprotected_namespaces(self):
@@ -281,9 +297,10 @@ class test_set_grid_configuration(unittest.TestCase):
         original_other_namespace_value = self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', other_namespace, option_name], 'STDOUT')[1].strip()
 
-        _, out, _ = self.admin.assert_icommand(
+        ec, out, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-169000]')
+        self.assertNotEqual(ec, 0)
         self.assertIn('Specified grid configuration is not allowed to be modified.', out)
 
         # Assert that the value was appropriately not updated in the other namespace.
@@ -303,9 +320,10 @@ class test_set_grid_configuration(unittest.TestCase):
         # Make sure the value is not set to our ridiculous test value.
         self.assertNotEqual(option_value, original_value)
 
-        _, out, _ = self.admin.assert_icommand(
+        ec, out, _ = self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name, option_value], 'STDERR',
             f'Failed to set grid configuration for namespace [{namespace}] and option [{option_name}] [ec=-169000]')
+        self.assertNotEqual(ec, 0)
         self.assertIn('Specified grid configuration is not allowed to be modified.', out)
 
         # Assert that the value was appropriately not updated.
