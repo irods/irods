@@ -1,15 +1,11 @@
-from __future__ import print_function
 import inspect
 import json
 import os
 import shutil
 import sys
 import textwrap
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import time
+import unittest
 
 from .. import lib
 from . import session
@@ -402,3 +398,48 @@ class test_overwriting(unittest.TestCase):
         finally:
             self.user.assert_icommand(['irm', '-f', logical_path])
             self.user.assert_icommand(['irm', '-f', other_logical_path])
+
+    def test_icp_f_modifies_timestamp_of_overwrite_with_empty_replica__issue_8413(self):
+        parent_collection = self.user.session_collection
+        filename = "test_icp_f_modifies_timestamp_of_overwrite_target"
+        logical_path_src = "/".join([parent_collection, filename + "-src"])
+        logical_path_dest = "/".join([parent_collection, filename + "-dest"])
+        content = "but that's the way the movie ends"
+
+        try:
+            # Create the test data.
+            self.user.assert_icommand(["itouch", logical_path_src], "STDOUT")
+            self.user.assert_icommand(["istream", "write", logical_path_dest], "STDOUT", input=content)
+
+            # Get the original modify times for the test data.
+            original_src_mtime = lib.get_replica_mtime(self.user, logical_path_src, 0)
+            original_dest_mtime = lib.get_replica_mtime(self.user, logical_path_dest, 0)
+
+            self.user.assert_icommand(["ils", "-Lr"], "STDOUT") # debugging
+
+            # Sleep for one second so that the modify time has a chance to change from the original.
+            time.sleep(1)
+
+            # Overwrite a data object with the other with icp -f.
+            self.user.assert_icommand(["icp", "-f", logical_path_src, logical_path_dest])
+
+            # Get the new modify times for the test data.
+            new_src_mtime = lib.get_replica_mtime(self.user, logical_path_src, 0)
+            new_dest_mtime = lib.get_replica_mtime(self.user, logical_path_dest, 0)
+
+            # The modify time of the destination object should have been changed to a later time.
+            self.assertEqual(original_src_mtime, new_src_mtime)
+            self.assertLess(original_dest_mtime, new_dest_mtime)
+
+            # Sleep for one second so that the modify time has a chance to change from the original.
+            time.sleep(1)
+
+            # Now do it again to make sure overwriting an empty replica with another empty replica also updates the
+            # mtime of the destination replica.
+            self.user.assert_icommand(["icp", "-f", logical_path_src, logical_path_dest])
+            self.assertEqual(new_src_mtime, lib.get_replica_mtime(self.user, logical_path_src, 0))
+            self.assertLess(new_dest_mtime, lib.get_replica_mtime(self.user, logical_path_dest, 0))
+
+        finally:
+            self.user.assert_icommand(["ils", "-Lr"], "STDOUT") # debugging
+            self.user.assert_icommand(["irm", "-rf", logical_path_src, logical_path_dest])
