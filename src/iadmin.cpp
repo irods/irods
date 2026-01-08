@@ -1680,11 +1680,15 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if (0 == strcmp(cmdToken[0], "get_grid_configuration")) {
-        return print_grid_config(cmdToken[1], cmdToken[2]);
+        const auto ec = print_grid_config(cmdToken[1], cmdToken[2]);
+        // -2 makes sure iadmin reports a nonzero status code to the user.
+        return (ec != 0) ? -2 : ec;
     }
 
     if (0 == strcmp(cmdToken[0], "set_grid_configuration")) {
-        return set_grid_config(cmdToken[1], cmdToken[2], cmdToken[3]);
+        const auto ec = set_grid_config(cmdToken[1], cmdToken[2], cmdToken[3]);
+        // -2 makes sure iadmin reports a nonzero status code to the user.
+        return (ec != 0) ? -2 : ec;
     }
 
     if (0 == strcmp(cmdToken[0], "get_delay_server_info")) {
