@@ -362,7 +362,7 @@ namespace
             r.mtime(SET_TIME_TO_NOW_KW);
         }
         else if (OPEN_FOR_WRITE_TYPE == l1desc.openType) {
-            if (l1desc.bytesWritten > 0) {
+            if (bytes_written_in_operation(l1desc)) {
                 // If no errors occurred, bytes being written to an existing replica should
                 // result in staling any sibling replicas. This is because it is not known
                 // whether the new replica is consistent with the siblings.
