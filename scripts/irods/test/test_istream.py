@@ -1,13 +1,10 @@
+import copy
 import os
+import socket
 import sys
 import tempfile
-import socket
-import copy
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import time
+import unittest
 
 from . import session
 from .. import lib
@@ -523,3 +520,48 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         finally:
             if os.path.exists(local_filename):
                 os.unlink(local_filename)
+
+    def test_istream_write_with_various_options_on_empty_replica_with_effects_on_mtime__issue_7128(self):
+        logical_path = "/".join([self.user.session_collection, "emptiness"])
+
+        try:
+            # Create an empty data object.
+            self.user.assert_icommand(["itouch", logical_path])
+
+            with self.subTest("with truncate"):
+                # Get the current mtime for comparison.
+                original_mtime = lib.get_replica_mtime(self.user, logical_path, 0)
+
+                # Sleep for one second so that the modify time has a chance to change from the original.
+                time.sleep(1)
+
+                # Open it for write, but don't write anything. istream truncates by default, so mtime should be updated.
+                self.user.assert_icommand(["istream", "write", logical_path])
+                self.assertLess(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
+
+            with self.subTest("with no-trunc"):
+                # Get the current mtime for comparison.
+                original_mtime = lib.get_replica_mtime(self.user, logical_path, 0)
+
+                # Sleep for one second so that the modify time has a chance to change from the original.
+                time.sleep(1)
+
+                # Open it for write with no-trunc, but don't write anything. Opening for write without truncating should
+                # not update the mtime
+                self.user.assert_icommand(["istream", "--no-trunc", "write", logical_path])
+                self.assertEqual(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
+
+            with self.subTest("with append"):
+                # Get the current mtime for comparison.
+                original_mtime = lib.get_replica_mtime(self.user, logical_path, 0)
+
+                # Sleep for one second so that the modify time has a chance to change from the original.
+                time.sleep(1)
+
+                # Open it for write with append, but don't write anything. append implies no-trunc, so mtime should not
+                # be updated.
+                self.user.assert_icommand(["istream", "--append", "write", logical_path])
+                self.assertEqual(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
+
+        finally:
+            self.user.run_icommand(["irm", "-f", logical_path])
