@@ -1,14 +1,5 @@
-from __future__ import print_function
-
-import sys
 import os
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
-import os
+import unittest
 
 from . import session
 from . import settings
@@ -152,3 +143,27 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichmod', 'read', 'public', 'foo'])
         self.admin.assert_icommand(['ils', '-A', 'foo'], 'STDOUT', [' g:public#{0}:read_object'.format(self.admin.zone_name)])
 
+    def test_ils_lists_all_entries_of_a_linkPoint_collection_containing_more_than_256_entries__issue_7712(self):
+        src_coll = f'{self.user0.session_collection}/issue_7712'
+        self.user0.assert_icommand(['imkdir', src_coll])
+
+        # Create a soft-link to the collection that was just created.
+        linkpt_coll = f'{self.user0.session_collection}/issue_7712_linkpt'
+        self.user0.assert_icommand(['imcoll', '-m', 'l', src_coll, linkpt_coll])
+
+        try:
+            # Create 600 data objects so that we force GenQuery1 to cross multiple page boundaries. At
+            # 256 rows per page (default), 600 data objects will result in a total of 3 pages.
+            #
+            # As we're creating data objects, append the data name of each path to a list. This list will
+            # be used to verify the "ils" output contains all entries within the linkPoint collection.
+            expected_list_output = []
+            for i in range(600):
+                data_name = f'test_file_{i:03d}.txt'
+                self.user0.assert_icommand(['itouch', f'{src_coll}/{data_name}'])
+                expected_list_output.append(data_name)
+
+            self.user0.assert_icommand(['ils', linkpt_coll], 'STDOUT', expected_list_output)
+
+        finally:
+            self.user0.run_icommand(['imcoll', '-U', linkpt_coll])
