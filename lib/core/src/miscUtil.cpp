@@ -1,22 +1,24 @@
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/rcMisc.h"
-#ifndef windows_platform
-#include <sys/time.h>
-#endif
-#include <fnmatch.h>
-#include "irods/rodsClient.h"
-#include "irods/rodsLog.h"
 #include "irods/miscUtil.h"
-#include "irods/rcGlobalExtern.h"
-
-#include "irods/irods_stacktrace.hpp"
-#include "irods/irods_path_recursion.hpp"
-#include "irods/irods_exception.hpp"
 
 #include "irods/get_hier_from_leaf_id.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_path_recursion.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/objInfo.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsClient.h"
+#include "irods/rodsLog.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#ifndef windows_platform
+#  include <sys/time.h>
+#endif
+
+#include <fnmatch.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -1615,9 +1617,16 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             /* More to come */
 
             if ( dataObjInp->specColl != NULL ) {
-                dataObjInp->openFlags = continueInx;
-                status = ( *queryHandle->querySpecColl )(
-                             ( rcComm_t * ) queryHandle->conn, dataObjInp, &genQueryOut );
+                if (LINKED_COLL == dataObjInp->specColl->collClass) {
+                    genQueryInp->continueInx = continueInx;
+                    status =
+                        (*queryHandle->genQuery)(static_cast<rcComm_t*>(queryHandle->conn), genQueryInp, &genQueryOut);
+                }
+                else {
+                    dataObjInp->openFlags = continueInx;
+                    status = (*queryHandle->querySpecColl)(
+                        static_cast<rcComm_t*>(queryHandle->conn), dataObjInp, &genQueryOut);
+                }
             }
             else {
                 genQueryInp->continueInx = continueInx;
