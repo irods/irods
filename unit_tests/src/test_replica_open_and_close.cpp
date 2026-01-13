@@ -196,6 +196,26 @@ TEST_CASE("replica_open and replica_close")
             }
         }
     }
+
+    SECTION("do compute checksum, do not update status")
+    {
+        SECTION("update size")
+        {
+            const auto close_input =
+                json{{"fd", fd}, {"update_status", false}, {"update_size", true}, {"compute_checksum", true}}.dump();
+            REQUIRE(rc_replica_close(conn_ptr, close_input.c_str()) == USER_INCOMPATIBLE_PARAMS);
+            // Try again, and the close should succeed.
+            REQUIRE(rc_replica_close(conn_ptr, json{{"fd", fd}}.dump().c_str()) == 0);
+        }
+        SECTION("do not update size")
+        {
+            const auto close_input =
+                json{{"fd", fd}, {"update_status", false}, {"update_size", false}, {"compute_checksum", true}}.dump();
+            REQUIRE(rc_replica_close(conn_ptr, close_input.c_str()) == USER_INCOMPATIBLE_PARAMS);
+            // Try again, and the close should succeed.
+            REQUIRE(rc_replica_close(conn_ptr, json{{"fd", fd}}.dump().c_str()) == 0);
+        }
+    }
 }
 
 TEST_CASE("test mtime changes on open and close replica without writing to it")
