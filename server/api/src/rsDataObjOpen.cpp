@@ -687,8 +687,8 @@ namespace
             return l1_index;
         }
 
-        // Update the catalog to reflect the truncation (i.e. set the data size to zero and erase
-        // the checksum). It is important that the catalog reflect truncation immediately because
+        // Update the catalog to reflect the truncation (i.e. set the data size to zero, erase the checksum, and set
+        // the mtime to the current time). It is important that the catalog reflect truncation immediately because
         // operations following the open may depend on the size and checksum of the replica.
         //
         // TODO: optimization... do not touch the catalog -- update the structure and use this in lock_data_object
@@ -703,7 +703,20 @@ namespace
                 replica.size(0);
                 replica.checksum("");
 
-                rst::update(replica.data_id(), replica.replica_number(), {{"data_size", "0"}, {"data_checksum", ""}});
+                // Manually get current time and format the string because using SET_TIME_TO_NOW_KW causes the mtime to
+                // update again on close since the SET_TIME_TO_NOW_KW persists as the mtime value in the "after"
+                // replica state table entry.
+                {
+                    using object_time_type = std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>;
+                    using clock_type = object_time_type::clock;
+                    using duration_type = object_time_type::duration;
+                    const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+                    replica.mtime(fmt::format("{:011}", now.time_since_epoch().count()));
+                }
+
+                rst::update(replica.data_id(),
+                            replica.replica_number(),
+                            {{"data_size", "0"}, {"data_checksum", ""}, {"modify_ts", replica.mtime()}});
 
                 if (const auto [ret, ec] = rst::publish::to_catalog(_comm, {replica, admin_operation}); ec < 0) {
                     return ec;
