@@ -360,6 +360,17 @@ namespace
                 return BAD_INPUT_DESC_INDEX;
             }
 
+            const auto compute_checksum_iter = json_input.find("compute_checksum");
+            const auto compute_checksum =
+                (json_input.end() != compute_checksum_iter) && compute_checksum_iter->get<bool>();
+            if (compute_checksum && !update_status) {
+                log::api::error("{}: Incompatible parameters for closing [{}]: Checksum cannot be computed without "
+                                "updating replica status.",
+                                __func__,
+                                l1desc.dataObjInfo->objPath);
+                return USER_INCOMPATIBLE_PARAMS;
+            }
+
             // Redirect to the federated zone if the local L1 descriptor references a remote zone.
             if (l1desc.oprType == REMOTE_ZONE_OPR && l1desc.remoteZoneHost) {
                 auto* conn = l1desc.remoteZoneHost->conn;
@@ -388,8 +399,6 @@ namespace
             }};
 
             const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
-            const auto compute_checksum =
-                json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>();
 
             // Close the underlying file object.
             if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
