@@ -967,7 +967,7 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
 
         const auto query_string_template = fmt::format(
             FMT_COMPILE(
-                "select {} where QUOTA_USER_NAME = '{{}}' and QUOTA_USER_ZONE = '{{}}' and QUOTA_RESC_NAME != '0'"),
+                "select {} where QUOTA_USER_NAME = '{{}}' and QUOTA_USER_ZONE = '{{}}' and QUOTA_RESC_ID != '0'"),
             fmt::join(columns, ", "));
 
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), user_name, zone_name), labels);
