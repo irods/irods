@@ -354,3 +354,78 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmuser', user_name])
             self.admin.run_icommand(['iadmin', 'rmgroup', group_name])
             IrodsController().reload_configuration()
+
+
+    def test_quota_calculations_match_genquery_calculations__issue_4102(self):
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                group_name = 'test_quota_genquery'
+                resc_name = 'ufs0_quota_genquery'
+                file_prefix = 'quota_genquery_match'
+                file_count = 10
+                quota_setting = 2048*(file_count+1)+1
+
+                # Capturing groups will capture decimal integers
+                # The only valid integer with a preceding 0 is 0 itself
+                # Otherwise, it must be 1-9 or 1-9 prefixing any number of 0-9
+                quota_re = re.compile(r'quota_limit: (0|-?[1-9][0-9]*)|quota_over: (0|-?[1-9][0-9]*)')
+                genquery_re = re.compile(r'DATA_SIZE = (0|-?[1-9][0-9]*)')
+
+                def file_generator(n, filename_prefix):
+                    seed = 1031
+                    for i in range(n):
+                        seed = (5*seed + 131) % 2048
+                        yield (f'{filename_prefix}_{i}', seed)
+
+                files = list(file_generator(file_count, file_prefix))
+                lib.create_ufs_resource(self.admin, resc_name)
+                for file in files:
+                    lib.make_file(os.path.join(self.quota_user.local_session_dir, file[0]), file[1], contents='arbitrary')
+                    self.quota_user.assert_icommand(['iput', '-R', resc_name, os.path.join(self.quota_user.local_session_dir, file[0])])
+
+                self.admin.assert_icommand(['iadmin', 'mkgroup', group_name])
+                self.admin.assert_icommand(['iadmin', 'sgq', group_name, resc_name, str(quota_setting)])
+                self.admin.assert_icommand(['iadmin', 'atg', group_name, self.quota_user.username])
+
+                self.admin.assert_icommand(['iadmin', 'cu'])
+
+                total_size = sum(map(lambda file: file[1], files))
+
+                # quota_over should be the total size of the files minus the specified quota amount
+                _, quota_out, _ = self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', [f'\nquota_over: {total_size - quota_setting}\n'])
+
+                # Sum of all DATA_SIZE from iquest should match total
+                _, genquery_out, _ = self.admin.assert_icommand(['iquest', f'select sum(DATA_SIZE) where COLL_NAME like \'{self.quota_user.session_collection}%\''], 'STDOUT', [f'DATA_SIZE = {total_size}\n'])
+
+                # Linking the outputs of the two commands:
+                # First, parse out each relevant value
+                quota_match = quota_re.findall(quota_out)
+                quota_limit = int(quota_match[0][0])
+                quota_over = int(quota_match[1][1])
+                sum_data_size = int(genquery_re.search(genquery_out).group(1))
+
+                # Next, assert the math is correct
+                self.assertEqual(quota_over, sum_data_size - quota_limit)
+
+                lib.make_file(os.path.join(self.quota_user.local_session_dir, 'quota_genquery_bonus_file'), 2048, contents='arbitrary')
+                self.quota_user.assert_icommand(['iput', '-R', resc_name, os.path.join(self.quota_user.local_session_dir, 'quota_genquery_bonus_file')])
+                self.admin.assert_icommand(['iadmin', 'cu'])
+
+                _, quota_out, _ = self.admin.assert_icommand(['iadmin', 'lq'], 'STDOUT', [f'\nquota_over: {total_size + 2048 - quota_setting}\n'])
+                _, genquery_out, _ = self.admin.assert_icommand(['iquest', f'select sum(DATA_SIZE) where COLL_NAME like \'{self.quota_user.session_collection}%\''], 'STDOUT', [f'DATA_SIZE = {total_size + 2048}\n'])
+
+                # Same as above
+                quota_match = quota_re.findall(quota_out)
+                quota_limit = int(quota_match[0][0])
+                quota_over = int(quota_match[1][1])
+                sum_data_size = int(genquery_re.search(genquery_out).group(1))
+
+                self.assertEqual(quota_over, sum_data_size - quota_limit)
+        finally:
+            self.quota_user.run_icommand(['irm', '-f', 'quota_genquery_bonus_file', *map(lambda file: file[0], files)])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_name])
+            IrodsController().reload_configuration()
