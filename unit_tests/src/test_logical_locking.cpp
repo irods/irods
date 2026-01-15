@@ -5,21 +5,28 @@
 #include "irods/dataObjInpOut.h"
 #include "irods/dstream.hpp"
 #include "irods/filesystem.hpp"
+#include "irods/getRodsEnv.h"
 #include "irods/get_file_descriptor_info.h"
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods_error_enum_matcher.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/objInfo.h"
+#include "irods/rcConnect.h"
+#include "irods/rcMisc.h"
 #include "irods/replica.hpp"
 #include "irods/replica_proxy.hpp"
 #include "irods/resource_administration.hpp"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/transport/default_transport.hpp"
+#include "irods_error_enum_matcher.hpp"
 #include "unit_test_utils.hpp"
 
 #include <fmt/format.h>
 
+#include <filesystem>
 #include <iostream>
+#include <string>
+#include <string_view>
 #include <thread>
 
 // clang-format off
@@ -40,6 +47,9 @@ namespace
     static const auto resc_names = std::vector{resc_0, resc_1, resc_2};
     static const auto& opened_replica_resc = resc_0;
     static const auto& other_replica_resc = resc_1;
+
+    constexpr const char* default_resc = "demoResc";
+    constexpr const char* bypass_logical_locking_kw = "bypass_logical_locking";
 
     inline auto get_sandbox_name() -> fs::path
     {
@@ -527,6 +537,14 @@ TEST_CASE("trim", "[write_lock]")
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+
+        // And now with the unregister operation.
+        trim_inp.oprType = UNREG_OPR;
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+        trim_inp.oprType = 0;
     }
 
     // Providing the RESC_NAME_KW targets a resource hierarchy from which to trim replicas. Because it
@@ -541,12 +559,28 @@ TEST_CASE("trim", "[write_lock]")
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
 
+        // And now with the unregister operation.
+        trim_inp.oprType = UNREG_OPR;
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+        trim_inp.oprType = 0;
+
         // Target a sibling of the currently open replica
         trim_cond_input[RESC_NAME_KW] = other_replica_resc;
         REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+
+        // And now with the unregister operation.
+        trim_inp.oprType = UNREG_OPR;
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+        trim_inp.oprType = 0;
 
         trim_cond_input.erase(RESC_NAME_KW);
     }
@@ -562,6 +596,14 @@ TEST_CASE("trim", "[write_lock]")
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
 
+        // And now with the unregister operation.
+        trim_inp.oprType = UNREG_OPR;
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+        trim_inp.oprType = 0;
+
         // Target a sibling of the currently open replica
         const auto other_replica_number = ir::to_replica_number(new_comm, target_object.c_str(), other_replica_resc);
         trim_cond_input[REPL_NUM_KW] = std::to_string(*other_replica_number);
@@ -569,6 +611,14 @@ TEST_CASE("trim", "[write_lock]")
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+
+        // And now with the unregister operation.
+        trim_inp.oprType = UNREG_OPR;
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
+        trim_inp.oprType = 0;
 
         trim_cond_input.erase(REPL_NUM_KW);
     }
@@ -823,3 +873,255 @@ TEST_CASE("rename", "[write_lock]")
     }
 }
 
+TEST_CASE("UnregDataObj / PhyPathReg / RegDataObj ")
+{
+    load_client_api_plugins();
+
+    // Make sure that the test resources created below are removed upon test completion.
+    const auto remove_resources = irods::at_scope_exit{[] {
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
+
+        for (const auto& r : resc_names) {
+            adm::client::remove_resource(comm, r);
+        }
+    }};
+
+    // Create resources to use for test cases.
+    for (const auto& r : resc_names) {
+        mkresc(r);
+    }
+
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
+
+    // Construct some paths for use in tests.
+    constexpr const char* const filename = "target_object";
+    const auto sandbox = get_sandbox_name();
+    const auto target_object = sandbox / filename;
+
+    // Create a target collection for the test data.
+    if (!fs::client::exists(comm, sandbox)) {
+        REQUIRE(fs::client::create_collection(comm, sandbox));
+    }
+
+    // Clean up test collection and files after tests complete.
+    const auto remove_test_materials = irods::at_scope_exit{[&] {
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
+
+        // Remove the sandbox collection.
+        REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
+
+        // Remove the test file.
+        if (std::filesystem::exists(filename)) {
+            std::filesystem::remove(filename);
+        }
+    }};
+
+    // Use a separate connection to run the tests from that used in the setup.
+    irods::experimental::client_connection new_conn;
+    RcComm& new_comm = static_cast<RcComm&>(new_conn);
+
+    // Create a test data object
+    {
+        io::client::default_transport tp{comm};
+        io::odstream{tp, target_object, io::root_resource_name{resc_0}};
+    }
+    REQUIRE(fs::client::exists(comm, target_object));
+    REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, opened_replica_resc));
+
+    // Replicate the test data object so that it has multiple replicas
+    REQUIRE(unit_test_utils::replicate_data_object(comm, target_object.c_str(), resc_1));
+    REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_resc));
+
+    // Create a local file to register.
+    std::ofstream{filename} << "content!";
+
+    // Open source object to lock it.
+    DataObjInp open_inp{};
+    auto open_cond_input = irods::experimental::make_key_value_proxy(open_inp.condInput);
+    std::strncpy(static_cast<char*>(open_inp.objPath), target_object.c_str(), sizeof(open_inp.objPath) - 1);
+    open_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+    open_inp.openFlags = O_WRONLY;
+
+    const auto fd = rcDataObjOpen(&new_comm, &open_inp);
+    REQUIRE(fd > 2);
+    REQUIRE(INTERMEDIATE_REPLICA == ir::replica_status(new_comm, target_object, opened_replica_resc));
+    REQUIRE(WRITE_LOCKED == ir::replica_status(new_comm, target_object, other_replica_resc));
+
+    // This is done in an irods::at_scope_exit because catch will return immediately if a REQUIRE clause fails. This
+    // ensures that the data object is properly closed for cleanup purposes.
+    const auto close_opened_object = irods::at_scope_exit{[&] {
+        openedDataObjInp_t close_inp{};
+        close_inp.l1descInx = fd;
+        REQUIRE(rcDataObjClose(&new_comm, &close_inp) >= 0);
+    }};
+
+    SECTION("UnregDataObj")
+    {
+        DataObjInfo info{};
+        std::strncpy(static_cast<char*>(info.objPath), target_object.c_str(), sizeof(info.objPath) - 1);
+        unregDataObj_t unreg_inp{};
+        unreg_inp.dataObjInfo = &info;
+
+        // The UnregDataObj API deals with data objects and so does not target specific replicas.
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcUnregDataObj(&new_comm, &unreg_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+
+        // Try to bypass logical locking with the "bypass_logical_locking" keyword, and fail. This is not normally
+        // available to clients, but this is an open source project, so anybody could try this.
+        addKeyVal(unreg_inp.condInput, bypass_logical_locking_kw, "");
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcUnregDataObj(&new_comm, &unreg_inp));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        CHECK(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+    }
+
+    SECTION("PhyPathReg")
+    {
+        // In the absence of REG_REPL_KW, this API does not target replicas and can only register new data objects. If
+        // the data object is locked, that means it exists and the registration is going to fail for that reason, not
+        // because it's locked. As such, logical locking has no bearing on cases where REG_REPL_KW is not provided.
+
+        DataObjInp reg_inp{};
+        const auto free_condInput = irods::at_scope_exit{[&reg_inp] { clearKeyVal(&reg_inp.condInput); }};
+        addKeyVal(&reg_inp.condInput, FILE_PATH_KW, std::filesystem::absolute(std::filesystem::path{filename}).c_str());
+        std::strncpy(static_cast<char*>(reg_inp.objPath), target_object.c_str(), sizeof(reg_inp.objPath) - 1);
+
+        SECTION("no replica target, no REG_REPL_KW")
+        {
+            // Try to register as a new data object.
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+        }
+
+        SECTION("RESC_HIER_STR_KW, no REG_REPL_KW")
+        {
+            // Target resource hosting the currently open replica.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, opened_replica_resc.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource hosting a sibling of the currently open replica.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, other_replica_resc.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource which has no replicas for this data object.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, resc_2.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+        }
+
+        SECTION("DEST_RESC_NAME_KW, no REG_REPL_KW")
+        {
+            // Target resource hosting the currently open replica.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, opened_replica_resc.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource hosting a sibling of the currently open replica.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, other_replica_resc.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource which has no replicas for this data object.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, resc_2.c_str());
+            REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+        }
+
+        SECTION("no replica target with REG_REPL_KW")
+        {
+            // Try to register a new replica.
+            addKeyVal(&reg_inp.condInput, REG_REPL_KW, "");
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), default_resc));
+
+            // Try to bypass logical locking with the "bypass_logical_locking" keyword, and fail. This is not normally
+            // available to clients, but this is an open source project, so anybody could try this.
+            addKeyVal(&reg_inp.condInput, bypass_logical_locking_kw, "");
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), default_resc));
+        }
+
+        SECTION("RESC_HIER_STR_KW with REG_REPL_KW")
+        {
+            addKeyVal(&reg_inp.condInput, REG_REPL_KW, "");
+
+            // Target resource hosting the currently open replica.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, opened_replica_resc.c_str());
+            REQUIRE(SYS_COPY_ALREADY_IN_RESC == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource hosting a sibling of the currently open replica.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, other_replica_resc.c_str());
+            REQUIRE(SYS_COPY_ALREADY_IN_RESC == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource which has no replicas for this data object.
+            addKeyVal(&reg_inp.condInput, RESC_HIER_STR_KW, resc_2.c_str());
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+
+            // Try to bypass logical locking with the "bypass_logical_locking" keyword, and fail. This is not normally
+            // available to clients, but this is an open source project, so anybody could try this.
+            addKeyVal(&reg_inp.condInput, bypass_logical_locking_kw, "");
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+        }
+
+        SECTION("DEST_RESC_NAME_KW with REG_REPL_KW")
+        {
+            addKeyVal(&reg_inp.condInput, REG_REPL_KW, "");
+
+            // Target resource hosting the currently open replica.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, opened_replica_resc.c_str());
+            REQUIRE(SYS_COPY_ALREADY_IN_RESC == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource hosting a sibling of the currently open replica.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, other_replica_resc.c_str());
+            REQUIRE(SYS_COPY_ALREADY_IN_RESC == rcPhyPathReg(&new_comm, &reg_inp));
+
+            // Target resource which has no replicas for this data object.
+            addKeyVal(&reg_inp.condInput, DEST_RESC_NAME_KW, resc_2.c_str());
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+
+            // Try to bypass logical locking with the "bypass_logical_locking" keyword, and fail. This is not normally
+            // available to clients, but this is an open source project, so anybody could try this.
+            addKeyVal(&reg_inp.condInput, bypass_logical_locking_kw, "");
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcPhyPathReg(&new_comm, &reg_inp));
+            CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+        }
+    }
+
+    SECTION("RegDataObj")
+    {
+        // This API does not target replicas and can only register new data objects. If the data object is locked, that
+        // means it exists and the registration is going to fail for that reason, not because it's locked.
+
+        DataObjInfo reg_inp{};
+        std::strncpy(static_cast<char*>(reg_inp.objPath), target_object.c_str(), sizeof(reg_inp.objPath) - 1);
+        std::strncpy(static_cast<char*>(reg_inp.dataType), GENERIC_DT_STR, sizeof(reg_inp.dataType) - 1);
+
+        DataObjInfo* reg_out{};
+        const auto free_RegDataObj_output = irods::at_scope_exit{[&reg_out] { freeAllDataObjInfo(reg_out); }};
+
+        // Target no replica in particular.
+        REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcRegDataObj(&new_comm, &reg_inp, &reg_out));
+        CHECK(0 == freeAllDataObjInfo(reg_out));
+
+        // Target the resource hosting the currently open replica.
+        std::strncpy(static_cast<char*>(reg_inp.rescHier), opened_replica_resc.c_str(), sizeof(reg_inp.rescHier) - 1);
+        REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcRegDataObj(&new_comm, &reg_inp, &reg_out));
+        CHECK(0 == freeAllDataObjInfo(reg_out));
+
+        // Target resource hosting a sibling of the currently open replica.
+        std::strncpy(static_cast<char*>(reg_inp.rescHier), other_replica_resc.c_str(), sizeof(reg_inp.rescHier) - 1);
+        REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcRegDataObj(&new_comm, &reg_inp, &reg_out));
+        CHECK(0 == freeAllDataObjInfo(reg_out));
+
+        // Target resource which has no replicas for this data object.
+        std::strncpy(static_cast<char*>(reg_inp.rescHier), resc_2.c_str(), sizeof(reg_inp.rescHier) - 1);
+        REQUIRE(CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME == rcRegDataObj(&new_comm, &reg_inp, &reg_out));
+        CHECK(!ir::replica_exists(new_comm, target_object.c_str(), resc_2));
+        CHECK(0 == freeAllDataObjInfo(reg_out));
+
+        // REG_REPL_KW is not supported in RegDataObj.
+    }
+}
