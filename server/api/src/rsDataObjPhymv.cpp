@@ -451,7 +451,25 @@ namespace
         const auto source_replica_original_status = ill::get_original_replica_status(_source_replica.data_id(), _source_replica.replica_number());
         const auto source_replica_number = _source_replica.replica_number();
 
+        // This keyword indicates to the UnregDataObj API (called by dataObjUnlinkS) that logical locking should not be
+        // enforced. Logical locking is not needed here because this API locked it and therefore is already "holding"
+        // the lock. A more elegant solution might allow for a re-entrant lock, but that is not currently available. In
+        // order to ensure this keyword is being used in an authorized manner, the UnregDataObj API only allows use of
+        // this keyword for server-to-server connections. If this is not already a server-to-server connection, the
+        // server property is set so that the keyword will be recognized.
+        static_cast<void>(addKeyVal(&_source_l1desc.dataObjInp->condInput, ill::keywords::bypass, ""));
+        bool agent_conn_kw_already_set = irods::server_property_exists(irods::AGENT_CONN_KW);
+        if (!agent_conn_kw_already_set) {
+            static_cast<void>(irods::set_server_property<std::string>(irods::AGENT_CONN_KW, ill::keywords::bypass));
+        }
+
         const int trim_ec = dataObjUnlinkS(&_comm, _source_l1desc.dataObjInp, _source_replica.get());
+
+        // Remove the logical locking bypass properties as soon as possible.
+        static_cast<void>(rmKeyVal(&_source_l1desc.dataObjInp->condInput, ill::keywords::bypass));
+        if (!agent_conn_kw_already_set) {
+            static_cast<void>(irods::delete_server_property(irods::AGENT_CONN_KW));
+        }
 
         if (trim_ec < 0) {
             irods::log(LOG_WARNING, fmt::format(
