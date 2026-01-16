@@ -4,6 +4,8 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/regReplica.h"
@@ -24,8 +26,11 @@
 
 namespace
 {
-    namespace ir = irods::experimental::replica;
+    using log_api = irods::experimental::log::api;
+
     namespace id = irods::experimental::data_object;
+    namespace ill = irods::logical_locking;
+    namespace ir = irods::experimental::replica;
 
     std::string compute_checksum_for_resc(
         rsComm_t&              _comm,
@@ -140,6 +145,20 @@ namespace
             return SYS_COPY_ALREADY_IN_RESC;
         }
 
+        // Check to see if the object is locked. If so, an error is returned.
+        if (!irods::server_property_exists(irods::AGENT_CONN_KW) ||
+            nullptr == getValByKey(&_inp.condInput, ill::keywords::bypass))
+        {
+            if (const auto ret = ill::try_lock(*dest.get(), ill::lock_type::write); ret < 0) {
+                const auto msg = fmt::format(
+                    "Registering replica not allowed because data object is locked. error code=[{}], path=[{}]",
+                    ret,
+                    source.logical_path());
+                log_api::info("{}: {}", __func__, msg);
+                return ret;
+            }
+        }
+
         if (cond_input.contains(SU_CLIENT_USER_KW)) {
             const int savedClientAuthFlag = _comm.clientUser.authInfo.authFlag;
 
@@ -221,7 +240,22 @@ int rsRegReplica(rsComm_t *rsComm, regReplica_t *regReplicaInp)
             cond_input[IN_REPL_KW] = "";
         }
 
+        // This logical locking bypass is only allowed for server-to-server connections. If this is not a
+        // server-to-server connection, remove the bypass keyword so that logical locking can be properly enforced.
+        bool restore_ill_bypass_keyword = false;
+        if (nullptr != getValByKey(&regReplicaInp->condInput, ill::keywords::bypass)) {
+            if (!irods::server_property_exists(irods::AGENT_CONN_KW)) {
+                restore_ill_bypass_keyword = true;
+                static_cast<void>(rmKeyVal(&regReplicaInp->condInput, ill::keywords::bypass));
+            }
+        }
+
         const auto ec = rcRegReplica(rodsServerHost->conn, regReplicaInp);
+
+        if (restore_ill_bypass_keyword) {
+            static_cast<void>(addKeyVal(&regReplicaInp->condInput, ill::keywords::bypass, ""));
+        }
+
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed registering replica [{}] ec=[{}]",
                         __func__, __LINE__, regReplicaInp->destDataObjInfo->objPath, ec));

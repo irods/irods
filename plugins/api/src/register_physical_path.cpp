@@ -4,6 +4,7 @@
 #include "irods/fileDriver.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/json_deserialization.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/rcConnect.h"
 #include "irods/register_physical_path.h"
 #include "irods/rodsDef.h"
@@ -272,6 +273,10 @@ namespace
         if (phy_path_reg_cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
             destination_replica.replica_status(INTERMEDIATE_REPLICA);
             reg_replica_cond_input[REGISTER_AS_INTERMEDIATE_KW] = "";
+        }
+
+        if (phy_path_reg_cond_input.contains(irods::logical_locking::keywords::bypass)) {
+            reg_replica_cond_input[irods::logical_locking::keywords::bypass] = "";
         }
 
         // Registers the replica; bails on failure
