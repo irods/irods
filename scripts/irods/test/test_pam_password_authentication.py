@@ -506,6 +506,117 @@ class test_configurations(unittest.TestCase):
             self.auth_session.assert_icommand(
                 ['iinit'], 'STDOUT', 'iRODS password', input=f'{self.auth_session.password}\n')
 
+    def test_password_reuse_previous_set_to_false_has_independent_sessions(self):
+        import time
+
+        min_time_option_name = 'password_min_time'
+        reuse_previous_option_name = 'password_reuse_previous'
+
+        # Stash away the original configuration for later...
+        original_min_time = self.admin.assert_icommand(
+            ['iadmin', 'get_grid_configuration', self.configuration_namespace, min_time_option_name],
+            'STDOUT')[1].strip()
+
+        original_reuse_previous = self.admin.assert_icommand(
+            ['iadmin', 'get_grid_configuration', self.configuration_namespace, reuse_previous_option_name],
+            'STDOUT')[1].strip()
+
+        # Set reuse_previous to 0 so that the a new randomly generated password is retrieved every time.
+        self.admin.assert_icommand(
+            ['iadmin', 'set_grid_configuration', self.configuration_namespace, reuse_previous_option_name, '0'])
+
+        # Make a new session of the existing auth_user. The data is "managed" in the session, so the session
+        # collection shall be shared with the other session. Re-auth first, just in case.
+        self.other_auth_session.assert_icommand(
+            ['iinit'], 'STDOUT', input=f'{self.auth_session.password}\n')
+        self.other_auth_session.assert_icommand(['icd', self.auth_session.session_collection])
+
+        auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
+        other_auth_session_env_backup = copy.deepcopy(self.other_auth_session.environment_file_contents)
+        try:
+            client_update = {'irods_authentication_scheme': self.authentication_scheme}
+            self.auth_session.environment_file_contents.update(client_update)
+            self.other_auth_session.environment_file_contents.update(client_update)
+
+            # Set the minimum time to a very short value so that the password expires in a reasonable amount of
+            # time for testing purposes. This value should be higher than 5 seconds to ensure steps in the test
+            # have enough time to complete.
+            ttl = 6
+            self.assertGreater(ttl, 5)
+            option_value = str(ttl)
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, min_time_option_name, option_value])
+
+            # [0,0] seconds after start
+            # Authenticate with session 1. We assume these calls take less than 0.1 seconds in time.
+            self.auth_session.assert_icommand(
+                ['iinit'], 'STDOUT', 'PAM password', input=f'{self.auth_session.password}\n')
+            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            # Sleep until session 1 almost expires
+            time.sleep(ttl - 2)
+
+            # [ttl - 2, ttl - 1.9] seconds after start, accounting for 0.1 seconds possible overhead.
+            # Session 1 should still be valid
+            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            # Authenticate with session 2
+            self.other_auth_session.assert_icommand(
+                ['iinit'], 'STDOUT', 'PAM password', input=f'{self.other_auth_session.password}\n')
+
+            # Now both sessions should be valid
+            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+            self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            # Sleep until the first session is expired. The second session should remain valid.
+            time.sleep(3)
+
+            # [ttl + 1, ttl + 1.2] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 1 should be expired
+            out, err, rc = self.auth_session.run_icommand('ils')
+            self.assertEqual('', out)
+            self.assertTrue(
+                'CAT_PASSWORD_EXPIRED: failed to perform request' in err or
+                'CAT_INVALID_AUTHENTICATION: failed to perform request' in err)
+            self.assertNotEqual(0, rc)
+
+            # Session 2 should still be valid
+            self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            # Sleep until session 2 almost expires
+            time.sleep(ttl - 5)
+
+            # [2*ttl - 4, 2*ttl - 3.7] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 2 was authenticated [ttl - 2, ttl - 1.8] seconds after start, so
+            # it expires at [2 * ttl - 2, 2 * ttl - 1.8] seconds after start, which is
+            # at least 1.7 seconds from now. So session 2 should still be valid.
+            self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            time.sleep(3.2)
+
+            # [2*ttl - 0.8, 2*ttl - 0.4] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 2 should be expired for at least 1 second.
+            out, err, rc = self.other_auth_session.run_icommand('ils')
+            self.assertEqual('', out)
+            self.assertTrue(
+                'CAT_PASSWORD_EXPIRED: failed to perform request' in err or
+                'CAT_INVALID_AUTHENTICATION: failed to perform request' in err)
+            self.assertNotEqual(0, rc)
+
+        finally:
+            self.other_auth_session.environment_file_contents = other_auth_session_env_backup
+            self.auth_session.environment_file_contents = auth_session_env_backup
+
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, reuse_previous_option_name, original_reuse_previous])
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, min_time_option_name, original_min_time])
+
+            # Re-authenticate as the session user to make sure things can be cleaned up.
+            self.auth_session.assert_icommand(
+                ['iinit'], 'STDOUT', 'iRODS password', input=f'{self.auth_session.password}\n')
+
+
     def test_password_max_time_can_exceed_1209600__issue_3742_5096(self):
         # Note: This does NOT test the TTL as this would require waiting for the password to expire (2 weeks + 1 hour).
         # The test is meant to ensure that a TTL greater than 1209600 is allowed with iinit when it is so configured.
@@ -547,7 +658,7 @@ class test_configurations(unittest.TestCase):
                  ['iinit', '--ttl', str(base_ttl_in_hours - 1)],
                  'STDOUT', 'PAM password',
                  input=f'{self.auth_session.password}\n')
- 
+
             # TTL value is equal to the maximum. The TTL is valid.
             self.auth_session.assert_icommand(
                  ['iinit', '--ttl', str(base_ttl_in_hours)],

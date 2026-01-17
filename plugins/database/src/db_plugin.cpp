@@ -131,9 +131,13 @@ namespace
     // This structure holds authentication configuration values.
     struct auth_config
     {
+        static constexpr bool default_password_reuse_previous = true;
         static constexpr bool default_password_extend_lifetime = true;
         static constexpr rodsLong_t default_password_max_time = 1209600;
         static constexpr rodsLong_t default_password_min_time = 121;
+
+        // Holds the value for the irods::KW_CFG_PAM_PASSWORD_REUSE_PREVIOUS configuration.
+        bool password_reuse_previous = default_password_reuse_previous;
 
         // Holds the value for the irods::KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME configuration.
         bool password_extend_lifetime = default_password_extend_lifetime;
@@ -199,6 +203,25 @@ namespace
                                      option_name,
                                      option_value,
                                      config);
+                    }
+                    continue;
+                }
+
+                if (option_name == irods::KW_CFG_PAM_PASSWORD_REUSE_PREVIOUS) {
+                    if (option_value == "1") {
+                        _out.password_reuse_previous = true;
+                    }
+                    else if (option_value == "0") {
+                        _out.password_reuse_previous = false;
+                    }
+                    else {
+                        _out.password_reuse_previous = auth_config::default_password_reuse_previous;
+                        log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
+                                     "Using default value [{}].",
+                                     _namespace,
+                                     option_name,
+                                     option_value,
+                                     _out.password_reuse_previous);
                     }
                     continue;
                 }
@@ -6898,55 +6921,65 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
         log_sql::debug("chlUpdateIrodsPamPassword SQL 3");
     }
 
-    cVal[0] = password_in_database_buffer.data();
-    iVal[0] = MAX_PASSWORD_LEN;
-    cVal[1] = passwordModifyTime;
-    iVal[1] = sizeof( passwordModifyTime );
-    {
-        std::vector<std::string> bindVars;
-        bindVars.emplace_back(selUserId);
-        bindVars.emplace_back(password_min_time_str.c_str());
-        bindVars.emplace_back(password_max_time_str.c_str());
-        status = cmlGetStringValuesFromSql(
+    if (ac.password_reuse_previous) {
+        cVal[0] = password_in_database_buffer.data();
+        iVal[0] = MAX_PASSWORD_LEN;
+        cVal[1] = passwordModifyTime;
+        iVal[1] = sizeof(passwordModifyTime);
+        {
+            std::vector<std::string> bindVars;
+            bindVars.emplace_back(selUserId);
+            bindVars.emplace_back(password_min_time_str.c_str());
+            bindVars.emplace_back(password_max_time_str.c_str());
+            status = cmlGetStringValuesFromSql(
 #if MY_ICAT
-                     "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+                "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like "
+                "'9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) "
+                "<= ?",
 #else
-                     "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+                "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like "
+                "'9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 #endif
-                     cVal, iVal, 2, bindVars, &icss );
-    }
-
-    if ( status == 0 ) {
-        if (ac.password_extend_lifetime) {
-            if ( logSQL != 0 ) {
-                log_sql::debug("chlUpdateIrodsPamPassword SQL 4");
-            }
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = expTime;
-            cllBindVars[cllBindVarCount++] = selUserId;
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-            cllBindVars[cllBindVarCount++] = password_in_database_buffer.data();
-            status =  cmlExecuteNoAnswerSql( "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
-                                             &icss );
-            if ( status ) {
-                return ERROR( status, "password update error" );
-            }
-
-            status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            if ( status != 0 ) {
-                log_db::info("chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure {}", status);
-                return ERROR( status, "commit failure" );
-            }
+                cVal,
+                iVal,
+                2,
+                bindVars,
+                &icss);
         }
 
-        // password_in_database_buffer holds the randomly generated password in a scrambled form. It needs to be
-        // descrambled before returning to the caller.
-        icatDescramble(password_in_database_buffer.data());
+        if (status == 0) {
+            if (ac.password_extend_lifetime) {
+                if (logSQL != 0) {
+                    log_sql::debug("chlUpdateIrodsPamPassword SQL 4");
+                }
+                cllBindVars[cllBindVarCount++] = myTime;
+                cllBindVars[cllBindVarCount++] = expTime;
+                cllBindVars[cllBindVarCount++] = selUserId;
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[cllBindVarCount++] = password_in_database_buffer.data();
+                status = cmlExecuteNoAnswerSql(
+                    "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
+                    &icss);
+                if (status) {
+                    return ERROR(status, "password update error");
+                }
 
-        // The descrambled password at time of generation is 50 characters or less (see below).
-        std::strncpy(*_password_buffer, password_in_database_buffer.data(), _password_buffer_size);
+                status = cmlExecuteNoAnswerSql("commit", &icss);
+                if (status != 0) {
+                    log_db::info("chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure {}", status);
+                    return ERROR(status, "commit failure");
+                }
+            }
 
-        return SUCCESS();
+            // password_in_database_buffer holds the randomly generated password in a scrambled form. It needs to be
+            // descrambled before returning to the caller.
+            icatDescramble(password_in_database_buffer.data());
+
+            // The descrambled password at time of generation is 50 characters or less (see below).
+            std::strncpy(*_password_buffer, password_in_database_buffer.data(), _password_buffer_size);
+
+            return SUCCESS();
+        }
     }
 
     // See db_mod_user_op operation "password" for explanation about password lengths. This is apparently the enforced
