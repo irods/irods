@@ -539,42 +539,69 @@ class test_configurations(unittest.TestCase):
             self.other_auth_session.environment_file_contents.update(client_update)
 
             # Set the minimum time to a very short value so that the password expires in a reasonable amount of
-            # time for testing purposes. This value should be higher than 3 seconds to ensure steps in the test
+            # time for testing purposes. This value should be higher than 5 seconds to ensure steps in the test
             # have enough time to complete.
-            ttl = 4
-            self.assertGreater(ttl, 3)
+            ttl = 6
+            self.assertGreater(ttl, 5)
             option_value = str(ttl)
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, min_time_option_name, option_value])
 
-            # Authenticate with session 1
+            # [0,0] seconds after start
+            # Authenticate with session 1. We assume these calls take less than 0.1 seconds in time.
             self.auth_session.assert_icommand(
                 ['iinit'], 'STDOUT', 'PAM password', input=f'{self.auth_session.password}\n')
             self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
-           
-            # Sleep a bit
+
+            # Sleep until session 1 almost expires
             time.sleep(ttl - 2)
-            
+
+            # [ttl - 2, ttl - 1.9] seconds after start, accounting for 0.1 seconds possible overhead.
+            # Session 1 should still be valid
+            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
             # Authenticate with session 2
             self.other_auth_session.assert_icommand(
                 ['iinit'], 'STDOUT', 'PAM password', input=f'{self.other_auth_session.password}\n')
+
+            # Now both sessions should be valid
+            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
             self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
 
             # Sleep until the first session is expired. The second session should remain valid.
             time.sleep(3)
 
-            # Password should be expired for first session
+            # [ttl + 1, ttl + 1.2] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 1 should be expired
             out, err, rc = self.auth_session.run_icommand('ils')
             self.assertEqual('', out)
-            # #7344 - This should always return CAT_PASSWORD_EXPIRED, but sometimes it returns
-            # CAT_INVALID_AUTHENTICATION. This should be made more consistent.
             self.assertTrue(
                 'CAT_PASSWORD_EXPIRED: failed to perform request' in err or
                 'CAT_INVALID_AUTHENTICATION: failed to perform request' in err)
             self.assertNotEqual(0, rc)
 
-            # The other session should still be ok
+            # Session 2 should still be valid
             self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            # Sleep until session 2 almost expires
+            time.sleep(ttl - 5)
+
+            # [2*ttl - 4, 2*ttl - 3.7] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 2 was authenticated [ttl - 2, ttl - 1.8] seconds after start, so
+            # it expires at [2 * ttl - 2, 2 * ttl - 1.8] seconds after start, which is
+            # at least 1.7 seconds from now. So session 2 should still be valid.
+            self.other_auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
+
+            time.sleep(3.2)
+
+            # [2*ttl - 0.8, 2*ttl - 0.4] seconds after start, accounting for another 0.1 seconds possible overhead.
+            # Session 2 should be expired for at least 1 second.
+            out, err, rc = self.other_auth_session.run_icommand('ils')
+            self.assertEqual('', out)
+            self.assertTrue(
+                'CAT_PASSWORD_EXPIRED: failed to perform request' in err or
+                'CAT_INVALID_AUTHENTICATION: failed to perform request' in err)
+            self.assertNotEqual(0, rc)
 
         finally:
             self.other_auth_session.environment_file_contents = other_auth_session_env_backup
@@ -631,7 +658,7 @@ class test_configurations(unittest.TestCase):
                  ['iinit', '--ttl', str(base_ttl_in_hours - 1)],
                  'STDOUT', 'PAM password',
                  input=f'{self.auth_session.password}\n')
- 
+
             # TTL value is equal to the maximum. The TTL is valid.
             self.auth_session.assert_icommand(
                  ['iinit', '--ttl', str(base_ttl_in_hours)],
