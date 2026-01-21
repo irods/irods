@@ -1025,6 +1025,7 @@ irods::error read_bytes_buf(
     // trap failed read
     if (!(err.ok() && bytes_read == _length)) {
         free(_buffer->buf);
+        _buffer->buf = nullptr;
         return ERROR(SYS_READ_MSG_BODY_LEN_ERR, fmt::format("Read {} expected {}.", bytes_read, _length));
     }
 
