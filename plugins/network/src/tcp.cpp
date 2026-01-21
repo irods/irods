@@ -406,11 +406,13 @@ irods::error read_bytes_buf(
 
     if (!ret.ok()) {
         free(_buffer->buf);
+        _buffer->buf = nullptr;
         return PASS(ret);
     }
 
     if (bytes_read != _length) {
         free(_buffer->buf);
+        _buffer->buf = nullptr;
         return ERROR(SYS_READ_MSG_BODY_LEN_ERR, boost::format("only read [%d] of [%d]") % bytes_read % _length);
     }
 
