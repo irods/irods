@@ -105,20 +105,23 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             self.admin.assert_icommand(['iunreg', '-M', self.logical_path_to_obj])
 
     def test_iunreg_object_admin_flag(self):
-        # Put a file in rodsuser's home collection
-        self.user.assert_icommand(['iput', '-R', self.resc1, self.local_data_path])
-        # Remove permissions from rodsadmin
-        self.admin.assert_icommand(['ichmod', '-M', 'own', self.admin.username, self.logical_path_to_obj])
-        self.admin.assert_icommand(['ichmod', '-M', 'null', self.admin.username, self.logical_path_to_obj])
-        # Unregister from the vault as admin (and fail)
-        self.admin.assert_icommand(['iunreg', self.logical_path_to_obj], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
-        self.user.assert_icommand(['ils', '-L', self.logical_path_to_obj], 'STDOUT', self.data_in_repl_vault_path)
-        # Again, with feeling (admin flag)
-        self.admin.assert_icommand(['iunreg', '-M', self.logical_path_to_obj])
-        self.user.assert_icommand(['ils', '-L', self.logical_path_to_obj], 'STDERR', 'does not exist')
-        self.assertTrue(
-            os.path.exists(self.data_in_repl_vault_path),
-            msg='Data missing from vault after unregister:[{}]'.format(self.data_in_repl_vault_path))
+        try:
+            # Put a file in rodsuser's home collection
+            self.user.assert_icommand(['iput', '-R', self.resc1, self.local_data_path])
+            # Remove permissions from rodsadmin
+            self.admin.assert_icommand(['ichmod', '-M', 'own', self.admin.username, self.logical_path_to_obj])
+            self.admin.assert_icommand(['ichmod', '-M', 'null', self.admin.username, self.logical_path_to_obj])
+            # Unregister from the vault as admin (and fail)
+            self.admin.assert_icommand(['iunreg', self.logical_path_to_obj], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
+            self.user.assert_icommand(['ils', '-L', self.logical_path_to_obj], 'STDOUT', self.data_in_repl_vault_path)
+            # Again, with feeling (admin flag)
+            self.admin.assert_icommand(['iunreg', '-M', self.logical_path_to_obj])
+            self.user.assert_icommand(['ils', '-L', self.logical_path_to_obj], 'STDERR', 'does not exist')
+            self.assertTrue(
+                os.path.exists(self.data_in_repl_vault_path),
+                msg='Data missing from vault after unregister:[{}]'.format(self.data_in_repl_vault_path))
+        finally:
+            self.user.run_icommand(["irm", "-f", self.logical_path_to_obj])
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_replica_number(self):
