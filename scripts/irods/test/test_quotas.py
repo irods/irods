@@ -24,16 +24,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Quotas, self).setUp()
 
-        self.quota_user = session.mkuser_and_return_session('rodsuser', 'quotauser', 'quotapass', lib.get_hostname())
-
-    def tearDown(self):
-        self.quota_user.__exit__()
-        self.admin.assert_icommand(['iadmin', 'rmuser', 'quotauser'])
-        super(Test_Quotas, self).tearDown()
-
-
-    def test_iquota__3044(self):
-        pep_map = {
+        self.pep_to_enable_resc_quota_policy = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
                 acRescQuotaPolicy {
                     msiSetRescQuotaPolicy("on");
@@ -44,11 +35,19 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     callback.msiSetRescQuotaPolicy('on')
             ''')
         }
+        self.quota_user = session.mkuser_and_return_session('rodsuser', 'quotauser', 'quotapass', lib.get_hostname())
 
+    def tearDown(self):
+        self.quota_user.__exit__()
+        self.admin.assert_icommand(['iadmin', 'rmuser', 'quotauser'])
+        super(Test_Quotas, self).tearDown()
+
+
+    def test_iquota__3044(self):
         filename_1 = 'test_iquota__3044_1'
         filename_2 = 'test_iquota__3044_2'
         with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+            core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
             IrodsController().restart(test_mode=True)
             for quotatype in [['sgq', 'public']]: # group
                 for quotaresc in [self.testresc, 'total']: # resc and total
@@ -101,21 +100,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
     
     # The following test covers case 10, 11, 12
     def test_physical_quota_on_single_resource_with_multiple_groups__issue_8691(self):
-        pep_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acRescQuotaPolicy {
-                    msiSetRescQuotaPolicy("on");
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acRescQuotaPolicy(rule_args, callback, rei):
-                    callback.msiSetRescQuotaPolicy('on')
-            ''')
-        }
-
         try:
             with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
+                core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
                 IrodsController().restart(test_mode=True)
 
                 group_name = 'test_group_case_10_11_12'
@@ -161,21 +148,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
 
     # The following test covers case 40, 41, 42
     def test_physical_resource_and_total_quota_simultaneously__issue_4089(self):
-        pep_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acRescQuotaPolicy {
-                    msiSetRescQuotaPolicy("on");
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acRescQuotaPolicy(rule_args, callback, rei):
-                    callback.msiSetRescQuotaPolicy('on')
-            ''')
-        }
-
         try:
             with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
+                core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
                 IrodsController().restart(test_mode=True)
 
                 group_name = 'test_group_case_40_41_42'
@@ -225,21 +200,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().restart(test_mode=True)
 
     def test_single_resource_quota_violation_does_not_affect_other_resources__issue_8758(self):
-        pep_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acRescQuotaPolicy {
-                    msiSetRescQuotaPolicy("on");
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acRescQuotaPolicy(rule_args, callback, rei):
-                    callback.msiSetRescQuotaPolicy('on')
-            ''')
-        }
-
         try:
             with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
+                core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
                 IrodsController().restart(test_mode=True)
 
                 group_name = 'test_group_issue_8758'
@@ -275,21 +238,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().restart(test_mode=True)
 
     def test_quota_cares_about_acl_own_permission__issue_8750(self):
-        pep_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acRescQuotaPolicy {
-                    msiSetRescQuotaPolicy("on");
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acRescQuotaPolicy(rule_args, callback, rei):
-                    callback.msiSetRescQuotaPolicy('on')
-            ''')
-        }
-
         try:
             with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
+                core.add_rule(self.pep_to_enable_resc_quota_policy[self.plugin_name])
                 IrodsController().restart(test_mode=True)
 
                 group_name = 'test_group_acl'
