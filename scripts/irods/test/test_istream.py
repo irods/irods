@@ -523,10 +523,14 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
 
     def test_istream_write_with_various_options_on_empty_replica_with_effects_on_mtime__issue_7128(self):
         logical_path = "/".join([self.user.session_collection, "emptiness"])
+        test_resource = "mtime_resc"
 
         try:
+            # Make a test resource on a remote machine (where applicable).
+            lib.create_ufs_resource(self.admin, test_resource, hostname=test.settings.HOSTNAME_2)
+
             # Create an empty data object.
-            self.user.assert_icommand(["itouch", logical_path])
+            self.user.assert_icommand(["itouch", "-R", test_resource, logical_path])
 
             with self.subTest("with truncate"):
                 # Get the current mtime for comparison.
@@ -536,7 +540,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
                 time.sleep(1)
 
                 # Open it for write, but don't write anything. istream truncates by default, so mtime should be updated.
-                self.user.assert_icommand(["istream", "write", logical_path])
+                self.user.assert_icommand(["istream", "-R", test_resource, "write", logical_path])
                 self.assertLess(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
 
             with self.subTest("with no-trunc"):
@@ -548,7 +552,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
 
                 # Open it for write with no-trunc, but don't write anything. Opening for write without truncating should
                 # not update the mtime
-                self.user.assert_icommand(["istream", "--no-trunc", "write", logical_path])
+                self.user.assert_icommand(["istream", "-R", test_resource, "--no-trunc", "write", logical_path])
                 self.assertEqual(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
 
             with self.subTest("with append"):
@@ -560,8 +564,9 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
 
                 # Open it for write with append, but don't write anything. append implies no-trunc, so mtime should not
                 # be updated.
-                self.user.assert_icommand(["istream", "--append", "write", logical_path])
+                self.user.assert_icommand(["istream", "-R", test_resource, "--append", "write", logical_path])
                 self.assertEqual(original_mtime, lib.get_replica_mtime(self.user, logical_path, 0))
 
         finally:
             self.user.run_icommand(["irm", "-f", logical_path])
+            self.admin.run_icommand(["iadmin", "rmresc", test_resource])
