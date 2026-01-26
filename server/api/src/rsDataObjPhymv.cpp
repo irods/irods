@@ -458,7 +458,7 @@ namespace
         // this keyword for server-to-server connections. If this is not already a server-to-server connection, the
         // server property is set so that the keyword will be recognized.
         static_cast<void>(addKeyVal(&_source_l1desc.dataObjInp->condInput, ill::keywords::bypass, ""));
-        bool agent_conn_kw_already_set = irods::server_property_exists(irods::AGENT_CONN_KW);
+        const bool agent_conn_kw_already_set = irods::server_property_exists(irods::AGENT_CONN_KW);
         if (!agent_conn_kw_already_set) {
             static_cast<void>(irods::set_server_property<std::string>(irods::AGENT_CONN_KW, ill::keywords::bypass));
         }

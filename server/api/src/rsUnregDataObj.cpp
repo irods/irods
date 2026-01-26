@@ -92,7 +92,8 @@ _rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
 
         // Check to see if the object is locked. If so, an error is returned.
         if (!irods::server_property_exists(irods::AGENT_CONN_KW) ||
-            nullptr == getValByKey(condInput, ill::keywords::bypass)) {
+            nullptr == getValByKey(condInput, ill::keywords::bypass))
+        {
             DataObjInfo* info{};
             const auto free_DataObjInfo = irods::at_scope_exit{[&info] { freeAllDataObjInfo(info); }};
 
@@ -102,7 +103,8 @@ _rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
             if (nullptr != getValByKey(unregDataObjInp->condInput, ADMIN_KW)) {
                 addKeyVal(&inp.condInput, ADMIN_KW, "");
             }
-            std::strncpy(static_cast<char*>(inp.objPath), dataObjInfo->objPath, sizeof(inp.objPath) - 1);
+            std::strncpy(
+                static_cast<char*>(inp.objPath), static_cast<char*>(dataObjInfo->objPath), sizeof(inp.objPath) - 1);
             if (const auto ret = getDataObjInfo(rsComm, &inp, &info, ACCESS_DELETE_OBJECT, 0); ret < 0) {
                 log_api::error("{}: Data object [{}] does not exist. [error code={}]", __func__, inp.objPath, ret);
                 return ret;
