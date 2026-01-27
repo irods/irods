@@ -113,48 +113,34 @@ namespace
         update
     };
 
-    auto update_replica_access_table(rsComm_t& _conn,
-                                     update_operation _op,
+    auto update_replica_access_table(update_operation _op,
                                      int _l1desc_index,
-                                     const dataObjInp_t& _input) -> int
+                                     const ir::replica_proxy_t& _replica,
+                                     const char* _replica_token = "") -> int
     {
-        const fs::path p = _input.objPath;
-        const irods::experimental::key_value_proxy kvp{_input.condInput};
-
-        rat::data_id_type data_id;
-        rat::replica_number_type replica_number;
-
-        try {
-            const auto gql = fmt::format("select DATA_ID, DATA_REPL_NUM "
-                                         "where"
-                                         " COLL_NAME = '{}' and"
-                                         " DATA_NAME = '{}' and"
-                                         " DATA_RESC_HIER = '{}'",
-                                         irods::single_quotes_to_hex(p.parent_path()),
-                                         irods::single_quotes_to_hex(p.object_name()),
-                                         kvp.at(RESC_HIER_STR_KW).value());
-
-            for (auto&& row : irods::query{&_conn, gql}) {
-                data_id = std::stoull(row[0]);
-                replica_number = std::stoul(row[1]);
-            }
-        }
-        catch (const std::out_of_range&) {
-            irods::log(LOG_NOTICE, fmt::format("[{}:{}] - Could not convert string to integer", __FUNCTION__, __LINE__));
-
-            return SYS_INTERNAL_ERR;
+        if (_replica.data_id() <= 0 || _replica.replica_number() < 0) {
+            log_api::error(
+                "{}: Invalid replica specified for replica access table entry. data_id=[{}], replica number=[{}]",
+                __func__,
+                _replica.data_id(),
+                _replica.replica_number());
+            return SYS_INVALID_INPUT_PARAM;
         }
 
         auto& l1desc = L1desc[_l1desc_index];
 
         try {
+            // ir::replica_proxy::data_id() returns rodsLong_t.
+            const auto data_id = static_cast<rat::data_id_type>(_replica.data_id());
+            // ir::replica_proxy::replica_number() returns int.
+            const auto replica_number = static_cast<rat::replica_number_type>(_replica.replica_number());
+
             if (update_operation::create == _op) {
                 l1desc.replica_token = rat::create_new_entry(data_id, replica_number, getpid());
             }
             else {
-                auto token = kvp.at(REPLICA_TOKEN_KW).value();
-                rat::append_pid(token.data(), data_id, replica_number, getpid());
-                l1desc.replica_token = token;
+                rat::append_pid(_replica_token, data_id, replica_number, getpid());
+                l1desc.replica_token = _replica_token;
             }
 
             irods::log(LOG_DEBUG, fmt::format(
@@ -309,8 +295,9 @@ namespace
             //   3. Create new replica (starts in intermediate status)
             //   4. Insert new replica into RST
             auto object_locked = false;
+            const auto* maybe_replica_token = getValByKey(&_inp.condInput, REPLICA_TOKEN_KW);
+            const auto* replica_token = (nullptr != maybe_replica_token) ? maybe_replica_token : "";
             if (!brand_new_data_object) {
-                const auto replica_token = cond_input.contains(REPLICA_TOKEN_KW) ? cond_input.at(REPLICA_TOKEN_KW).value().data() : "";
                 if (const auto ret = ill::try_lock(*_existing_replica_list, ill::lock_type::write, hierarchy, replica_token); ret < 0) {
                     freeL1desc(l1_index);
                     return ret;
@@ -533,7 +520,9 @@ namespace
             L1desc[l1_index].l3descInx = l3_index;
 
             constexpr auto uo = update_operation::create;
-            if (const auto rat_ec = update_replica_access_table(_comm, uo, l1_index, _inp); rat_ec < 0) {
+            if (const auto rat_ec = update_replica_access_table(uo, l1_index, registered_replica, replica_token);
+                rat_ec < 0)
+            {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - [error occurred while updating replica access table] "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -1241,7 +1230,7 @@ namespace
                 // the replica. "update" should be used when the replica token already exists.
                 const auto uo = rat::contains(replica.data_id(), replica.replica_number()) ? update_operation::update
                                                                                            : update_operation::create;
-                if (const auto ec = update_replica_access_table(*rsComm, uo, l1descInx, *dataObjInp); ec < 0) {
+                if (const auto ec = update_replica_access_table(uo, l1descInx, replica, replica_token); ec < 0) {
                     const auto erase_rst_entry = irods::at_scope_exit{[&] {
                         if (rst::contains(replica.data_id())) {
                             rst::erase(replica.data_id());
