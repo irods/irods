@@ -99,8 +99,11 @@
 
 /// Defined if the development library supports #rc_genquery2.
 ///
+/// - 202503L: User is granted control over the DISTINCT keyword
+/// - 202404L: Initial implementation
+///
 /// \since 4.3.2
-#define IRODS_LIBRARY_FEATURE_GENQUERY2               202404L
+#define IRODS_LIBRARY_FEATURE_GENQUERY2                                   202503L
 
 /// Defined if the development library supports the delay rule locking API.
 ///
@@ -119,6 +122,35 @@
 ///
 /// \since 5.1.0
 #define IRODS_LIBRARY_FEATURE_IRODS_AUTHENTICATION    202512L
+
+/// Defined if the development library supports access time for replicas.
+///
+/// \since 5.0.0
+#define IRODS_LIBRARY_FEATURE_ACCESS_TIME                                 202503L
+
+/// Defined if the development library supports #rc_authenticate_client.
+///
+/// \since 5.0.0
+#define IRODS_LIBRARY_FEATURE_AUTHENTICATE_CLIENT                         202504L
+
+/// Defined if the development library supports #procApiRequest_raw.
+///
+/// \since 4.3.5
+#define IRODS_LIBRARY_FEATURE_OVERRIDE_PACKING_INSTRUCTIONS               202511L
+
+/// Defined if the development library supports CRC64/NVME as a checksum algorithm.
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_CHECKSUM_ALGORITHM_CRC64NVME                202511L
+
+/// Defined if the development library supports resources that can read checksum information
+/// from the storage device.
+///
+/// This means the RESOURCE_OP_READ_CHECKSUM_FROM_STORAGE_DEVICE operation is supported by
+/// the resource plugin interface.
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_RESOURCES_READ_CHECKSUM_FROM_STORAGE_DEVICE 202511L
 
 // NOLINTEND
 
