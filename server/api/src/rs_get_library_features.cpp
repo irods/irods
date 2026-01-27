@@ -41,6 +41,8 @@ auto rs_get_library_features(RsComm* _comm, char** _features) -> int
 
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_REPLICA_TRUNCATE)
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_GENQUERY2)
+
+        IRODS_FEATURE(IRODS_LIBRARY_FEATURE_OVERRIDE_PACKING_INSTRUCTIONS)
     }.dump().c_str());
     // clang-format on
 
