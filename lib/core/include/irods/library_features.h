@@ -99,7 +99,17 @@
 
 /// Defined if the development library supports #rc_genquery2.
 ///
+/// - 202503L: User is granted control over the DISTINCT keyword
+/// - 202404L: Initial implementation
+///
 /// \since 4.3.2
-#define IRODS_LIBRARY_FEATURE_GENQUERY2               202404L
+#define IRODS_LIBRARY_FEATURE_GENQUERY2                     202503L
+
+/// Defined if the development library supports #procApiRequest_raw.
+///
+/// \since 4.3.5
+#define IRODS_LIBRARY_FEATURE_OVERRIDE_PACKING_INSTRUCTIONS 202511L
+
+// NOLINTEND
 
 #endif // IRODS_LIBRARY_FEATURES_H

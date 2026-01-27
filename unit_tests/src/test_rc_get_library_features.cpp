@@ -46,7 +46,9 @@ TEST_CASE("rc_get_library_features")
         CHECK(202307 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_CHECK_AUTH_CREDENTIALS)).get<int>());
 
         CHECK(202403 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_REPLICA_TRUNCATE)).get<int>());
-        CHECK(202404 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_GENQUERY2)).get<int>());
+        CHECK(202503 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_GENQUERY2)).get<int>());
+
+        CHECK(202511 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_OVERRIDE_PACKING_INSTRUCTIONS)).get<int>());
         // clang-format on
     }
 
