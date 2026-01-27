@@ -1319,3 +1319,54 @@ class ResourceSuite(ResourceBase):
             self.admin.run_icommand(
                 ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', archive_hierarchy, 'DATA_REPL_STATUS', '0'])
             self.admin.run_icommand(['irm', '-f', logical_path])
+
+    def test_irsync_data_object_with_various_sizes_always_works__issue_6469(self):
+        filename = "test_irsync_data_object_to_new_data_object__issue_6469"
+        try:
+            # Tests a zero-length file, an 8MiB file (streaming / single buffer), and a 128MiB file (parallel transfer).
+            for size in [0, 8 * 1024 ** 2, 128 * 1024 ** 2]:
+                localfile_name = filename + f"_{size}"
+                source_logical_path = "/".join([self.user1.session_collection, localfile_name])
+                dest_logical_path = source_logical_path + ".bak"
+                localfile = os.path.join(self.user1.local_session_dir, localfile_name)
+                other_localfile = f'{localfile}_new'
+                contents = str() if size > 0 else "more"
+
+                # Create a local file to use as test data.
+                lib.make_file(localfile, size)
+                file_size = os.stat(localfile).st_size
+                self.assertEqual(file_size, size)
+                with self.subTest(f"irsync object of size [{size}]"):
+                    # Rsync to the initial object using the file created above (file-to-object create).
+                    self.user1.assert_icommand(["irsync", localfile, f"i:{source_logical_path}"])
+                    source_object_size = int(lib.get_replica_size(self.user1, source_logical_path.split("/")[-1], 0))
+                    self.assertEqual(source_object_size, file_size)
+
+                    # Rsync the object to another object (object-to-object create).
+                    self.user1.assert_icommand(["irsync", f"i:{source_logical_path}", f"i:{dest_logical_path}"])
+                    dest_object_size = int(lib.get_replica_size(self.user1, dest_logical_path.split("/")[-1], 0))
+                    self.assertEqual(source_object_size, dest_object_size)
+
+                    # Modify the source file.
+                    self.user1.assert_icommand(["istream", "write", source_logical_path], input=contents)
+                    source_object_size = int(lib.get_replica_size(self.user1, source_logical_path.split("/")[-1], 0))
+                    self.assertNotEqual(source_object_size, file_size)
+                    self.assertNotEqual(source_object_size, dest_object_size)
+
+                    # Rsync the object to another object (object-to-object sync).
+                    self.user1.assert_icommand(["irsync", f"i:{source_logical_path}", f"i:{dest_logical_path}"])
+                    dest_object_size = int(lib.get_replica_size(self.user1, dest_logical_path.split("/")[-1], 0))
+                    self.assertEqual(source_object_size, dest_object_size)
+
+                    # Rsync the object to a local file (object-to-file sync).
+                    self.user1.assert_icommand(["irsync", f"i:{dest_logical_path}", localfile])
+                    file_size = os.stat(localfile).st_size
+                    self.assertEqual(dest_object_size, file_size)
+
+                    # Rsync the object to a local file (object-to-file create).
+                    self.user1.assert_icommand(["irsync", f"i:{dest_logical_path}", other_localfile])
+                    new_file_size = os.stat(other_localfile).st_size
+                    self.assertEqual(file_size, new_file_size)
+
+        finally:
+            self.user1.assert_icommand(["ils", "-L"], "STDOUT") # debugging
