@@ -518,8 +518,7 @@ namespace
 
             constexpr auto uo = update_operation::create;
             if (const auto rat_ec = update_replica_access_table(uo, l1_index, registered_replica, replica_token);
-                rat_ec < 0)
-            {
+                rat_ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - [error occurred while updating replica access table] "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
