@@ -76,7 +76,7 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
         # Create a new empty data object.
         data_object = 'foo'
         self.user.assert_icommand(['itouch', data_object])
-        self.user.assert_icommand(['ils', '-l', data_object], 'STDOUT', [' 0 demoResc            0 '])
+        self.assertEqual(0, int(lib.get_replica_size(self.user, data_object, 0)))
 
         # Show that "iget" produces zero bytes.
         self.user.assert_icommand(['iget', data_object, '-'])
