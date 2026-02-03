@@ -135,7 +135,7 @@ main( int argc, char **argv ) {
 
 void
 usage() {
-    const char *msgs[] = {
+    const char* msgs[] = {
         "Usage: irsync [-rahKsvV] [-N numThreads] [-R resource] [--ignore-symlinks] [--age age_in_minutes]",
         "          sourceFile|sourceDirectory [....] targetFile|targetDirectory",
         " ",
@@ -208,7 +208,12 @@ usage() {
         " -h  this help",
         " -l  lists all the source files that needs to be synchronized",
         "       (including their filesize in bytes) with respect to the target",
-        "       without actually doing the synchronization.",
+        "       without actually doing the synchronization. NOTE: If a target",
+        "       is a data object without a checksum, it will not be listed as",
+        "       needing synchronization because the DataObjRsync API uses checksums",
+        "       to detect differences. In order to ensure that all data objects",
+        "       needing synchronization are listed, make sure they have checksums",
+        "       using a tool such as ichksum.",
         " --ignore-symlinks - ignore symlinks. Valid only for syncing from local host to",
         "        iRODS.",
         " -a   synchronize to all replicas if the target is an iRODS data object/collection.",
@@ -219,8 +224,7 @@ usage() {
         " ",
         "Also see 'irepl' for the replication and synchronization of physical",
         "copies (replica).",
-        ""
-    };
+        ""};
     int i;
     for ( i = 0;; i++ ) {
         if ( strlen( msgs[i] ) == 0 ) {
