@@ -50,7 +50,7 @@ namespace
 
     auto is_input_valid(const modDataObjMeta_t* input) -> std::tuple<bool, std::string>
     {
-        if (!input) {
+        if (nullptr == input || nullptr == input->regParam) {
             return {false, "Input is null"};
         }
 
