@@ -96,3 +96,21 @@ TEST_CASE("#7338")
     modDataObjMeta_t input{};
     CHECK(rc_data_object_modify_info(static_cast<RcComm*>(conn), &input) == SYS_NO_API_PRIV);
 }
+
+TEST_CASE("null inputs are checked")
+{
+    load_client_api_plugins();
+
+    modDataObjMeta_t input{};
+
+    // The RcComm must not be null.
+    CHECK(INVALID_INPUT_ARGUMENT_NULL_POINTER == rc_data_object_modify_info(nullptr, &input));
+
+    irods::experimental::client_connection conn; // NOLINT(misc-const-correctness)
+
+    // The input structure must not be null.
+    CHECK(INVALID_INPUT_ARGUMENT_NULL_POINTER == rc_data_object_modify_info(static_cast<RcComm*>(conn), nullptr));
+
+    // The input structure must have a valid regParam member.
+    CHECK(USER_BAD_KEYWORD_ERR == rc_data_object_modify_info(static_cast<RcComm*>(conn), &input));
+}
