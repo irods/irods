@@ -233,6 +233,9 @@ namespace
 
         cond_input[RESC_HIER_STR_KW] = resc_mgr.get_hier_to_root_for_resc(parser.last_resc());
 
+        // Erase RESC_NAME_KW because the target hierarchy has already been worked out.
+        cond_input.erase(RESC_NAME_KW);
+
         return source_data_obj_inp;
     } // init_source_replica_input
 
@@ -328,6 +331,9 @@ namespace
 
         cond_input[DEST_RESC_HIER_STR_KW] = full_hierarchy;
         cond_input[RESC_HIER_STR_KW] = full_hierarchy;
+
+        // Erase DEST_RESC_NAME_KW because the target hierarchy has already been worked out.
+        cond_input.erase(DEST_RESC_NAME_KW);
 
         return destination_data_obj_inp;
     } // init_destination_replica_input

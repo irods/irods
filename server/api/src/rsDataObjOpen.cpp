@@ -1108,6 +1108,24 @@ namespace
             return SYS_REPLICA_DOES_NOT_EXIST;
         }
 
+        // Only accept the resolved hierarchy if it descends from the resource specified by the user.
+        if (const auto* resc_name = getValByKey(&dataObjInp->condInput, RESC_NAME_KW);
+            nullptr != resc_name && !irods::hierarchy_parser{hierarchy}.contains(resc_name))
+        {
+            constexpr auto error_code = SYS_REPLICA_INACCESSIBLE;
+            const auto msg = fmt::format(
+                "{}: hierarchy descending from requested resource name does not have a replica or the replica is "
+                "inaccessible at this time. [path=[{}], requested resource name=[{}], resolved hierarchy=[{}]]",
+                __func__,
+                dataObjInp->objPath,
+                resc_name,
+                hierarchy);
+
+            addRErrorMsg(&rsComm->rError, error_code, msg.c_str());
+            log_api::warn(msg);
+            return error_code;
+        }
+
         auto replica = *maybe_replica;
 
         irods::log(LOG_DEBUG, fmt::format(
