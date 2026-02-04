@@ -56,7 +56,7 @@ namespace
         try {
             auto req  = to_json(bb_req);
             std::unique_ptr<auth::authentication_base> auth{
-                auth::resolve_authentication_plugin(get<std::string>("scheme", req), "server")};
+                auth::resolve_authentication_plugin(get<std::string>(auth::scheme_name, req), "server")};
             auto opr  = get<std::string>(auth::next_operation, req);
             auto resp = auth->call(*comm, opr, req);
 
