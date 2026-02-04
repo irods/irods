@@ -4,6 +4,7 @@
 #include "irods/irods_plugin_context.hpp"
 #include "irods/msParam.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/ticketAdmin.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
@@ -1408,6 +1409,38 @@ namespace irods::re_serialization
         }
     } // serialize_msParamArray_ptr_ptr
 
+    // NOLINTNEXTLINE(misc-use-anonymous-namespace)
+    static error serialize_ticketAdminInp_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            const TicketAdminInput* inp = boost::any_cast<TicketAdminInput*>(_p);
+
+            if (inp) {
+                _out["arg1"] = inp->arg1 ? inp->arg1 : "";
+                _out["arg2"] = inp->arg2 ? inp->arg2 : "";
+                _out["arg3"] = inp->arg3 ? inp->arg3 : "";
+                _out["arg4"] = inp->arg4 ? inp->arg4 : "";
+                _out["arg5"] = inp->arg5 ? inp->arg5 : "";
+                _out["arg6"] = inp->arg6 ? inp->arg6 : "";
+
+                serialize_keyValPair(inp->condInput, _out);
+            }
+            else {
+                _out["ticketAdminInp_ptr"] = "nullptr";
+            }
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(INVALID_ANY_CAST,
+                         fmt::format("{}: failed to cast pointer to [TicketAdminInput*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(
+                SYS_LIBRARY_ERROR, fmt::format("{}: failed to serialize [TicketAdminInput*]: {}", __func__, e.what()));
+        }
+
+        return SUCCESS();
+    } // serialize_ticketAdminInp_ptr
+
 #if 0
     static error serialize_XXXX_ptr(
             boost::any               _p,
@@ -1467,9 +1500,9 @@ namespace irods::re_serialization
             {std::type_index(typeid(std::vector<std::string>*)), serialize_vector_of_strings_ptr},
             {std::type_index(typeid(execMyRuleInp_t*)), serialize_execMyRuleInp_ptr},
             {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr},
-            {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr}};
+            {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr},
+            {std::type_index(typeid(TicketAdminInput*)), serialize_ticketAdminInp_ptr}};
         return the_map;
-
     } // get_serialization_map
 
     error add_operation(
