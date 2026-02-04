@@ -730,3 +730,78 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_10', "STR_PI"])
 
                 IrodsController().reload_configuration()
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_TicketAdminInput_is_exposed_to_NREP__issue_8518(self):
+        # Indicates whether the test should clean up (remove) the newly created ticket.
+        remove_ticket = False
+
+        try:
+            with temporary_core_file() as core:
+                avu_prefix = 'test_TicketAdminInput_is_exposed_to_NREP__issue_8518'
+
+                # Add a rule to core.re which when triggered will add AVUs to the admin's
+                # session collection.
+                #
+                # This rule expects "*input.arg6" to be an empty string. At the time of writing,
+                # arg6 of the TicketAdmin API is never used. If that changes in the future, this
+                # test will catch it. The testing of "*input.arg6" only exists to show that the
+                # nullptr case (in the serialization code) is covered.
+                core.add_rule(dedent('''
+                pep_api_ticket_admin_pre(*inst, *comm, *input) {{
+                    *v = *input.arg1;
+                    msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_1', *v, '');
+
+                    *v = *input.arg2;
+                    msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_2', *v, '');
+
+                    *v = *input.arg3;
+                    msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_3', *v, '');
+
+                    *v = *input.arg4;
+                    msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_4', *v, '');
+
+                    *v = *input.arg5;
+                    msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_5', *v, '');
+
+                    *v = *input.arg6;
+                    if (strlen(*v) == 0) {{
+                        msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_6', 'empty', '');
+                    }}
+
+                    foreach (*member in *input) {{
+                        if ('irodsAdmin' == *member) {{
+                            msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{avu_prefix}_ADMIN_KW', '1', '');
+                        }}
+                    }}
+                }}
+                '''.format(**locals())))
+
+                IrodsController().reload_configuration()
+
+                ticket_name = 'issue8518'
+                ticket_op = 'create'
+                ticket_type = 'read'
+
+                # Trigger PEP, ignore output.
+                # We use the rodsadmin account because we want to test the KeyValPair.
+                self.admin.assert_icommand(
+                    ['iticket', '-M', ticket_op, ticket_type, self.admin.session_collection, ticket_name], 'STDOUT')
+                remove_ticket = True
+
+                # Show the session collection has the expected AVUs attached to it.
+                self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_1\nvalue: {ticket_op}\n',
+                    f'attribute: {avu_prefix}_2\nvalue: {ticket_name}\n',
+                    f'attribute: {avu_prefix}_3\nvalue: {ticket_type}\n',
+                    f'attribute: {avu_prefix}_4\nvalue: {self.admin.session_collection}\n',
+                    f'attribute: {avu_prefix}_5\nvalue: {ticket_name}\n',
+                    f'attribute: {avu_prefix}_6\nvalue: empty\n',
+                    f'attribute: {avu_prefix}_ADMIN_KW\nvalue: 1\n',
+                ])
+
+        finally:
+            if remove_ticket:
+                self.admin.run_icommand(['iticket', 'delete', ticket_name])
+
+            IrodsController().reload_configuration()
