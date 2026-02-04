@@ -570,3 +570,91 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         finally:
             self.user.run_icommand(["irm", "-f", logical_path])
             self.admin.run_icommand(["iadmin", "rmresc", test_resource])
+
+    def test_istream_read_R_is_a_directive_not_a_preference__issue_8627(self):
+        filename = "test_istream_read_R_is_a_directive_not_a_preference__issue_8627"
+        logical_path = os.path.join(self.user.session_collection, filename)
+        resource_1 = "resc1"
+        resource_2 = "resc2"
+        root_resource = "pt1"
+        contents = "test_istream_read_R_is_a_directive_not_a_preference__issue_8627"
+
+        try:
+            # Create a resource hierarchy for testing.
+            lib.create_passthru_resource(self.admin, root_resource)
+            lib.create_ufs_resource(self.admin, resource_1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resource_2, test.settings.HOSTNAME_3)
+            lib.add_child_resource(self.admin, root_resource, resource_1)
+
+            # Create a data object for testing.
+            self.user.assert_icommand(["istream", "write", "-R", root_resource, logical_path], input=contents)
+
+            # Target resource which does not exist - failure.
+            self.user.assert_icommand(
+                ["istream", "read", "-R", "nope", logical_path], "STDERR", "Error: Cannot open data object.")
+
+            # Target leaf resource in a hierarchy - failure.
+            self.user.assert_icommand(
+                ["istream", "read", "-R", resource_1, logical_path], "STDERR", "Error: Cannot open data object.")
+
+            # Target resource which does not host any replicas - failure.
+            self.user.assert_icommand(
+                ["istream", "read", "-R", resource_2, logical_path], "STDERR", "Error: Cannot open data object.")
+
+            # Target the resource on which the replica actually resides - success.
+            self.user.assert_icommand(["istream", "read", "-R", root_resource, logical_path], "STDOUT", contents)
+
+        finally:
+            self.user.run_icommand(['irm', '-f', logical_path])
+            lib.remove_child_resource(self.admin, root_resource, resource_1)
+            lib.remove_resource(self.admin, root_resource)
+            lib.remove_resource(self.admin, resource_1)
+            lib.remove_resource(self.admin, resource_2)
+
+    def test_istream_write_R_is_a_directive_not_a_preference__issue_8627(self):
+        filename = "test_istream_write_R_is_a_directive_not_a_preference__issue_8627"
+        logical_path = os.path.join(self.user.session_collection, filename)
+        resource_1 = "resc1"
+        resource_2 = "resc2"
+        root_resource = "pt1"
+        contents = "test_istreamwrite_R_is_a_directive_not_a_preference__issue_8627"
+
+        try:
+            # Create a resource hierarchy for testing.
+            lib.create_passthru_resource(self.admin, root_resource)
+            lib.create_ufs_resource(self.admin, resource_1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resource_2, test.settings.HOSTNAME_3)
+            lib.add_child_resource(self.admin, root_resource, resource_1)
+
+            # Create a data object for testing.
+            self.user.assert_icommand(["istream", "write", "-R", root_resource, logical_path], input=contents)
+
+            # Target resource which does not exist - failure. Specify --append to avoid create.
+            self.user.assert_icommand(
+                ["istream", "write", "--append", "-R", "nope", logical_path],
+                "STDERR", "Error: Cannot open data object.", input=contents)
+            self.user.assert_icommand(["istream", "read", logical_path], "STDOUT", contents)
+
+            # Target leaf resource in a hierarchy - failure. Specify --append to avoid create.
+            self.user.assert_icommand(
+                ["istream", "write", "--append", "-R", resource_1, logical_path],
+                "STDERR", "Error: Cannot open data object.", input=contents)
+            self.user.assert_icommand(["istream", "read", logical_path], "STDOUT", contents)
+
+            # Target the resource on which the replica actually resides - success. Specify --append to avoid create.
+            self.user.assert_icommand(
+                ["istream", "write", "--append", "-R", root_resource, logical_path], input=contents)
+            self.user.assert_icommand(["istream", "read", logical_path], "STDOUT", contents * 2)
+
+            # Target resource which does not host any replicas. Should create a new replica because --append not used.
+            other_contents = "somethingelse"
+            self.user.assert_icommand(["istream", "write", "-R", resource_2, logical_path], input=other_contents)
+            self.user.assert_icommand(["istream", "read", "-R", resource_2, logical_path], "STDOUT", other_contents)
+
+        finally:
+            self.user.assert_icommand(['ils', '-L'], "STDOUT") # debugging
+            self.user.run_icommand(['irm', '-f', logical_path])
+            lib.remove_child_resource(self.admin, root_resource, resource_1)
+            lib.remove_resource(self.admin, root_resource)
+            lib.remove_resource(self.admin, resource_1)
+            lib.remove_resource(self.admin, resource_2)
