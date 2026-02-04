@@ -2443,22 +2443,37 @@ usage( char *subOpt ) {
         "The Value parameter is the quota amount in bytes.",
         "Set this to 0 to remove a group quota.",
         " ",
+        "Administrators should run 'iadmin cu' after setting a quota to guarantee",
+        "totals are accurate. Ignoring this step can result in incorrect totals,",
+        "leading to unexpected data transfer failures. This situation can occur",
+        "when a quota is removed and then re-enabled with a different value.",
+        " ",
         "Also see suq, lq, and cu.",
         ""
     };
 
     char *lqMsgs[] = {
         " lq [Name] List Quotas",
+        " ",
         "List the quotas that have been set (if any).",
+        " ",
         "If Name is provided, list only that user or group.",
+        " ",
         "Also see suq, sgq, cu, and the 'iquota' command.",
         ""
     };
 
     char *cuMsgs[] = {
         " cu (calculate usage (for quotas))",
+        " ",
         "Calculate the usage on resources for each user and group and",
         "determine if users are over quota.",
+        " ",
+        "Administrators should run this command after setting a quota to guarantee",
+        "totals are accurate. Ignoring this step can result in incorrect totals,",
+        "leading to unexpected data transfer failures. This situation can occur",
+        "when a quota is removed and then re-enabled with a different value.",
+        " ",
         "Also see suq, sgq, and lq.",
         ""
     };
