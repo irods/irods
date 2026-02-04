@@ -408,8 +408,8 @@ namespace irods::authentication
                             // Now that the limited password is recorded in the auth file, we need to authenticate with
                             // the limited password to ensure that things are working. Call the start operation - the
                             // limited password recorded in the irodsA file will be used.
-                            return nlohmann::json{
-                                {"scheme", scheme_name}, {irods_auth::next_operation, AUTH_CLIENT_START}};
+                            return nlohmann::json{{irods_auth::scheme_name, scheme_name},
+                                                  {irods_auth::next_operation, AUTH_CLIENT_START}};
                         }
                     }
                     catch (const std::invalid_argument& e) {

@@ -189,7 +189,7 @@ namespace irods::authentication
             json req{_ctx};
             json resp;
 
-            req["scheme"] = scheme;
+            req[irods::authentication::scheme_name] = scheme;
             req[irods::authentication::next_operation] = *next_operation;
 
             while (true) {
