@@ -1122,24 +1122,126 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.assertGreater(modify_ts, create_ts)
         self.assertGreater(modify_ts, previous_ts)
 
-    def test_exceeding_ticket_use_count_returns_correct_error_code__issue_7967(self):
+    def test_exceeding_ticket_use_count_returns_correct_error_code__issue_7967_2720(self):
         ticket_string = "issue_7967_uses_count"
         data_object = "issue_7967_uses_filename"
         self.user.assert_icommand(['itouch', data_object])
 
         self.user.assert_icommand(['iticket', 'create', 'read', data_object, ticket_string])
 
-        # Modify ticket usage amount
-        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '3'])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 0', 'uses limit: 3'])
-        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 1'])
-        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 2'])
-        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
-        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
+        try:
+            # Modify ticket usage amount.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '3'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 0', 'uses limit: 3'])
+            self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 1'])
+            self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 2'])
+            self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
+            self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
+
+            # Increase ticket usage amount and show that the ticket can only be used the
+            # expected number of times.
+            with self.subTest('issue #2720 - use count only'):
+                self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '5'])
+                self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3', 'uses limit: 5'])
+                self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
+                self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 4'])
+                self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object])
+                self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5'])
+                self.user.assert_icommand(['iget', '-f', '-t', ticket_string, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
+                self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5'])
+
+        finally:
+            self.user.run_icommand(['iticket', 'delete', ticket_string])
+
+    def test_exceeding_ticket_use_count_returns_correct_error_code_when_using_iput__issue_2720(self):
+        data_object = 'issue_2720_uses_filename_using_iput'
+        filename = f'{self.user.local_session_dir}/{data_object}'
+        lib.make_file(filename, 10, 'arbitrary')
+        self.user.assert_icommand(['iput', filename, data_object])
+
+        ticket_string = 'issue_2720_uses_count_iput'
+        self.user.assert_icommand(['iticket', 'create', 'write', data_object, ticket_string])
+
+        try:
+            # Modify ticket usage amount.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '3'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 0', 'uses limit: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 1'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 2'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3'])
+
+            # Increase ticket usage amount and show that the ticket can only be used the
+            # expected number of times.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '5'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 3', 'uses limit: 5'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 4'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5'])
+
+            # Decrease the usage amount and show that the ticket still cannot be used to
+            # write to the data object.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '3'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5', 'uses limit: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-892000 CAT_TICKET_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses count: 5', 'uses limit: 3'])
+
+        finally:
+            self.user.run_icommand(['iticket', 'delete', ticket_string])
+
+    def test_exceeding_ticket_write_file_count_returns_correct_error_code__issue_2720(self):
+        data_object = 'issue_2720_write_file.txt'
+        filename = f'{self.user.local_session_dir}/{data_object}'
+        lib.make_file(filename, 10, 'arbitrary')
+        self.user.assert_icommand(['iput', filename, data_object])
+
+        ticket_string = 'issue_2720_write_file_count'
+        self.user.assert_icommand(['iticket', 'create', 'write', data_object, ticket_string])
+
+        try:
+            # Modify ticket write-file amount.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '3'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 0', 'write file limit: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 1'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 2'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-896000 CAT_TICKET_WRITE_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 3'])
+
+            # Increase ticket write-file amount and show that the ticket can only be written to
+            # the expected number of times.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '5'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 3', 'write file limit: 5'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 4'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 5'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-896000 CAT_TICKET_WRITE_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 5'])
+
+            # Decrease the write-file amount and show that the ticket still cannot be used to
+            # write to the data object.
+            self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '3'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 5', 'write file limit: 3'])
+            self.user.assert_icommand(['iput', '-f', '-t', ticket_string, filename, data_object], 'STDERR', ['-896000 CAT_TICKET_WRITE_USES_EXCEEDED'])
+            self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file count: 5', 'write file limit: 3'])
+
+        finally:
+            self.user.run_icommand(['iticket', 'delete', ticket_string])
 
 def get_modification_and_creation_time(cls, ticket_string):
     out, err, ec = cls.admin.run_icommand(['iquest', '%s...%s', "select TICKET_MODIFY_TIME, TICKET_CREATE_TIME where TICKET_STRING = '{}'".format(ticket_string)])
