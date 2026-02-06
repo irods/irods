@@ -25,7 +25,10 @@ from irods.configuration import IrodsConfig
 # Gets the count of rows which meet update condition and valid resc_id
 def get_scrubbable_row_count(cursor, select_resc_ids, update_condition):
     select_scrubbable_count = 'SELECT COUNT(*) AS "count" FROM R_DATA_MAIN WHERE (({update_condition}) AND resc_id IN ({select_resc_ids}));'.format(**locals())
-    return int(database_connect.execute_sql_statement(cursor, select_scrubbable_count).fetchone()['count'])
+    if sys.version_info == 3:
+        return int(database_connect.execute_sql_statement(cursor, select_scrubbable_count).fetchone()[0])
+    else:
+        return int(database_connect.execute_sql_statement(cursor, select_scrubbable_count).fetchone()['count'])
 
 # Runs provided update statement and returns number of rows updated
 def update_rows(connection, cursor, update_statement):
@@ -82,7 +85,10 @@ def dry_run(connection, select_resc_ids, update_condition):
     with contextlib.closing(connection.cursor()) as cursor:
         scrubbable_count = 0
         select_update_count = 'SELECT COUNT(*) AS "count" FROM R_DATA_MAIN WHERE {update_condition};'.format(**locals())
-        total_update_count = int(database_connect.execute_sql_statement(cursor, select_update_count).fetchone()['count'])
+        if sys.version_info == 3:
+            total_update_count = int(database_connect.execute_sql_statement(cursor, select_update_count).fetchone()[0])
+        else:
+            total_update_count = int(database_connect.execute_sql_statement(cursor, select_update_count).fetchone()['count'])
         print('Total rows in need of update: {total_update_count}'.format(**locals()))
         if total_update_count > 0:
             scrubbable_count = get_scrubbable_row_count(cursor, select_resc_ids, update_condition)
@@ -127,8 +133,8 @@ row to be updated. This script must be run on the catalog provider.
                 dry_run(connection, select_resc_ids, update_condition)
             else:
                 scrub_rows(connection, args.batch_size, select_resc_ids, update_columns, update_condition)
-    except (TypeError):
-        print('Failed getting database connection. Note: This script should be run on the iRODS catalog provider.')
+    except TypeError as e:
+        print('Failed getting database connection: [{}]. Note: This script should be run on the iRODS catalog provider.'.format(e))
 
 if __name__ == "__main__":
     print(f'NOTE: {__file__.split("/")[-1]} is deprecated and will be removed in an upcoming version of iRODS.')
