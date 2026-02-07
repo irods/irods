@@ -1564,18 +1564,29 @@ int checkObjIdByTicket(const char* dataId,
         }
 
         iWriteFileLimit = atoi( writeFileLimit );
-        if ( iWriteFileLimit > 0 ) {
-            iWriteFileCount = atoi( writeFileCount );
-            if ( iWriteFileCount > iWriteFileLimit ) {
-                return CAT_TICKET_WRITE_USES_EXCEEDED;
-            }
-
+        if (iWriteFileLimit > 0) {
             intDataId = atoll( dataId );
 
             // Don't update a second time if this id matches the last one.
             // Given this function can be called multiple times within the same operation, checking to
             // see if the data id is different keeps the server from updating the ticket information multiple times.
             if ( previousDataId1 != intDataId ) {
+                errno = 0;
+                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                iWriteFileCount = static_cast<int>(std::strtol(writeFileCount, nullptr, 10));
+                if (errno != 0) {
+                    log_db::error("[{}]: Error converting writeFileCount to int. [writeFileCount: [{}], dataId: [{}], "
+                                  "errno: [{}]]",
+                                  __func__,
+                                  writeFileCount,
+                                  dataId,
+                                  errno);
+                    return SYS_INTERNAL_ERR;
+                }
+                if (iWriteFileCount >= iWriteFileLimit) {
+                    return CAT_TICKET_WRITE_USES_EXCEEDED;
+                }
+
                 iWriteFileCount++;
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
                 snprintf(myWriteFileCount, sizeof(myWriteFileCount), "%d", iWriteFileCount);
@@ -1602,8 +1613,7 @@ int checkObjIdByTicket(const char* dataId,
     }
 
     iUsesLimit = atoi( usesLimit );
-    if ( iUsesLimit > 0 ) {
-
+    if (iUsesLimit > 0) {
         intDataId = atoll( dataId );
 
         // Don't update a second time if this id matches the last one.
