@@ -827,9 +827,17 @@ namespace
         }
         else {
             irods::file_object_ptr file_obj{new irods::file_object()};
-            irods::error fac_err = irods::file_object_factory(&_comm, &_inp, file_obj, &info_head);
-            if (!fac_err.ok() && CAT_NO_ROWS_FOUND != fac_err.code()) {
-                irods::log(fac_err);
+            const irods::error fac_err = irods::file_object_factory(&_comm, &_inp, file_obj, &info_head);
+            if (!fac_err.ok()) {
+                if (CAT_TICKET_WRITE_USES_EXCEEDED == fac_err.code() || CAT_TICKET_USES_EXCEEDED == fac_err.code()) {
+                    THROW(fac_err.code(),
+                          fmt::format(
+                              "Ticket constraint violation [error_code={}, path={}].", fac_err.code(), _inp.objPath));
+                }
+
+                if (CAT_NO_ROWS_FOUND != fac_err.code()) {
+                    irods::log(fac_err);
+                }
             }
         }
 
