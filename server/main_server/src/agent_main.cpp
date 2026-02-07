@@ -664,7 +664,6 @@ namespace
 
     auto initServerMain(RsComm& _comm) -> int
     {
-        std::memset(&_comm, 0, sizeof(RsComm));
         int status = getRodsEnv(&_comm.myEnv);
         if (status < 0) {
             log_af::error("{}: getRodsEnv error. status = {}", __func__, status);
