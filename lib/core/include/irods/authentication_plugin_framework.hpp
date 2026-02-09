@@ -186,7 +186,7 @@ namespace irods::authentication
 
             const std::string* next_operation = &irods::AUTH_CLIENT_START;
 
-            json req{_ctx};
+            json req(_ctx);
             json resp;
 
             req[irods::authentication::scheme_name] = scheme;

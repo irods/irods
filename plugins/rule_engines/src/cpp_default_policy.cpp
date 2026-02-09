@@ -1127,7 +1127,7 @@ irods::error exec_rule_expression(
     }
 
     try {
-        json r{json::parse(_rule_text)};
+        json r(json::parse(_rule_text));
 
         if(!r.contains("policy_to_invoke")) {
             return ERROR(SYS_NOT_SUPPORTED,

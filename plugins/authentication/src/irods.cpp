@@ -119,7 +119,7 @@ namespace irods::authentication
       private:
         auto auth_client_start(rcComm_t& comm, const json& req) -> nlohmann::json override
         {
-            json resp{req};
+            json resp(req);
             resp[user_name_kw] = comm.proxyUser.userName;
             resp[zone_name_kw] = comm.proxyUser.rodsZone;
             resp[irods_auth::next_operation] = client_init_auth_with_server;
@@ -128,7 +128,7 @@ namespace irods::authentication
 
         static auto client_init_auth_with_server_op(RcComm& _comm, const nlohmann::json& _request) -> nlohmann::json
         {
-            nlohmann::json svr_req{_request};
+            nlohmann::json svr_req(_request);
             svr_req[irods_auth::next_operation] = server_prepare_auth_check;
             auto resp = irods_auth::request(_comm, svr_req);
             resp[irods_auth::next_operation] = client_prepare_auth_check;
@@ -139,7 +139,7 @@ namespace irods::authentication
             -> nlohmann::json
         {
             irods_auth::throw_if_request_message_is_missing_key(_request, {user_name_kw, zone_name_kw});
-            nlohmann::json resp{_request};
+            nlohmann::json resp(_request);
             const auto force_prompt = _request.find(irods_auth::force_password_prompt);
             if (_request.end() != force_prompt && force_prompt->get<bool>()) {
                 fmt::print("Enter your iRODS password:");
@@ -186,7 +186,7 @@ namespace irods::authentication
         static auto client_auth_with_password_op(RcComm& _comm, const nlohmann::json& _request) -> nlohmann::json
         {
             irods_auth::throw_if_request_message_is_missing_key(_request, {user_name_kw, zone_name_kw, password_kw});
-            nlohmann::json svr_req{_request};
+            nlohmann::json svr_req(_request);
             svr_req[irods_auth::next_operation] = server_auth_with_password;
             auto resp = irods_auth::request(_comm, svr_req);
             resp[irods_auth::next_operation] = client_auth_with_session_token;
@@ -197,7 +197,7 @@ namespace irods::authentication
         {
             irods_auth::throw_if_request_message_is_missing_key(
                 _request, {user_name_kw, zone_name_kw, session_token_kw});
-            nlohmann::json svr_req{_request};
+            nlohmann::json svr_req(_request);
             svr_req[irods_auth::next_operation] = server_auth_with_session_token;
             auto resp = irods_auth::request(_comm, svr_req);
             if (const auto record_auth_file_iter = _request.find(irods_auth::record_auth_file);
@@ -213,7 +213,7 @@ namespace irods::authentication
 #ifdef RODS_SERVER
         static auto server_prepare_auth_check_op(RsComm& _comm, const nlohmann::json& _request) -> nlohmann::json
         {
-            nlohmann::json resp{_request};
+            nlohmann::json resp(_request);
             if (nullptr != _comm.auth_scheme) {
                 // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
                 std::free(_comm.auth_scheme);
@@ -349,7 +349,7 @@ namespace irods::authentication
 
             // Remove the password from the payload so that it's not sent back across the network unnecessarily, and add
             // the new session token so that the client side can use it to authenticate.
-            nlohmann::json resp{_request};
+            nlohmann::json resp(_request);
             resp.erase(password_kw);
             resp[session_token_kw] = token;
             log_auth::trace("{}: check complete for user [{}#{}]", __func__, user_name, zone_name);
@@ -428,7 +428,7 @@ namespace irods::authentication
 
             // Remove the session token from the response payload so that it is not communicated across the network
             // unnecessarily. The session token was included with the request, so the client should already have it.
-            nlohmann::json resp{_request};
+            nlohmann::json resp(_request);
             resp.erase(session_token_kw);
             return resp;
         } // server_auth_with_session_token_op

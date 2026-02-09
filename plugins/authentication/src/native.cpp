@@ -161,7 +161,7 @@ namespace irods::authentication
     private:
         json auth_client_start(rcComm_t& comm, const json& req)
         {
-            json resp{req};
+            json resp(req);
             resp[irods_auth::next_operation] = AUTH_CLIENT_AUTH_REQUEST;
             resp["user_name"] = comm.proxyUser.userName;
             resp["zone_name"] = comm.proxyUser.rodsZone;
@@ -175,7 +175,7 @@ namespace irods::authentication
                 req, {"user_name", "zone_name", "request_result"}
             );
 
-            json resp{req};
+            json resp(req);
 
             auto request_result = req.at("request_result").get<std::string>();
             request_result.resize(CHALLENGE_LEN);
@@ -322,7 +322,7 @@ namespace irods::authentication
 
         json native_auth_client_request(rcComm_t& comm, const json& req)
         {
-            json svr_req{req};
+            json svr_req(req);
 
             // Do not transmit the password in the request to the server if it was supplied by the client application.
             // This plugin does not require secure communications, so we cannot transmit the password in the clear.
@@ -352,7 +352,7 @@ namespace irods::authentication
                 req, {"digest", "user_name", "zone_name"}
             );
 
-            json svr_req{req};
+            json svr_req(req);
 
             // Do not transmit the password in the request to the server if it was supplied by the client application.
             // This plugin does not require secure communications, so we cannot transmit the password in the clear.
@@ -438,7 +438,7 @@ namespace irods::authentication
 #ifdef RODS_SERVER
         json native_auth_agent_request(rsComm_t& comm, const json& req)
         {
-            json resp{req};
+            json resp(req);
 
             char buf[CHALLENGE_LEN + 2]{};
             get64RandomBytes( buf );
@@ -521,7 +521,7 @@ namespace irods::authentication
                 THROW(status, "rcAuthCheck failed.");
             }
 
-            json resp{req};
+            json resp(req);
 
             // Do we need to consider remote zones here?
             if (LOCAL_HOST != rodsServerHost->localFlag) {

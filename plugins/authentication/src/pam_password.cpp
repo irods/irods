@@ -153,7 +153,7 @@ namespace irods::authentication
                       "is configured to require TLS in order to prevent leaking sensitive user information.");
             }
 
-            json resp{req};
+            json resp(req);
             resp["user_name"] = comm.proxyUser.userName;
             resp["zone_name"] = comm.proxyUser.rodsZone;
 
@@ -200,7 +200,7 @@ namespace irods::authentication
                       "is configured to require TLS in order to prevent leaking sensitive user information.");
             }
 
-            json svr_req{req};
+            json svr_req(req);
 
             svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_REQUEST;
 
@@ -277,7 +277,7 @@ namespace irods::authentication
                 return irods_auth::request(*host->conn, req);
             }
 
-            json resp{req};
+            json resp(req);
 
             // This operation asserts that the key exists in the request above, so we know that it is there.
             const auto password_iter = resp.find(irods::AUTH_PASSWORD_KEY);
