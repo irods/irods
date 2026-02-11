@@ -1,9 +1,11 @@
-#ifndef DATA_OBJ_LOCK_H__
-#define DATA_OBJ_LOCK_H__
+#ifndef IRODS_DATA_OBJ_LOCK_H
+#define IRODS_DATA_OBJ_LOCK_H
 
 #include "irods/rcConnect.h"
 #include "irods/objInfo.h"
 #include "irods/dataObjInpOut.h"
+
+// All macros defined by this header file are deprecated as of 4.3.5.
 
 // lock type definition
 #define READ_LOCK_TYPE   "readLockType"
@@ -37,5 +39,4 @@ extern "C"
 __attribute__((deprecated("Logical locking now manages access to data objects.")))
 int rcDataObjUnlock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-
-#endif
+#endif // IRODS_DATA_OBJ_LOCK_H

@@ -68,7 +68,7 @@
  *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second
  *          The default is 600000.
  *    \n RBUDP_PACK_SIZE_KW - (Deprecated) the size of RBUDP packet. The default is 8192.
- *    \n LOCK_TYPE_KW - set advisory lock type. valid value - WRITE_LOCK_TYPE.
+ *    \n LOCK_TYPE_KW - (Deprecated) set advisory lock type. valid value - WRITE_LOCK_TYPE.
  * \param[in] locFilePath - the path of the local file to upload. This path
  *           can be a relative path.
  *
