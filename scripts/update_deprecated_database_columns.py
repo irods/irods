@@ -63,6 +63,10 @@ def scrub_rows(connection, batch_size, select_resc_ids, update_columns, update_c
             db_type = database_interface.get_database_type()
             if db_type == "oracle":
                 select_data_ids = 'SELECT data_id FROM R_DATA_MAIN WHERE (({update_condition}) AND resc_id IN ({select_resc_ids}) AND ROWNUM <= {batch_size})'.format(**locals())
+            elif db_type == "mysql":
+                # MySQL 8 does not support direct use of LIMIT in subqueries with IN/ALL/ANY/SOME.
+                # The workaround for this is to wrap the LIMIT query in another subquery.
+                select_data_ids = 'SELECT data_id FROM (SELECT data_id FROM R_DATA_MAIN WHERE (({update_condition}) AND resc_id IN ({select_resc_ids})) LIMIT {batch_size}) as limited'.format(**locals())
             else:
                 select_data_ids = 'SELECT data_id FROM R_DATA_MAIN WHERE (({update_condition}) AND resc_id IN ({select_resc_ids})) LIMIT {batch_size}'.format(**locals())
             update_statement = 'UPDATE R_DATA_MAIN SET {column_assignments} WHERE data_id IN ({select_data_ids});'.format(column_assignments=column_assignments, select_data_ids=select_data_ids)
