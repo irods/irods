@@ -134,3 +134,49 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
             f'attribute: {avu_name}\n',
             f'value: {avu_value}\n'
         ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
+    def test_msiSetKeyValPairsToObj_does_not_result_in_rule_engine_error__issue_8528(self):
+        # Create a rule file which attempts to add an AVU to the session collection, admin, and a data object.
+        # The AVU is taken directly from the issue this was written for.
+        avu_name = 'mg.mail-over-quota'
+        avu_value = 'true'
+        data_object = f'{self.admin.session_collection}/issue_8528.txt'
+        rule_file = os.path.join(self.admin.local_session_dir, 'issue_8528.r')
+        with open(rule_file, 'w') as f:
+            f.write(dedent(
+                f"""
+                import irods_types
+                def main(rule_args, callback, rei):
+                    avu = '{avu_name}={avu_value}'
+                    res = callback.msiString2KeyValPair(avu, irods_types.KeyValPair())
+                    callback.msiSetKeyValuePairsToObj(res['arguments'][1], '{self.admin.session_collection}', '-C')
+                    callback.msiSetKeyValuePairsToObj(res['arguments'][1], '{self.admin.username}', '-u')
+                    callback.msiSetKeyValuePairsToObj(res['arguments'][1], '{data_object}', '-d')
+                    callback.msiSetKeyValuePairsToObj(res['arguments'][1], 'demoResc', '-R')
+
+                INPUT null
+                OUTPUT ruleExecOut
+                """))
+
+        # Create the data object so that the rule's requirements are satisfied.
+        self.admin.assert_icommand(['itouch', data_object])
+
+        # Run the rule and show that the AVU was added to the target collection, user, and data object.
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-python-instance', '-F', rule_file])
+        self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+            f'attribute: {avu_name}\n',
+            f'value: {avu_value}\n'
+        ])
+        self.admin.assert_icommand(['imeta', 'ls', '-u', self.admin.username], 'STDOUT', [
+            f'attribute: {avu_name}\n',
+            f'value: {avu_value}\n'
+        ])
+        self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', [
+            f'attribute: {avu_name}\n',
+            f'value: {avu_value}\n'
+        ])
+        self.admin.assert_icommand(['imeta', 'ls', '-R', 'demoResc'], 'STDOUT', [
+            f'attribute: {avu_name}\n',
+            f'value: {avu_value}\n'
+        ])
