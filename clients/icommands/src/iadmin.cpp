@@ -1926,9 +1926,11 @@ printMsgs( char *msgs[] ) {
 void usageMain() {
     char *Msgs[] = {
         "Usage: iadmin [-hvV] [command]",
+        " ",
         "A blank execute line invokes the interactive mode, where it",
         "prompts and executes commands until 'quit' or 'q' is entered.",
         "Single or double quotes can be used to enter items with blanks.",
+        " ",
         "Commands are:",
         " lu [name[#Zone]] (list user info; details if name entered)",
         " lua [name[#Zone]] (list user authentication (GSI/Kerberos Names, if any))",
@@ -1977,8 +1979,10 @@ void usageMain() {
         " set_grid_configuration NAMESPACE OPTION_NAME OPTION_VALUE",
         " remove_session_tokens expired|all [user[#zone]]",
         " help (or h) [command] (this help, or more details on a command)",
+        " ",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
         "similar admin modes in irepl, iphymv, and itrim.",
+        " ",
         "The admin can also alias as any user via the 'clientUserName' environment",
         "variable.",
         ""
