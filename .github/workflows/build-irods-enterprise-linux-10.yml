@@ -1,16 +1,21 @@
 name: build-irods-enterprise-linux-10
+
 on: [push, pull_request]
+
 jobs:
   build:
     name: ${{ matrix.container }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
+
     strategy:
       matrix:
         container: ['almalinux:10','rockylinux/rockylinux:10']
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
       - name: Install Prerequisites
         run:  |
               dnf -y update ca-certificates
@@ -46,7 +51,9 @@ jobs:
                 flex \
                 bison \
                 systemd-devel \
-                libarchive-devel
+                libarchive-devel \
+                ninja-build
+
       - name: Install iRODS Externals
         run:  |
               rpm --import https://unstable.irods.org/irods-unstable-signing-key.asc
@@ -58,12 +65,32 @@ jobs:
                 irods-externals-clang16.0.6-0 \
                 irods-externals-jsoncons0.178.0-0 \
                 irods-externals-nanodbc2.13.0-3
+
+      - name: Configure Ccache
+        run:  |
+              dnf install -y ccache
+              echo "CCACHE_DIR=/irods_build_cache" >> $GITHUB_ENV
+              echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+
+      - name: Restore Ccache State
+        uses: actions/cache@v4
+        with:
+            key: "ccache-irods-${{ matrix.container }}"
+            path: /irods_build_cache/
+
       - name: Configure CMake
         run:  |
               mkdir build
               cd build
-              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON -DIRODS_ENABLE_ALL_TESTS=YES ../
+              cmake \
+                -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON \
+                -DIRODS_ENABLE_ALL_TESTS=YES \
+                -GNinja \
+                ../
+
       - name: Build and Package
         run:  |
               cd build
-              make package
+              ninja package

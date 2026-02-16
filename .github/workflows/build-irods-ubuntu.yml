@@ -1,16 +1,21 @@
 name: build-irods-ubuntu
+
 on: [push, pull_request]
+
 jobs:
   build:
     name: ${{ matrix.container }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
+
     strategy:
       matrix:
         container: ['ubuntu:22.04','ubuntu:24.04']
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
       - name: Install Prerequisites
         run:  |
               apt-get update -qq
@@ -44,7 +49,9 @@ jobs:
                 flex \
                 bison \
                 libsystemd-dev \
-                libarchive-dev
+                libarchive-dev \
+                ninja-build
+
       - name: Install iRODS Externals
         run:  |
               mkdir -p /etc/apt/keyrings
@@ -66,12 +73,32 @@ jobs:
                 irods-externals-clang16.0.6-0 \
                 irods-externals-jsoncons0.178.0-0 \
                 irods-externals-nanodbc2.13.0-3
+
+      - name: Configure Ccache
+        run:  |
+              apt-get install -qq ccache
+              echo "CCACHE_DIR=/irods_build_cache" >> $GITHUB_ENV
+              echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+
+      - name: Restore Ccache State
+        uses: actions/cache@v4
+        with:
+            key: "ccache-irods-${{ matrix.container }}"
+            path: /irods_build_cache/
+
       - name: Configure CMake
         run:  |
               mkdir build
               cd build
-              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON -DIRODS_ENABLE_ALL_TESTS=YES ../
+              cmake \
+                -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON \
+                -DIRODS_ENABLE_ALL_TESTS=YES \
+                -GNinja \
+                ../
+
       - name: Build and Package
         run:  |
               cd build
-              make package
+              ninja package
