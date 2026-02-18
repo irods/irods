@@ -1,4 +1,5 @@
 #include "irods/irods_re_structs.hpp"
+#include "irods/msParam.h"
 #include "irods/rcMisc.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/resource.hpp"
@@ -96,6 +97,7 @@ freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
     free( rs );
     return 0;
 }
+
 int
 freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
     if ( rs->msParamArray != NULL && ( freeSpecialStructFlag & FREE_MS_PARAM ) > 0 ) {
@@ -132,6 +134,59 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
     }
     return 0;
 }
+
+// NOLINTNEXTLINE(misc-no-recursion)
+void freeRuleExecInfoStructFull(ruleExecInfo_t* _rs)
+{
+    freeRuleExecInfoInternalsFull(_rs);
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(_rs);
+} // freeRuleExecInfoStructFull
+
+// NOLINTNEXTLINE(misc-no-recursion)
+void freeRuleExecInfoInternalsFull(ruleExecInfo_t* _rs)
+{
+    if (nullptr != _rs->msParamArray) {
+        clearMsParamArrayFull(_rs->msParamArray);
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        std::free(_rs->msParamArray);
+    }
+
+    if (nullptr != _rs->doinp) {
+        clearDataObjInp(_rs->doinp);
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        free(_rs->doinp);
+    }
+
+    if (nullptr != _rs->doi) {
+        freeAllDataObjInfo(_rs->doi);
+    }
+
+    if (nullptr != _rs->uoic) {
+        freeUserInfo(_rs->uoic);
+    }
+
+    if (nullptr != _rs->uoip) {
+        freeUserInfo(_rs->uoip);
+    }
+
+    if (nullptr != _rs->coi) {
+        freeCollInfo(_rs->coi);
+    }
+
+    if (nullptr != _rs->uoio) {
+        freeUserInfo(_rs->uoio);
+    }
+
+    if (nullptr != _rs->condInputData) {
+        clearKeyVal(_rs->condInputData);
+        freeKeyValPairStruct(_rs->condInputData);
+    }
+
+    if (nullptr != _rs->next) {
+        freeRuleExecInfoStructFull(_rs->next);
+    }
+} // freeRuleExecInfoInternalsFull
 
 int
 copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to ) {

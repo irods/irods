@@ -126,11 +126,38 @@ extern "C" {
 
 int
 resetMsParam( msParam_t *msParam );
-int
-clearMsParam( msParam_t *msParam, int freeStruct );
-int
-addMsParam( msParamArray_t *msParamArray, const char *label,
-            const char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf );
+
+/// Deallocates memory referenced by members of a MsParam.
+///
+/// This function does not deallocate memory referenced by KeyValPairs.
+///
+/// \param[in] msParam    The pointer to a MsParam to deallocate.
+/// \param[in] freeStruct Indicates whether the memory pointed to by MsParam::inOutStruct should be deallocated.
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+int clearMsParam(msParam_t* msParam, int freeStruct);
+
+/// Deallocates memory referenced by members of a MsParam.
+///
+/// Unlike clearMsParam(MsParam*, int), this function deallocates memory referenced by all data members,
+/// including KeyValPairs.
+///
+/// \param[in] msParam The pointer to a MsParam to deallocate.
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+///
+/// \since 4.3.5
+int clearMsParamFull(msParam_t* _msParam);
+
+int addMsParam(msParamArray_t* msParamArray,
+               const char* label,
+               const char* packInstruct,
+               void* inOutStruct,
+               bytesBuf_t* inpOutBuf);
 int
 addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt );
 int
@@ -163,8 +190,33 @@ int
 printMsParam( msParamArray_t *msParamArray );
 int
 writeMsParam( char *buf, int len, msParam_t *msParam );
-int
-clearMsParamArray( msParamArray_t *msParamArray, int freeStruct );
+
+/// Deallocates memory referenced by members of a MsParamArray.
+///
+/// This function does not deallocate memory referenced by KeyValPairs.
+///
+/// \param[in] msParamArray The pointer to a MsParamArray to deallocate.
+/// \param[in] freeStruct   Indicates whether the memory pointed to by MsParam::inOutStruct should be deallocated.
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+int clearMsParamArray(msParamArray_t* msParamArray, int freeStruct);
+
+/// Deallocates memory referenced by members of a MsParamArray.
+///
+/// Unlike clearMsParamArray(MsParamArray*, int), this function deallocates memory referenced by all data members,
+/// including KeyValPairs.
+///
+/// \param[in] msParamArray The pointer to a MsParamArray to deallocate.
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+///
+/// \since 4.3.5
+int clearMsParamArrayFull(msParamArray_t* _msParamArray);
+
 void
 fillIntInMsParam( msParam_t *msParam, const int myInt );
 void
