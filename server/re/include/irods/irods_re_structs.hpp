@@ -102,11 +102,57 @@ unpackReiAndArg( RsComm *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 
 int copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to );
 
+/// Deallocates memory pointed to by a ruleExecInfo_t*.
+///
+/// This function does not deallocate memory referenced by KeyValPairs.
+///
+/// \param[in] rs                    The pointer to a ruleExecInfo_t to deallocate.
+/// \param[in] freeSpecialStructFlag \parblock A bitmask indicating whether to deallocate
+/// memory owned by the DataObjInp member and/or MsParamArray data. Bitmask values include:
+/// - FREE_MS_PARAM: Deallocate the \p msParamArray member variable.
+/// - FREE_DOINP: Deallocate the \p doinp member variable.
+/// \endparblock
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
 int freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpecialStructFlag );
 
 int zeroRuleExecInfoStruct( ruleExecInfo_t *rei );
 
+/// Deallocates memory pointed to by members of a ruleExecInfo_t.
+///
+/// This function does not deallocate memory referenced by KeyValPairs.
+///
+/// \param[in] rs                    The pointer to a ruleExecInfo_t to deallocate.
+/// \param[in] freeSpecialStructFlag \parblock A bitmask indicating whether to deallocate
+/// memory owned by the DataObjInp member and/or MsParamArray data. Bitmask values include:
+/// - FREE_MS_PARAM: Deallocate the \p msParamArray member variable.
+/// - FREE_DOINP: Deallocate the \p doinp member variable.
+/// \endparblock
+///
+/// \returns An integer indicating the status of the operation.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
 int freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag );
+
+/// Deallocates all memory pointed to by a ruleExecInfo_t*.
+///
+/// Unlike freeRuleExecInfoStruct(ruleExecInfo_t*, int), this function deallocates memory referenced by all data
+/// members, including KeyValPairs.
+///
+/// \since 4.3.5
+void freeRuleExecInfoStructFull(ruleExecInfo_t* _rs);
+
+/// Deallocates memory pointed to by members of a ruleExecInfo_t.
+///
+/// Unlike freeRuleExecInfoInternals(ruleExecInfo_t*, int), this function deallocates memory referenced by all data
+/// members, including KeyValPairs.
+///
+/// The object pointed to by \p rs is never deallocated.
+///
+/// \since 4.3.5
+void freeRuleExecInfoInternalsFull(ruleExecInfo_t* _rs);
 
 int copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to );
 

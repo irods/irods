@@ -47,7 +47,7 @@ namespace
         ruleExecInfoAndArg_t* rei_info{};
         irods::at_scope_exit free_rei_info{[&rei_info] {
             if (rei_info) {
-                freeRuleExecInfoStruct(rei_info->rei, (FREE_MS_PARAM | FREE_DOINP));
+                freeRuleExecInfoStructFull(rei_info->rei);
                 std::free(rei_info);
             }
         }};

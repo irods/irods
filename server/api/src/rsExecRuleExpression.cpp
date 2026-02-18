@@ -27,7 +27,7 @@ int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
     ruleExecInfoAndArg_t* rei_and_arg = nullptr;
     irods::at_scope_exit free_rei_struct{[&rei_and_arg] {
         if (rei_and_arg) {
-            freeRuleExecInfoStruct(rei_and_arg->rei, (FREE_MS_PARAM | FREE_DOINP));
+            freeRuleExecInfoStructFull(rei_and_arg->rei);
             std::free(rei_and_arg);
         }
     }};

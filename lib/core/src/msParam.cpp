@@ -551,6 +551,27 @@ int clearMsParamArray(msParamArray_t* msParamArray, int freeStruct)
     return 0;
 }
 
+int clearMsParamArrayFull(msParamArray_t* _msParamArray)
+{
+    if (!_msParamArray) {
+        return 0;
+    }
+
+    for (int i = 0; i < _msParamArray->len; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        clearMsParamFull(_msParamArray->msParam[i]);
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        std::free(_msParamArray->msParam[i]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(_msParamArray->msParam);
+
+    std::memset(_msParamArray, 0, sizeof(MsParamArray));
+
+    return 0;
+} // clearMsParamArrayFull
+
 int clearMsParam(msParam_t* msParam, int freeInOutStruct)
 {
     if (!msParam) {
@@ -604,6 +625,54 @@ int clearMsParam(msParam_t* msParam, int freeInOutStruct)
 
     return 0;
 }
+
+int clearMsParamFull(msParam_t* _msParam)
+{
+    if (!_msParam) {
+        return 0;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(_msParam->label);
+
+    if (_msParam->inOutStruct) {
+        if (_msParam->type) {
+            if (std::strcmp(_msParam->type, ExecCmdOut_MS_T) == 0) {
+                clearExecCmdOut(_msParam->inOutStruct);
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                std::free(_msParam->inOutStruct);
+            }
+            // If you are here to address a memory related issue, consider looking at the
+            // original implementation of clearMsParam. That implementation is still used by
+            // iRODS, but it disables this code block to avoid issues with the Python REP.
+            // This version of clearMsParam was added to address memory leaks in functions
+            // that are not related to the Python REP - e.g. rsExecRuleExpression and
+            // rsRuleExecSubmit.
+            else if (std::strcmp(_msParam->type, KeyValPair_MS_T) == 0) {
+                clearKeyVal(static_cast<keyValPair_t*>(_msParam->inOutStruct));
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                std::free(_msParam->inOutStruct);
+            }
+            // This else-block must always be the final block in this if-ladder.
+            // Changing the order of these if-blocks can result in memory leaks.
+            else {
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                std::free(_msParam->inOutStruct);
+            }
+        }
+        else {
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            std::free(_msParam->inOutStruct);
+        }
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(_msParam->type);
+
+    std::memset(_msParam, 0, sizeof(MsParam));
+
+    return 0;
+} // clearMsParamFull
 
 /* clears everything but the label */
 int resetMsParam(msParam_t* msParam)
