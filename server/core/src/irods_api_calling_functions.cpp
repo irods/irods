@@ -1115,3 +1115,7 @@ int call_update_replica_access_time(irods::api_entry* _api, rsComm_t* _comm, Byt
 {
     return _api->call_handler<BytesBuf*, char**>(_comm, _inp, _out);
 } // call_update_replica_access_time
+
+int call_get_logical_quota(irods::api_entry* _api, rsComm_t* _comm, getLogicalQuotaInp_t* _inp, logicalQuotaList_t** _out) {
+    return _api->call_handler<getLogicalQuotaInp_t*, logicalQuotaList_t**>(_comm, _inp, _out);
+} // call_get_logical_quota

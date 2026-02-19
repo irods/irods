@@ -87,6 +87,7 @@
 #  include "irods/rsGetMiscSvrInfo.hpp"
 #  include "irods/rsGetRemoteZoneResc.hpp"
 #  include "irods/rsGetRescQuota.hpp"
+#  include "irods/rsGetLogicalQuota.hpp"
 #  include "irods/rsGetTempPassword.hpp"
 #  include "irods/rsGetTempPasswordForOther.hpp"
 #  include "irods/rsIESClientHints.hpp"
@@ -236,6 +237,7 @@
 #define RS_GET_HOST_FOR_PUT                NULLPTR_FOR_CLIENT_TABLE(rsGetHostForPut)
 #define RS_GET_LIBRARY_FEATURES            NULLPTR_FOR_CLIENT_TABLE(rs_get_library_features)
 #define RS_GET_LIMITED_PASSWORD            NULLPTR_FOR_CLIENT_TABLE(rsGetLimitedPassword)
+#define RS_GET_LOGICAL_QUOTA               NULLPTR_FOR_CLIENT_TABLE(rsGetLogicalQuota)
 #define RS_GET_MISC_SVR_INFO               NULLPTR_FOR_CLIENT_TABLE(rsGetMiscSvrInfo)
 #define RS_GET_REMOTE_ZONE_RESC            NULLPTR_FOR_CLIENT_TABLE(rsGetRemoteZoneResc)
 #define RS_GET_RESC_QUOTA                  NULLPTR_FOR_CLIENT_TABLE(rsGetRescQuota)
@@ -1262,6 +1264,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, BytesBuf*, char**)>(RS_UPDATE_REPLICA_ACCESS_TIME)),
         "api_update_replica_access_time", clearBytesBuffer, irods::clearOutStruct_noop,
         (funcPtr) CALL_UPDATE_REPLICA_ACCESS_TIME
+    },
+    {
+        GET_LOGICAL_QUOTA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "getLogicalQuotaInp_PI", 0, "logicalQuotaList_PI", 0,
+        boost::any(std::function<int(rsComm_t*,getLogicalQuotaInp_t*,logicalQuotaList_t**)>(RS_GET_LOGICAL_QUOTA)),
+        "api_get_logical_quota", clearGetLogicalQuotaInp, clearLogicalQuotaList,
+        (funcPtr)CALL_GET_LOGICAL_QUOTA
     }
     // clang-format on
 }; // (client|server)_api_table_inp

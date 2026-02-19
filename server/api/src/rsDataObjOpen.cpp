@@ -41,6 +41,7 @@
 #include "irods/rsFileCreate.hpp"
 #include "irods/rsFileOpen.hpp"
 #include "irods/rsGetRescQuota.hpp"
+#include "irods/rsGetLogicalQuota.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsObjStat.hpp"
@@ -1367,6 +1368,21 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     if ((dataObjInp->openFlags & O_ACCMODE) == O_RDONLY && (dataObjInp->openFlags & O_TRUNC)) {
         return USER_INCOMPATIBLE_OPEN_FLAGS;
+    }
+
+    const auto checkQuotaFlags = ((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) + 2*(!!(dataObjInp->openFlags & O_CREAT));
+    // Check quota enforcement before open
+    if(checkQuotaFlags) {
+        fs::path path{dataObjInp->objPath};
+        int status = checkLogicalQuotaViolation(rsComm, path.parent_path().c_str());
+        if(status < 0) {
+            log_api::error("checkLogicalQuotaViolation failed with error [{}]", status);
+            return status;
+        }
+        if(checkQuotaFlags & status) {
+            log_api::info("Logical quota violation with status [{}] and openFlags [{:o}]", status, dataObjInp->openFlags);
+            return LOGICAL_QUOTA_EXCEEDED;
+        }
     }
 
     const auto data_object_exists = fs::server::exists(*rsComm, dataObjInp->objPath);

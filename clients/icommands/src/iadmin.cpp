@@ -6,6 +6,7 @@
 #include <irods/irods_configuration_keywords.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_string_tokenize.hpp>
+#include <irods/getLogicalQuota.h>
 #include <irods/key_value_proxy.hpp>
 #include <irods/parseCommandLine.h>
 #include <irods/query_builder.hpp>
@@ -983,6 +984,37 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
     return 0;
 } // show_resource_quotas
 
+auto show_logical_quotas(const char* _coll_name = nullptr) -> int
+{
+    getLogicalQuotaInp_t getLogicalQuotaInp;
+    memset(&getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t));
+    getLogicalQuotaInp.collName = const_cast<char*>(_coll_name);
+    logicalQuotaList_t* logicalQuotaList;
+
+    irods::at_scope_exit free_output{[&logicalQuotaList] {
+        std::free(logicalQuotaList);
+    }};
+
+    auto status = rcGetLogicalQuota(Conn, &getLogicalQuotaInp, &logicalQuotaList);
+
+    if(status) {
+        char* sub_error_name{};
+        const char* error_name = rodsErrorName(status, &sub_error_name);
+        std::cerr << "rcGetLogicalQuota failed with error " << error_name << " (" << status << ")]" << std::endl;
+        printErrorStack(Conn->rError);
+        return 1;
+    }
+
+    for(int i = 0; i < logicalQuotaList->len; i++) {
+        auto quotaEntry = logicalQuotaList->list[i];
+        const bool byte_limit_enforced = (0 != quotaEntry.maxBytes);
+        const bool object_limit_enforced = (0 != quotaEntry.maxObjects);
+        std::cout << "Collection name: " << quotaEntry.collName << "\nMaximum bytes: " << (byte_limit_enforced ? std::to_string(quotaEntry.maxBytes).c_str() : "<unset>") << "\nMaximum objects: " << (object_limit_enforced ? std::to_string(quotaEntry.maxObjects).c_str() : "<unset>") << "\nBytes over: " << (byte_limit_enforced ? std::to_string(quotaEntry.overBytes).c_str() : "<unenforced>") << "\nObjects over: " << (object_limit_enforced ? std::to_string(quotaEntry.overObjects).c_str() : "<unenforced>" ) << "\n" << std::endl;
+    }
+
+    return 0;
+} // show_logical_quotas
+
 int
 generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
               char *arg4, char *arg5, char *arg6, char *arg7, char* arg8, char* arg9,
@@ -1387,6 +1419,55 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                       "", "", "", "", "" );
         return 0;
     }
+    if ( strcmp( cmdToken[0], "clu" ) == 0 ) {
+        generalAdmin( 0, "calc_logical_usage",
+                      "", "", "",
+                      "", "", "", "", "", "" );
+        return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "slq" ) == 0 ) {
+        if(!strlen(cmdToken[1])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        if(!strlen(cmdToken[2])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        if(!strlen(cmdToken[3])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        generalAdmin( 0, "set_logical_quota",
+                      cmdToken[1], cmdToken[2], cmdToken[3],
+                      "", "", "", "", "", "" );
+        return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "slq" ) == 0 ) {
+        if(!strlen(cmdToken[1])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        if(!strlen(cmdToken[2])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        if(!strlen(cmdToken[3])) {
+            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
+        }
+
+        generalAdmin( 0, "set_logical_quota",
+                      cmdToken[1], cmdToken[2], cmdToken[3],
+                      "", "", "", "", "", "" );
+        return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "llq" ) == 0 ) {
+        return show_logical_quotas(cmdToken[1]);
+    }
+
     if ( strcmp( cmdToken[0], "lq" ) == 0 ) {
         show_resource_quotas(cmdToken[1]);
         show_global_quotas(cmdToken[1]);

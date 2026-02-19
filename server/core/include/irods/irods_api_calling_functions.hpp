@@ -1038,4 +1038,16 @@ int call_update_replica_access_time(irods::api_entry*, rsComm_t*, BytesBuf*, cha
 #  define CALL_UPDATE_REPLICA_ACCESS_TIME nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_get_logical_quota(
+    irods::api_entry*,
+    rsComm_t*,
+    getLogicalQuotaInp_t*,
+    logicalQuotaList_t**);
+#define CALL_GET_LOGICAL_QUOTA call_get_logical_quota
+#else
+#define CALL_GET_LOGICAL_QUOTA  nullptr
+#endif
+
+
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP

@@ -246,6 +246,10 @@ void clearCollInp(void*);
 
 void clearAuthResponseInp(void* myInStruct);
 
+void clearGetLogicalQuotaInp(void* ingetLogicalQuotaInp);
+
+void clearLogicalQuotaList(void* inlogicalQuotaList);
+
 int isInteger(const char* inStr);
 
 int getMountedSubPhyPath(char* logMountPoint, char* phyMountPoint, char* logSubPath, char* phySubPathOut);

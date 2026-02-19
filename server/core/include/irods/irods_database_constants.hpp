@@ -121,6 +121,9 @@ namespace irods
     const std::string DATABASE_OP_CHECK_SESSION_TOKEN{"database_check_session_token"};
     const std::string DATABASE_OP_REMOVE_SESSION_TOKENS{"database_remove_session_tokens"};
     const std::string DATABASE_OP_REMOVE_PASSWORD{"database_remove_password"};
+    const std::string DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA{"database_calc_logical_usage_and_quota"};
+    const std::string DATABASE_OP_SET_LOGICAL_QUOTA{"database_set_logical_quota"};
+    const std::string DATABASE_OP_CHECK_LOGICAL_QUOTA{"database_check_logical_quota"};
 }; // namespace irods
 
 #endif // IRODS_DATABASE_CONSTANTS_HPP

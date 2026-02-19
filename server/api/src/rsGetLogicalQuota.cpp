@@ -1,0 +1,90 @@
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/getLogicalQuota.h"
+#include "irods/rcMisc.h"
+#include "irods/rsGetLogicalQuota.hpp"
+
+#include <tuple>
+#include <vector>
+
+using log_api = irods::experimental::log::server;
+
+int _rsGetLogicalQuota(
+    rsComm_t*          rsComm,
+    getLogicalQuotaInp_t* getLogicalQuotaInp,
+    logicalQuotaList_t**      logicalQuotaList ) {
+    int status = 0;
+
+    std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>> quota_values;
+
+    status = chl_check_logical_quota(rsComm, getLogicalQuotaInp->collName, &quota_values);
+    if(status < 0) {
+        return status;
+    }     
+    (*logicalQuotaList) = static_cast<logicalQuotaList_t*>(malloc(sizeof(logicalQuotaList_t)));
+    (*logicalQuotaList)->len = static_cast<int>(quota_values.size());
+    (*logicalQuotaList)->list = static_cast<logicalQuota_t*>(malloc(sizeof(logicalQuota_t)*(*logicalQuotaList)->len));
+
+
+    for(int i = 0; i < (*logicalQuotaList)->len; i++) {
+       (*logicalQuotaList)->list[i].collName = strdup(std::get<0>(quota_values[i]).c_str());
+       (*logicalQuotaList)->list[i].maxBytes = std::get<1>(quota_values[i]);
+       (*logicalQuotaList)->list[i].maxObjects = std::get<2>(quota_values[i]);
+       (*logicalQuotaList)->list[i].overBytes = std::get<3>(quota_values[i]);
+       (*logicalQuotaList)->list[i].overObjects = std::get<4>(quota_values[i]);
+    }
+
+    return status;
+}
+
+int
+rsGetLogicalQuota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp,
+                logicalQuotaList_t **logicalQuotaList ) {
+    rodsServerHost_t *rodsServerHost;
+    int status = 0;
+
+    status = getAndConnRcatHost(rsComm, SECONDARY_RCAT, (const char*) getLogicalQuotaInp->collName, &rodsServerHost);
+
+    if ( status < 0 ) {
+        return status;
+    }
+
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        status = _rsGetLogicalQuota( rsComm, getLogicalQuotaInp, logicalQuotaList );
+    }
+    else {
+        status = rcGetLogicalQuota( rodsServerHost->conn, getLogicalQuotaInp,
+                                 logicalQuotaList );
+    }
+
+    return status;
+}
+
+// Returns an indicator for which types of quotas were violated
+// 0 - none
+// 1 - byte count
+// 2 - object count
+// 3 - both
+int checkLogicalQuotaViolation(rsComm_t *rsComm, const char* _coll_name) {
+    getLogicalQuotaInp_t inp;
+    logicalQuotaList_t* out;
+    int status;
+    char* tmp = strdup(_coll_name);
+    inp.collName = tmp;
+    status = rsGetLogicalQuota(rsComm, &inp, &out);
+    if(status < 0) {
+        free(tmp);
+        return status;
+    }
+    status = 0;
+    for(int i = 0; i < out->len && status != 3; i++) {
+       if(out->list[i].overBytes > 0) {
+            status |= 1;
+       }
+       if(out->list[i].overObjects > 0) {
+            status |= 2;
+       } 
+    }
+    clearLogicalQuotaList(out);
+    free(tmp);
+    return status;
+}

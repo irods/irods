@@ -3,12 +3,40 @@
 #include "irods/fileDriver.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsRegDataObj.hpp"
+#include "irods/rsGetLogicalQuota.hpp"
 
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_log.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/replica_proxy.hpp"
+
+#include "irods/filesystem.hpp"
+
+
+namespace
+{
+    // clang-format off
+    namespace fs            = irods::experimental::filesystem;
+    using log_api           = irods::experimental::log::api;
+    // clang-format on
+
+    int checkQuotaViolationForReg(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
+        fs::path path{dataObjInfo->objPath};
+        int status = checkLogicalQuotaViolation(rsComm, path.parent_path().c_str());
+        if(status < 0) {
+            log_api::error("checkLogicalQuotaViolation failed with error [{}]", status);
+            return status;
+        }
+        // Always fail if over object limit (registration makes new objects)
+        // Fail when trying to register a nonempty object if over byte limit
+        if((status & 2) || ((status & 1) && dataObjInfo->dataSize > 0)) {
+            return LOGICAL_QUOTA_EXCEEDED;
+        }
+        return 0;
+    }
+} // anonymous namespace
 
 /* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj
@@ -20,6 +48,12 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     rodsServerHost_t *rodsServerHost = NULL;
 
     *outDataObjInfo = NULL;
+
+    // Check quota enforcement before register
+    if(int ec = checkQuotaViolationForReg(rsComm, dataObjInfo); ec < 0) {
+        log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+        return ec;
+    }
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
@@ -123,6 +157,12 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
                  "svrRegDataObj: Reg path %s is in spec coll",
                  dataObjInfo->objPath );
         return SYS_REG_OBJ_IN_SPEC_COLL;
+    }
+
+    // Check quota enforcement before register
+    if(int ec = checkQuotaViolationForReg(rsComm, dataObjInfo); ec < 0) {
+        log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+        return ec;
     }
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);

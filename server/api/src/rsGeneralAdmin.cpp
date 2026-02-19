@@ -1489,6 +1489,34 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         return status;
     }
 
+    if ( strcmp( generalAdminInp->arg0, "calc_logical_usage" ) == 0 ) {
+        status = chl_calc_logical_usage_and_quota(rsComm);
+
+        return status;
+    }
+
+    if ( strcmp( generalAdminInp->arg0, "set_logical_quota" ) == 0 ) {
+        if(strcmp(generalAdminInp->arg2, "bytes") == 0) {
+        status = chl_set_logical_quota(rsComm,
+                                          generalAdminInp->arg1,
+                                          generalAdminInp->arg3,
+                                          "-1");
+
+        } else if(strcmp(generalAdminInp->arg2, "objects") == 0) {
+        status = chl_set_logical_quota(rsComm,
+                                          generalAdminInp->arg1,
+                                          "-1",
+                                          generalAdminInp->arg3);
+        } else {
+        status = chl_set_logical_quota(rsComm,
+                                          generalAdminInp->arg1,
+                                          generalAdminInp->arg2,
+                                          generalAdminInp->arg3);
+        }
+        return status;
+    }
+
+
     if (std::strcmp(generalAdminInp->arg0, "set_delay_server") == 0) {
         if (!generalAdminInp->arg1) {
             log_api::error("Invalid input argument: null pointer");

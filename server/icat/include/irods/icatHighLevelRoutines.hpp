@@ -595,4 +595,8 @@ auto chl_remove_session_tokens(RsComm* _comm, const char* _json_input) -> int;
 /// \since 5.1.0
 auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int;
 
+auto chl_calc_logical_usage_and_quota(RsComm* _comm) -> int;
+auto chl_set_logical_quota(RsComm* _comm, const char* _coll_name, const char* _byte_limit, const char* _object_limit) -> int;
+auto chl_check_logical_quota(RsComm* _comm, const char* _coll_name, std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>* _quota_values) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
