@@ -123,6 +123,10 @@
   - #msi_genquery2_column   - Read the value of a column from a row
   - #msi_genquery2_free     - Free all resources associated with a GenQuery2 handle
 
+ \subsection msilogicalquotas Logical Quotas Microservices
+  - #msi_set_logical_quota - Sets logical usage quota for a collection
+  - #msi_calculate_logical_usage - Calculates storage usage and object count and sets logical quota values
+
  \subsection msiotheruser Other User Microservices
   - #msiModAVUMetadata - Modifies AVU metadata on a user, resource, data object, or collection
   - #msi_atomic_apply_acl_operations - Atomically modifies multiple ACLs on a single data object or collection
