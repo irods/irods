@@ -163,6 +163,8 @@ namespace irods::client_api_allowlist
             PAM_AUTH_REQUEST_AN,
             GET_LIMITED_PASSWORD_AN,
 
+            GET_LOGICAL_QUOTA_AN,
+
             SSL_START_AN,
             SSL_END_AN,
 
