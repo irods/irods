@@ -420,6 +420,8 @@ namespace
 
         try {
             ruleExecModInp_t input{};
+            irods::at_scope_exit clear_input{[&input] { clearRuleExecModifyInput(&input); }};
+
             rstrcpy(input.ruleId, _rule_id.data(), NAME_LEN);
 
             ix::key_value_proxy kvp{input.condInput};
@@ -529,7 +531,9 @@ namespace
                     std::free(rei_and_arg->rei->rsComm);
                 }
 
-                freeRuleExecInfoStruct(rei_and_arg->rei, (FREE_MS_PARAM | FREE_DOINP));
+                freeRuleExecInfoStructFull(rei_and_arg->rei);
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+                std::free(rei_and_arg);
 
                 return;
             }
@@ -538,7 +542,7 @@ namespace
                 std::free(rei.rsComm);
             }
 
-            freeRuleExecInfoInternals(&rei, (FREE_MS_PARAM | FREE_DOINP));
+            freeRuleExecInfoInternalsFull(&rei);
         }};
 
         // Execute rule.
