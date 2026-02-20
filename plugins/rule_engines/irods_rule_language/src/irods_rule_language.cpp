@@ -234,7 +234,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
 
         }
         ~all_resources() {
-            clearMsParamArray(&msParamArray, 1);
+            clearMsParamArrayFull(&msParamArray);
         }
         msParamArray_t msParamArray;
 
