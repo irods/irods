@@ -27,7 +27,7 @@ namespace irods
 {
     class delay_queue // NOLINT(cppcoreguidelines-special-member-functions)
     {
-    public:
+      public:
         explicit delay_queue(std::int64_t _pool_size_in_bytes)
         {
             namespace bpmr = boost::container::pmr;
@@ -57,8 +57,9 @@ namespace irods
         bool contains_rule_id(const std::string& _rule_id)
         {
             std::lock_guard rules_lock{rules_mutex_};
-            return std::any_of(queued_rules_->begin(), queued_rules_->end(),
-                       [&](const auto& q_rule) { return q_rule.data() == _rule_id; });
+            return std::any_of(queued_rules_->begin(), queued_rules_->end(), [&](const auto& q_rule) {
+                return q_rule.data() == _rule_id;
+            });
         }
 
         void enqueue_rule(const std::string& rule_id)
@@ -78,7 +79,7 @@ namespace irods
             }
         }
 
-    private:
+      private:
         std::mutex rules_mutex_;
 #if BOOST_VERSION >= 107200
         std::vector<std::byte> buffer_;
@@ -89,4 +90,3 @@ namespace irods
 } // namespace irods
 
 #endif // IRODS_DELAY_QUEUE_HPP
-
