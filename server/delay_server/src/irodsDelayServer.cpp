@@ -896,25 +896,25 @@ int main(int _argc, char** _argv)
         return irods::default_number_of_concurrent_delay_executors;
     }()};
 
-    log_ds::debug("Initializing delay queue for delay server.");
-    irods::delay_queue queue{[]() -> int {
-        try {
-            const auto bytes = irods::get_advanced_setting<int>(irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
-
-            if (bytes > 0) {
-                return bytes;
-            }
-        }
-        catch (...) {
-            log_ds::warn("Could not retrieve [{}] from advanced settings configuration. "
-                         "Delay server will use as much memory as necessary.",
-                         irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
-        }
-
-        return 0;
-    }()};
-
     try {
+        log_ds::debug("Initializing delay queue for delay server.");
+        irods::delay_queue queue{[]() -> int {
+            try {
+                const auto bytes = irods::get_advanced_setting<int>(irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
+
+                if (bytes > 0) {
+                    return bytes;
+                }
+            }
+            catch (...) {
+                log_ds::warn("Could not retrieve [{}] from advanced settings configuration. "
+                             "Delay server will use as much memory as necessary.",
+                             irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
+            }
+
+            return 0;
+        }()};
+
         while (!g_terminate) {
             try {
                 if (!is_local_server_defined_as_delay_server_leader()) {
@@ -959,10 +959,10 @@ int main(int _argc, char** _argv)
     }
     catch (const irods::exception& e) {
         log_ds::error("Delay server exited with failure: {}", e.client_display_what());
-        return 1;
     }
     catch (const std::exception& e) {
         log_ds::error("Delay server exited with failure: {}", e.what());
-        return 1;
     }
+
+    return 1;
 }
