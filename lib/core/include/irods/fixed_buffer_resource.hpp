@@ -67,8 +67,8 @@ namespace irods::experimental::pmr
             , headers_{}
         {
             if (!_buffer || _buffer_size <= 0) {
-                constexpr const auto* msg_fmt = "fixed_buffer_resource: invalid constructor arguments "
-                                                "[buffer={}, size={}].";
+                constexpr const auto* msg_fmt = "fixed_buffer_resource: Invalid constructor arguments "
+                                                "[buffer={}, size={}]";
                 throw std::invalid_argument{fmt::format(msg_fmt, fmt::ptr(_buffer), _buffer_size)};
             }
 
@@ -77,7 +77,8 @@ namespace irods::experimental::pmr
 
             // Make sure the buffer is aligned for the header type.
             if (!std::align(alignof(header), sizeof(header_storage), buffer_, space_remaining)) {
-                throw std::runtime_error{"fixed_buffer_resource: internal memory alignment error. "};
+                throw std::runtime_error{"fixed_buffer_resource: Memory alignment error; Buffer may be too small"};
+            }
 
             if (space_remaining <= sizeof(header)) {
                 throw std::runtime_error{
