@@ -99,5 +99,12 @@ TEST_CASE("fixed_buffer_resource works with pmr containers")
     CHECK(allocator.allocated() == 0);
 }
 
-#endif // BOOST_VERSION >= 107200
+TEST_CASE("fixed_buffer_resource throws exception when buffer is too small")
+{
+    REQUIRE_THROWS([] {
+        char buffer[1];
+        pmr::fixed_buffer_resource allocator{buffer, sizeof(buffer)};
+    }());
+}
 
+#endif // BOOST_VERSION >= 107200
