@@ -78,9 +78,14 @@ namespace irods::experimental::pmr
             // Make sure the buffer is aligned for the header type.
             if (!std::align(alignof(header), sizeof(header_storage), buffer_, space_remaining)) {
                 throw std::runtime_error{"fixed_buffer_resource: internal memory alignment error. "};
+
+            if (space_remaining <= sizeof(header)) {
+                throw std::runtime_error{
+                    fmt::format("fixed_buffer_resource: Buffer size [{}] is too small", buffer_size_)};
             }
 
-            headers_ = new (header_storage) header;
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+            headers_ = new (header_storage) header; // NOLINT(clang-analyzer-cplusplus.PlacementNew)
             headers_->size = space_remaining - sizeof(header);
             headers_->prev = nullptr;
             headers_->next = nullptr;
