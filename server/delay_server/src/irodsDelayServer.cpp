@@ -841,9 +841,9 @@ int main(int argc, char** argv)
         return 0;
     }();
 
-    irods::delay_queue queue{queue_size_in_bytes};
-
     try {
+        irods::delay_queue queue{queue_size_in_bytes};
+
         while (!delay_server_terminated) {
             try {
                 irods::server_properties::instance().capture();
@@ -877,16 +877,21 @@ int main(int argc, char** argv)
             logger::delay_server::trace("Delay server is going to sleep.");
             go_to_sleep();
         }
-    }
-    catch (const irods::exception& e) {
-        logger::delay_server::error(e.what());
-    }
-
-    logger::delay_server::info("Delay server exited normally.");
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
-    __lsan_do_leak_check();
+        __lsan_do_leak_check();
 #endif
 
-    return 0;
+        logger::delay_server::info("Delay server exited normally.");
+
+        return 0;
+    }
+    catch (const irods::exception& e) {
+        logger::delay_server::error("Delay server exited with failure: {}", e.client_display_what());
+    }
+    catch (const std::exception& e) {
+        logger::delay_server::error("Delay server exited with failure: {}", e.what());
+    }
+
+    return 1;
 }
