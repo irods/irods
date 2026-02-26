@@ -206,8 +206,8 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
 
         # make sure no files are left in the vault
         user_vault_dir = os.path.join(self.user0.get_vault_session_path(), coll_name)
-        out, _ = lib.execute_command('find {user_vault_dir} -type f'.format(**locals()))
-        self.assertEqual(out, '')
+        for _, _, fnames in os.walk(user_vault_dir):
+            self.assertSequenceEqual(fnames, [])
 
     def test_iput_r_with_kw(self):
         # test settings
