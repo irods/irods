@@ -252,6 +252,39 @@ def run_update(irods_config, cursor, is_upgrade):
 
         # pam password reuse setting
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_reuse_previous', '1');")
+
+        # Add R_USER_CREDENTIALS table.
+        if "oracle" == irods_config.catalog_database_type:
+            database_connect.execute_sql_statement(
+                cursor,
+                "create table R_USER_CREDENTIALS"
+                    "("
+                        "user_id "           "integer, "
+                        "hashed_password "   "varchar(2700), "
+                        "salt "              "varchar(32), "
+                        "hashing_algorithm " "varchar(250), "
+                        "hashing_parameters ""varchar(2700), "
+                        "create_time "       "varchar(32), "
+                        "modify_time "       "varchar(32), "
+                        "expiration_time "   "varchar(32)"
+                    ");"
+            )
+        else:
+            database_connect.execute_sql_statement(
+                cursor,
+                "create table R_USER_CREDENTIALS"
+                    "("
+                        "user_id "           "bigint, "
+                        "hashed_password "   "varchar(2700), "
+                        "salt "              "varchar(32), "
+                        "hashing_algorithm " "varchar(250), "
+                        "hashing_parameters ""varchar(2700), "
+                        "create_time "       "varchar(32), "
+                        "modify_time "       "varchar(32), "
+                        "expiration_time "   "varchar(32)"
+                    ");"
+            )
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
