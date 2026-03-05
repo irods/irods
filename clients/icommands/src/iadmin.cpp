@@ -2580,9 +2580,10 @@ usage( char *subOpt ) {
         "access_time      batch_size",
         "access_time      resolution_in_seconds",
         "authentication   password_extend_lifetime",
+        "authentication   password_hashing_parameters",
         "authentication   password_max_time",
         "authentication   password_min_time",
-        "authentication   password_hashing_parameters",
+        "authentication   password_reuse_previous",
         "authentication   token_lifetime_in_seconds",
         ""};
 
@@ -2608,9 +2609,10 @@ usage( char *subOpt ) {
         "access_time      batch_size",
         "access_time      resolution_in_seconds",
         "authentication   password_extend_lifetime",
+        "authentication   password_hashing_parameters",
         "authentication   password_max_time",
         "authentication   password_min_time",
-        "authentication   password_hashing_parameters",
+        "authentication   password_reuse_previous",
         "authentication   token_lifetime_in_seconds",
         "database         schema_version",
         "delay_server     leader",
