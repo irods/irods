@@ -131,7 +131,7 @@ if __name__ == '__main__':
     irods.log.register_file_handler(IrodsConfig().test_log_path)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run_specific_test', metavar='dotted name')
+    parser.add_argument('--run_specific_test', metavar='dotted name', help='deprecated')
     parser.add_argument('--skip_until', action="store")
     parser.add_argument('--run_python_suite', action='store_true')
     parser.add_argument('--run_plugin_tests', action='store_true')
