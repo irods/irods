@@ -123,7 +123,7 @@ if __name__ == '__main__':
     l = logging.getLogger(__name__)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run_specific_test', metavar='dotted name')
+    parser.add_argument('--run_specific_test', metavar='dotted name', help='deprecated')
     parser.add_argument('--skip_until', action="store")
     parser.add_argument('--run_python_suite', action='store_true')
     parser.add_argument('--run_plugin_tests', action='store_true')
