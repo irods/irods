@@ -106,4 +106,15 @@ namespace irods {
     SHA1Strategy::isChecksum( const std::string& _chksum ) const {
         return boost::starts_with( _chksum, SHA1_CHKSUM_PREFIX );
     }
+
+    void SHA1Strategy::free_context(boost::any& _context) const
+    {
+        try {
+            EVP_MD_CTX* context = boost::any_cast<EVP_MD_CTX*>(_context);
+            EVP_MD_CTX_free(context);
+            _context = nullptr;
+        }
+        catch (const boost::bad_any_cast& _e) {
+        }
+    }
 }; // namespace irods

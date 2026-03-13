@@ -17,7 +17,7 @@ namespace irods {
             error update( const std::string&, boost::any& context ) const override;
             error digest( std::string& messageDigest, boost::any& context ) const override;
             bool isChecksum( const std::string& ) const override;
-
+            void free_context(boost::any& _context) const override;
     };
 } // namespace irods
 
