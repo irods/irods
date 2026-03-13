@@ -76,4 +76,6 @@ namespace irods {
     ADLER32Strategy::isChecksum( const std::string& _chksum ) const {
         return boost::starts_with( _chksum, ADLER32_CHKSUM_PREFIX );
     }
+
+    void ADLER32Strategy::free_context(boost::any& context) const {}
 }; // namespace irods

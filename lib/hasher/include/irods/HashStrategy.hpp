@@ -17,6 +17,7 @@ namespace irods {
             virtual error update( const std::string&, boost::any& context ) const = 0;
             virtual error digest( std::string& messageDigest, boost::any& context ) const = 0;
             virtual bool isChecksum( const std::string& ) const = 0;
+            virtual void free_context(boost::any& _context) const = 0;
     };
 } // namespace irods
 

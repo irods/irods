@@ -113,4 +113,6 @@ namespace irods
     {
         return _chksum.starts_with(CRC64NVME_CHKSUM_PREFIX);
     }
+
+    void CRC64NVMEStrategy::free_context(boost::any& context) const {}
 } // namespace irods
