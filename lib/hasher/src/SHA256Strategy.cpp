@@ -112,4 +112,15 @@ namespace irods {
     {
         return SHA256_CHKSUM_PREFIX;
     } // SHA256Strategy::checksum_prefix
+
+    void SHA256Strategy::free_context(boost::any& _context) const
+    {
+        try {
+            EVP_MD_CTX* context = boost::any_cast<EVP_MD_CTX*>(_context);
+            EVP_MD_CTX_free(context);
+            _context = nullptr;
+        }
+        catch (const boost::bad_any_cast& _e) {
+        }
+    }
 }; // namespace irods

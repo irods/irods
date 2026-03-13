@@ -99,4 +99,6 @@ namespace irods {
     {
         return ADLER32_CHKSUM_PREFIX;
     } // ADLER32Strategy::checksum_prefix
+
+    void ADLER32Strategy::free_context(boost::any& context) const {}
 }; // namespace irods

@@ -22,7 +22,12 @@ namespace irods {
     class Hasher {
         public:
             Hasher() : _strategy( NULL ) {}
-
+            ~Hasher()
+            {
+                if (nullptr != _strategy) {
+                    _strategy->free_context(_context);
+                }
+            }
             error init( const HashStrategy* );
             error update( const std::string& );
             error digest( std::string& messageDigest );
