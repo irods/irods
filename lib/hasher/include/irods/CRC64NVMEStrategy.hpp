@@ -27,6 +27,7 @@ namespace irods
         error update(const std::string&, boost::any& context) const override;
         error digest(std::string& messageDigest, boost::any& context) const override;
         bool isChecksum(const std::string&) const override;
+        void free_context(boost::any& _context) const override;
 
       private:
         static constexpr std::size_t crc_bits = 64;
