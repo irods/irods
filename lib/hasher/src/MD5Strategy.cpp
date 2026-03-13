@@ -105,4 +105,15 @@ namespace irods {
     {
         return MD5_CHKSUM_PREFIX;
     } // MD5Strategy::checksum_prefix
+
+    void MD5Strategy::free_context(boost::any& _context) const
+    {
+        try {
+            EVP_MD_CTX* context = boost::any_cast<EVP_MD_CTX*>(_context);
+            EVP_MD_CTX_free(context);
+            _context = nullptr;
+        }
+        catch (const boost::bad_any_cast& _e) {
+        }
+    }
 } // namespace irods
