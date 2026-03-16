@@ -434,6 +434,10 @@ main( int argc, char **argv ) {
         exit( 3 );
     }
 
+    if (1 == argc) {
+        std::fprintf(stderr, "NOTE: Interactive mode is deprecated and will be removed in an upcoming release.\n");
+    }
+
     keepGoing = 1;
     firstTime = 1;
     while ( keepGoing ) {
@@ -484,7 +488,9 @@ void usageMain() {
                     "certain administrative functions. It can also be used by regular",
                     "users to list groups ('lg') and by the admin for all operations.",
                     " ",
-                    "A blank execute line invokes the interactive mode, where it",
+                    "NOTE: Interactive mode is deprecated.",
+                    " ",
+                    "Running without any command invokes the interactive mode, where it",
                     "prompts and executes commands until 'quit' or 'q' is entered.",
                     "Single or double quotes can be used to enter items with blanks.",
                     " ",
