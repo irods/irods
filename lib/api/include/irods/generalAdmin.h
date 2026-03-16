@@ -1,6 +1,8 @@
 #ifndef IRODS_GENERAL_ADMIN_H
 #define IRODS_GENERAL_ADMIN_H
 
+/// \file
+
 struct RcComm;
 
 // NOLINTNEXTLINE(modernize-use-using)
@@ -25,8 +27,23 @@ typedef struct GeneralAdminInput
 extern "C" {
 #endif
 
-// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+// NOLINTBEGIN(modernize-use-trailing-return-type)
+
+/// Execute an administrative operation.
+///
+/// See iadmin.cpp and C++ administration APIs for usage examples.
+///
+/// \param[in] conn            The connection handle used for communication.
+/// \param[in] generalAdminInp The input data structure.
+///
+/// \return An integer indicating the status of the operation.
+/// \retval 0       On success
+/// \retval nonzero On failure
+///
+/// \deprecated Adding user_type tokens is deprecated as of 5.1.0.
 int rcGeneralAdmin(struct RcComm* conn, struct GeneralAdminInput* generalAdminInp);
+
+// NOLINTEND(modernize-use-trailing-return-type)
 
 #ifdef __cplusplus
 } // extern "C"
