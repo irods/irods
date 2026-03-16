@@ -1879,7 +1879,11 @@ main( int argc, char **argv ) {
         return 8;
     }
 
-    bool keepGoing = argc == 1;
+    if (1 == argc) {
+        std::fprintf(stderr, "NOTE: Interactive mode is deprecated and will be removed in an upcoming release.\n");
+    }
+
+    bool keepGoing = (argc == 1);
     bool firstTime = true;
     do {
         int status = doCommand( cmdToken, &myRodsArgs );
@@ -1924,10 +1928,13 @@ printMsgs( char *msgs[] ) {
 }
 
 void usageMain() {
+    // clang-format off
     char *Msgs[] = {
         "Usage: iadmin [-hvV] [command]",
         " ",
-        "A blank execute line invokes the interactive mode, where it",
+        "NOTE: Interactive mode is deprecated.",
+        " ",
+        "Running without any command invokes the interactive mode, where it",
         "prompts and executes commands until 'quit' or 'q' is entered.",
         "Single or double quotes can be used to enter items with blanks.",
         " ",
@@ -1987,6 +1994,7 @@ void usageMain() {
         "variable.",
         ""
     };
+    // clang-format on
     printMsgs( Msgs );
     printReleaseInfo( "iadmin" );
 }
