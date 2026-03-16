@@ -138,7 +138,7 @@ auto get_replica_value(
         try {
             v = boost::lexical_cast<replica_number_t>(input.data());
             if (veryVerbose) {
-                std::cout << __FUNCTION__ << ": cast [" << std::get<replica_number_t>(v) << "]";
+                std::cout << __func__ << ": cast [" << std::get<replica_number_t>(v) << "]";
                 std::cout << " from [" << input.data() << "]" << std::endl;
             }
         } catch (const boost::bad_lexical_cast&) {
