@@ -90,7 +90,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'rmresc', newresc])
 
     def test_tokens(self):
-        self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username])
+        self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username], 'STDERR', ['NOTE: Adding user_type tokens is deprecated'])
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], 'STDOUT_SINGLELINE', 'rodstest')
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], 'STDOUT_SINGLELINE', 'token_name: rodstest')
         self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'])

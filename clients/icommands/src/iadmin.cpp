@@ -1611,6 +1611,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "at" ) == 0 ) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        if (std::string_view{"user_type"} == cmdToken[1]) {
+            std::fprintf(
+                stderr, "NOTE: Adding user_type tokens is deprecated and will be removed in an upcoming release.\n");
+        }
         generalAdmin( 0, "add", "token", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
         return 0;
@@ -2409,12 +2414,15 @@ usage( char *subOpt ) {
         ""
     };
 
-    char *atMsgs[] = {
-        " at tokenNamespace Name [Value1] [Value2] [Value3] [comment] (add token) ",
-        "Add a new token.  The most common use of this is to add",
-        "data_type or user_type tokens.  See lt to display currently defined tokens.",
-        ""
-    };
+    char* atMsgs[] = {" at tokenNamespace Name [Value1] [Value2] [Value3] [comment] (add token)",
+                      " ",
+                      "Add a new token.",
+                      " ",
+                      "NOTE: Adding user_type tokens is deprecated.",
+                      " ",
+                      "The most common use of this is to add new data_type or user_type tokens.",
+                      "See lt to display currently defined tokens.",
+                      ""};
 
     char *rtMsgs[] = {
         " rt tokenNamespace Name [Value] (remove token) ",
