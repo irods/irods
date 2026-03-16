@@ -39,8 +39,10 @@
 #include "irods/sslSockComm.h"
 
 #include <boost/asio.hpp>
+#include <boost/chrono.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/program_options.hpp>
+#include <boost/stacktrace.hpp>
 
 #include <fmt/format.h>
 #include <iterator>
@@ -115,6 +117,7 @@ namespace
     auto initServerMain(RsComm& _comm) -> int;
 
     auto handle_client_request(int _socket_fd, std::time_t _created_at) -> int;
+    auto log_stacktrace_files() -> void;
     auto cleanup() -> void;
     auto cleanupAndExit(int status) -> void;
     auto set_rule_engine_globals(RsComm& _comm) -> void;
@@ -348,6 +351,8 @@ auto main(int _argc, char* _argv[]) -> int
                     log_af::info("{}: Received shutdown instruction. Exiting agent factory select() loop.", __func__);
                     break;
                 }
+
+                log_stacktrace_files();
 
                 if (g_terminate_graceful) {
                     log_af::info(
@@ -979,6 +984,104 @@ namespace
 
         return (0 == status) ? 0 : 1;
     } // handle_client_request
+
+    auto log_stacktrace_files() -> void
+    {
+        const auto sleep_time =
+            irods::get_advanced_setting<int>(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
+        static auto start_time = std::chrono::steady_clock::now();
+        const auto now = std::chrono::steady_clock::now();
+
+        if (now - start_time < std::chrono::seconds{sleep_time}) {
+            return;
+        }
+
+        start_time = now;
+
+        for (auto&& entry : fs::directory_iterator{irods::get_irods_stacktrace_directory().c_str()}) {
+            // Expected filename format:
+            //
+            //     <epoch_seconds>.<epoch_milliseconds>.<agent_pid>
+            //
+            // 1. Extract the timestamp from the filename and convert it to ISO8601 format.
+            // 2. Extract the agent pid from the filename.
+            const auto p = entry.path().generic_string();
+
+            if (p.ends_with(irods::STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX)) {
+                log_agent::trace("Skipping [{}].", p);
+                continue;
+            }
+
+            auto slash_pos = p.rfind("/");
+
+            if (slash_pos == std::string::npos) {
+                log_agent::trace("Skipping [{}]. No forward slash separator found.", p);
+                continue;
+            }
+
+            ++slash_pos;
+            const auto first_dot_pos = p.find(".", slash_pos);
+
+            if (first_dot_pos == std::string::npos) {
+                log_agent::trace("Skipping [{}]. No dot separator found.", p);
+                continue;
+            }
+
+            const auto last_dot_pos = p.rfind(".");
+
+            if (last_dot_pos == std::string::npos || last_dot_pos == first_dot_pos) {
+                log_agent::trace("Skipping [{}]. No dot separator found.", p);
+                continue;
+            }
+
+            const auto epoch_seconds = p.substr(slash_pos, first_dot_pos - slash_pos);
+            const auto remaining_millis = p.substr(first_dot_pos + 1, last_dot_pos - (first_dot_pos + 1));
+            const auto pid = p.substr(last_dot_pos + 1);
+            log_agent::trace("epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
+                              epoch_seconds,
+                              remaining_millis,
+                              pid);
+
+            try {
+                // Convert the epoch value to ISO8601 format.
+                log_agent::trace("Converting epoch seconds to UTC timestamp.");
+                using boost::chrono::system_clock;
+                using boost::chrono::time_fmt;
+                const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
+                std::ostringstream utc_ss;
+                utc_ss << time_fmt(boost::chrono::timezone::utc, "%FT%T") << tp;
+
+                // Read the contents of the file.
+                std::ifstream file{p};
+                const auto stacktrace = boost::stacktrace::stacktrace::from_dump(file);
+                file.close();
+
+                // 3. Write the contents of the stacktrace file to syslog.
+                // clang-format off
+                irods::experimental::log::server::critical({
+                    {"log_message", boost::stacktrace::to_string(stacktrace)},
+                    {"stacktrace_agent_pid", pid},
+                    {"stacktrace_timestamp_utc", fmt::format("{}.{}Z", utc_ss.str(), remaining_millis)},
+                    {"stacktrace_timestamp_epoch_seconds", epoch_seconds},
+                    {"stacktrace_timestamp_epoch_milliseconds", remaining_millis}
+                });
+                // clang-format on
+
+                // 4. Delete the stacktrace file.
+                //
+                // We don't want the stacktrace files to go away without making it into the log.
+                // We can't rely on the log invocation above because of syslog.
+                // We don't want these files to accumulate for long running servers.
+                log_agent::trace("Removing stacktrace file from disk.");
+                fs::remove(entry);
+            }
+            catch (...) {
+                // Something happened while logging the stacktrace file.
+                // Leaving the stacktrace file in-place for processing later.
+                log_agent::trace("Caught exception while processing stacktrace file.");
+            }
+        }
+    } // log_stacktrace_files
 
     auto cleanup() -> void
     {
