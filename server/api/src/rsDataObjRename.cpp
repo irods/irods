@@ -114,6 +114,8 @@ namespace
         dataObjInfo_t* dataObjInfoHead{};
         irods::at_scope_exit free_dataObjInfo{[&dataObjInfoHead] { freeAllDataObjInfo(dataObjInfoHead); }};
 
+        const auto force_flag_provided =
+            source_cond_input.contains(FORCE_FLAG_KW) || destination_cond_input.contains(FORCE_FLAG_KW);
         if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
             status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
             if ( status >= 0 || NULL != dataObjInfoHead ) {
@@ -123,6 +125,30 @@ namespace
                 log_api::error(
                     "{}: src data {} does not exist, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
                 return status;
+            }
+
+            if (const auto ret = ill::try_lock(*dataObjInfoHead, ill::lock_type::write); ret < 0) {
+                const auto msg = fmt::format("rename not allowed because source data object is locked "
+                                             "[error code=[{}], source path=[{}]",
+                                             ret,
+                                             srcDataObjInp->objPath);
+                log_api::info("{}: {}", __func__, msg);
+                return ret;
+            }
+
+            if (isData(rsComm, static_cast<char*>(destDataObjInp->objPath), &destId) >= 0 && force_flag_provided) {
+                // The force flag ensures that unlink will not send the object to the trash.
+                destination_cond_input[FORCE_FLAG_KW] = "";
+
+                if (const auto unlink_ec = rsDataObjUnlink(rsComm, destDataObjInp); unlink_ec < 0) {
+                    const auto msg = fmt::format("failed to unlink destination data object for overwrite via rename "
+                                                 "[error code=[{}], source path=[{}], destination path=[{}]]",
+                                                 unlink_ec,
+                                                 srcDataObjInp->objPath,
+                                                 destDataObjInp->objPath);
+                    log_api::info("{}: {}", __func__, msg);
+                    return unlink_ec;
+                }
             }
         }
         else if ( srcDataObjInp->oprType == RENAME_COLL ) {
@@ -154,7 +180,6 @@ namespace
                     return ret;
                 }
 
-                const auto force_flag_provided = source_cond_input.contains(FORCE_FLAG_KW) || destination_cond_input.contains(FORCE_FLAG_KW);
                 if (isData(rsComm, destDataObjInp->objPath, &destId) >= 0 && force_flag_provided) {
                     // The force flag ensures that unlink will not send the object to the trash.
                     destination_cond_input[FORCE_FLAG_KW] = "";
