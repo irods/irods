@@ -710,8 +710,9 @@ TEST_CASE("rename", "[write_lock]")
         // This is done in an irods::at_scope_exit because catch will return immediately if
         // a REQUIRE clause fails. This ensures that the data object is properly closed for
         // cleanup purposes.
-        const auto close_source_object = irods::at_scope_exit{[&]
-        {
+        const auto close_source_object = irods::at_scope_exit{[&] {
+            rename_inp.srcDataObjInp.oprType = 0;
+
             openedDataObjInp_t close_inp{};
             close_inp.l1descInx = fd;
             REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
@@ -722,6 +723,13 @@ TEST_CASE("rename", "[write_lock]")
         }};
 
         // Attempt renaming source object
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+        REQUIRE(!fs::client::exists(comm, other_target_object));
+
+        // Now do it again with the oprType set. The API takes a different code path in this case, for some reason.
+        rename_inp.srcDataObjInp.oprType = RENAME_DATA_OBJ;
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
@@ -743,6 +751,7 @@ TEST_CASE("rename", "[write_lock]")
         REQUIRE(GOOD_REPLICA == ir::replica_status(comm, other_target_object, 0));
 
         // source locked, destination unlocked
+        SECTION("source locked, destination unlocked")
         {
             // Open source object to lock it
             DataObjInp source_open_inp{};
@@ -760,8 +769,9 @@ TEST_CASE("rename", "[write_lock]")
             // This is done in an irods::at_scope_exit because catch will return immediately if
             // a REQUIRE clause fails. This ensures that the data object is properly closed for
             // cleanup purposes.
-            const auto close_source_object = irods::at_scope_exit{[&]
-            {
+            const auto close_source_object = irods::at_scope_exit{[&] {
+                rename_inp.srcDataObjInp.oprType = 0;
+
                 openedDataObjInp_t close_inp{};
                 close_inp.l1descInx = fd;
                 REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
@@ -775,9 +785,17 @@ TEST_CASE("rename", "[write_lock]")
             REQUIRE(fs::client::exists(comm, target_object));
             REQUIRE(fs::client::exists(comm, other_target_object));
             REQUIRE(contents.size() == fs::client::data_object_size(new_comm, other_target_object));
+
+            // Now do it again with the oprType set. The API takes a different code path in this case, for some reason.
+            rename_inp.srcDataObjInp.oprType = RENAME_DATA_OBJ;
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
+            REQUIRE(fs::client::exists(comm, target_object));
+            REQUIRE(fs::client::exists(comm, other_target_object));
+            REQUIRE(contents.size() == fs::client::data_object_size(new_comm, other_target_object));
         }
 
         // source unlocked, destination locked
+        SECTION("source unlocked, destination locked")
         {
             // Open destination object to lock it
             DataObjInp dest_open_inp{};
@@ -793,8 +811,9 @@ TEST_CASE("rename", "[write_lock]")
             // This is done in an irods::at_scope_exit because catch will return immediately if
             // a REQUIRE clause fails. This ensures that the data object is properly closed for
             // cleanup purposes.
-            const auto close_dest_object = irods::at_scope_exit{[&]
-            {
+            const auto close_dest_object = irods::at_scope_exit{[&] {
+                rename_inp.srcDataObjInp.oprType = 0;
+
                 openedDataObjInp_t close_inp{};
                 close_inp.l1descInx = dest_fd;
                 REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
@@ -808,9 +827,17 @@ TEST_CASE("rename", "[write_lock]")
             REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
             REQUIRE(fs::client::exists(comm, target_object));
             REQUIRE(fs::client::exists(comm, other_target_object));
+
+            // Now do it again with the oprType set. Locking should still be enforced at the point of unlinking the
+            // destination object.
+            rename_inp.srcDataObjInp.oprType = RENAME_DATA_OBJ;
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
+            REQUIRE(fs::client::exists(comm, target_object));
+            REQUIRE(fs::client::exists(comm, other_target_object));
         }
 
         // source locked, destination locked
+        SECTION("source locked, destination locked")
         {
             // Open source object to lock it
             DataObjInp source_open_inp{};
@@ -854,8 +881,9 @@ TEST_CASE("rename", "[write_lock]")
             // This is done in an irods::at_scope_exit because catch will return immediately if
             // a REQUIRE clause fails. This ensures that the data object is properly closed for
             // cleanup purposes.
-            const auto close_dest_object = irods::at_scope_exit{[&]
-            {
+            const auto close_dest_object = irods::at_scope_exit{[&] {
+                rename_inp.srcDataObjInp.oprType = 0;
+
                 openedDataObjInp_t close_inp{};
                 close_inp.l1descInx = dest_fd;
                 REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
@@ -866,6 +894,12 @@ TEST_CASE("rename", "[write_lock]")
             }};
 
             // Attempt renaming source object to destination object
+            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
+            REQUIRE(fs::client::exists(comm, target_object));
+            REQUIRE(fs::client::exists(comm, other_target_object));
+
+            // Now do it again with the oprType set. The API takes a different code path in this case, for some reason.
+            rename_inp.srcDataObjInp.oprType = RENAME_DATA_OBJ;
             REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjRename(&new_comm, &rename_inp));
             REQUIRE(fs::client::exists(comm, target_object));
             REQUIRE(fs::client::exists(comm, other_target_object));
