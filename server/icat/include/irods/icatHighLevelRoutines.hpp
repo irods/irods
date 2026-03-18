@@ -229,6 +229,34 @@ int chlGetReplListForLeafBundles(
     const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results );
 
+/// \brief Retrieves data ids that require rebalancing. The offset may be used to skip previous results.
+///
+/// \parblock
+/// In contrast to chlGetReplListForLeafBundles, this function has the additional
+/// ability to offset the data ids returned from the generated query.
+///
+/// An example use for this function is to process the results in a partial
+/// manner, leaving some results behind that need to be accounted for via
+/// an offset.
+/// \endparblock
+///
+/// \param[in] _count Number of results to return at once
+/// \param[in] _child_idx Index to leaf resource of interest
+/// \param[in] _bundles Vector of all leaf resources
+/// \param[in] _invocation_timestamp Timestamp of when rebalance was called
+/// \param[in,out] _results Vector of items needing rebalancing
+/// \param[in] _offest Number of results to skip before returning
+///
+/// \returns Error code based on whether results are generated successfully.
+///
+/// \since 5.1.0
+int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
+                                       size_t _child_idx,
+                                       const std::vector<leaf_bundle_t>* _bundles,
+                                       const std::string* _invocation_timestamp,
+                                       dist_child_result_t* _results,
+                                       int _offset);
+
 /// \brief High-level wrapper for database operation which calls cmlCheckDataObjId
 ///
 /// \parblock
