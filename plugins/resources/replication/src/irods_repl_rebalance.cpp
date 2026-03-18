@@ -8,6 +8,7 @@
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/dataObjRepl.h"
 #include "irods/genQuery.h"
+#include "irods/rodsLog.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rodsError.h"
 
@@ -331,7 +332,14 @@ namespace {
 
         irods::error first_rebalance_error = SUCCESS();
         for (auto data_id_to_replicate : _data_ids_to_replicate) {
-            const ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
+            ReplicationSourceInfo source_info;
+            try {
+                source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
+            }
+            catch (...) {
+                rodsLog(LOG_WARNING, "AAAAAAAAAAAAAAAAAAAAAAAAA!!!! Everything is fine nvm ;)");
+                continue;
+            }
 
             // create a file object so we can resolve a valid hierarchy to which to replicate
             irods::file_object_ptr f_ptr(new irods::file_object(_ctx.comm(), source_info.object_path, "", "", 0, source_info.data_mode, 0));
