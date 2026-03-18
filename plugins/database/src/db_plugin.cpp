@@ -66,6 +66,7 @@
 #include <thread> // For std::this_thread::sleep_for
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 // clang-format off
@@ -13557,6 +13558,9 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     if (_count <= 0) {
         return ERROR(SYS_INVALID_INPUT_PARAM, boost::format("invalid _count [%d]") % _count);
     }
+    if (nullptr == _bundles) {
+        return ERROR(INVALID_INPUT_ARGUMENT_NULL_POINTER, "bundles is NULL");
+    }
     if (_bundles->empty()) {
         return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
@@ -13644,6 +13648,175 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     return SUCCESS();
 
 } // db_get_repl_list_for_leaf_bundles_op
+
+irods::error db_get_repl_list_for_leaf_bundles_offset_op(irods::plugin_context& _ctx,
+                                                         rodsLong_t _count,
+                                                         size_t _child_index,
+                                                         const std::vector<leaf_bundle_t>* _bundles,
+                                                         const std::string* _invocation_timestamp,
+                                                         dist_child_result_t* _results,
+                                                         int _offset)
+{
+    // =-=-=-=-=-=-=-
+    // check the context
+    irods::error ret = _ctx.valid();
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (_count <= 0) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, fmt::format("invalid _count [{}]", _count));
+    }
+    if (nullptr == _bundles) {
+        return ERROR(INVALID_INPUT_ARGUMENT_NULL_POINTER, "bundles is NULL");
+    }
+    if (_bundles->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
+    }
+    if (_child_index >= _bundles->size()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "child index is greater than the number of bundles");
+    }
+    if (nullptr == _invocation_timestamp) {
+        return ERROR(INVALID_INPUT_ARGUMENT_NULL_POINTER, "invocation timestamp is NULL");
+    }
+    if (_invocation_timestamp->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "invocation timestamp is empty");
+    }
+
+    // Get all data ids in the leaf resource selected by _child_index
+    std::string child_array{fmt::format("{}", fmt::join((*_bundles)[_child_index], ","))};
+    if (child_array.empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf array is empty");
+    }
+
+    // Get all data ids not in the selected leaf resource, marked by _child_index
+    std::string not_child_array;
+    for (size_t idx = 0; idx < _bundles->size(); ++idx) {
+        if (idx == _child_index || (*_bundles)[idx].empty()) {
+            continue;
+        }
+
+        if (not_child_array.empty()) {
+            not_child_array = fmt::format("{}", fmt::join((*_bundles)[idx], ","));
+        }
+        else {
+            not_child_array = fmt::format("{},{}", not_child_array, fmt::join((*_bundles)[idx], ","));
+        }
+    } // for idx
+
+    if (not_child_array.empty()) {
+        return SUCCESS();
+    }
+
+    // Run query to collect data ids that may need to be
+    // replicated to the selected leaf resource
+#ifdef ORA_ICAT
+    const std::string query =
+        fmt::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id "
+                    "from R_DATA_MAIN where resc_id in ({})) and data_id not in (select data_id from R_DATA_MAIN "
+                    "where resc_id in ({})) and modify_ts <= '{}') where rownum <= {} order by data_id",
+                    not_child_array,
+                    child_array,
+                    _invocation_timestamp->c_str(),
+                    _count);
+#elif MY_ICAT
+    /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
+    const std::string query = fmt::format("select distinct data_id from R_DATA_MAIN "
+                                          "where resc_id in ({}) and data_id not in ( "
+                                          "select data_id from R_DATA_MAIN "
+                                          "where resc_id in ({}) "
+                                          ") and modify_ts <= '{}' "
+                                          "order by data_id "
+                                          "limit {} "
+                                          "offset {}",
+                                          not_child_array,
+                                          child_array,
+                                          _invocation_timestamp->c_str(),
+                                          _count,
+                                          _offset);
+#else
+    /* Postgres */
+    const std::string query = fmt::format("select distinct data_id from R_DATA_MAIN "
+                                          "where resc_id in ({}) and modify_ts <= '{}' "
+                                          "except "
+                                          "select data_id from R_DATA_MAIN "
+                                          "where resc_id in ({}) "
+                                          "order by data_id "
+                                          "offset {} "
+                                          "limit {}",
+                                          not_child_array,
+                                          _invocation_timestamp->c_str(),
+                                          child_array,
+                                          _offset,
+                                          _count);
+#endif
+
+    _results->reserve(_count);
+
+    int statement_num = 0;
+    const int status_cmlGetFirstRowFromSql = cmlGetFirstRowFromSql(query.c_str(), &statement_num, _offset, &icss);
+    if (status_cmlGetFirstRowFromSql == CAT_NO_ROWS_FOUND) {
+        cmlFreeStatement(statement_num, &icss);
+        return SUCCESS();
+    }
+    if (status_cmlGetFirstRowFromSql != 0) {
+        cmlFreeStatement(statement_num, &icss);
+        return ERROR(status_cmlGetFirstRowFromSql, fmt::format("failed to get first row from query [{}]", query));
+    }
+
+    auto checked_strtoll{[](std::string_view _input_string) -> std::variant<long long, irods::error> {
+        char* endpointer{};
+
+        // Handle emtpy string case
+        if (_input_string.empty()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "no input provided");
+        }
+
+        // Clear errno so we can do error checking afterwards
+        errno = 0;
+        constexpr auto base{10};
+        auto res{std::strtoll(_input_string.data(), &endpointer, base)};
+
+        // We want the entire string to be parsed, consider it an error if it's not
+        if ('\0' != *endpointer) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "string not fully parsed");
+        }
+
+        // Handle overflow/underflow case
+        if ((LLONG_MAX == res || LLONG_MIN == res) && ERANGE == errno) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "number cannot be represented in long long");
+        }
+
+        return res;
+    }};
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    auto res{checked_strtoll(icss.stmtPtr[statement_num]->resultValue[0])};
+    if (std::holds_alternative<irods::error>(res)) {
+        return std::get<irods::error>(res);
+    }
+    _results->push_back(std::get<long long>(res));
+
+    for (rodsLong_t i = 1; i < _count; ++i) {
+        const int status_cmlGetNextRowFromStatement = cmlGetNextRowFromStatement(statement_num, &icss);
+        if (status_cmlGetNextRowFromStatement == CAT_NO_ROWS_FOUND) {
+            break;
+        }
+        if (status_cmlGetNextRowFromStatement != 0) {
+            cmlFreeStatement(statement_num, &icss);
+            return ERROR(
+                status_cmlGetNextRowFromStatement, fmt::format("failed to get row [{}] from query [{}]", i, query));
+        }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+        res = checked_strtoll(icss.stmtPtr[statement_num]->resultValue[0]);
+        if (std::holds_alternative<irods::error>(res)) {
+            return std::get<irods::error>(res);
+        }
+        _results->push_back(std::get<long long>(res));
+    }
+    cmlFreeStatement(statement_num, &icss);
+    return SUCCESS();
+} // db_get_repl_list_for_leaf_bundles_offset_op
 
 irods::error db_get_hierarchy_for_resc_op(
     irods::plugin_context& _ctx,
@@ -16634,6 +16807,14 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
         function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
+    pg->add_operation(DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_OFFSET,
+                      function<error(plugin_context&,
+                                     rodsLong_t,
+                                     size_t,
+                                     const std::vector<leaf_bundle_t>*,
+                                     const std::string*,
+                                     dist_child_result_t*,
+                                     int)>(db_get_repl_list_for_leaf_bundles_offset_op));
     pg->add_operation(
         DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT,
         function<error(plugin_context&,const rodsLong_t)>(
