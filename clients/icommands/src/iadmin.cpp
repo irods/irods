@@ -1611,16 +1611,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "at" ) == 0 ) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        if (std::string_view{"user_type"} == cmdToken[1]) {
-            std::fprintf(
-                stderr, "NOTE: Adding user_type tokens is deprecated and will be removed in an upcoming release.\n");
-        }
+        std::fprintf(stderr, "NOTE: Token addition is deprecated and will be removed in an upcoming release.\n");
         generalAdmin( 0, "add", "token", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "rt" ) == 0 ) {
+        std::fprintf(stderr, "NOTE: Token removal is deprecated and will be removed in an upcoming release.\n");
         generalAdmin( 0, "rm", "token", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
         return 0;
@@ -2418,18 +2415,21 @@ usage( char *subOpt ) {
                       " ",
                       "Add a new token.",
                       " ",
-                      "NOTE: Adding user_type tokens is deprecated.",
+                      "NOTE: Token addition is deprecated.",
                       " ",
                       "The most common use of this is to add new data_type or user_type tokens.",
                       "See lt to display currently defined tokens.",
                       ""};
 
-    char *rtMsgs[] = {
-        " rt tokenNamespace Name [Value] (remove token) ",
-        "Remove a token.  The most common use of this is to remove",
-        "data_type or user_type tokens.  See lt to display currently defined tokens.",
-        ""
-    };
+    char* rtMsgs[] = {" rt tokenNamespace Name [Value] (remove token) ",
+                      " ",
+                      "Remove a token.",
+                      " ",
+                      "NOTE: Token removal is deprecated.",
+                      " ",
+                      "The most common use of this is to remove data_type or user_type tokens.",
+                      "See lt to display currently defined tokens.",
+                      ""};
 
     char *suqMsgs[] = {
         " suq User Target Value (set user quota)",
