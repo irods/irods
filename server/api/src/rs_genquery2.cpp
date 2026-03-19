@@ -12,6 +12,7 @@
 #include "irods/irods_version.h"
 #include "irods/rodsConnect.h"
 #include "irods/rodsDef.h"
+#include "irods/rodsError.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/icatHighLevelRoutines.hpp"
 
@@ -75,7 +76,9 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
 
     if (host_info->localFlag != LOCAL_HOST) {
         log_api::trace("{}: Redirecting request to server [{}].", __func__, host_info->hostName->name);
-        return rc_genquery2(host_info->conn, _input, _output);
+        const auto ec = rc_genquery2(host_info->conn, _input, _output);
+        replErrorStack(host_info->conn->rError, &_comm->rError);
+        return ec;
     }
 
     //
@@ -99,6 +102,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
         }
         catch (const std::exception& e) {
             log_api::error("{}: Could not generate column mappings: {}", __func__, e.what());
+            addRErrorMsg(&_comm->rError, SYS_LIBRARY_ERROR, "Could not generate column mappings.");
             return SYS_LIBRARY_ERROR;
         }
     }
@@ -128,6 +132,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
 
         if (const auto ec = driver.parse(_input->query_string); ec != 0) {
             log_api::error("{}: Failed to parse GenQuery2 string. [error code=[{}]]", __func__, ec);
+            addRErrorMsg(&_comm->rError, ec, "Failed to parse GenQuery2 string.");
             return SYS_LIBRARY_ERROR;
         }
 
@@ -142,6 +147,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
 
         if (sql.empty()) {
             log_api::error("{}: Could not generate SQL from GenQuery.", __func__);
+            addRErrorMsg(&_comm->rError, SYS_INVALID_INPUT_PARAM, "Could not generate SQL from GenQuery2 string.");
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -150,6 +156,14 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
     catch (const irods::exception& e) {
         log_api::error("{}: GenQuery2 error: {}", __func__, e.client_display_what());
         return e.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+    }
+    // This catch block exists as a means to communicate GenQuery2 error messages to the client.
+    // The GenQuery2 code throws std::invalid_argument exceptions which usually contain useful information.
+    // This limits what gets added to the rError stack.
+    catch (const std::invalid_argument& e) {
+        log_api::error("{}: GenQuery2 error: {}", __func__, e.what());
+        addRErrorMsg(&_comm->rError, SYS_LIBRARY_ERROR, e.what());
+        return SYS_LIBRARY_ERROR;
     }
     catch (const std::exception& e) {
         log_api::error("{}: GenQuery2 error: {}", __func__, e.what());
