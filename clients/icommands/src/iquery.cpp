@@ -5,10 +5,10 @@
 #include <irods/procApiRequest.h>
 #include <irods/rcMisc.h> // For set_ips_display_name()
 #include <irods/rodsClient.h> // For load_client_api_plugins()
+#include <irods/rodsError.h>
 
 #include <boost/program_options.hpp>
 #include <fmt/format.h>
-#include <iterator>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
@@ -88,13 +88,15 @@ int main(int _argc, char* _argv[]) // NOLINT(modernize-use-trailing-return-type)
         char* output{};
         irods::at_scope_exit free_output{[&output] {
             if (output) {
-                std::free(output);
+                std::free(output); // NOLINT(*-owning-memory,*-no-malloc)
             }
         }};
 
-        const auto ec = rc_genquery2(static_cast<RcComm*>(conn), &input, &output);
+        auto* conn_ptr = static_cast<RcComm*>(conn);
+        const auto ec = rc_genquery2(conn_ptr, &input, &output);
         if (ec < 0) {
             fmt::print(stderr, "error: {}\n", ec);
+            print_error_stack_to_file(conn_ptr->rError, stderr);
             return 1;
         }
 
