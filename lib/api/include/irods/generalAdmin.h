@@ -41,6 +41,7 @@ extern "C" {
 /// \retval nonzero On failure
 ///
 /// \deprecated Token addition and removal are deprecated as of 5.1.0.
+/// \deprecated Authentication name addition and removal are deprecated as of 5.1.0.
 int rcGeneralAdmin(struct RcComm* conn, struct GeneralAdminInput* generalAdminInp);
 
 // NOLINTEND(modernize-use-trailing-return-type)

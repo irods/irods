@@ -65,8 +65,10 @@ namespace irods::experimental::administration
 
     /// Defines the set of operations for manipulating user authentication names.
     ///
+    /// \deprecated Authentication names are deprecated as of 5.1.0.
+    ///
     /// \since 4.3.1
-    enum class user_authentication_operation
+    enum class [[deprecated]] user_authentication_operation
     {
         // clang-format off
         add,   ///< Indicates that the authentication name should be available to the user.
@@ -110,10 +112,12 @@ namespace irods::experimental::administration
         user_type value;
     }; // struct user_type_property
 
-    /// Holds the new password for a user. Primarily used to modify a user.
+    /// Holds the new authentication name for a user. Primarily used to modify a user.
+    ///
+    /// \deprecated Authentication names are deprecated as of 5.1.0.
     ///
     /// \since 4.3.1
-    struct user_authentication_property
+    struct [[deprecated]] user_authentication_property
     {
         // clang-format off
         user_authentication_operation op; ///< The operation to execute.
@@ -262,10 +266,16 @@ namespace irods::experimental::administration
                 input.arg4 = to_c_str(_property.value);
                 execute("Failed to set user type to [{}] for user [{}].", input.arg4, name);
             }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
             else if constexpr (std::is_same_v<Property, user_authentication_property>) {
+#pragma GCC diagnostic pop
                 input.arg4 = _property.value.c_str();
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                 if (_property.op == user_authentication_operation::add) {
+#pragma GCC diagnostic pop
                     input.arg3 = "addAuth";
                     execute("Failed to add authentication name [{}] to user [{}].", input.arg4, name);
                 }
@@ -422,8 +432,10 @@ namespace irods::experimental::administration
         ///
         /// \return A list of strings.
         ///
+        /// \deprecated Authentication names are deprecated as of 5.1.0.
+        ///
         /// \since 4.2.8
-        auto auth_names(RxComm& _comm, const user& _user) -> std::vector<std::string>;
+        [[deprecated]] auto auth_names(RxComm& _comm, const user& _user) -> std::vector<std::string>;
 
         /// Checks if a user is a member of a group.
         ///
