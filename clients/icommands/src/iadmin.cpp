@@ -1307,11 +1307,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "aua" ) == 0 ) {
+        std::fprintf(stderr, "NOTE: Authentication names are deprecated and will be removed in an upcoming release.\n");
         generalAdmin( 0, "modify", "user", cmdToken[1], "addAuth",
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "rua" ) == 0 ) {
+        std::fprintf(stderr, "NOTE: Authentication names are deprecated and will be removed in an upcoming release.\n");
         generalAdmin( 0, "modify", "user", cmdToken[1], "rmAuth",
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
         return 0;
@@ -1322,6 +1324,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "lua" ) == 0 ) {
+        std::fprintf(stderr, "NOTE: Authentication names are deprecated and will be removed in an upcoming release.\n");
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
         int status;
@@ -1339,6 +1342,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "luan" ) == 0 ) {
+        std::fprintf(stderr, "NOTE: Authentication names are deprecated and will be removed in an upcoming release.\n");
         show_user_auth_name(cmdToken[1]);
         return 0;
     }
@@ -2013,24 +2017,30 @@ usage( char *subOpt ) {
         "Also see the 'luz', 'lz', and 'iuserinfo' commands.",
         ""
     };
-    char *luaMsgs[] = {
-        "lua [name[#Zone]] (list user authentication (GSI/Kerberos Names), if any)",
-        "list user authentication-names for one or all users",
-        "Just 'lua' will list all the GSI/Kerberos names currently defined",
-        "for all users along with the associated iRODS user names.",
-        "If you include a user name, then the auth-names for that user are listed.",
-        "Usernames can include the zone preceded by #, for example rods#tempZone.",
-        "Also see the 'luan', 'aua', 'rua', and 'iuserinfo' commands.",
-        ""
-    };
-    char *luanMsgs[] = {
-        "luan Name (list users associated with auth name (GSI/Kerberos)",
-        "list the user(s) associated with a give Authentication-Name  ",
-        "For example:",
-        "  luan '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
-        "will list the iRODS user(s) with the GSI DN, if any.",
-        ""
-    };
+    char* luaMsgs[] = {"lua [name[#Zone]] (list user authentication (GSI/Kerberos Names), if any)",
+                       " ",
+                       "List user authentication-names for one or all users.",
+                       " ",
+                       "NOTE: Authentication names are deprecated.",
+                       " ",
+                       "Just 'lua' will list all the GSI/Kerberos names currently defined",
+                       "for all users along with the associated iRODS user names.",
+                       " ",
+                       "If you include a user name, then the auth-names for that user are listed.",
+                       " ",
+                       "Usernames can include the zone preceded by #, for example rods#tempZone.",
+                       " ",
+                       "Also see the 'luan', 'aua', 'rua', and 'iuserinfo' commands.",
+                       ""};
+    char* luanMsgs[] = {"luan Name (list users associated with auth name (GSI/Kerberos)",
+                        " ",
+                        "List the user(s) associated with a give Authentication-Name  ",
+                        " ",
+                        "NOTE: Authentication names are deprecated.",
+                        " ",
+                        "For example, the following will list the iRODS user(s) with the GSI DN, if any.",
+                        "  luan '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
+                        ""};
     char *luzMsgs[] = {
         "luz Zone [User] (list user info for a Zone; details if name entered)",
         "list user information for users of a particular Zone.  ",
@@ -2131,26 +2141,33 @@ usage( char *subOpt ) {
         "user auth names (GSI Distinquished Name (DN) or Kerberos principal name).",
         ""};
 
-    char *auaMsgs[] = {
-        " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
-        "Add a user authentication name, a GSI  Distinquished Name (DN) or",
-        "Kerberos Principal name, to an iRODS user.  Multiple DNs and/or Principal",
-        "names can be associated with each user.",
-        "This is used with Kerberos and/or GSI authentication, if enabled.",
-        "For example:",
-        "  aua rods '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
-        "Also see 'rua', 'lua', and 'luan'.",
-        ""
-    };
+    char* auaMsgs[] = {" aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
+                       " ",
+                       "Add a user authentication name, a GSI Distinquished Name (DN) or",
+                       "Kerberos Principal name, to an iRODS user.",
+                       " ",
+                       "NOTE: Authentication names are deprecated.",
+                       " ",
+                       "Multiple DNs and/or Principal names can be associated with each user.",
+                       "This is used with Kerberos and/or GSI authentication, if enabled.",
+                       " ",
+                       "For example:",
+                       "  aua rods '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
+                       " ",
+                       "Also see 'rua', 'lua', and 'luan'.",
+                       ""};
 
-    char *ruaMsgs[] = {
-        " rua Name[#Zone] Auth-Name (remove user authentication-name (GSI/Kerberos)",
-        "Remove a user authentication name, a GSI Distinquished Name (DN) or",
-        "Kerberos Principal name, from being associated with an iRODS user.",
-        "These are used with Kerberos and/or GSI authentication, if enabled.",
-        "Also see 'aua', 'lua', and 'luan'.",
-        ""
-    };
+    char* ruaMsgs[] = {" rua Name[#Zone] Auth-Name (remove user authentication-name (GSI/Kerberos)",
+                       " ",
+                       "Remove a user authentication name, a GSI Distinquished Name (DN) or",
+                       "Kerberos Principal name, from being associated with an iRODS user.",
+                       " ",
+                       "NOTE: Authentication names are deprecated.",
+                       " ",
+                       "These are used with Kerberos and/or GSI authentication, if enabled.",
+                       " ",
+                       "Also see 'aua', 'lua', and 'luan'.",
+                       ""};
 
     char *rppMsgs[] = {
         " rpp Name (remove PAM-derived Password for user Name)",

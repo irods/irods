@@ -44,6 +44,8 @@ TEST_CASE("user group administration")
         REQUIRE_NOTHROW(adm::client::modify_user(conn, test_user, adm::user_password_property{"testpassword"}));
         REQUIRE_NOTHROW(adm::client::modify_user(conn, test_user, adm::user_type_property{adm::user_type::rodsadmin}));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         // Show that the user does not have any authentication names.
         auto auth_names = adm::client::auth_names(conn, test_user);
         CHECK(auth_names.empty());
@@ -64,6 +66,7 @@ TEST_CASE("user group administration")
 
         // Show that the user does not have any authentication names.
         CHECK(adm::client::auth_names(conn, test_user).empty());
+#pragma GCC diagnostic pop
     }
 
     SECTION("user types")
@@ -111,6 +114,8 @@ TEST_CASE("user group administration")
         // Change the type of the user to groupadmin.
         CHECK_NOTHROW(adm::client::modify_user(conn, test_user, adm::user_type_property{adm::user_type::groupadmin}));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         // Show that the user does not have any authentication names.
         auto auth_names = adm::client::auth_names(conn, test_user);
         CHECK(auth_names.empty());
@@ -131,6 +136,7 @@ TEST_CASE("user group administration")
 
         // Show that the user does not have any authentication names.
         CHECK(adm::client::auth_names(conn, test_user).empty());
+#pragma GCC diagnostic pop
     }
 
     SECTION("group operations")

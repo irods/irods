@@ -90,22 +90,36 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'rmresc', newresc])
 
     def test_tokens(self):
-        self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username], 'STDERR', ['NOTE: Adding tokens is deprecated'])
+        self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username], 'STDERR', ['NOTE: Token addition is deprecated'])
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], 'STDOUT_SINGLELINE', 'rodstest')
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], 'STDOUT_SINGLELINE', 'token_name: rodstest')
-        self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'], 'STDERR', ['NOTE: Removing tokens is deprecated'])
+        self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'], 'STDERR', ['NOTE: Token removal is deprecated'])
 
     def test_authentication_name(self):
         username = 'moduser_user'
         authentication_name = 'asdfsadfsadf/dfadsf/dadf/d/'
         self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
         try :
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'lua', username], 'STDOUT_SINGLELINE', authentication_name)
-            self.admin.assert_icommand(['iadmin', 'lua', '#'.join([username, 'tempZone'])], 'STDOUT_SINGLELINE', authentication_name)
-            self.admin.assert_icommand(['iadmin', 'lua'], 'STDOUT_SINGLELINE', username)
-            self.admin.assert_icommand(['iadmin', 'luan', authentication_name], 'STDOUT_SINGLELINE', username)
-            self.admin.assert_icommand(['iadmin', 'rua', username, authentication_name])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+
+            out, err, _ = self.admin.run_icommand(['iadmin', 'lua', username])
+            self.assertIn(authentication_name, out)
+            self.assertIn('NOTE: Authentication names are deprecated', err)
+
+            out, err, _ = self.admin.run_icommand(['iadmin', 'lua', '#'.join([username, 'tempZone'])])
+            self.assertIn(authentication_name, out)
+            self.assertIn('NOTE: Authentication names are deprecated', err)
+
+            out, err, _ = self.admin.run_icommand(['iadmin', 'lua'])
+            self.assertIn(username, out)
+            self.assertIn('NOTE: Authentication names are deprecated', err)
+
+            out, err, _ = self.admin.run_icommand(['iadmin', 'luan', authentication_name])
+            self.assertIn(username, out)
+            self.assertIn('NOTE: Authentication names are deprecated', err)
+
+            self.admin.assert_icommand(['iadmin', 'rua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+
         finally :
             self.admin.assert_icommand(['iadmin', 'rmuser', username])
 
@@ -1447,11 +1461,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         authentication_name = '3104_user@TEST.AUTHENTICATION'
         self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
         try:
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name], 'STDERR', ['NOTE: Authentication names are deprecated'])
             out, _, _ = self.admin.run_icommand(['iadmin', 'lua', username])
             self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
         finally:
@@ -1463,12 +1477,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         authentication_name_2 = '3620_user_2@TEST.AUTHENTICATION'
         self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
         try:
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2])
-            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
-            _, out, _ = self.admin.assert_icommand(['iadmin', 'lua', username], 'STDOUT_MULTILINE', [username + ' ' + authentication_name_1, username + ' ' + authentication_name_2])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1], 'STDERR', ['NOTE: Authentication names are deprecated'])
+            out, _, _ = self.admin.run_icommand(['iadmin', 'lua', username])
+            self.assertIn(username + ' ' + authentication_name_1, out)
+            self.assertIn(username + ' ' + authentication_name_2, out)
             self.assertEqual(len(out.splitlines()), 2, 'iadmin lua did not return exactly two lines')
         finally:
             self.admin.assert_icommand(['iadmin', 'rmuser', username])
