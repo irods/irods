@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from textwrap import dedent
 import os
 import shutil
@@ -2558,3 +2556,16 @@ class Test_GenQuery2_IQuery(SessionsMixin, unittest.TestCase):
 		# now returns a non-empty resultset.
 		self.remote_user.assert_icommand(['ichmod', 'read_object', self.local_user.qualified_username, data_object])
 		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', expected_output)
+
+	def test_genquery2_returns_useful_parser_error_messages_to_client__issue_8094(self):
+		remote_zone = test.settings.FEDERATION.REMOTE_ZONE
+
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, 'not a familiar keyword'], 'STDERR', [
+			'error: -167000\n',
+			'Level 0: syntax error, unexpected NOT, expecting SELECT at position 1\n'
+		])
+			
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, 'select INVALID_COLUMN'], 'STDERR', [
+			'error: -130000\n',
+			'Level 0: Could not generate SQL from GenQuery2 string.\n'
+		])

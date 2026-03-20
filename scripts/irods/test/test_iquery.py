@@ -45,28 +45,32 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         self.assertEqual(len(out), 0)
         self.assertEqual(err, 'error: -26000\n') # SYS_INVALID_ZONE_NAME
 
-    def test_iquery_returns_error_on_invalid_query_tokens__issue_7570(self):
+    def test_iquery_returns_error_on_invalid_query_tokens__issue_7570_8094(self):
         ec, out, err = self.user.assert_icommand_fail(['iquery', ' '], 'STDOUT')
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
-        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+        self.assertIn('error: -167000\n', err) # SYS_LIBRARY_ERROR
+        self.assertIn('Level 0: syntax error, unexpected END_OF_INPUT, expecting SELECT at position 1\n', err)
 
         ec, out, err = self.user.assert_icommand_fail(['iquery', 'select'], 'STDOUT')
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
-        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+        self.assertIn('error: -167000\n', err) # SYS_LIBRARY_ERROR
+        self.assertIn('Level 0: syntax error, unexpected END_OF_INPUT, expecting CAST or DISTINCT or IDENTIFIER at position 7\n', err)
 
         ec, out, err = self.user.assert_icommand_fail(['iquery', 'select INVALID_COLUMN'], 'STDOUT')
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
-        self.assertEqual(err, 'error: -130000\n') # SYS_INVALID_INPUT_PARAM
+        self.assertIn('error: -130000\n', err) # SYS_INVALID_INPUT_PARAM
+        self.assertIn('Level 0: Could not generate SQL from GenQuery2 string.\n', err)
 
     def test_iquery_returns_error_when_closing_single_quote_is_missing__issue_6393(self):
         ec, out, err = self.user.assert_icommand_fail(
             ['iquery', f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}"], 'STDOUT')
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
-        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+        self.assertIn('error: -167000\n', err) # SYS_LIBRARY_ERROR
+        self.assertIn(f'Level 0: missing closing single quote: [{self.user.session_collection}] at position ', err)
 
     def test_iquery_distinguishes_embedded_IN_substring_from_IN_operator__issue_3064(self):
         attr_name = 'originalVersionId'
@@ -120,7 +124,8 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         ec, out, err = self.user.assert_icommand_fail(['iquery', query_string], 'STDOUT')
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
-        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+        self.assertIn('error: -167000\n', err) # SYS_LIBRARY_ERROR
+        self.assertIn('Level 0: syntax error, unexpected POSITIVE_INTEGER, expecting END_OF_INPUT at position 168\n', err)
 
     def test_genquery2_maps_genquery_user_zone_columns_to_correct_database_columns__issue_8134_8135(self):
         # Show that the column mapping listing contains the correct mappings.
