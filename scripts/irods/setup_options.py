@@ -25,5 +25,11 @@ def add_options(parser):
                         'This option will ingest a json file instead of '
                         'prompting the user for input to perform server '
                         'configuration.')
-
+    parser.add_argument('--skip_post_install_test',
+                        dest='skip_post_install_test', action='store_true',
+                        help='Skip the post install put test. '
+                        'This option will skip the normal post-install test '
+                        'where a file is put to the default resource. '
+                        'Helpful when setting up an iRODS server in a zone '
+                        'where no default resource exists.')
     start_options.add_options(parser)

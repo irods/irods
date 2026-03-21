@@ -163,7 +163,9 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     controller.restart()
 
     # test put
-    test_put(irods_config)
+    args = parse_arguments()
+    if not args.skip_post_install_test:
+        test_put(irods_config)
 
     # extract the "irods_version" property from the version.json.dist file.
     # this guarantees that setup always uses the correct version information.
