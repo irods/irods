@@ -296,7 +296,7 @@ string_literal_list:
 ;
 
 integer:
-  POSITIVE_INTEGER
+  POSITIVE_INTEGER { $$ = std::move($1); }
 | NEGATIVE_INTEGER { $$ = std::move($1); }
 ;
 
