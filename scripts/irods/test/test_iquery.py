@@ -454,11 +454,15 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
             perms = [
                 [self.user.username, self.user.zone_name, 'own', 'rodsuser'],
                 [self.user.username, self.user.zone_name, 'own', 'rodsuser'],
-                [self.user.username, self.user.zone_name, 'read_object', 'rodsuser']
+                [self.user.username, self.user.zone_name, 'read_object', 'rodsuser'],
+                [self.admin.username, self.admin.zone_name, 'own', 'rodsadmin'],
             ]
             json_string = json.dumps(perms, separators=(',', ':'))
             query_string = "select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, DATA_ACCESS_USER_TYPE order by DATA_ACCESS_PERM_NAME"
-            self.user.assert_icommand(['iquery', query_string], 'STDOUT', json_string)
+            ec, out, err = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertEqual(sorted(json.loads(out)), perms)
 
         with self.subTest('rodsuser can use user type column for collections'):
             query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, COLL_ACCESS_PERM_NAME, COLL_ACCESS_USER_TYPE where COLL_NAME = '{self.user.session_collection}'"
@@ -488,3 +492,450 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
             self.assertIn(f'["{self.user.username}","{self.user.zone_name}","own","rodsuser"]', out)
             self.assertIn(f'["{self.user.username}","{self.user.zone_name}","read_object","rodsuser"]', out)
             self.assertIn(f'["{self.admin.username}","{self.admin.zone_name}","own","rodsadmin"]', out)
+
+    def test_genquery2_does_not_expand_permissions_when_rodsuser_has_access_via_multiple_groups__issue_8880(self):
+        data_object = 'issue_8880_data_object.txt'
+        resource = 'issue_8880_ufs'
+        group_1 = 'issue_8880_group_1'
+        group_2 = 'issue_8880_group_2'
+
+        try:
+            # Create a non-empty data object.
+            content = 'hello'
+            self.user.assert_icommand(['istream', 'write', data_object], input=content)
+
+            # GenQuery2 should match the number of replicas (1).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a new storage resource and replicate the replica to it.
+            lib.create_ufs_resource(self.admin, resource)
+            self.user.assert_icommand(['irepl', '-R', resource, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a group, make the user a member, and give the group permissions on the
+            # data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_1])
+            self.admin.assert_icommand(['iadmin', 'atg', group_1, self.user.username])
+            self.user.assert_icommand(['ichmod', 'read_object', group_1, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a second group, make the user a member, and give it permissions on the
+            # data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_2])
+            self.admin.assert_icommand(['iadmin', 'atg', group_2, self.user.username])
+            self.user.assert_icommand(['ichmod', 'read_object', group_2, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_1])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_2])
+
+    def test_genquery2_does_not_expand_permissions_when_rodsadmin_has_access_via_multiple_groups__issue_8880(self):
+        data_object = 'issue_8880_data_object.txt.rodsadmin'
+        resource = 'issue_8880_ufs_rodsadmin'
+        group_1 = 'issue_8880_group_1_rodsadmin'
+        group_2 = 'issue_8880_group_2_rodsadmin'
+
+        try:
+            # Create a non-empty data object.
+            content = 'hello'
+            self.admin.assert_icommand(['istream', 'write', data_object], input=content)
+
+            # GenQuery2 should match the number of replicas (1).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a new storage resource and replicate the replica to it.
+            lib.create_ufs_resource(self.admin, resource)
+            self.admin.assert_icommand(['irepl', '-R', resource, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a group, make the admin a member, and give the group permissions on the
+            # data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_1])
+            self.admin.assert_icommand(['iadmin', 'atg', group_1, self.admin.username])
+            self.admin.assert_icommand(['ichmod', 'read_object', group_1, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # Create a second group, make the admin a member, and give the group permissions on
+            # the data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_2])
+            self.admin.assert_icommand(['iadmin', 'atg', group_2, self.admin.username])
+            self.admin.assert_icommand(['ichmod', 'read_object', group_2, data_object])
+
+            # GenQuery2 should match the number of replicas (2).
+            query_string = f"select count(DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # GenQuery2 should match the number of data objects (1).
+            query_string = f"select count(distinct DATA_ID) where COLL_NAME = '{self.admin.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_1])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_2])
+
+    def test_genquery2_expands_permissions_when_rodsuser_has_access_via_multiple_groups_and_includes_permission_columns__issue_8880(self):
+        data_object = 'issue_8880_data_object_expanded_perms.txt'
+        resource = 'issue_8880_ufs_expanded_perms'
+        group_1 = 'issue_8880_group_1_expanded_perms'
+        group_2 = 'issue_8880_group_2_expanded_perms'
+        group_3 = 'issue_8880_group_3_expanded_perms'
+
+        try:
+            self.user.assert_icommand(['itouch', data_object])
+
+            # Count the number of data objects accessible by the rodsuser.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be one row since there exists one permission on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 1)
+
+            # Create two groups and grant one of them permission to read the data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_1])
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_2])
+            self.user.assert_icommand(['ichmod', 'read_object', group_1, data_object])
+
+            # Show that the query results do not change until the query includes a permission-related column.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of two rows since there exists two permissions on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 2)
+
+            # Show that by adding the rodsuser to the group, the permission count increases to three.
+            # This is because GenQuery2 expands group permissions.
+            self.admin.assert_icommand(['iadmin', 'atg', group_1, self.user.username])
+
+            # Remember, unless the query contains a permission-related column, the results will not
+            # expand the permissions associated with each entry.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of three rows since there exists three permissions on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 3)
+
+            # Grant the second group permission to read the data object. Make the rodsuser a member of the
+            # group. This will increase the number of rows by two (3 -> 5).
+            self.user.assert_icommand(['ichmod', 'read_object', group_2, data_object])
+            self.admin.assert_icommand(['iadmin', 'atg', group_2, self.user.username])
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 5)
+
+            # Create a new storage resource and replicate the replica to it.
+            lib.create_ufs_resource(self.admin, resource)
+            self.user.assert_icommand(['irepl', '-R', resource, data_object])
+
+            # The result should be two, representing the total number of replicas.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # With the DISTINCT keyword, we get the total number of data objects.
+            query_string = f"select count(distinct DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of ten rows (5 permissions x 2 replicas).
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 10)
+
+            with self.subTest('test requesting permissions for collections and data objects within the same query'):
+                # Create a third group and grant it permissions on the rodsuser's collection.
+                self.admin.assert_icommand(['iadmin', 'mkgroup', group_3])
+                self.user.assert_icommand(['ichmod', 'read_object', group_3, self.user.session_collection])
+
+                # The number of rows doubles because there are two permissions at play on the collection. One
+                # for the rodsuser and another for the group we just created.
+                query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME, COLL_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertEqual(len(json.loads(out)), 20)
+
+                # The number of rows triples due to there being three permissions on the collection. Remember,
+                # we are adding the rodsuser to the new group, which is expanded by GenQuery2 when the correct
+                # permission columns are included in the query.
+                self.admin.assert_icommand(['iadmin', 'atg', group_3, self.user.username])
+                query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME, COLL_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertEqual(len(json.loads(out)), 30)
+
+                # These lines exist to show that GenQuery2 can handle queries involving both collection and
+                # data object permissions. The total row count of 6 comes from there being 4 permissions
+                # associated with the data object and 2 permissions associated with the collection holding
+                # the data object.
+                query_string = f"select distinct DATA_NAME, DATA_ACCESS_USER_NAME, COLL_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+                self.assertEqual(len(json.loads(out)), 6)
+
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_1])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_2])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_3])
+
+    def test_genquery2_expands_permissions_when_rodsadmin_includes_permission_columns__issue_8880(self):
+        data_object = 'issue_8880_data_object_expanded_perms_rodsadmin.txt'
+        resource = 'issue_8880_ufs_expanded_perms_rodsadmin'
+        group_1 = 'issue_8880_group_1_expanded_perms_rodsadmin'
+        group_2 = 'issue_8880_group_2_expanded_perms_rodsadmin'
+
+        try:
+            self.user.assert_icommand(['itouch', data_object])
+
+            # Count the number of data objects accessible by the rodsuser.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be one row since there exists one permission on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 1)
+
+            # Create two groups and grant one of them permission to read the data object.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_1])
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_2])
+            self.user.assert_icommand(['ichmod', 'read_object', group_1, data_object])
+
+            # Show that the query results do not change until the query includes a permission-related column.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of two rows since there exists two permissions on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 2)
+
+            # Show that by adding the rodsuser to the group, the permission count increases to three.
+            # This is because GenQuery2 expands group permissions.
+            self.admin.assert_icommand(['iadmin', 'atg', group_1, self.user.username])
+
+            # Remember, unless the query contains a permission-related column, the results will not
+            # expand the permissions associated with each entry.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of three rows since there exists three permissions on the data object.
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 3)
+
+            # Grant the second group permission to read the data object. Make the rodsuser a member of the
+            # group. This will increase the number of rows by two (3 -> 5).
+            self.user.assert_icommand(['ichmod', 'read_object', group_2, data_object])
+            self.admin.assert_icommand(['iadmin', 'atg', group_2, self.user.username])
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 5)
+
+            # Create a new storage resource and replicate the replica to it.
+            lib.create_ufs_resource(self.admin, resource)
+            self.user.assert_icommand(['irepl', '-R', resource, data_object])
+
+            # The result should be two, representing the total number of replicas.
+            query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['2']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # With the DISTINCT keyword, we get the total number of data objects.
+            query_string = f"select count(distinct DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
+            json_string = json.dumps([['1']], separators=(',', ':'))
+            self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+            # There should be a total of ten rows (5 permissions x 2 replicas).
+            query_string = f"select DATA_NAME, DATA_ACCESS_USER_NAME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT')
+            self.assertEqual(len(json.loads(out)), 10)
+
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_1])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group_2])
+
+    def test_genquery2_sums_up_data_size_correctly_when_targeting_good_replicas__issue_8880(self):
+        data_objects = ['f0', 'f1', 'f2']
+        data_object_content = ['A' * 10, 'B' * 20, 'C' * 30]
+        ufs_resc_0 = 'issue_8880_ufs0_for_sum'
+        ufs_resc_1 = 'issue_8880_ufs1_for_sum'
+
+        try:
+            lib.create_ufs_resource(self.admin, ufs_resc_0)
+            lib.create_ufs_resource(self.admin, ufs_resc_1)
+
+            # Create data objects of various sizes.
+            for i, data_object in enumerate(data_objects):
+                self.user.assert_icommand(['istream', 'write', data_object], input=data_object_content[i])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Show that GenQuery2 can sum up the data size without any problems.
+            # Notice we do not need to use the DISTINCT keyword here because each data object has
+            # one replica in existence.
+            query_string = "select sum(DATA_SIZE) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['60']])])
+
+            # Replicate the data to the other resources.
+            for data_object in data_objects:
+                self.user.assert_icommand(['irepl', '-R', ufs_resc_0, data_object])
+                self.user.assert_icommand(['irepl', '-R', ufs_resc_1, data_object])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Without using the DISTINCT keyword, the sum should be 60 bytes * 3 replicas (180 bytes).
+            query_string = "select sum(DATA_SIZE) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([[str(60 * 3)]])])
+            # With the DISTINCT keyword, the sum should be 60 bytes just like when there was only one
+            # replica per data object.
+            query_string = "select sum(distinct DATA_SIZE) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['60']])])
+
+            # Now, make one replica of the first data object stale.
+            path = f'{self.user.session_collection}/{data_objects[0]}'
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', path, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+
+            # Next, make all replicas of the second data object stale.
+            path = f'{self.user.session_collection}/{data_objects[1]}'
+            for i in range(3):
+                self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', path, 'replica_number', str(i), 'DATA_REPL_STATUS', '0'])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Without using the DISTINCT keyword, the sum should be 110 bytes.
+            query_string = "select sum(DATA_SIZE) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([[str(40 * 3 - 10)]])])
+            # With the DISTINCT keyword, the sum should be 40 bytes because each replica of a data
+            # object is identical in size and the use of DISTINCT removes duplicate data sizes.
+            query_string = "select sum(distinct DATA_SIZE) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['40']])])
+
+        finally:
+            for data_object in data_objects:
+                self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_0])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_1])
+
+    def test_genquery2_counts_data_objects_correctly_when_targeting_good_replicas__issue_8880(self):
+        data_objects = ['f0', 'f1', 'f2']
+        ufs_resc_0 = 'issue_8880_ufs0_for_count'
+        ufs_resc_1 = 'issue_8880_ufs1_for_count'
+
+        try:
+            lib.create_ufs_resource(self.admin, ufs_resc_0)
+            lib.create_ufs_resource(self.admin, ufs_resc_1)
+
+            # Create some data objects.
+            for data_object in data_objects:
+                self.user.assert_icommand(['itouch', data_object])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Show that GenQuery2 can count without any problems.
+            query_string = "select count(DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['3']])])
+            # Now, use the DISTINCT keyword. There shouldn't be any difference in the count since we
+            # have 3 data objects, each with a single replica.
+            query_string = "select count(distinct DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['3']])])
+
+            # Replicate the data to the other resources.
+            for data_object in data_objects:
+                self.user.assert_icommand(['irepl', '-R', ufs_resc_0, data_object])
+                self.user.assert_icommand(['irepl', '-R', ufs_resc_1, data_object])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Without using the DISTINCT keyword, the count should be 3 data objects * 3 replicas (9 rows).
+            query_string = "select count(DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['9']])])
+            # With the DISTINCT keyword, the count should be 3 just like when there was only one replica
+            # per data object.
+            query_string = "select count(distinct DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['3']])])
+
+            # Now, make one replica of the first data object stale.
+            path = f'{self.user.session_collection}/{data_objects[0]}'
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', path, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+
+            # Next, make all replicas of the second data object stale.
+            path = f'{self.user.session_collection}/{data_objects[1]}'
+            for i in range(3):
+                self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', path, 'replica_number', str(i), 'DATA_REPL_STATUS', '0'])
+            self.user.assert_icommand(['ils', '-l'], 'STDOUT') # Debugging.
+
+            # Without using the DISTINCT keyword, the count should be 5 replicas.
+            query_string = "select count(DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['5']])])
+            # With the DISTINCT keyword, the count should be 2 data objects.
+            query_string = "select count(distinct DATA_ID) where DATA_REPL_STATUS = '1'"
+            self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json.dumps([['2']])])
+
+        finally:
+            for data_object in data_objects:
+                self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_0])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_1])
