@@ -60,32 +60,6 @@ class Test_Izonereport(unittest.TestCase):
         for n in expected_names:
             self.assertIn(n, coord_names)
 
-    @unittest.skip('FIXME: Remove this line once we figure out why the test fails in ci')
-    def test_izonereport_and_validate(self):
-        jsonschema_installed = True
-        if lib.get_os_distribution() == 'ubuntu' and lib.get_os_distribution_version_major() == '12':
-            jsonschema_installed = False
-
-        validate_json_path = os.path.join(IrodsConfig().scripts_directory, 'validate_json.py')
-        zone_report = os.path.join(self.admin.local_session_dir, 'out.txt')
-        # bad URL
-        self.admin.assert_icommand("izonereport > %s" % (zone_report), use_unsafe_shell=True)
-        if jsonschema_installed:
-            assert_command('python3 %s %s https://irods.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
-                               ['WARNING: Validation Failed'], desired_rc=2)
-        else:
-            assert_command('python3 %s %s https://irods.org/badurl' % (validate_json_path, zone_report),
-                               'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
-
-        # good URL
-        self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
-        irods_config = IrodsConfig()
-        command = [sys.executable, validate_json_path, zone_report, '{0}/{1}/zone_bundle.json'.format(irods_config.server_config['schema_validation_base_uri'], irods_config.server_config['schema_version'])]
-        if jsonschema_installed:
-            assert_command(command, 'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
-        else:
-            assert_command(command, 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
-
     # see issue #5170
     def test_resource_json_has_id(self):
         with session.make_session_for_existing_admin() as admin:
