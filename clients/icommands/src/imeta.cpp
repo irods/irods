@@ -12,6 +12,7 @@
 
 #include "utility.hpp"
 
+#include <fmt/core.h>
 #include <fmt/format.h>
 
 #include <cstdio>
@@ -289,7 +290,6 @@ int showColl(char* name, char* attrName)
     int i2a[10];
     char *condVal[10];
 
-    char fullName[MAX_NAME_LEN];
     /* Fourth 'time set' column is only used in longMode */
     char *columnNames[] = { "attribute", "value", "units", "time set" };
 
@@ -321,31 +321,25 @@ int showColl(char* name, char* attrName)
         genQueryInp.selectInp.len = 4;
     }
 
-
-    strncpy( fullName, cwd, MAX_NAME_LEN );
+    std::string coll_name = cwd;
     if ( strlen( name ) > 0 ) {
         if ( *name == '/' ) {
-            strncpy( fullName, name, MAX_NAME_LEN );
+            coll_name = name;
         }
         else {
-            rstrcat( fullName, "/", MAX_NAME_LEN );
-            rstrcat( fullName, name, MAX_NAME_LEN );
+            coll_name += '/';
+            coll_name += name;
         }
     }
 
-    // JMC cppcheck - dangerous use of strcpy : need a explicit null term
-    // NOTE :: adding len of name + 1 for added / + len of cwd + 1 for null term
-    if ( ( strlen( name ) + 1 + strlen( cwd ) + 1 ) < LONG_NAME_LEN ) {
-        fullName[ strlen( name ) + 1 + strlen( cwd ) + 1 ] = '\0';
-    }
-    else {
-        rodsLog( LOG_ERROR, "showColl :: error - fullName could not be explicitly null terminated" );
+    if (coll_name.size() >= MAX_NAME_LEN) {
+        fmt::print(stderr, "Error: Path length [{}] exceeds max length [{}].\n", coll_name.size(), MAX_NAME_LEN);
     }
 
     i2a[0] = COL_COLL_NAME;
     std::string v1;
     v1 =  "='";
-    v1 += fullName;
+    v1 += coll_name;
     v1 += "'";
 
     condVal[0] = const_cast<char*>( v1.c_str() );
