@@ -449,3 +449,31 @@ class Test_ImetaCp(session.make_sessions_mixin([('otherrods', 'rods')], []), uni
 
             finally:
                 self.admin.run_icommand(['irm', '-rf', src_object, dst_object])
+
+
+class Test_ImetaLs(session.make_sessions_mixin([], [('alice', 'apass')]), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_ImetaLs, self).setUp()
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        super(Test_ImetaLs, self).tearDown()
+
+    def test_listing_metadata_on_a_collection_path_exceeding_256_bytes_does_not_result_in_a_null_termination_error__issue_8519(self):
+        # Create a collection with a very long logical path.
+        # imeta resolves the relative path against the current working collection, resulting in an absolute
+        # logical path exceeding LONG_NAME_LEN (256 bytes).
+        path_element = 'aPathThatIsLongerThan256CharactersDueToVariousComponentsBeingLong'
+        collection = f'{path_element}/{path_element}/{path_element}/{path_element}'
+        self.user.assert_icommand(['imkdir', '-p', collection])
+
+        # Add some metadata to the collection.
+        attr_name = 'issue_8519_NAME'
+        attr_value = 'issue_8519_VALUE'
+        self.user.assert_icommand(['imeta', 'add', '-C', collection, attr_name, attr_value])
+
+        # Try to list the metadata. This should not produce any error messages.
+        ec, _, err = self.user.assert_icommand(['imeta', 'ls', '-C', collection], 'STDOUT', [f'attribute: {attr_name}\n', f'value: {attr_value}'])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
