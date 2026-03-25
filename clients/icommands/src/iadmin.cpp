@@ -989,10 +989,12 @@ auto show_logical_quotas(const char* _coll_name = nullptr) -> int
     getLogicalQuotaInp_t getLogicalQuotaInp;
     memset(&getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t));
     getLogicalQuotaInp.collName = const_cast<char*>(_coll_name);
-    logicalQuotaList_t* logicalQuotaList;
+    logicalQuotaList_t* logicalQuotaList = nullptr;
 
     irods::at_scope_exit free_output{[&logicalQuotaList] {
-        std::free(logicalQuotaList);
+        if(logicalQuotaList) {
+            std::free(logicalQuotaList);
+        }
     }};
 
     auto status = rcGetLogicalQuota(Conn, &getLogicalQuotaInp, &logicalQuotaList);
@@ -1000,7 +1002,7 @@ auto show_logical_quotas(const char* _coll_name = nullptr) -> int
     if(status) {
         char* sub_error_name{};
         const char* error_name = rodsErrorName(status, &sub_error_name);
-        std::cerr << "rcGetLogicalQuota failed with error " << error_name << " (" << status << ")]" << std::endl;
+        std::cerr << "rcGetLogicalQuota failed with error " << error_name << " [(" << status << ")]" << std::endl;
         printErrorStack(Conn->rError);
         return 1;
     }
