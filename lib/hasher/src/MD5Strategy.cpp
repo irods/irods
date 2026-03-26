@@ -1,14 +1,20 @@
 #include "irods/MD5Strategy.hpp"
 
+#include "irods/checksum.h"
+#include "irods/hash_strategy_utilities.hpp"
 #include "irods/rodsErrorTable.h"
 
+#include <array>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <string_view>
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/md5.h>
 
 #include <fmt/format.h>
 
@@ -59,12 +65,23 @@ namespace irods {
 
     auto MD5Strategy::digest(std::string& messageDigest, boost::any& _context) const -> error
     {
+        return digest(irods::hash::options{}, _context, messageDigest);
+    }
+
+    bool MD5Strategy::isChecksum(const std::string& _chksum) const
+    {
+        return std::string::npos == _chksum.find_first_not_of("0123456789abcdefABCDEF");
+    }
+
+    auto MD5Strategy::digest(const hash::options& _options, boost::any& _context, std::string& _out) const
+        -> irods::error
+    {
         EVP_MD_CTX* context = boost::any_cast<EVP_MD_CTX*>(_context);
 
         // Finally, retrieve the digest value from the context and place it into a buffer. Use the _ex function here
         // so that the digest context is not automatically cleaned up with EVP_MD_CTX_reset.
-        unsigned char buffer[17];
-        if (0 == EVP_DigestFinal_ex(context, buffer, nullptr)) {
+        std::array<unsigned char, MD5_DIGEST_LENGTH> buffer{};
+        if (0 == EVP_DigestFinal_ex(context, buffer.data(), nullptr)) {
             // Free the context here to ensure that no leaks occur. If the caller wants to try again, it needs to start
             // from init() again. Set the input to nullptr to ensure that the memory can no longer be accessed after
             // freeing.
@@ -81,16 +98,11 @@ namespace irods {
         EVP_MD_CTX_free(context);
         _context = nullptr;
 
-        std::stringstream ins;
-        for ( int i = 0; i < 16; ++i ) {
-            ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];
-        }
-        messageDigest = ins.str();
-        return SUCCESS();
-    }
+        return irods::hash::detail::prepare_output_string(*this, _options, buffer, _out);
+    } // MD5Strategy::digest
 
-    bool
-    MD5Strategy::isChecksum( const std::string& _chksum ) const {
-        return std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" );
-    }
-}; //namespace irods
+    auto MD5Strategy::checksum_prefix() const -> std::string_view
+    {
+        return MD5_CHKSUM_PREFIX;
+    } // MD5Strategy::checksum_prefix
+} // namespace irods

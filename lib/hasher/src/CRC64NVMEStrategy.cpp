@@ -3,12 +3,20 @@
 #include "irods/base64.hpp"
 #include "irods/checksum.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/hash_strategy_utilities.hpp"
 
 #include <boost/crc.hpp>
 
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <string_view>
+
+namespace
+{
+    constexpr std::uint8_t CRC64NVME_CHECKSUM_LEN = 8;
+} // namespace
 
 namespace irods
 {
@@ -71,6 +79,20 @@ namespace irods
 
     auto CRC64NVMEStrategy::digest(std::string& messageDigest, boost::any& _context) const -> error
     {
+        return digest(irods::hash::options{.output_mode = irods::hash::output_mode::base64_encoded_string,
+                                           .include_checksum_prefix = true},
+                      _context,
+                      messageDigest);
+    }
+
+    bool CRC64NVMEStrategy::isChecksum(const std::string& _chksum) const
+    {
+        return _chksum.starts_with(CRC64NVME_CHKSUM_PREFIX);
+    }
+
+    auto CRC64NVMEStrategy::digest(const hash::options& _options, boost::any& _context, std::string& _out) const
+        -> irods::error
+    {
         boost::crc_basic<crc_bits>* context;
         try {
             context = boost::any_cast<boost::crc_basic<crc_bits>*>(_context);
@@ -86,34 +108,22 @@ namespace irods
 
         std::uint64_t checksum = context->checksum();
 
-        // Convert uint64_t to bytes (big-endian for consistency)
-        std::array<unsigned char, 8> bytes;
-        for (std::size_t i = 0; i < bytes.size(); ++i) {
-            bytes[7 - i] = static_cast<unsigned char>((checksum >> (i * 8)) & 0xFF);
-        }
-
-        unsigned long out_len = CHKSUM_LEN - std::strlen(CRC64NVME_CHKSUM_PREFIX);
-
-        std::array<unsigned char, CHKSUM_LEN> out_buffer;
-        int rc = base64_encode(bytes.data(), bytes.size(), out_buffer.data(), &out_len);
-        if (0 != rc) {
-            delete context;
-            _context = nullptr;
-            return ERROR(rc, fmt::format("{}: Failed to base64 encode hash.", __func__));
-        }
-
         // The checksum has been extracted from the context.  The context can be deleted.
         delete context;
         _context = nullptr;
 
-        messageDigest = CRC64NVME_CHKSUM_PREFIX;
-        messageDigest += std::string(reinterpret_cast<char*>(out_buffer.data()), out_len);
+        // Convert uint64_t to bytes (big-endian for consistency)
+        std::array<unsigned char, CRC64NVME_CHECKSUM_LEN> bytes{};
+        for (std::size_t i = 0; i < bytes.size(); ++i) {
+            // NOLINTNEXTLINE(hicpp-signed-bitwise, cppcoreguidelines-pro-bounds-constant-array-index)
+            bytes[bytes.size() - 1 - i] = static_cast<unsigned char>((checksum >> (i * bytes.size())) & 0xFF);
+        }
 
-        return SUCCESS();
-    }
+        return irods::hash::detail::prepare_output_string(*this, _options, bytes, _out);
+    } // CRC64NVMEStrategy::digest
 
-    bool CRC64NVMEStrategy::isChecksum(const std::string& _chksum) const
+    auto CRC64NVMEStrategy::checksum_prefix() const -> std::string_view
     {
-        return _chksum.starts_with(CRC64NVME_CHKSUM_PREFIX);
-    }
+        return CRC64NVME_CHKSUM_PREFIX;
+    } // CRC64NVMEStrategy::checksum_prefix
 } // namespace irods

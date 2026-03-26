@@ -1,13 +1,19 @@
 #include "irods/ADLER32Strategy.hpp"
-#include "irods/checksum.h"
-
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstring>
-#include <boost/algorithm/string/predicate.hpp>
 
 #include "irods/base64.hpp"
+#include "irods/checksum.h"
+#include "irods/rodsErrorTable.h"
+
+#include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <string_view>
+
+#include <boost/algorithm/string/predicate.hpp>
+
+static constexpr std::uint32_t ADLER32_DIGEST_LENGTH = 4;
 
 namespace irods {
 
@@ -58,22 +64,39 @@ namespace irods {
 
     error
     ADLER32Strategy::digest( std::string& _messageDigest, boost::any& _context ) const {
+        return digest(
+            irods::hash::options{.output_mode = irods::hash::output_mode::hex_string, .include_checksum_prefix = true},
+            _context,
+            _messageDigest);
+    }
 
-        const unsigned int ADLER32_DIGEST_LENGTH = 4;
+    bool ADLER32Strategy::isChecksum(const std::string& _chksum) const
+    {
+        return _chksum.starts_with(ADLER32_CHKSUM_PREFIX);
+    }
 
-        uint32_t result = adler32_final(boost::any_cast<adler32_parts>(_context));
+    auto ADLER32Strategy::digest(const hash::options& _options, boost::any& _context, std::string& _out) const
+        -> irods::error
+    {
+        if (irods::hash::output_mode::hex_string != _options.output_mode) {
+            return ERROR(SYS_NOT_IMPLEMENTED, "Only hex string output is supported for this strategy.");
+        }
+
+        const std::uint32_t result = adler32_final(boost::any_cast<adler32_parts>(_context));
 
         std::stringstream ss;
+        if (_options.include_checksum_prefix) {
+            ss << checksum_prefix();
+        }
         ss << std::setfill('0') << std::hex << std::setw(ADLER32_DIGEST_LENGTH * 2) << result;
 
-        _messageDigest = ADLER32_CHKSUM_PREFIX;
-        _messageDigest += ss.str();
+        _out += ss.str();
 
         return SUCCESS();
-    }
+    } // ADLER32Strategy::digest
 
-    bool
-    ADLER32Strategy::isChecksum( const std::string& _chksum ) const {
-        return boost::starts_with( _chksum, ADLER32_CHKSUM_PREFIX );
-    }
+    auto ADLER32Strategy::checksum_prefix() const -> std::string_view
+    {
+        return ADLER32_CHKSUM_PREFIX;
+    } // ADLER32Strategy::checksum_prefix
 }; // namespace irods
