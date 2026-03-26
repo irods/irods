@@ -767,3 +767,89 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     /* Done */
     return status;
 }
+
+/**
+ * \fn msiSetLogicalQuota(msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
+ *
+ * \brief Sets disk usage/object count quota for a collection
+ *
+ * \module core
+ *
+ * \since 5.1.0
+ *
+ *
+ *
+ * \note  This microservice sets a disk usage/object count quota for a collection.
+ *
+ * \usage See clients/icommands/test/rules/
+ *
+ * \param[in] _coll_name - a STR_MS_T - A valid collection to apply the quota to
+ * \param[in] _bytes_value - a STR_MS_T that sets the byte limit for the collection, OR "bytes" OR "objects"
+ * \param[in] _objects_value - a STR_MS_T that sets the object count limit for the collection, OR
+ *      If _bytes_value is "bytes", this will specify the byte count limit.
+ *      If _bytes_value is "objects", this will specify the object count limit.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence rei->uoic->authInfo.authFlag must be >= 5 (local admin)
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified Updates/inserts into R_LOGICAL_QUOTA_MAIN
+ * \sideeffect None
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
+ **/
+
+int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
+{
+    int status;
+    bool objects_value_is_int;
+    std::string bytes_value, objects_value;
+    char *parsed_coll_name, *parsed_bytes_value, *parsed_objects_value;
+    char negative_one[3] = "-1";
+
+    // Null checks
+    // Every calling mode requires all arguments filled
+    if ( rei == NULL || rei->rsComm == NULL || _coll_name == NULL || _bytes_value == NULL || _objects_value == NULL) {
+        log_re::error("{}: Received one or more null pointers as input.", __func__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+
+    // Admin check
+    if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        log_re::error("{}: User {} is not local admin.", __func__, rei->uoic->userName);
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    }
+
+    // Parse collection name
+    if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == NULL ) {
+        log_re::error("{}: Null or non-string collection name specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    if ( ( parsed_bytes_value = parseMspForStr( _bytes_value ) ) == NULL ) {
+        log_re::error("{}: Null or non-string byte value specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    if ( ( parsed_objects_value = parseMspForStr( _objects_value ) ) == NULL ) {
+        log_re::error("{}: Null or non-string object value specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    if(!strcmp(parsed_bytes_value, "bytes")) {
+        // When setting "bytes" only, final argument is value
+        parsed_bytes_value = parsed_objects_value;
+        parsed_objects_value = &negative_one[0];
+    }
+    else if(!strcmp(parsed_bytes_value, "objects")) {
+        parsed_bytes_value = &negative_one[0];
+    }
+    return chl_set_logical_quota(rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
+}

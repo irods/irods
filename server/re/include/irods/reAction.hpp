@@ -52,6 +52,7 @@ int msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *coperator, msPar
 int msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei );
 
 int msiQuota( ruleExecInfo_t *rei );
+int msiLogicalQuota( ruleExecInfo_t *rei );
 int msiDeleteUnusedAVUs( ruleExecInfo_t *rei );
 int msiGoodFailure( ruleExecInfo_t *rei );
 int msiCheckPermission( msParam_t *perm, ruleExecInfo_t *rei );
@@ -95,6 +96,7 @@ int msiRenameCollection( msParam_t *oldName, msParam_t *newName,
 int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei);
 int msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource,
                  msParam_t *value, ruleExecInfo_t *rei );
+int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei);
 int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* objParam,
                                    msParam_t* typeParam,
@@ -135,6 +137,7 @@ namespace irods
         table_[ "print_hello" ] = new irods::ms_table_entry( "print_hello", 0, std::function<int(ruleExecInfo_t*)>( print_hello ) );
         table_[ "print_hello_arg" ] = new irods::ms_table_entry( "print_hello_arg", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( print_hello_arg ) );
         table_[ "msiQuota" ] = new irods::ms_table_entry( "msiQuota", 0, std::function<int(ruleExecInfo_t*)>( msiQuota ) );
+        table_[ "msiLogicalQuota" ] = new irods::ms_table_entry( "msiQuota", 0, std::function<int(ruleExecInfo_t*)>( msiLogicalQuota ) );
         table_[ "msiDeleteUnusedAVUs" ] = new irods::ms_table_entry( "msiDeleteUnusedAVUs", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUnusedAVUs ) );
         table_[ "msiGoodFailure" ] = new irods::ms_table_entry( "msiGoodFailure", 0, std::function<int(ruleExecInfo_t*)>( msiGoodFailure ) );
         table_[ "msiCheckPermission" ] = new irods::ms_table_entry( "msiCheckPermission", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(  msiCheckPermission ) );
@@ -235,6 +238,7 @@ namespace irods
         table_[ "msiRenameCollection" ] = new irods::ms_table_entry( "msiRenameCollection", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRenameCollection ) );
         table_[ "msiRenameLocalZoneCollection" ] = new irods::ms_table_entry( "msiRenameLocalZoneCollection", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>( msiRenameLocalZoneCollection ) );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
+        table_[ "msiSetLogicalQuota" ] = new irods::ms_table_entry( "msiSetLogicalQuota", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetLogicalQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
         table_[ "msiModAVUMetadata" ] = new irods::ms_table_entry( "msiModAVUMetadata", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiModAVUMetadata ) );
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );

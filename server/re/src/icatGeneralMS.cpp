@@ -113,6 +113,53 @@ msiQuota( ruleExecInfo_t *rei ) {
 }
 
 /**
+ * \fn msiLogicalQuota (ruleExecInfo_t *rei)
+ *
+ * \brief  Calculates storage usage and sets quota values (over/under/how-much).
+ *
+ * \module core
+ *
+ * \since 5.1.0
+ *
+ *
+ * \note Causes the iCAT logical quota table to be updated.
+ *
+ * \note This is run via an admin rule
+ *
+ * \usage See clients/icommands/test/rules/ and https://wiki.irods.org/index.php/Quotas
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence Utilizes ICAT data-object information
+ * \iCatAttrModified Updates the logical quota table
+ * \sideeffect none
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+**/
+int
+msiLogicalQuota( ruleExecInfo_t *rei ) {
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    }
+
+    return chl_calc_logical_usage_and_quota(rei->rsComm);
+}
+
+/**
  * \fn msiCheckOwner (ruleExecInfo_t *rei)
  *
  * \brief   This microservice checks whether the user is the owner
