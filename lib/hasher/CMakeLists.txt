@@ -9,6 +9,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/CRC64NVMEStrategy.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/checksum.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_hasher_factory.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/hash_strategy_utilities.cpp"
 )
 
 set(
@@ -17,6 +18,8 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/Hasher.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/checksum.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_hasher_factory.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/hash_strategy_utilities.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/hash_types.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ADLER32Strategy.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/MD5Strategy.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA1Strategy.hpp"

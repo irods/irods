@@ -3,11 +3,15 @@
 #include "irods/base64.hpp"
 #include "irods/checksum.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/hash_strategy_utilities.hpp"
 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
+#include <array>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <string_view>
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -64,12 +68,26 @@ namespace irods {
 
     error SHA512Strategy::digest(std::string& _messageDigest, boost::any& _context) const
     {
+        return digest(irods::hash::options{.output_mode = irods::hash::output_mode::base64_encoded_string,
+                                           .include_checksum_prefix = true},
+                      _context,
+                      _messageDigest);
+    }
+
+    bool SHA512Strategy::isChecksum(const std::string& _chksum) const
+    {
+        return _chksum.starts_with(SHA512_CHKSUM_PREFIX);
+    }
+
+    auto SHA512Strategy::digest(const hash::options& _options, boost::any& _context, std::string& _out) const
+        -> irods::error
+    {
         EVP_MD_CTX* context = boost::any_cast<EVP_MD_CTX*>(_context);
 
         // Finally, retrieve the digest value from the context and place it into final_buffer. Use the _ex function here
         // so that the digest context is not automatically cleaned up with EVP_MD_CTX_reset.
-        unsigned char final_buffer[SHA512_DIGEST_LENGTH];
-        if (0 == EVP_DigestFinal_ex(context, final_buffer, nullptr)) {
+        std::array<unsigned char, SHA512_DIGEST_LENGTH> final_buffer{};
+        if (0 == EVP_DigestFinal_ex(context, final_buffer.data(), nullptr)) {
             // Free the context here to ensure that no leaks occur. If the caller wants to try again, it needs to start
             // from init() again. Set the input to nullptr to ensure that the memory can no longer be accessed after
             // freeing.
@@ -86,24 +104,11 @@ namespace irods {
         EVP_MD_CTX_free(context);
         _context = nullptr;
 
-        int len = strlen( SHA512_CHKSUM_PREFIX );
-        unsigned long out_len = LONG_CHKSUM_LEN - len;
+        return irods::hash::detail::prepare_output_string(*this, _options, final_buffer, _out);
+    } // SHA512Strategy::digest
 
-        unsigned char out_buffer[LONG_CHKSUM_LEN];
-        int rc = base64_encode(final_buffer, SHA512_DIGEST_LENGTH, out_buffer, &out_len);
-        if (0 != rc) {
-            auto msg = fmt::format("{}: Failed to base64 encode hash.", __func__);
-            return ERROR(rc, std::move(msg));
-        }
-
-        _messageDigest = SHA512_CHKSUM_PREFIX;
-        _messageDigest += std::string( ( char* )out_buffer, out_len );
-
-        return SUCCESS();
-    }
-
-    bool
-    SHA512Strategy::isChecksum( const std::string& _chksum ) const {
-        return boost::starts_with( _chksum, SHA512_CHKSUM_PREFIX );
-    }
+    auto SHA512Strategy::checksum_prefix() const -> std::string_view
+    {
+        return SHA512_CHKSUM_PREFIX;
+    } // SHA512Strategy::checksum_prefix
 }; // namespace irods

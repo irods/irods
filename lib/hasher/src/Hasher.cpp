@@ -6,6 +6,7 @@
 
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_stacktrace.hpp"
+#include "irods/HashStrategy.hpp"
 
 namespace irods {
 
@@ -44,4 +45,15 @@ namespace irods {
         return PASS( _stored_error );
     }
 
-}; //namespace irods
+    auto Hasher::digest(const irods::hash::options& _options, std::string& _out) -> irods::error
+    {
+        if (nullptr == _strategy) {
+            return ERROR(SYS_UNINITIALIZED, "Digest called on a hasher that has not been initialized.");
+        }
+        if (_stored_digest.empty()) {
+            _stored_error = _strategy->digest(_options, _context, _stored_digest);
+        }
+        _out = _stored_digest;
+        return PASS(_stored_error);
+    } // Hasher::digest
+} // namespace irods
