@@ -843,6 +843,15 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
         return USER_PARAM_TYPE_ERR;
     }
 
+    rodsLong_t nonnegative_checker;
+    if (const auto [ptr, ec] = std::from_chars(parsed_objects_value, parsed_objects_value + std::strlen(parsed_objects_value), nonnegative_checker); ec != std::errc{}) {
+        log_re::error("{}: Failed to parse parsed_objects_value=[{}] as integer", __func__, parsed_objects_value);
+    }
+    if(nonnegative_checker < 0) {
+        log_re::error("{}: _objects_value must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
+        return USER_INPUT_FORMAT_ERR;
+    }
+
     if(!strcmp(parsed_bytes_value, "bytes")) {
         // When setting "bytes" only, final argument is value
         parsed_bytes_value = parsed_objects_value;
@@ -850,6 +859,15 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
     }
     else if(!strcmp(parsed_bytes_value, "objects")) {
         parsed_bytes_value = &negative_one[0];
+    } else {
+        if (const auto [ptr, ec] = std::from_chars(parsed_bytes_value, parsed_bytes_value + std::strlen(parsed_bytes_value), nonnegative_checker); ec != std::errc{}) {
+            log_re::error("{}: Failed to parse parsed_bytes_value=[{}] as integer", __func__, parsed_bytes_value);
+        }
+        if(nonnegative_checker < 0) {
+            log_re::error("{}: _bytes_value must be nonnegative when integer. Received: [{}]", __func__, nonnegative_checker);
+            return USER_INPUT_FORMAT_ERR;
+        }
     }
+
     return chl_set_logical_quota(rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
 }

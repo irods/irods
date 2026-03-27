@@ -1496,6 +1496,17 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
     }
 
     if ( strcmp( generalAdminInp->arg0, "set_logical_quota" ) == 0 ) {
+
+        rodsLong_t nonnegative_checker;
+        // Only allow negative values internally-- error out if encountered here
+        if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg3, generalAdminInp->arg3 + std::strlen(generalAdminInp->arg3), nonnegative_checker); ec != std::errc{}) {
+           log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg3);
+        }
+        if(nonnegative_checker < 0) {
+           log_api::error("{}: set_logical_quota: Third argument must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
+            return USER_INPUT_FORMAT_ERR;
+        }
+
         if(strcmp(generalAdminInp->arg2, "bytes") == 0) {
         status = chl_set_logical_quota(rsComm,
                                           generalAdminInp->arg1,
@@ -1508,6 +1519,15 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                                           "-1",
                                           generalAdminInp->arg3);
         } else {
+        // arg2 should also be nonnegative in this branch
+        if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg2, generalAdminInp->arg2 + std::strlen(generalAdminInp->arg2), nonnegative_checker); ec != std::errc{}) {
+           log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg2);
+        }
+        if(nonnegative_checker < 0) {
+           log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer specified. Received: [{}]", __func__, nonnegative_checker);
+            return USER_INPUT_FORMAT_ERR;
+        }
+
         status = chl_set_logical_quota(rsComm,
                                           generalAdminInp->arg1,
                                           generalAdminInp->arg2,
