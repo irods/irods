@@ -1447,25 +1447,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
 
-    if ( strcmp( cmdToken[0], "slq" ) == 0 ) {
-        if(!strlen(cmdToken[1])) {
-            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
-        }
-
-        if(!strlen(cmdToken[2])) {
-            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
-        }
-
-        if(!strlen(cmdToken[3])) {
-            fprintf( stderr, "Usage:\n\tiadmin slq <collname> <maxbytes> <maxobjects>\n\tiadmin slq <collname> bytes <value>\n\tiadmin slq <collname> objects <value>" );
-        }
-
-        generalAdmin( 0, "set_logical_quota",
-                      cmdToken[1], cmdToken[2], cmdToken[3],
-                      "", "", "", "", "", "" );
-        return 0;
-    }
-
     if ( strcmp( cmdToken[0], "llq" ) == 0 ) {
         return show_logical_quotas(cmdToken[1]);
     }

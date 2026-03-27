@@ -137,7 +137,7 @@ namespace irods
         table_[ "print_hello" ] = new irods::ms_table_entry( "print_hello", 0, std::function<int(ruleExecInfo_t*)>( print_hello ) );
         table_[ "print_hello_arg" ] = new irods::ms_table_entry( "print_hello_arg", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( print_hello_arg ) );
         table_[ "msiQuota" ] = new irods::ms_table_entry( "msiQuota", 0, std::function<int(ruleExecInfo_t*)>( msiQuota ) );
-        table_[ "msiLogicalQuota" ] = new irods::ms_table_entry( "msiQuota", 0, std::function<int(ruleExecInfo_t*)>( msiLogicalQuota ) );
+        table_[ "msiLogicalQuota" ] = new irods::ms_table_entry( "msiLogicalQuota", 0, std::function<int(ruleExecInfo_t*)>( msiLogicalQuota ) );
         table_[ "msiDeleteUnusedAVUs" ] = new irods::ms_table_entry( "msiDeleteUnusedAVUs", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUnusedAVUs ) );
         table_[ "msiGoodFailure" ] = new irods::ms_table_entry( "msiGoodFailure", 0, std::function<int(ruleExecInfo_t*)>( msiGoodFailure ) );
         table_[ "msiCheckPermission" ] = new irods::ms_table_entry( "msiCheckPermission", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(  msiCheckPermission ) );

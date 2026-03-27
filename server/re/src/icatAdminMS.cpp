@@ -771,7 +771,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
 /**
  * \fn msiSetLogicalQuota(msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
  *
- * \brief Sets disk usage/object count quota for a collection
+ * \brief Sets byte/object count quota for a collection
  *
  * \module core
  *
@@ -779,7 +779,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
  *
  *
  *
- * \note  This microservice sets a disk usage/object count quota for a collection.
+ * \note  This microservice sets a byte/object count quota for a collection.
  *
  * \usage See clients/icommands/test/rules/
  *

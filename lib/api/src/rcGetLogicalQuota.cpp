@@ -3,9 +3,9 @@
 #include "irods/procApiRequest.h"
 
 /**
- * \fn rcGetRescQuota( rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp, rescQuota_t **rescQuota )
+ * \fn rcGetLogicalQuota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList )
  *
- * \brief Get the quota for a resource.
+ * \brief Gets the logical quota(s) that apply to a collection.
  *
  * \user client
  *
@@ -13,14 +13,13 @@
  *
  * \since 1.0
  *
- *
  * \remark none
  *
- * \note none
+ * \note The input structure may contain a null collection name. In that case, if the connection is privileged (i.e. an admin) every logical quota will be fetched.
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] getRescQuotaInp
- * \param[out] rescQuota - the quota
+ * \param[in] getLogicalQuotaInp
+ * \param[out] logicalQuotaList - the list of applicable quotas
  *
  * \return integer
  * \retval 0 on success
