@@ -1992,6 +1992,24 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
 
+    def test_modresc_can_clear_context_string__issue_8900(self):
+        resc_name = 'issue_8900_repl_resc'
+
+        try:
+            resc_context = 'issue_8900_was_here=yes'
+            lib.create_replication_resource(self.admin, resc_name)
+
+            # Set the context string to a non-empty string.
+            self.admin.assert_icommand(['iadmin', 'modresc', resc_name, 'context', resc_context])
+            self.admin.assert_icommand(['ilsresc', '-l', resc_name], 'STDOUT', [f'\ncontext: {resc_context}\nparent:'])
+
+            # Show that "iadmin modresc" can set the context string to an empty string.
+            self.admin.assert_icommand(['iadmin', 'modresc', resc_name, 'context', ''])
+            self.admin.assert_icommand(['ilsresc', '-l', resc_name], 'STDOUT', [f'\ncontext: \nparent:'])
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
 class Test_Iadmin_Queries(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
