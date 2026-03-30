@@ -7874,9 +7874,21 @@ irods::error db_mod_resc_op(
             _rollback( "chlModResc" );
             return ERROR( status, "failed to update comment" );
         }
-
         OK = 1;
-
+    }
+    else if (strcmp(_option, "context") == 0) {
+        cllBindVars[cllBindVarCount++] = _option_value;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
+        cllBindVars[cllBindVarCount++] = rescId;
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_context=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
+        if (status != 0) {
+            log_db::info("chlModResc cmlExecuteNoAnswerSql update failure for resc context {}", status);
+            _rollback("chlModResc");
+            return ERROR(status, "failed to set context");
+        }
+        OK = 1;
     }
     else if ( *_option_value == '\0' ) {
         return ERROR(
@@ -8133,21 +8145,6 @@ irods::error db_mod_resc_op(
         OK = 1;
 
     } // if name
-
-    if ( strcmp( _option, "context" ) == 0 ) {
-        cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
-        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
-        cllBindVars[cllBindVarCount++] = rescId;
-        status = cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_context=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
-        if ( status != 0 ) {
-            log_db::info("chlModResc cmlExecuteNoAnswerSql update failure for resc context {}", status);
-            _rollback( "chlModResc" );
-            return ERROR( status, "failed to set context" );
-        }
-        OK = 1;
-    }
 
     if ( OK == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "invalid option" );
