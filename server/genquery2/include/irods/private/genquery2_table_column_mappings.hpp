@@ -111,6 +111,8 @@ namespace irods::experimental::genquery2
         {"META_DATA_ATTR_ID", {"R_META_MAIN", "meta_id"}},
         {"META_DATA_CREATE_TIME", {"R_META_MAIN", "create_ts"}},
         {"META_DATA_MODIFY_TIME", {"R_META_MAIN", "modify_ts"}},
+        {"META_DATA_ATTACHED_CREATE_TIME", {"R_OBJT_METAMAP", "create_ts"}},
+        {"META_DATA_ATTACHED_MODIFY_TIME", {"R_OBJT_METAMAP", "modify_ts"}},
 
         {"META_COLL_ATTR_NAME", {"R_META_MAIN", "meta_attr_name"}},
         {"META_COLL_ATTR_VALUE", {"R_META_MAIN", "meta_attr_value"}},
@@ -118,6 +120,8 @@ namespace irods::experimental::genquery2
         {"META_COLL_ATTR_ID", {"R_META_MAIN", "meta_id"}},
         {"META_COLL_CREATE_TIME", {"R_META_MAIN", "create_ts"}},
         {"META_COLL_MODIFY_TIME", {"R_META_MAIN", "modify_ts"}},
+        {"META_COLL_ATTACHED_CREATE_TIME", {"R_OBJT_METAMAP", "create_ts"}},
+        {"META_COLL_ATTACHED_MODIFY_TIME", {"R_OBJT_METAMAP", "modify_ts"}},
 
         {"META_RESC_ATTR_NAME", {"R_META_MAIN", "meta_attr_name"}},
         {"META_RESC_ATTR_VALUE", {"R_META_MAIN", "meta_attr_value"}},
@@ -125,6 +129,8 @@ namespace irods::experimental::genquery2
         {"META_RESC_ATTR_ID", {"R_META_MAIN", "meta_id"}},
         {"META_RESC_CREATE_TIME", {"R_META_MAIN", "create_ts"}},
         {"META_RESC_MODIFY_TIME", {"R_META_MAIN", "modify_ts"}},
+        {"META_RESC_ATTACHED_CREATE_TIME", {"R_OBJT_METAMAP", "create_ts"}},
+        {"META_RESC_ATTACHED_MODIFY_TIME", {"R_OBJT_METAMAP", "modify_ts"}},
 
         {"META_USER_ATTR_NAME", {"R_META_MAIN", "meta_attr_name"}},
         {"META_USER_ATTR_VALUE", {"R_META_MAIN", "meta_attr_value"}},
@@ -132,6 +138,8 @@ namespace irods::experimental::genquery2
         {"META_USER_ATTR_ID", {"R_META_MAIN", "meta_id"}},
         {"META_USER_CREATE_TIME", {"R_META_MAIN", "create_ts"}},
         {"META_USER_MODIFY_TIME", {"R_META_MAIN", "modify_ts"}},
+        {"META_USER_ATTACHED_CREATE_TIME", {"R_OBJT_METAMAP", "create_ts"}},
+        {"META_USER_ATTACHED_MODIFY_TIME", {"R_OBJT_METAMAP", "modify_ts"}},
 
         // These columns require a bit of work.
         // How should we handle groups?

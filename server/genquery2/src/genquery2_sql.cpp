@@ -620,6 +620,22 @@ namespace
 
     auto get_special_table_alias_for_column(const std::string_view _column) -> std::optional<std::string_view>
     {
+        if (_column.starts_with("META_DATA_ATTACHED_")) {
+            return "ommd";
+        }
+
+        if (_column.starts_with("META_COLL_ATTACHED_")) {
+            return "ommc";
+        }
+
+        if (_column.starts_with("META_RESC_ATTACHED_")) {
+            return "ommr";
+        }
+
+        if (_column.starts_with("META_USER_ATTACHED_")) {
+            return "ommu";
+        }
+
         if (_column.starts_with("META_D")) {
             return "mmd";
         }
@@ -939,7 +955,23 @@ namespace irods::experimental::genquery2
 
         // The columns that trigger these branches rely on special joins and therefore must use pre-defined
         // table aliases.
-        if (_column.name.starts_with("META_D")) {
+        if (_column.name.starts_with("META_DATA_ATTACHED_")) {
+            add_r_data_main = _state.add_joins_for_meta_data = true;
+            table_alias = "ommd";
+        }
+        else if (_column.name.starts_with("META_COLL_ATTACHED_")) {
+            add_r_coll_main = _state.add_joins_for_meta_coll = true;
+            table_alias = "ommc";
+        }
+        else if (_column.name.starts_with("META_RESC_ATTACHED_")) {
+            add_r_resc_main = _state.add_joins_for_meta_resc = true;
+            table_alias = "ommr";
+        }
+        else if (_column.name.starts_with("META_USER_ATTACHED_")) {
+            add_r_user_main = _state.add_joins_for_meta_user = true;
+            table_alias = "ommu";
+        }
+        else if (_column.name.starts_with("META_D")) {
             add_r_data_main = _state.add_joins_for_meta_data = true;
             table_alias = "mmd";
         }
