@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 
 from .. import lib, test
@@ -939,3 +940,57 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
                 self.user.run_icommand(['irm', '-f', data_object])
             self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_0])
             self.admin.run_icommand(['iadmin', 'rmresc', ufs_resc_1])
+
+    def test_genquery2_exposes_create_ts_and_modify_ts_for_determining_when_metadata_is_attached_to_an_object__issue_7889(self):
+        with self.subTest('Use META_COLL_ATTACHED_CREATE_TIME and META_COLL_ATTACHED_MODIFY_TIME'):
+            attr_n = 'collection_issue_7889_attr_name'
+            attr_v = 'collection_issue_7889_attr_value'
+            attr_u = 'collection_issue_7889_attr_unit'
+
+            self.user.assert_icommand(['imeta', 'add', '-C', self.user.session_collection, attr_n, attr_v, attr_u])
+            query_string = f"select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS, META_COLL_ATTACHED_CREATE_TIME, META_COLL_ATTACHED_MODIFY_TIME where COLL_NAME = '{self.user.session_collection}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT', [attr_n, attr_v, attr_u])
+            self.assertTrue(re.search(r',"\d{11}","\d{11}"]', out))
+
+        with self.subTest('Use META_DATA_ATTACHED_CREATE_TIME and META_DATA_ATTACHED_MODIFY_TIME'):
+            attr_n = 'data_object_issue_7889_attr_name'
+            attr_v = 'data_object_issue_7889_attr_value'
+            attr_u = 'data_object_issue_7889_attr_unit'
+
+            data_object = 'issue_7889_data_object.txt'
+            self.user.assert_icommand(['itouch', data_object])
+            self.user.assert_icommand(['imeta', 'add', '-d', data_object, attr_n, attr_v, attr_u])
+            query_string = f"select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS, META_DATA_ATTACHED_CREATE_TIME, META_DATA_ATTACHED_MODIFY_TIME where DATA_NAME = '{data_object}'"
+            _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT', [attr_n, attr_v, attr_u])
+            self.assertTrue(re.search(r',"\d{11}","\d{11}"]', out))
+
+        with self.subTest('Use META_RESC_ATTACHED_CREATE_TIME and META_RESC_ATTACHED_MODIFY_TIME'):
+            resource = 'issue_7889_ufs_resc'
+            lib.create_ufs_resource(self.admin, resource)
+
+            try:
+                attr_n = 'resource_issue_7889_attr_name'
+                attr_v = 'resource_issue_7889_attr_value'
+                attr_u = 'resource_issue_7889_attr_unit'
+
+                self.admin.assert_icommand(['imeta', 'add', '-R', resource, attr_n, attr_v, attr_u])
+                query_string = f"select META_RESC_ATTR_NAME, META_RESC_ATTR_VALUE, META_RESC_ATTR_UNITS, META_RESC_ATTACHED_CREATE_TIME, META_RESC_ATTACHED_MODIFY_TIME where RESC_NAME = '{resource}'"
+                _, out, _ = self.admin.assert_icommand(['iquery', query_string], 'STDOUT', [attr_n, attr_v, attr_u])
+                self.assertTrue(re.search(r',"\d{11}","\d{11}"]', out))
+
+            finally:
+                self.admin.run_icommand(['iadmin', 'rmresc', resource])
+
+        with self.subTest('Use META_USER_ATTACHED_CREATE_TIME and META_USER_ATTACHED_MODIFY_TIME'):
+            attr_n = 'user_issue_7889_attr_name'
+            attr_v = 'user_issue_7889_attr_value'
+            attr_u = 'user_issue_7889_attr_unit'
+
+            try:
+                self.admin.assert_icommand(['imeta', 'add', '-u', self.user.username, attr_n, attr_v, attr_u])
+                query_string = f"select META_USER_ATTR_NAME, META_USER_ATTR_VALUE, META_USER_ATTR_UNITS, META_USER_ATTACHED_CREATE_TIME, META_USER_ATTACHED_MODIFY_TIME where USER_NAME = '{self.user.username}'"
+                _, out, _ = self.user.assert_icommand(['iquery', query_string], 'STDOUT', [attr_n, attr_v, attr_u])
+                self.assertTrue(re.search(r',"\d{11}","\d{11}"]', out))
+
+            finally:
+                self.admin.assert_icommand(['imeta', 'rm', '-u', self.user.username, attr_n, attr_v, attr_u])
