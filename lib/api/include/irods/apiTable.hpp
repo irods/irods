@@ -87,7 +87,7 @@
 #  include "irods/rsGetMiscSvrInfo.hpp"
 #  include "irods/rsGetRemoteZoneResc.hpp"
 #  include "irods/rsGetRescQuota.hpp"
-#  include "irods/rsGetLogicalQuota.hpp"
+#  include "irods/rs_get_logical_quota.hpp"
 #  include "irods/rsGetTempPassword.hpp"
 #  include "irods/rsGetTempPasswordForOther.hpp"
 #  include "irods/rsIESClientHints.hpp"
@@ -237,7 +237,7 @@
 #define RS_GET_HOST_FOR_PUT                NULLPTR_FOR_CLIENT_TABLE(rsGetHostForPut)
 #define RS_GET_LIBRARY_FEATURES            NULLPTR_FOR_CLIENT_TABLE(rs_get_library_features)
 #define RS_GET_LIMITED_PASSWORD            NULLPTR_FOR_CLIENT_TABLE(rsGetLimitedPassword)
-#define RS_GET_LOGICAL_QUOTA               NULLPTR_FOR_CLIENT_TABLE(rsGetLogicalQuota)
+#define RS_GET_LOGICAL_QUOTA               NULLPTR_FOR_CLIENT_TABLE(rs_get_logical_quota)
 #define RS_GET_MISC_SVR_INFO               NULLPTR_FOR_CLIENT_TABLE(rsGetMiscSvrInfo)
 #define RS_GET_REMOTE_ZONE_RESC            NULLPTR_FOR_CLIENT_TABLE(rsGetRemoteZoneResc)
 #define RS_GET_RESC_QUOTA                  NULLPTR_FOR_CLIENT_TABLE(rsGetRescQuota)

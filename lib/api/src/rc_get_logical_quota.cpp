@@ -1,9 +1,10 @@
+#include "irods/get_logical_quota.h"
+
 #include "irods/apiNumber.h"
-#include "irods/getLogicalQuota.h"
 #include "irods/procApiRequest.h"
 
 /**
- * \fn rcGetLogicalQuota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList )
+ * \fn rc_get_logical_quota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList )
  *
  * \brief Gets the logical quota(s) that apply to a collection.
  *
@@ -29,7 +30,7 @@
  * \sa none
 **/
 int
-rcGetLogicalQuota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp,
+rc_get_logical_quota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp,
                 logicalQuotaList_t **logicalQuotaList ) {
     int status;
     status = procApiRequest( conn, GET_LOGICAL_QUOTA_AN,  getLogicalQuotaInp, NULL,

@@ -41,7 +41,7 @@
 #include "irods/rsFileCreate.hpp"
 #include "irods/rsFileOpen.hpp"
 #include "irods/rsGetRescQuota.hpp"
-#include "irods/rsGetLogicalQuota.hpp"
+#include "irods/rs_get_logical_quota.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsObjStat.hpp"

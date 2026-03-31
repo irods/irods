@@ -3,7 +3,7 @@
 #include "irods/fileDriver.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsRegDataObj.hpp"
-#include "irods/rsGetLogicalQuota.hpp"
+#include "irods/rs_get_logical_quota.hpp"
 
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_configuration_keywords.hpp"

@@ -807,11 +807,6 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
 
 int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
 {
-    int status;
-    bool objects_value_is_int;
-    std::string bytes_value, objects_value;
-    char *parsed_coll_name, *parsed_bytes_value, *parsed_objects_value;
-    char negative_one[3] = "-1";
 
     // Null checks
     // Every calling mode requires all arguments filled
@@ -827,6 +822,7 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
+    char *parsed_coll_name, *parsed_bytes_value, *parsed_objects_value;
     // Parse collection name
     if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == NULL ) {
         log_re::error("{}: Null or non-string collection name specified.", __func__);
@@ -852,12 +848,14 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
         return USER_INPUT_FORMAT_ERR;
     }
 
-    if(!strcmp(parsed_bytes_value, "bytes")) {
+    char negative_one[3] = "-1";
+
+    if(std::strncmp(parsed_bytes_value, "bytes", 6) == 0) {
         // When setting "bytes" only, final argument is value
         parsed_bytes_value = parsed_objects_value;
         parsed_objects_value = &negative_one[0];
     }
-    else if(!strcmp(parsed_bytes_value, "objects")) {
+    else if(std::strncmp(parsed_bytes_value, "objects", 8) == 0) {
         parsed_bytes_value = &negative_one[0];
     } else {
         if (const auto [ptr, ec] = std::from_chars(parsed_bytes_value, parsed_bytes_value + std::strlen(parsed_bytes_value), nonnegative_checker); ec != std::errc{}) {
@@ -870,4 +868,4 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
     }
 
     return chl_set_logical_quota(rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
-}
+} // msiSetLogicalQuota

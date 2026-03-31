@@ -4270,8 +4270,8 @@ void clearGetLogicalQuotaInp(void* ingetLogicalQuotaInp) {
     }
 
     getLogicalQuotaInp = static_cast<getLogicalQuotaInp_t*>(ingetLogicalQuotaInp);
-    clearKeyVal(&getLogicalQuotaInp->condInput);
-    free_pointer(getLogicalQuotaInp->collName);
+    clearKeyVal(&getLogicalQuotaInp->cond_input);
+    free_pointer(getLogicalQuotaInp->coll_name);
     std::memset(getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t)); 
 
     return;
@@ -4286,7 +4286,7 @@ void clearLogicalQuotaList(void* inlogicalQuotaList) {
 
     logicalQuotaList = static_cast<logicalQuotaList_t*>(inlogicalQuotaList);
     for(int i = 0; i < logicalQuotaList->len; i++) {
-        free_pointer(logicalQuotaList->list[i].collName);
+        free_pointer(logicalQuotaList->list[i].coll_name);
     }
     free_pointer(logicalQuotaList->list);
     std::memset(logicalQuotaList, 0, sizeof(logicalQuotaList_t)); 

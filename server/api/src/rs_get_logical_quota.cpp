@@ -1,14 +1,14 @@
 #include "irods/icatHighLevelRoutines.hpp"
-#include "irods/getLogicalQuota.h"
+#include "irods/get_logical_quota.h"
 #include "irods/rcMisc.h"
-#include "irods/rsGetLogicalQuota.hpp"
+#include "irods/rs_get_logical_quota.hpp"
 
 #include <tuple>
 #include <vector>
 
 using log_api = irods::experimental::log::server;
 
-int _rsGetLogicalQuota(
+int _rs_get_logical_quota(
     rsComm_t*          rsComm,
     getLogicalQuotaInp_t* getLogicalQuotaInp,
     logicalQuotaList_t**      logicalQuotaList ) {
@@ -16,7 +16,7 @@ int _rsGetLogicalQuota(
 
     std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>> quota_values;
 
-    status = chl_check_logical_quota(rsComm, getLogicalQuotaInp->collName, &quota_values);
+    status = chl_check_logical_quota(rsComm, getLogicalQuotaInp->coll_name, &quota_values);
     if(status < 0) {
         return status;
     }     
@@ -26,33 +26,33 @@ int _rsGetLogicalQuota(
 
 
     for(int i = 0; i < (*logicalQuotaList)->len; i++) {
-       (*logicalQuotaList)->list[i].collName = strdup(std::get<0>(quota_values[i]).c_str());
-       (*logicalQuotaList)->list[i].maxBytes = std::get<1>(quota_values[i]);
-       (*logicalQuotaList)->list[i].maxObjects = std::get<2>(quota_values[i]);
-       (*logicalQuotaList)->list[i].overBytes = std::get<3>(quota_values[i]);
-       (*logicalQuotaList)->list[i].overObjects = std::get<4>(quota_values[i]);
+       (*logicalQuotaList)->list[i].coll_name = strdup(std::get<0>(quota_values[i]).c_str());
+       (*logicalQuotaList)->list[i].max_bytes = std::get<1>(quota_values[i]);
+       (*logicalQuotaList)->list[i].max_objects = std::get<2>(quota_values[i]);
+       (*logicalQuotaList)->list[i].over_bytes = std::get<3>(quota_values[i]);
+       (*logicalQuotaList)->list[i].over_objects = std::get<4>(quota_values[i]);
     }
 
     return status;
 }
 
 int
-rsGetLogicalQuota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp,
+rs_get_logical_quota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp,
                 logicalQuotaList_t **logicalQuotaList ) {
     rodsServerHost_t *rodsServerHost;
     int status = 0;
 
-    status = getAndConnRcatHost(rsComm, SECONDARY_RCAT, (const char*) getLogicalQuotaInp->collName, &rodsServerHost);
+    status = getAndConnRcatHost(rsComm, SECONDARY_RCAT, (const char*) getLogicalQuotaInp->coll_name, &rodsServerHost);
 
     if ( status < 0 ) {
         return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        status = _rsGetLogicalQuota( rsComm, getLogicalQuotaInp, logicalQuotaList );
+        status = _rs_get_logical_quota( rsComm, getLogicalQuotaInp, logicalQuotaList );
     }
     else {
-        status = rcGetLogicalQuota( rodsServerHost->conn, getLogicalQuotaInp,
+        status = rc_get_logical_quota( rodsServerHost->conn, getLogicalQuotaInp,
                                  logicalQuotaList );
     }
 
@@ -69,18 +69,18 @@ int checkLogicalQuotaViolation(rsComm_t *rsComm, const char* _coll_name) {
     logicalQuotaList_t* out;
     int status;
     char* tmp = strdup(_coll_name);
-    inp.collName = tmp;
-    status = rsGetLogicalQuota(rsComm, &inp, &out);
+    inp.coll_name = tmp;
+    status = rs_get_logical_quota(rsComm, &inp, &out);
     if(status < 0) {
         free(tmp);
         return status;
     }
     status = 0;
     for(int i = 0; i < out->len && status != 3; i++) {
-       if(out->list[i].overBytes > 0) {
+       if(out->list[i].over_bytes > 0) {
             status |= 1;
        }
-       if(out->list[i].overObjects > 0) {
+       if(out->list[i].over_objects > 0) {
             status |= 2;
        } 
     }

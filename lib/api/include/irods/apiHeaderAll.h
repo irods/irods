@@ -125,7 +125,7 @@
 #include "irods/pamAuthRequest.h"
 #include "irods/sslStart.h"
 #include "irods/sslEnd.h"
-#include "irods/getLogicalQuota.h"
+#include "irods/get_logical_quota.h"
 
 
 // =-=-=-=-=-=-=-
