@@ -218,11 +218,18 @@ TEST_CASE("resource administration")
         REQUIRE(info);
         REQUIRE(info->context_string().empty());
 
-        const adm::context_string_property property{"This resource is for testing only!"};
+        adm::context_string_property property{"This resource is for testing only!"};
         REQUIRE_NOTHROW(adm::client::modify_resource(conn, ufs_info.resource_name, property));
         info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->context_string() == property.value);
+
+        // Show the context string can be cleared.
+        property.value.clear();
+        REQUIRE_NOTHROW(adm::client::modify_resource(conn, ufs_info.resource_name, property));
+        info = adm::client::resource_info(conn, ufs_info.resource_name);
+        REQUIRE(info);
+        REQUIRE(info->context_string().empty());
     }
 
     SECTION("rebalance resource")
