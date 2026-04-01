@@ -94,38 +94,91 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '50', str(4096*3 - 10000), str(3 - 50))) in out)
 
             self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', '100000'])
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '2'])
+            self.admin.assert_icommand(['iadmin', 'clu'])
+
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
+            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '100000', '2', str(4096*3 - 100000), str(3 - 2))) in out)
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '10'])
+            self.admin.assert_icommand(['iadmin', 'clu'])
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
+            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '100000', '10', str(4096*3 - 100000), str(3 - 10))) in out)
+
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'])
+
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
 
 
     def test_nested_logical_quota_enforcement(self):
+        nesting_depth = 5
+        self.quota_user.assert_icommand(['imkdir', f'{self.quota_user.session_collection}/test_nested_logical_quota_coll'])
+        def subcoll_path_generator():
+            path = 'test_nested_logical_quota_coll'
+            count = 0
+            while True:
+                path = f'{path}/{count}'
+                count = count + 1
+                yield path
+
         file_name = 'test_nested_logical_quota_enforcement'
-        lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
+        # Violate quota in one shot
+        lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 10001, contents='arbitrary')
 
-        try: 
-            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', '10000'])
-            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
-            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '<unset>', '-10000', '<unenforced>')) in out)
+        try:
+            path_gen = subcoll_path_generator()
+            innermost_subcoll = ''
 
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{file_name}'])
+            max_bytes = 10000
+            # Set nested quotas
+            # Make outermost quota most restrictive
+            for i in range(0, nesting_depth):
+                subcoll = next(path_gen)
+                self.quota_user.assert_icommand(['imkdir', f'{self.quota_user.session_collection}/{subcoll}'])
+                self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}/{subcoll}', 'bytes', str(max_bytes) ])
+                _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', f'{self.quota_user.session_collection}/{subcoll}')
+                self.assertTrue((self.llq_output_template % (f'{self.quota_user.session_collection}/{subcoll}', str(max_bytes), '<unset>', str(-max_bytes), '<unenforced>')) in out)
+                max_bytes = max_bytes * 2
+                innermost_subcoll = subcoll
+
+            path_gen = subcoll_path_generator()
+            subcoll = next(path_gen)
+
+            # Put to innermost subcoll
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}'])
             self.admin.assert_icommand(['iadmin', 'clu'])
 
-            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
-            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '<unset>', str(4096 - 10000), '<unenforced>')) in out)
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', f'{self.quota_user.session_collection}/{subcoll}')
+            self.assertTrue((self.llq_output_template % (f'{self.quota_user.session_collection}/{subcoll}', '10000', '<unset>', str(10001 - 10000), '<unenforced>')) in out)
 
-            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '50'])
+            # Putting to innermost subcoll should violate the outermost subcoll's quota
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}_2'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+
+            # Lift byte restriction on outermost subcoll
+            # Add 2-object quota on outermost
+            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}/{subcoll}', '0', '2'])
             self.admin.assert_icommand(['iadmin', 'clu'])
 
-            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
-            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '50', str(4096 - 10000), str(1 - 50))) in out)
-
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{file_name}_2'])
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{file_name}_3'])
+            # Should succeed now
+            # Should violate byte quota one level deep after recalculation
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}_2'])
             self.admin.assert_icommand(['iadmin', 'clu'])
 
-            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
-            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '50', str(4096*3 - 10000), str(3 - 50))) in out)
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}_3'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
 
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+            # Lift byte restriction on one-level-deep subcoll
+            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}/{next(path_gen)}', 'bytes', '0'])
+            self.admin.assert_icommand(['iadmin', 'clu'])
+
+            # Should succeed now
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}_3'])
+            self.admin.assert_icommand(['iadmin', 'clu'])
+
+            # Should now violate object quota on outermost collection
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{innermost_subcoll}/{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
