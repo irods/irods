@@ -8751,7 +8751,11 @@ irods::error db_set_avu_metadata_op(
         bindVars.push_back( objIdStr );
         status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in "
                 "(select meta_id from R_META_MAIN where meta_attr_name = ? and meta_id in "
+#if MY_ICAT
                 "(select meta_id from R_OBJT_METAMAP where object_id = ?)) limit 3",
+#else
+                "(select meta_id from R_OBJT_METAMAP where object_id = ?)) fetch first 3 rows only",
+#endif // MY_ICAT
                  metaIdStr, MAX_NAME_LEN, 2, bindVars, &icss );
     }
 
