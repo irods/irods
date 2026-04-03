@@ -126,11 +126,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
         {
             if (DATA_OBJ_T == _s.type) {
-                std::string sql = "select DATA_USER_NAME, DATA_ZONE_NAME, DATA_ACCESS_NAME, USER_TYPE "
-                                   "where COLL_NAME = '";
-                sql += single_quotes_to_hex(_p.parent_path());
-                sql += "' and DATA_NAME = '";
-                sql += single_quotes_to_hex(_p.object_name());
+                std::string sql = "select USER_NAME, USER_ZONE, DATA_ACCESS_NAME, USER_TYPE "
+                                  "where DATA_ACCESS_DATA_ID = '";
+                sql += std::to_string(_s.id);
                 sql += "' and DATA_TOKEN_NAMESPACE = 'access_type'";
 
                 irods::experimental::query_builder qb;
