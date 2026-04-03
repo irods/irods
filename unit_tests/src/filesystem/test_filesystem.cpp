@@ -27,6 +27,7 @@
 #include "irods/irods_query.hpp"
 #include "irods/replica.hpp"
 #include "irods/system_error.hpp"
+#include "irods/user_administration.hpp"
 
 #include "irods/dstream.hpp"
 #include "irods/transport/default_transport.hpp"
@@ -840,4 +841,90 @@ TEST_CASE("filesystem")
         CHECK(fs::client::copy_data_object(conn, new_data_object, data_object, fs::copy_options::update_existing));
         CHECK(old_mtime < fs::client::last_write_time(conn, data_object));
     }
+}
+
+TEST_CASE("#8912: filesystem does not expand group membership when listing permissions on data objects")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    irods::experimental::client_connection conn;
+
+    namespace fs = irods::experimental::filesystem;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox__issue_8912";
+
+    REQUIRE(fs::client::create_collection(conn, sandbox));
+
+    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    }};
+
+    namespace adm = irods::experimental::administration;
+
+    // Create two users.
+    adm::user alice{"alice"};
+    adm::user bob{"bob"};
+
+    irods::at_scope_exit remove_users{[&conn, &alice, &bob] {
+        CHECK_NOTHROW(adm::client::remove_user(conn, alice));
+        CHECK_NOTHROW(adm::client::remove_user(conn, bob));
+    }};
+
+    CHECK_NOTHROW(adm::client::add_user(conn, alice));
+    CHECK_NOTHROW(adm::client::add_user(conn, bob));
+
+    // Create two groups.
+    adm::group alice_group{"alice_group"};
+    adm::group bob_group{"bob_group"};
+
+    irods::at_scope_exit remove_groups{[&conn, &alice_group, &bob_group] {
+        CHECK_NOTHROW(adm::client::remove_group(conn, alice_group));
+        CHECK_NOTHROW(adm::client::remove_group(conn, bob_group));
+    }};
+
+    CHECK_NOTHROW(adm::client::add_group(conn, alice_group));
+    CHECK_NOTHROW(adm::client::add_group(conn, bob_group));
+
+    // Add one user to each group.
+    CHECK_NOTHROW(adm::client::add_user_to_group(conn, alice_group, bob));
+    CHECK_NOTHROW(adm::client::add_user_to_group(conn, bob_group, alice));
+
+    // Create a data object and adjust the permissions such that only members
+    // of the groups can access it.
+    const auto data_object = sandbox / "data_object.txt";
+    {
+        irods::experimental::io::client::default_transport tp{conn};
+        irods::experimental::io::odstream{tp, data_object} << "data";
+    }
+    CHECK_NOTHROW(fs::client::permissions(conn, data_object, alice_group.name, fs::perms::read));
+    CHECK_NOTHROW(fs::client::permissions(conn, data_object, bob_group.name, fs::perms::read));
+    CHECK_NOTHROW(fs::client::permissions(conn, data_object, env.rodsUserName, fs::perms::null));
+
+    irods::at_scope_exit restore_perms{[&env, &conn, &data_object] {
+        CHECK_NOTHROW(fs::client::permissions(fs::admin, conn, data_object, env.rodsUserName, fs::perms::own));
+    }};
+
+    // Show that retrieval of permissions for groups are not expanded. That is
+    // we expect the permissions list to contain only the recently created groups.
+    // Indirect permissions (i.e. the members within the groups) must not be part
+    // of the permissions list.
+    const auto status = fs::client::status(conn, data_object);
+    REQUIRE(status.permissions().size() == 2);
+
+    auto end_iter = std::end(status.permissions());
+    auto iter = std::find_if(std::begin(status.permissions()), end_iter,
+        [&alice_group](const fs::entity_permission& _et) {
+            return "rodsgroup" == _et.type && _et.name == alice_group.name;
+        });
+    CHECK(end_iter != iter);
+
+    iter = std::find_if(std::begin(status.permissions()), end_iter,
+        [&bob_group](const fs::entity_permission& _et) {
+            return "rodsgroup" == _et.type && _et.name == bob_group.name;
+        });
+    CHECK(end_iter != iter);
 }
