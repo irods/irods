@@ -1,6 +1,8 @@
 #ifndef IRODS_GET_LOGICAL_QUOTA_H
 #define IRODS_GET_LOGICAL_QUOTA_H
 
+/// \file
+
 #include "irods/objInfo.h"
 #include "irods/rodsType.h"
 

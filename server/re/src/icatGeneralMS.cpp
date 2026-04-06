@@ -113,7 +113,7 @@ msiQuota( ruleExecInfo_t *rei ) {
 }
 
 /**
- * \fn msiLogicalQuota (ruleExecInfo_t *rei)
+ * \fn msi_calc_logical_usage (ruleExecInfo_t *rei)
  *
  * \brief  Calculates storage usage and sets quota values (over/under/how-much).
  *
@@ -140,7 +140,7 @@ msiQuota( ruleExecInfo_t *rei ) {
  * \sa none
 **/
 int
-msiLogicalQuota( ruleExecInfo_t *rei ) {
+msi_calc_logical_usage( ruleExecInfo_t *rei ) {
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {

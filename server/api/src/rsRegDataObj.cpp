@@ -24,9 +24,9 @@ namespace
 
     int checkQuotaViolationForReg(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         fs::path path{dataObjInfo->objPath};
-        int status = checkLogicalQuotaViolation(rsComm, path.parent_path().c_str());
+        int status = check_logical_quota_violation(rsComm, path.parent_path().c_str());
         if(status < 0) {
-            log_api::error("checkLogicalQuotaViolation failed with error [{}]", status);
+            log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
         // Always fail if over object limit (registration makes new objects)

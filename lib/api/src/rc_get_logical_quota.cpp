@@ -4,7 +4,7 @@
 #include "irods/procApiRequest.h"
 
 /**
- * \fn rc_get_logical_quota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList )
+ * \fn rc_get_logical_quota( struct RcComm *conn, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList )
  *
  * \brief Gets the logical quota(s) that apply to a collection.
  *
@@ -30,11 +30,8 @@
  * \sa none
 **/
 int
-rc_get_logical_quota( rcComm_t *conn, getLogicalQuotaInp_t *getLogicalQuotaInp,
+rc_get_logical_quota( struct RcComm *conn, getLogicalQuotaInp_t *getLogicalQuotaInp,
                 logicalQuotaList_t **logicalQuotaList ) {
-    int status;
-    status = procApiRequest( conn, GET_LOGICAL_QUOTA_AN,  getLogicalQuotaInp, NULL,
-                             ( void ** ) logicalQuotaList, NULL);
+    return procApiRequest(conn, GET_LOGICAL_QUOTA_AN,  getLogicalQuotaInp, nullptr, reinterpret_cast<void**>(logicalQuotaList), nullptr);
 
-    return status;
 }

@@ -12,9 +12,6 @@ import textwrap
 import time
 
 def run_update(irods_config, cursor, is_upgrade):
-    bigint_for_db = { "oracle": "integer",
-                      "mysql": "bigint",
-                      "postgres": "bigint" }
     l = logging.getLogger(__name__)
     new_schema_version = database_connect.get_schema_version_in_database(cursor) + 1
     l.info('Updating to schema version %d...', new_schema_version)
@@ -290,6 +287,10 @@ def run_update(irods_config, cursor, is_upgrade):
 
         # password storage mode setting
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_storage_mode', 'legacy');")
+
+        bigint_for_db = { "oracle": "integer",
+                      "mysql": "bigint",
+                      "postgres": "bigint" }
 
         bigint_type = bigint_for_db.get(irods_config.catalog_database_type, "bigint")
 

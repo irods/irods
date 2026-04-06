@@ -1374,9 +1374,9 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     // Check quota enforcement before open
     if(checkQuotaFlags) {
         fs::path path{dataObjInp->objPath};
-        int status = checkLogicalQuotaViolation(rsComm, path.parent_path().c_str());
+        int status = check_logical_quota_violation(rsComm, path.parent_path().c_str());
         if(status < 0) {
-            log_api::error("checkLogicalQuotaViolation failed with error [{}]", status);
+            log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
         if(checkQuotaFlags & status) {

@@ -4262,14 +4262,14 @@ clearAuthResponseInp( void * inauthResponseInp ) {
     return;
 }
 
-void clearGetLogicalQuotaInp(void* ingetLogicalQuotaInp) {
+void clearGetLogicalQuotaInp(void* getLogicalQuotaInput) {
     getLogicalQuotaInp_t *getLogicalQuotaInp;
 
-    if(!ingetLogicalQuotaInp) {
+    if(!getLogicalQuotaInput) {
         return;
     }
 
-    getLogicalQuotaInp = static_cast<getLogicalQuotaInp_t*>(ingetLogicalQuotaInp);
+    getLogicalQuotaInp = static_cast<getLogicalQuotaInp_t*>(getLogicalQuotaInput);
     clearKeyVal(&getLogicalQuotaInp->cond_input);
     free_pointer(getLogicalQuotaInp->coll_name);
     std::memset(getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t)); 

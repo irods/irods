@@ -9,9 +9,9 @@
 using log_api = irods::experimental::log::server;
 
 int _rs_get_logical_quota(
-    rsComm_t*          rsComm,
-    getLogicalQuotaInp_t* getLogicalQuotaInp,
-    logicalQuotaList_t**      logicalQuotaList ) {
+    struct RsComm *rsComm,
+    getLogicalQuotaInp_t *getLogicalQuotaInp,
+    logicalQuotaList_t **logicalQuotaList ) {
     int status = 0;
 
     std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>> quota_values;
@@ -64,7 +64,7 @@ rs_get_logical_quota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp
 // 1 - byte count
 // 2 - object count
 // 3 - both
-int checkLogicalQuotaViolation(rsComm_t *rsComm, const char* _coll_name) {
+int check_logical_quota_violation(struct RsComm *rsComm, const char* _coll_name) {
     getLogicalQuotaInp_t inp;
     logicalQuotaList_t* out;
     int status;

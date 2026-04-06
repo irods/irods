@@ -769,7 +769,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
 }
 
 /**
- * \fn msiSetLogicalQuota(msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
+ * \fn msi_set_logical_quota(msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
  *
  * \brief Sets byte/object count quota for a collection
  *
@@ -805,7 +805,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
  * \sa None
  **/
 
-int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
+int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
 {
 
     // Null checks
@@ -868,4 +868,4 @@ int msiSetLogicalQuota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_
     }
 
     return chl_set_logical_quota(rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
-} // msiSetLogicalQuota
+} // msi_set_logical_quota

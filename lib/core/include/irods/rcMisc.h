@@ -246,7 +246,7 @@ void clearCollInp(void*);
 
 void clearAuthResponseInp(void* myInStruct);
 
-void clearGetLogicalQuotaInp(void* ingetLogicalQuotaInp);
+void clearGetLogicalQuotaInp(void* getLogicalQuotaInput);
 
 void clearLogicalQuotaList(void* inlogicalQuotaList);
 

@@ -1,12 +1,13 @@
-#ifndef RS_GET_LOGICAL_QUOTA_HPP
-#define RS_GET_LOGICAL_QUOTA_HPP
+#ifndef IRODS_RS_GET_LOGICAL_QUOTA_HPP
+#define IRODS_RS_GET_LOGICAL_QUOTA_HPP
+
+/// \file
 
 #include "irods/get_logical_quota.h"
-#include "irods/rcConnect.h"
-#include "irods/rodsType.h"
 
-int rs_get_logical_quota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList );
-int _rs_get_logical_quota( rsComm_t *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList );
-int checkLogicalQuotaViolation(rsComm_t *rsComm, const char* _coll_name);
+struct RsComm;
 
-#endif
+int rs_get_logical_quota( struct RsComm *rsComm, getLogicalQuotaInp_t *getLogicalQuotaInp, logicalQuotaList_t **logicalQuotaList );
+int check_logical_quota_violation(struct RsComm *rsComm, const char* _coll_name);
+
+#endif // IRODS_RS_GET_LOGICAL_QUOTA_HPP
