@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 
 from datetime import datetime, timedelta
@@ -14,13 +15,14 @@ from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file
 
-class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Misc, self).setUp()
         self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Misc, self).tearDown()
@@ -540,6 +542,64 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         finally:
             self.admin.run_icommand(['irm', '-f', os.path.basename(local_file)])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
+    def test_strict_acl_peps_are_not_triggered__issue_8304(self):
+        attr_n = 'issue_8304_attr_name'
+        attr_v = 'issue_8304_attr_value'
+
+        # The following PEPs attempt to set metadata on the session collection if triggered.
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''\
+                pep_database_gen_query_access_control_setup_pre(*inst, *ctx, *out, *user, *zone, *host, *priv, *ctrl) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '');
+                }}
+
+                pep_database_gen_query_access_control_setup_post(*inst, *ctx, *out, *user, *zone, *host, *priv, *ctrl) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '');
+                }}
+
+                pep_database_gen_query_access_control_setup_finally(*inst, *ctx, *out, *user, *zone, *host, *priv, *ctrl) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '');
+                }}
+
+                pep_database_gen_query_access_control_setup_except(*inst, *ctx, *out, *user, *zone, *host, *priv, *ctrl) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '');
+                }}
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
+                def pep_database_gen_query_access_control_setup_pre(rule_args, callback, rei):
+                    callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '')
+
+                def pep_database_gen_query_access_control_setup_post(rule_args, callback, rei):
+                    callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '')
+
+                def pep_database_gen_query_access_control_setup_finally(rule_args, callback, rei):
+                    callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '')
+
+                def pep_database_gen_query_access_control_setup_except(rule_args, callback, rei):
+                    callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n}', '{attr_v}', '')
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                # Add rule to core.re or core.py and reload the server's configuration so that
+                # the changes take effect.
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                # Trigger the PEPs (any icommand will do). A failure indicates at least one of the
+                # PEPs fired. This outcome is acceptable for proving correctness since none of the
+                # PEPs should be available for use.
+                self.user.assert_icommand(['iquest', 'select COLL_NAME'], 'STDOUT')
+
+                # Show that no metadata was added to the collection. This indicates that the PEPs
+                # did not fire.
+                expected_output = [f'AVUs defined for collection {self.user.session_collection}:\nNone\n']
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', expected_output)
+
+        finally:
+            IrodsController().reload_configuration()
 
 
 class test_server_side_libraries(unittest.TestCase):
