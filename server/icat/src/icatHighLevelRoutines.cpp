@@ -4407,24 +4407,11 @@ int chlGenQueryAccessControlSetup(
     irods::database_ptr           db = boost::dynamic_pointer_cast <
                                        irods::database > ( db_plug_ptr );
 
-    // =-=-=-=-=-=-=-
-    // call the operation on the plugin
-    ret = db->call <
-          const char*,
-          const char*,
-          const char*,
-          int,
-          int > ( 0,
-                  irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
-                  ptr,
-                  _user,
-                  _zone,
-                  _host,
-                  _priv,
-                  _control_flag );
+    // iRODS 5 does not allow admins to disable strict ACLs, hence why call_without_policy() is used.
+    ret = db->call_without_policy<const char*, const char*, const char*, int, int>(
+        0, irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP, ptr, _user, _zone, _host, _priv, _control_flag);
 
     return ret.code();
-
 } // chlGenQueryAccessControlSetup
 
 int chlGenQueryTicketSetup(
