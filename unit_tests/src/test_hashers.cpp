@@ -2,12 +2,14 @@
 
 #include "irods/ADLER32Strategy.hpp"
 #include "irods/CRC64NVMEStrategy.hpp"
+#include "irods/Hasher.hpp"
 #include "irods/MD5Strategy.hpp"
 #include "irods/SHA1Strategy.hpp"
 #include "irods/SHA256Strategy.hpp"
 #include "irods/SHA512Strategy.hpp"
+#include "irods/hash_types.hpp"
 #include "irods/irods_hasher_factory.hpp"
-#include "irods/Hasher.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <fmt/format.h>
 
@@ -118,4 +120,98 @@ TEST_CASE("checksum hashers - nonstrings")
             REQUIRE(hash_value == expected_hash_value);
         }
     }
+}
+
+TEST_CASE("HashStrategy::digest options")
+{
+    using om = irods::hash::output_mode;
+
+    constexpr std::string_view str_to_hash = "asdf1234ASDF!@#$";
+
+    // clang-format off
+    const std::tuple<const irods::hash::output_mode, const bool, const std::string, const std::string> hash_test_vals = GENERATE(
+        // std::make_tuple(om::base64_encoded_string, false, irods::ADLER32_NAME,   "adler32:KLgELw=="), // not implemented
+        std::make_tuple(om::base64_encoded_string, false, irods::CRC64NVME_NAME, "OTvEv/lA92k="),
+        std::make_tuple(om::base64_encoded_string, false, irods::MD5_NAME,       "cPWXzlM3NwC6Xl38iSusWQ=="),
+        std::make_tuple(om::base64_encoded_string, false, irods::SHA1_NAME,      "w4pAayodnxhmStdLObUARZUQu68="),
+        std::make_tuple(om::base64_encoded_string, false, irods::SHA256_NAME,    "jwyFBi2ugt4geZKPMJzJlE8eQ/M8qLpAbKNzS0uUBG4="),
+        std::make_tuple(om::base64_encoded_string, false, irods::SHA512_NAME,    "oOcXC8A34DybRSivQjyGExYLzEmHXzh0KUtZZzE72EDQ3lTcWhOkF0XmLkzX85QrJT80Ral+v4/zDQthDvoj8A=="),
+        // std::make_tuple(om::base64_encoded_string, true,  irods::ADLER32_NAME,   "adler32:KLgELw=="), // not implemented
+        std::make_tuple(om::base64_encoded_string, true,  irods::CRC64NVME_NAME, "crc64nvme:OTvEv/lA92k="), // default
+        std::make_tuple(om::base64_encoded_string, true,  irods::MD5_NAME,       "md5:cPWXzlM3NwC6Xl38iSusWQ=="),
+        std::make_tuple(om::base64_encoded_string, true,  irods::SHA1_NAME,      "sha1:w4pAayodnxhmStdLObUARZUQu68="), // default
+        std::make_tuple(om::base64_encoded_string, true,  irods::SHA256_NAME,    "sha2:jwyFBi2ugt4geZKPMJzJlE8eQ/M8qLpAbKNzS0uUBG4="), // default
+        std::make_tuple(om::base64_encoded_string, true,  irods::SHA512_NAME,    "sha512:oOcXC8A34DybRSivQjyGExYLzEmHXzh0KUtZZzE72EDQ3lTcWhOkF0XmLkzX85QrJT80Ral+v4/zDQthDvoj8A=="), // default
+        std::make_tuple(om::hex_string,            false, irods::ADLER32_NAME,   "28b8042f"),
+        std::make_tuple(om::hex_string,            false, irods::CRC64NVME_NAME, "393bc4bff940f769"),
+        std::make_tuple(om::hex_string,            false, irods::MD5_NAME,       "70f597ce53373700ba5e5dfc892bac59"), // default
+        std::make_tuple(om::hex_string,            false, irods::SHA1_NAME,      "c38a406b2a1d9f18664ad74b39b500459510bbaf"),
+        std::make_tuple(om::hex_string,            false, irods::SHA256_NAME,    "8f0c85062dae82de2079928f309cc9944f1e43f33ca8ba406ca3734b4b94046e"),
+        std::make_tuple(om::hex_string,            false, irods::SHA512_NAME,    "a0e7170bc037e03c9b4528af423c8613160bcc49875f3874294b5967313bd840d0de54dc5a13a41745e62e4cd7f3942b253f3445a97ebf8ff30d0b610efa23f0"),
+        std::make_tuple(om::hex_string,            true,  irods::ADLER32_NAME,   "adler32:28b8042f"), // default
+        std::make_tuple(om::hex_string,            true,  irods::CRC64NVME_NAME, "crc64nvme:393bc4bff940f769"),
+        std::make_tuple(om::hex_string,            true,  irods::MD5_NAME,       "md5:70f597ce53373700ba5e5dfc892bac59"),
+        std::make_tuple(om::hex_string,            true,  irods::SHA1_NAME,      "sha1:c38a406b2a1d9f18664ad74b39b500459510bbaf"),
+        std::make_tuple(om::hex_string,            true,  irods::SHA256_NAME,    "sha2:8f0c85062dae82de2079928f309cc9944f1e43f33ca8ba406ca3734b4b94046e"),
+        std::make_tuple(om::hex_string,            true,  irods::SHA512_NAME,    "sha512:a0e7170bc037e03c9b4528af423c8613160bcc49875f3874294b5967313bd840d0de54dc5a13a41745e62e4cd7f3942b253f3445a97ebf8ff30d0b610efa23f0")
+    );
+    // clang-format on
+
+    const auto options = irods::hash::options{std::get<0>(hash_test_vals), std::get<1>(hash_test_vals)};
+    const auto& hash_type_str = std::get<2>(hash_test_vals);
+    const auto& expected_hash_value = std::get<3>(hash_test_vals);
+
+    SECTION(fmt::format("hash:[{}],mode:[{}],checksum_prefix:[{}]",
+                        hash_type_str,
+                        static_cast<int>(options.output_mode),
+                        options.include_checksum_prefix))
+    {
+        irods::Hasher hasher;
+        REQUIRE(irods::getHasher(hash_type_str, hasher).ok());
+
+        SECTION("all-at-once")
+        {
+            REQUIRE(hasher.update(str_to_hash.data()).ok());
+
+            std::string hash_value;
+            REQUIRE(hasher.digest(options, hash_value).ok());
+
+            REQUIRE(hash_value == expected_hash_value);
+        }
+
+        SECTION("byte-by-byte")
+        {
+            for (const char& byte : str_to_hash) {
+                const std::string byte_s(1, byte);
+                REQUIRE(hasher.update(byte_s).ok());
+            }
+
+            std::string hash_value;
+            REQUIRE(hasher.digest(options, hash_value).ok());
+
+            REQUIRE(hash_value == expected_hash_value);
+        }
+    }
+}
+
+TEST_CASE("ADLER32 does not support base64-encoded string output")
+{
+    constexpr std::string_view str_to_hash = "asdf1234ASDF!@#$";
+
+    // Set up ADLER32 hasher.
+    irods::Hasher hasher;
+    REQUIRE(irods::getHasher(irods::ADLER32_NAME, hasher).ok());
+    REQUIRE(hasher.update(str_to_hash.data()).ok());
+
+    std::string hash_value;
+
+    // digest() should fail with checksum prefix.
+    REQUIRE(SYS_NOT_IMPLEMENTED ==
+            hasher.digest({irods::hash::output_mode::base64_encoded_string, true}, hash_value).code());
+    REQUIRE(hash_value.empty());
+
+    // ...and without checksum prefix.
+    REQUIRE(SYS_NOT_IMPLEMENTED ==
+            hasher.digest({irods::hash::output_mode::base64_encoded_string, false}, hash_value).code());
+    REQUIRE(hash_value.empty());
 }
