@@ -70,6 +70,8 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
         lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
 
         try: 
+            self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '1'])
+
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', '10000'])
             _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '<unset>', '-10000', '<unenforced>')) in out)
@@ -111,6 +113,7 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
 
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
+            self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '0'])
 
 
     def test_nested_logical_quota_enforcement(self):
@@ -129,6 +132,8 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
         lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 10001, contents='arbitrary')
 
         try:
+            self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '1'])
+
             path_gen = subcoll_path_generator()
             innermost_subcoll = ''
 
@@ -182,3 +187,4 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
 
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
+            self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '0'])
