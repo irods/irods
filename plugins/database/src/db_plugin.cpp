@@ -334,12 +334,13 @@ namespace
         if (const auto err = hasher.update(fmt::format("{}{}", _salt, _token)); !err.ok()) {
             THROW(err.code(), err.result());
         }
+        static constexpr auto opts = irods::hash::options{
+            .output_mode = irods::hash::output_mode::base64_encoded_string, .include_checksum_prefix = false};
         std::string digest;
-        if (const auto err = hasher.digest(digest); !err.ok()) {
+        if (const auto err = hasher.digest(opts, digest); !err.ok()) {
             THROW(err.code(), err.result());
         }
-        // The SHA256Strategy adds a "sha2:" prefix - let's chop that off.
-        return digest.substr(std::strlen(SHA256_CHKSUM_PREFIX));
+        return digest;
     } // hash_session_token
 } // anonymous namespace
 
