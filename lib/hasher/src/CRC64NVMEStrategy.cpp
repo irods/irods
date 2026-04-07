@@ -20,7 +20,10 @@ namespace irods
         // It represents the divisor polynomial in the binary polynomial division process
         // used by the CRC algorithm. Each bit set to '1' in this constant indicates a term
         // in the polynomial. The NVMe standard specifies the 64-bit polynomial:
-        //   x^64 + x^4 + x^3 + x + 1  (represented here as 0xAD93D23594C93659)
+        //   x^64 + x^63 + x^61 + x^59 + x^56 + x^55 + x^52 + x^49 + x^48 + x^47 +
+        //   x^46 + x^44 + x^41 + x^37 + x^36 + x^34 + x^32 + x^31 + x^28 + x^26 +
+        //   x^23 + x^22 + x^19 + x^16 + x^13 + x^12 + x^10 + x^9 + x^6 + x^4 + x^3 + 1
+        //   (represented here as 0xAD93D23594C93659)
         // This polynomial determines the bit mixing pattern that creates the final checksum.
         constexpr std::uint64_t crc_polynomial = 0xAD93D23594C93659;
 
