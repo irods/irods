@@ -308,7 +308,10 @@ int initRcatServerHostByFile()
             const auto& zone_name = federation.at(irods::KW_CFG_ZONE_NAME).get_ref<const std::string&>();
             const auto& zone_key = federation.at(irods::KW_CFG_ZONE_KEY).get_ref<const std::string&>();
             const auto& negotiation_key = federation.at(irods::KW_CFG_NEGOTIATION_KEY).get_ref<const std::string&>();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
             remote_SID_key_map[zone_name] = std::make_pair(zone_key, negotiation_key);
+#pragma GCC diagnostic pop
 
             const auto hash_scheme_iter = federation.find(irods::KW_CFG_ZONE_KEY_SIGNING_HASH_SCHEME);
             const auto& hash_scheme = (federation.end() != hash_scheme_iter)

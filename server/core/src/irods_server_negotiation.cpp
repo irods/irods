@@ -84,6 +84,8 @@ namespace
 
 namespace irods
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     error check_sent_sid(const std::string& _zone_key)
     {
         if (_zone_key.empty()) {
@@ -133,10 +135,8 @@ namespace irods
 
         return ERROR(ZONE_KEY_SIGNATURE_MISMATCH, "signed zone_keys do not match");
     } // check_sent_sid
+#pragma GCC diagnostic pop
 
-
-/// =-=-=-=-=-=-=-
-/// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server(irods::network_object_ptr _ptr,
                                                std::string& _result,
                                                bool _require_cs_neg,
