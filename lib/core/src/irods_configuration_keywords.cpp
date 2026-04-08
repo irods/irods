@@ -203,5 +203,7 @@ namespace irods
     const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME{"connection_pool_refresh_time_in_seconds"};
 
     const char* const KW_CFG_USER_PASSWORD_STORAGE_MODE{"user_password_storage_mode"};
+
+    const char* const KW_CFG_ZONE_KEY_SIGNING_HASH_SCHEME{"zone_key_signing_hash_scheme"};
 } // namespace irods
 
