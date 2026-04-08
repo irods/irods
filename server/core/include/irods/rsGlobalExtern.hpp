@@ -78,7 +78,11 @@ extern int IcatConnState;
 extern specCollCache_t *SpecCollCacheHead;
 
 extern char localSID[MAX_PASSWORD_LEN];
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 extern irods::lookup_table <std::pair <std::string, std::string> > remote_SID_key_map; // remote zone SIDs and negotiation keys
+#pragma GCC diagnostic pop
 
 /* quota for all resources for this user in bytes */
 extern rodsLong_t GlobalQuotaLimit; /* quota for all resources for this user */

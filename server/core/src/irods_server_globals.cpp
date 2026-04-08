@@ -56,7 +56,10 @@ specCollCache_t *SpecCollCacheHead = NULL;
 /* Server Authentication information */
 
 char localSID[MAX_PASSWORD_LEN]; /* Local Zone Servers ID string */
-irods::lookup_table <std::pair <std::string, std::string> > remote_SID_key_map; // remote zone SIDs and negotiation keys
+
+// remote zone SIDs and negotiation keys
+[[deprecated("Use irods::zone_key_map intead.")]] irods::lookup_table<std::pair<std::string, std::string>>
+    remote_SID_key_map; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 /* quota for all resources for this user in bytes */
 rodsLong_t GlobalQuotaLimit;    /* quota for all resources for this user */
