@@ -1,5 +1,7 @@
 #include "irods/irods_client_server_negotiation.hpp"
 
+#include "irods/Hasher.hpp"
+#include "irods/hash_types.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_server_properties.hpp"
@@ -77,12 +79,17 @@ namespace irods
         return irods::get_server_property<std::string>(KW_CFG_NEGOTIATION_KEY);
     } // determine_negotiation_key
 
-    error sign_server_sid(const std::string& _zone_key,
-                          const std::string& _encryption_key,
-                          std::string&       _signed_zone_key)
+    auto sign_zone_key(const std::string& _zone_key,
+                       const std::string& _encryption_key,
+                       const std::string& _zone_key_signing_hash_scheme,
+                       std::string& _signed_zone_key) -> error
     {
-        if (_encryption_key.empty()) {
-            return ERROR(CLIENT_NEGOTIATION_ERROR, "encryption key for signing is empty");
+        if (_zone_key.empty()) {
+            return ERROR(CLIENT_NEGOTIATION_ERROR, "zone key to sign is invalid");
+        }
+
+        if (!negotiation_key_is_valid(_encryption_key)) {
+            return ERROR(CLIENT_NEGOTIATION_ERROR, "encryption key for signing is invalid");
         }
 
         irods::buffer_crypt::array_t key;
@@ -99,8 +106,10 @@ namespace irods
             return PASS(err);
         }
 
+        const auto& hash_scheme = _zone_key_signing_hash_scheme;
+
         Hasher hasher;
-        if (const auto err = getHasher(MD5_NAME, hasher); !err.ok()) {
+        if (const auto err = getHasher(hash_scheme, hasher); !err.ok()) {
             return PASS(err);
         }
         if (const auto err = hasher.update(std::string(reinterpret_cast<char*>(out_buf.data()), out_buf.size()));
@@ -108,11 +117,20 @@ namespace irods
         {
             return PASS(err);
         }
-        if (const auto err = hasher.digest(_signed_zone_key); !err.ok()) {
+        static constexpr auto opts =
+            irods::hash::options{.output_mode = irods::hash::output_mode::hex_string, .include_checksum_prefix = false};
+        if (const auto err = hasher.digest(opts, _signed_zone_key); !err.ok()) {
             return PASS(err);
         }
 
         return SUCCESS();
+    } // sign_zone_key
+
+    auto sign_server_sid(const std::string& _zone_key,
+                         const std::string& _encryption_key,
+                         std::string& _signed_zone_key) -> error
+    {
+        return sign_zone_key(_zone_key, _encryption_key, MD5_NAME, _signed_zone_key);
     } // sign_server_sid
 
     /// =-=-=-=-=-=-=-

@@ -90,11 +90,29 @@ namespace irods
         irods::network_object_ptr,        // socket
         boost::shared_ptr< cs_neg_t >& ); // message payload
 
-    /// =-=-=-=-=-=-=-
-    /// @brief given a buffer encrypt and hash it for negotiation
+    /// \brief Given a buffer, encrypt and hash it for negotiation.
+    ///
+    /// \param[in] _zone_key The zone key to sign.
+    /// \param[in] _encryption_key The encryption key to use for signing the zone key.
+    /// \param[out] _signed_zone_key The encrypted and hashed zone key.
     auto sign_server_sid(const std::string& _zone_key,
                          const std::string& _encryption_key,
                          std::string&       _signed_zone_key) -> irods::error;
+
+    /// \brief Sign the zone key using the provided encryption key and hash scheme.
+    ///
+    /// \param[in] _zone_key The zone key to sign.
+    /// \param[in] _encryption_key The encryption key to use for signing the zone key.
+    /// \param[in] _zone_key_signing_hash_scheme The \p irods::Hasher scheme name to use to hash the encrypted buffer.
+    /// \param[out] _signed_zone_key The encrypted and hashed zone key.
+    ///
+    /// \return irods::error Describing any errors which occurred while signing the zone key.
+    ///
+    /// \since 5.1.0
+    auto sign_zone_key(const std::string& _zone_key,
+                       const std::string& _encryption_key,
+                       const std::string& _zone_key_signing_hash_scheme,
+                       std::string& _signed_zone_key) -> irods::error;
 
     /// \brief check the incoming signed zone_key against local and remote zone_keys
     auto check_sent_sid(const std::string& _zone_key) -> irods::error;
