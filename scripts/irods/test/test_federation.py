@@ -1167,6 +1167,43 @@ OUTPUT ruleExecOut
 		finally:
 			IrodsController().reload_configuration()
 
+	def test_mismatched_zone_key_signing_hash_schemes_result_in_ZONE_KEY_SIGNATURE_MISMATCH(self):
+		import json
+
+		user = self.user_sessions[0]
+		remote_zone = self.config['remote_zone']
+		local_zone = self.config['local_zone']
+		remote_home_collection = os.path.join('/{}'.format(remote_zone), 'home', '#'.join([user.username, local_zone]))
+
+		# Control case: Make sure we can list the contents in the remote zone...
+		user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
+
+		# Get the current server configuration so we can make changes
+		server_config_filename = paths.server_config_path()
+		with open(server_config_filename) as f:
+			svr_cfg = json.load(f)
+
+		# The default value is "md5", so this test will fail if this is ever changed to "sha256".
+		svr_cfg['federation'][0]['zone_key_signing_hash_scheme'] = 'sha256'
+
+		new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+		try:
+			with lib.file_backed_up(server_config_filename):
+				# Repave the existing server_config.json. It will be restored when we leave this 'with' block.
+				with open(server_config_filename, 'w') as f:
+					f.write(new_server_config)
+
+				# Reloading the configuration will succeed because the configuration can be validated. However, the
+				# server cannot be used because it will not be able to connect to the catalog service provider.
+				IrodsController().reload_configuration()
+
+				# Demonstrate that the local server cannot connect to the remote server.
+				user.assert_icommand(
+					['ils', '-l', remote_home_collection], 'STDERR', "cannot get status: ZONE_KEY_SIGNATURE_MISMATCH")
+
+		finally:
+			IrodsController().reload_configuration()
 
 	def test_remove_data_object_in_collection_with_read_permissions__issue_6428(self):
 		def get_collection_mtime(session, collection_path):

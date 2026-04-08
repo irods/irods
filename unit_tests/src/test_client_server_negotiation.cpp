@@ -39,16 +39,16 @@ TEST_CASE("sign_zone_key")
     constexpr const char* default_hash_scheme = "md5";
 
     // Invalid zone key
-    CHECK(!irods::sign_zone_key("", encryption_key, default_hash_scheme, signed_zone_key).ok());
+    CHECK_FALSE(irods::sign_zone_key("", encryption_key, default_hash_scheme, signed_zone_key).ok());
 
     // Invalid encryption keys
-    CHECK(!irods::sign_zone_key(zone_key, "", default_hash_scheme, signed_zone_key).ok());
-    CHECK(
-        !irods::sign_zone_key(zone_key, "31_BYTE_SERVER_NEGOTIATION_KEY_", default_hash_scheme, signed_zone_key).ok());
+    CHECK_FALSE(irods::sign_zone_key(zone_key, "", default_hash_scheme, signed_zone_key).ok());
+    CHECK_FALSE(
+        irods::sign_zone_key(zone_key, "31_BYTE_SERVER_NEGOTIATION_KEY_", default_hash_scheme, signed_zone_key).ok());
 
     // Invalid hash scheme
-    CHECK(!irods::sign_zone_key(zone_key, encryption_key, "", signed_zone_key).ok());
-    CHECK(!irods::sign_zone_key(zone_key, encryption_key, "jimbo", signed_zone_key).ok());
+    CHECK_FALSE(irods::sign_zone_key(zone_key, encryption_key, "", signed_zone_key).ok());
+    CHECK_FALSE(irods::sign_zone_key(zone_key, encryption_key, "jimbo", signed_zone_key).ok());
 
     // md5
     CHECK(irods::sign_zone_key(zone_key, encryption_key, default_hash_scheme, signed_zone_key).ok());
