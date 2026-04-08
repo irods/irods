@@ -50,11 +50,21 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <vector>
+#include <fstream>
 #include <set>
 #include <string>
 #include <string_view>
-#include <fstream>
+#include <tuple>
+#include <vector>
+
+namespace irods
+{
+    extern const std::string MD5_NAME;
+
+    // Map of remote zones to a tuple of zone key, negotiation key, and signing hash scheme. For server negotiation.
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    extern irods::lookup_table<std::tuple<std::string, std::string, std::string>> zone_key_map;
+} // namespace irods
 
 namespace
 {
@@ -283,62 +293,37 @@ int initRcatServerHostByFile()
         }
     }
 
-    // try for new federation config
-    try {
-        for (const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_FEDERATION)) {
-            try {
-                try {
-                    const auto& fed_zone_key             = federation.at(irods::KW_CFG_ZONE_KEY).get_ref<const std::string&>();
-                    const auto& fed_zone_name            = federation.at(irods::KW_CFG_ZONE_NAME).get_ref<const std::string&>();
-                    const auto& fed_zone_negotiation_key = federation.at(irods::KW_CFG_NEGOTIATION_KEY).get_ref<const std::string&>();
+    // Look for federation configuration, and if it's not there, we're done. Issue a warning, though.
+    const auto config_handle{irods::server_properties::instance().map()};
+    const auto& config{config_handle.get_json()};
+    const auto federation_iter = config.find(irods::KW_CFG_FEDERATION);
+    if (config.cend() == federation_iter) {
+        log_agent::warn("{}: Server federation configuration was not found.", __func__);
+        return 0;
+    }
 
-                    // store in remote_SID_key_map
-                    remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, fed_zone_negotiation_key);
-                }
-                catch (boost::bad_any_cast&) {
-                    rodsLog(LOG_ERROR, "initRcatServerHostByFile - failed to cast federation entry to string");
-                    continue;
-                }
-                catch (const std::out_of_range&) {
-                    rodsLog(LOG_ERROR, "%s - federation object did not contain required keys", __PRETTY_FUNCTION__);
-                    continue;
-                }
-            }
-            catch (const boost::bad_any_cast&) {
-                rodsLog(LOG_ERROR, "%s - failed to cast array member to federation object", __PRETTY_FUNCTION__);
-                continue;
-            }
+    // Iterate over all of the federated zones and get the zone key information for server authentication.
+    for (const auto& federation : federation_iter->get_ref<const nlohmann::json::array_t&>()) {
+        try {
+            const auto& zone_name = federation.at(irods::KW_CFG_ZONE_NAME).get_ref<const std::string&>();
+            const auto& zone_key = federation.at(irods::KW_CFG_ZONE_KEY).get_ref<const std::string&>();
+            const auto& negotiation_key = federation.at(irods::KW_CFG_NEGOTIATION_KEY).get_ref<const std::string&>();
+            remote_SID_key_map[zone_name] = std::make_pair(zone_key, negotiation_key);
+
+            const auto hash_scheme_iter = federation.find(irods::KW_CFG_ZONE_KEY_SIGNING_HASH_SCHEME);
+            const auto& hash_scheme = (federation.end() != hash_scheme_iter)
+                                          ? hash_scheme_iter->get_ref<const std::string&>()
+                                          : irods::MD5_NAME;
+            irods::zone_key_map[zone_name] = std::make_tuple(zone_key, negotiation_key, hash_scheme);
+        }
+        catch (const std::exception& e) {
+            log_agent::error("{}: Error in server federation configuration: {}", __func__, e.what());
+            continue;
         }
     }
-    catch (const irods::exception&) {
-        // try the old remote sid config
-        try {
-            for (const auto& rem_sid : irods::get_server_property<std::vector<std::string>>(REMOTE_ZONE_SID_KW)) {
-                // legacy format should be zone_name-SID
-                const size_t pos = rem_sid.find("-");
-                if (pos == std::string::npos) {
-                    rodsLog(LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sid.c_str());
-                }
-                else {
-                    // store in remote_SID_key_map
-                    std::string fed_zone_name = rem_sid.substr(0, pos);
-                    std::string fed_zone_key = rem_sid.substr(pos + 1);
-                    // use our negotiation key for the old configuration
-                    try {
-                        const auto& neg_key = irods::get_server_property<const std::string>(irods::KW_CFG_NEGOTIATION_KEY);
-                        remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, neg_key);
-                    }
-                    catch (const irods::exception& e) {
-                        irods::log(irods::error(e));
-                        return e.code();
-                    }
-                }
-            }
-        } catch (const irods::exception&) {}
-    } // else
 
     return 0;
-}
+} // initRcatServerHostByFile
 
 int
 initZone( rsComm_t *rsComm ) {

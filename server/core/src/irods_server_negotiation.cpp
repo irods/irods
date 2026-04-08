@@ -1,18 +1,86 @@
-// =-=-=-=-=-=-=-
-#include "irods/initServer.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
+
+#include "irods/initServer.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_server_properties.hpp"
-
-// =-=-=-=-=-=-=-
-// irods includes
 #include "irods/rodsDef.h"
 #include "irods/rsGlobalExtern.hpp"
 
 #include <list>
+#include <string>
 
 #include <fmt/format.h>
+
+namespace irods
+{
+    extern const std::string MD5_NAME;
+
+    // Map of remote zones to a tuple of zone key, negotiation key, and signing hash scheme
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    irods::lookup_table<std::tuple<std::string, std::string, std::string>> zone_key_map;
+} // namespace irods
+
+namespace
+{
+    using log_server = irods::experimental::log::server;
+
+    auto check_sent_zone_key(const std::string& _zone_key) -> irods::error
+    {
+        if (_zone_key.empty()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "incoming zone_key is empty");
+        }
+
+        // Check local zone keys for a match with the sent zone key.
+        try {
+            const auto config_handle{irods::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
+
+            const auto& neg_key = config.at(irods::KW_CFG_NEGOTIATION_KEY).get_ref<const std::string&>();
+            if (!irods::negotiation_key_is_valid(neg_key)) {
+                log_server::warn("{}: negotiation_key in server_config is invalid", __func__);
+            }
+
+            const auto& zone_key = config.at(irods::KW_CFG_ZONE_KEY).get_ref<const std::string&>();
+
+            const auto hash_scheme_iter = config.find(irods::KW_CFG_ZONE_KEY_SIGNING_HASH_SCHEME);
+            const auto& hash_scheme =
+                (config.end() != hash_scheme_iter) ? hash_scheme_iter->get_ref<const std::string&>() : irods::MD5_NAME;
+
+            std::string signed_zone_key;
+            if (const auto err = irods::sign_zone_key(zone_key, neg_key, hash_scheme, signed_zone_key); !err.ok()) {
+                return PASS(err);
+            }
+
+            if (_zone_key == signed_zone_key) {
+                log_server::trace("{}: Signed zone_key matches input signed zone_key", __func__);
+                return SUCCESS();
+            }
+        }
+        catch (const irods::exception& e) {
+            log_server::error(
+                "{}: Error occurred while while checking signed zone key: {}", __func__, e.client_display_what());
+            return {e};
+        }
+
+        // Check zone and negotiation keys defined for remote zones (i.e. federation) for a match.
+        for (const auto& entry : irods::zone_key_map) {
+            const auto& [zone_key, neg_key, hash_scheme] = entry.second;
+
+            std::string signed_zone_key;
+            if (const auto err = irods::sign_zone_key(zone_key, neg_key, hash_scheme, signed_zone_key); !err.ok()) {
+                return PASS(err);
+            }
+
+            if (_zone_key == signed_zone_key) {
+                return SUCCESS();
+            }
+        }
+
+        return ERROR(ZONE_KEY_SIGNATURE_MISMATCH, "signed zone_keys do not match");
+    } // check_sent_zone_key
+} // anonymous namespace
 
 namespace irods
 {
@@ -149,7 +217,7 @@ namespace irods
                     // Make sure that the zone_key was signed using the correct negotiation_key
                     // and matches the signed zone_key for this zone. If it does not match, the
                     // server should end communications.
-                    if (const auto err = check_sent_sid(zone_key); !err.ok()) {
+                    if (const auto err = check_sent_zone_key(zone_key); !err.ok()) {
                         return err;
                     }
 
