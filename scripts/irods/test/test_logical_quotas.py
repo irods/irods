@@ -188,3 +188,27 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
             self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '0'])
+
+    def test_logical_quota_msi(self):
+        file_name = 'test_logical_quota_msi'
+        lib.make_file(os.path.join(self.quota_user.local_session_dir, file_name), 4096, contents='arbitrary')
+        self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '1'])
+
+        try:
+            self.admin.assert_icommand(['irule', f'msi_set_logical_quota("{self.quota_user.session_collection}", "bytes", "4000")', 'null', 'null'])
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
+            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '4000', '<unset>', '-4000', '<unenforced>')) in out)
+
+            # Check that the alternate invocation works too
+            self.admin.assert_icommand(['irule', f'msi_set_logical_quota("{self.quota_user.session_collection}", "3000", "10")', 'null', 'null'])
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
+            # Bytes over still at -4000 since no recalculation done yet
+            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '3000', '10', '-4000', '0')) in out)
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{self.quota_user.session_collection}/{file_name}'])
+            self.admin.assert_icommand(['irule', f'msi_calc_logical_usage', 'null', 'null'])
+            _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
+            self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '3000', '10', str(4096 - 3000), str(1 - 10))) in out)
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_2'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+        finally:
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
+            self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quota', 'enforcement_enabled', '0'])
