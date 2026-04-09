@@ -9,6 +9,7 @@
 #include "irods/dataObjRepl.h"
 #include "irods/genQuery.h"
 #include "irods/rodsLog.h"
+#include "irods/rodsType.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rodsError.h"
 
@@ -184,14 +185,16 @@ namespace {
         rodsLong_t data_id;
         rodsLong_t replica_number;
         rodsLong_t resource_id;
+        auto operator<=>(const ReplicaAndRescId&) const = default;
     };
 
     // throws irods::exception
-    std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(
-        rsComm_t* _comm,
-        const std::vector<leaf_bundle_t>& _bundles,
-        const std::string& _invocation_timestamp,
-        const int _batch_size) {
+    std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(rsComm_t* _comm,
+                                                                 const std::vector<leaf_bundle_t>& _bundles,
+                                                                 const std::string& _invocation_timestamp,
+                                                                 const int _batch_size,
+                                                                 const int _offset)
+    {
         if (!_comm) {
             THROW(SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm");
         }
@@ -207,6 +210,7 @@ namespace {
 
         irods::GenQueryInpWrapper genquery_inp_wrapped;
         genquery_inp_wrapped.get().maxRows = _batch_size;
+        genquery_inp_wrapped.get().rowOffset = _offset;
 
         const std::string cond_str = leaf_bundles_to_genquery_in_syntax(_bundles);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
@@ -303,13 +307,14 @@ namespace {
     }
 
     // throws irods::exception
-    void proc_results_for_rebalance(
-        irods::plugin_context&            _ctx,
-        const std::string&                _parent_resc_name,
-        const std::string&                _child_resc_name,
-        const size_t                      _bun_idx,
-        const std::vector<leaf_bundle_t>& _bundles,
-        const dist_child_result_t&        _data_ids_to_replicate) {
+    void proc_results_for_rebalance(irods::plugin_context& _ctx,
+                                    const std::string& _parent_resc_name,
+                                    const std::string& _child_resc_name,
+                                    const size_t _bun_idx,
+                                    const std::vector<leaf_bundle_t>& _bundles,
+                                    const dist_child_result_t& _data_ids_to_replicate,
+                                    bool& _do_exit)
+    {
         if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
                   boost::format("null comm pointer. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %
@@ -337,7 +342,8 @@ namespace {
                 source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
             }
             catch (...) {
-                rodsLog(LOG_WARNING, "AAAAAAAAAAAAAAAAAAAAAAAAA!!!! Everything is fine nvm ;)");
+                rodsLog(LOG_WARNING, "Cannot perform rebalance. Skipping.");
+		_do_exit = true;                
                 continue;
             }
 
@@ -435,9 +441,15 @@ namespace irods {
         const int _batch_size,
         const std::string& _invocation_timestamp,
         const std::string& _resource_name) {
-
+      int replicas_to_skip{};
         while (true) {
-            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_ctx.comm(), _leaf_bundles, _invocation_timestamp, _batch_size);
+            const std::vector<ReplicaAndRescId> replicas_to_update =
+                get_out_of_date_replicas_batch(_ctx.comm(),
+                                               _leaf_bundles,
+                                               _invocation_timestamp,
+                                               _batch_size,
+                                               replicas_to_skip);
+
             if (replicas_to_update.empty()) {
                 break;
             }
@@ -454,7 +466,17 @@ namespace irods {
                           replica_to_update.resource_id);
                 }
 
-                ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
+                ReplicationSourceInfo source_info;
+                try {
+                    source_info =
+                        get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
+                }
+                catch (...) {
+                    rodsLog(LOG_WARNING, "Cannot update replica. Skipping.");
+                    replicas_to_skip++;
+                    continue;
+                }
+
                 hierarchy_parser hierarchy_parser;
                 const error err_parser = hierarchy_parser.set_string(source_info.resource_hierarchy);
                 if (!err_parser.ok()) {
@@ -530,8 +552,12 @@ namespace irods {
                 if (data_ids_needing_new_replicas.empty()) {
                     break;
                 }
-
-                proc_results_for_rebalance(_ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas);
+                bool do_exit{false};
+                proc_results_for_rebalance(
+                    _ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas, do_exit);
+                if (do_exit) {
+                    break;
+                }
             }
         }
     }

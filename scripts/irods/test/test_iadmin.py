@@ -528,13 +528,19 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             # place data into the resource
             test_file = "iput_test_file"
             lib.make_file(test_file, 10)
-            num_children = 11
+            num_children = 600
+            bad_file_indices = (1,3,5)
             for i in range(num_children):
                 self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
 
-            self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, 'foo1'), 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
-            self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, 'foo1'), 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
-            self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, 'foo1'), 'replica_number', '2', 'DATA_REPL_STATUS', '0'])
+            # Trim so we get more replication going
+            for i in range(num_children):
+                self.admin.assert_icommand("itrim -N2 -n 0 foo%d" % (i), 'STDOUT_SINGLELINE', 'Total size trimmed')
+
+            # Invalidate all replicas of "foo{i}"
+            for file in [f"foo{i}" for i in bad_file_indices]:
+                self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
+                self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '2', 'DATA_REPL_STATUS', '0'])
 
             # =-=-=-=-=-=-=-
             # visualize our tree
@@ -548,39 +554,16 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             # visualize our rebalance
             self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
+            for file in [f"foo{i}" for i in bad_file_indices]:
+                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
+                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
+            
             # =-=-=-=-=-=-=-
             # assert that all the appropriate repl numbers exist for all the children
-            self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
-            self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
-            self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
-
-            self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
-            self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 2 ", " foo2"])
-            self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 3 ", " foo2"])
-
-            self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 1 ", " foo4"])
-            self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 2 ", " foo4"])
-            self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 3 ", " foo4"])
-
-            self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
-            self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
-            self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
-
-            self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
-            self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
-            self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
-
-            self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
-            self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
-            self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
-
-            self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 1 ", " foo9"])
-            self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
-            self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
-
-            self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " foo10"])
-            self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 2 ", " foo10"])
-            self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 3 ", " foo10"])
+            for file in [f"foo{i}" for i in range(num_children) if i not in bad_file_indices]:
+                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
+                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
+                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
 
         finally:
             # =-=-=-=-=-=-=-

@@ -4536,6 +4536,65 @@ int chlGetReplListForLeafBundles(
 
 } // chlGetReplListForLeafBundles
 
+int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
+                                       size_t _child_idx,
+                                       const std::vector<leaf_bundle_t>* _bundles,
+                                       const std::string* _invocation_timestamp,
+                                       dist_child_result_t* _results,
+size_t _offset                                       ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    ret = db->call<
+              rodsLong_t,
+              size_t,
+              const std::vector<leaf_bundle_t>*,
+              const std::string*,
+              dist_child_result_t* >(
+                  0,
+                  irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
+                  ptr,
+                  _count,
+                  _child_idx,
+                  _bundles,
+                  _invocation_timestamp,
+                  _results );
+    if (!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+    return ret.code();
+
+} // chlGetReplListForLeafBundles
+
 auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t _data_id) -> int
 {
     irods::database_object_ptr db_obj_ptr;
