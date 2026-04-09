@@ -1380,7 +1380,7 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return status;
         }
         if(checkQuotaFlags & status) {
-            log_api::info("Logical quota violation with status [{}] and openFlags [{:o}]", status, dataObjInp->openFlags);
+            log_api::info("{}: Logical quota violation with status [{}] and openFlags [{:o}]", __func__, status, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }
     }

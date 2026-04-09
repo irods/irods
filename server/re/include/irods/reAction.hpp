@@ -52,7 +52,7 @@ int msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *coperator, msPar
 int msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei );
 
 int msiQuota( ruleExecInfo_t *rei );
-int msi_calc_logical_usage( ruleExecInfo_t *rei );
+int msi_calc_logical_usage( ruleExecInfo_t *_rei );
 int msiDeleteUnusedAVUs( ruleExecInfo_t *rei );
 int msiGoodFailure( ruleExecInfo_t *rei );
 int msiCheckPermission( msParam_t *perm, ruleExecInfo_t *rei );
@@ -96,7 +96,7 @@ int msiRenameCollection( msParam_t *oldName, msParam_t *newName,
 int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei);
 int msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource,
                  msParam_t *value, ruleExecInfo_t *rei );
-int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei);
+int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei);
 int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* objParam,
                                    msParam_t* typeParam,

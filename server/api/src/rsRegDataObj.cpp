@@ -7,12 +7,12 @@
 
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_configuration_keywords.hpp"
-#include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/replica_proxy.hpp"
 
-#include "irods/filesystem.hpp"
+#include "irods/filesystem/path.hpp"
 
 
 namespace
@@ -22,16 +22,16 @@ namespace
     using log_api           = irods::experimental::log::api;
     // clang-format on
 
-    int checkQuotaViolationForReg(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
-        fs::path path{dataObjInfo->objPath};
-        int status = check_logical_quota_violation(rsComm, path.parent_path().c_str());
+    int checkQuotaViolationForReg(struct RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
+        fs::path path{_dataObjInfo.objPath};
+        int status = check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
         if(status < 0) {
             log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
-        // Always fail if over object limit (registration makes new objects)
-        // Fail when trying to register a nonempty object if over byte limit
-        if((status & 2) || ((status & 1) && dataObjInfo->dataSize > 0)) {
+        // Always fail if over object limit (registration makes new objects).
+        // Fail when trying to register a nonempty object if over byte limit.
+        if((status & 2) || ((status & 1) && _dataObjInfo.dataSize > 0)) {
             return LOGICAL_QUOTA_EXCEEDED;
         }
         return 0;
@@ -50,7 +50,7 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     *outDataObjInfo = NULL;
 
     // Check quota enforcement before register
-    if(int ec = checkQuotaViolationForReg(rsComm, dataObjInfo); ec < 0) {
+    if(int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
         log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
         return ec;
     }
@@ -160,7 +160,7 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
     // Check quota enforcement before register
-    if(int ec = checkQuotaViolationForReg(rsComm, dataObjInfo); ec < 0) {
+    if(int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
         log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
         return ec;
     }

@@ -1,8 +1,8 @@
+#include "irods/rs_get_logical_quota.hpp"
+
 #include "irods/icatHighLevelRoutines.hpp"
-#include "irods/get_logical_quota.h"
 #include "irods/rcMisc.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
-#include "irods/rs_get_logical_quota.hpp"
 
 #include <cstdlib>
 #include <string>
@@ -15,15 +15,15 @@ int _rs_get_logical_quota(
     struct RsComm *_comm,
     getLogicalQuotaInp_t *_get_logical_quota_inp,
     logicalQuotaList_t **_logical_quota_list ) {
-    int status = 0;
 
     std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>> quota_values;
 
-    status = chl_check_logical_quota(_comm, _get_logical_quota_inp->coll_name, &quota_values);
+    int status = chl_check_logical_quota(_comm, _get_logical_quota_inp->coll_name, &quota_values);
     if(status < 0) {
+        log_api::error("{}: chl_check_logical_quota failed with ec=[{}] ", __func__, status);
         return status;
     }
-    (*_logical_quota_list) = static_cast<logicalQuotaList_t*>(std::malloc(sizeof(logicalQuotaList_t)));
+    *_logical_quota_list = static_cast<logicalQuotaList_t*>(std::malloc(sizeof(logicalQuotaList_t)));
     (*_logical_quota_list)->len = static_cast<int>(quota_values.size());
     (*_logical_quota_list)->list = static_cast<logicalQuota_t*>(std::malloc(sizeof(logicalQuota_t)*(*_logical_quota_list)->len));
 
@@ -37,15 +37,15 @@ int _rs_get_logical_quota(
     }
 
     return status;
-}
+} // _rs_get_logical_quota
 
 int
 rs_get_logical_quota(struct RsComm *_comm, getLogicalQuotaInp_t *_get_logical_quota_inp,
                 logicalQuotaList_t **_logical_quota_list ) {
-    rodsServerHost_t *rodsServerHost;
+    rodsServerHost_t *rodsServerHost{};
     int status = 0;
 
-    status = getAndConnRcatHost(_comm, SECONDARY_RCAT, (const char*) _get_logical_quota_inp->coll_name, &rodsServerHost);
+    status = getAndConnRcatHost(_comm, SECONDARY_RCAT,_get_logical_quota_inp->coll_name, &rodsServerHost);
 
     if ( status < 0 ) {
         return status;
@@ -60,7 +60,7 @@ rs_get_logical_quota(struct RsComm *_comm, getLogicalQuotaInp_t *_get_logical_qu
     }
 
     return status;
-}
+} // rs_get_logical_quota
 
 // Returns an indicator for which types of quotas were violated
 // 0 - none
@@ -89,14 +89,13 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
     // No longer needed after this point
     std::free(gcout);
 
-    getLogicalQuotaInp_t inp;
-    logicalQuotaList_t* out;
-    char* tmp = strdup(_coll_name);
-    inp.coll_name = tmp;
+    getLogicalQuotaInp_t inp{};
+    logicalQuotaList_t* out{};
+    auto tmp = std::string(_coll_name);
+    inp.coll_name = const_cast<char*>(tmp.c_str());
     status = rs_get_logical_quota(_comm, &inp, &out);
     if(status < 0) {
         log_api::error("[{}]: rs_get_logical_quota failed with ec=[{}] ", __func__, status);
-        std::free(tmp);
         return status;
     }
 
@@ -110,6 +109,5 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
        }
     }
     clearLogicalQuotaList(out);
-    std::free(tmp);
     return status;
 }

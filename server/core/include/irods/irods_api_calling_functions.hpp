@@ -1049,5 +1049,4 @@ int call_get_logical_quota(
 #define CALL_GET_LOGICAL_QUOTA  nullptr
 #endif
 
-
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP

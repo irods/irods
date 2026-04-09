@@ -24,6 +24,7 @@
 namespace
 {
     using log_re = irods::experimental::log::rule_engine;
+    using log_msi = irods::experimental::log::microservice;
 } // anonymous namespace
 
 /**
@@ -805,46 +806,46 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
  * \sa None
  **/
 
-int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
+int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei)
 {
 
     // Null checks
     // Every calling mode requires all arguments filled
-    if ( rei == NULL || rei->rsComm == NULL || _coll_name == NULL || _bytes_value == NULL || _objects_value == NULL) {
-        log_re::error("{}: Received one or more null pointers as input.", __func__);
-        return SYS_INTERNAL_NULL_INPUT_ERR;
+    if (nullptr == _rei || nullptr == _rei->rsComm || nullptr == _coll_name || nullptr == _bytes_value || nullptr == _objects_value) {
+        log_msi::error("{}: Received one or more null pointers as input.", __func__);
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
     }
 
 
     // Admin check
-    if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        log_re::error("{}: User {} is not local admin.", __func__, rei->uoic->userName);
+    if ( _rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        log_msi::error("{}: User [{}] is not local admin.", __func__, _rei->uoic->userName);
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
     char *parsed_coll_name, *parsed_bytes_value, *parsed_objects_value;
     // Parse collection name
-    if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == NULL ) {
-        log_re::error("{}: Null or non-string collection name specified.", __func__);
+    if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string collection name specified.", __func__);
         return USER_PARAM_TYPE_ERR;
     }
 
-    if ( ( parsed_bytes_value = parseMspForStr( _bytes_value ) ) == NULL ) {
-        log_re::error("{}: Null or non-string byte value specified.", __func__);
+    if ( ( parsed_bytes_value = parseMspForStr( _bytes_value ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string byte value specified.", __func__);
         return USER_PARAM_TYPE_ERR;
     }
 
-    if ( ( parsed_objects_value = parseMspForStr( _objects_value ) ) == NULL ) {
-        log_re::error("{}: Null or non-string object value specified.", __func__);
+    if ( ( parsed_objects_value = parseMspForStr( _objects_value ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string object value specified.", __func__);
         return USER_PARAM_TYPE_ERR;
     }
 
     rodsLong_t nonnegative_checker;
     if (const auto [ptr, ec] = std::from_chars(parsed_objects_value, parsed_objects_value + std::strlen(parsed_objects_value), nonnegative_checker); ec != std::errc{}) {
-        log_re::error("{}: Failed to parse parsed_objects_value=[{}] as integer", __func__, parsed_objects_value);
+        log_msi::error("{}: Failed to parse parsed_objects_value=[{}] as integer", __func__, parsed_objects_value);
     }
     if(nonnegative_checker < 0) {
-        log_re::error("{}: _objects_value must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
+        log_msi::error("{}: _objects_value must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
         return USER_INPUT_FORMAT_ERR;
     }
 
@@ -859,13 +860,13 @@ int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msPar
         parsed_bytes_value = &negative_one[0];
     } else {
         if (const auto [ptr, ec] = std::from_chars(parsed_bytes_value, parsed_bytes_value + std::strlen(parsed_bytes_value), nonnegative_checker); ec != std::errc{}) {
-            log_re::error("{}: Failed to parse parsed_bytes_value=[{}] as integer", __func__, parsed_bytes_value);
+            log_msi::error("{}: Failed to parse parsed_bytes_value=[{}] as integer", __func__, parsed_bytes_value);
         }
         if(nonnegative_checker < 0) {
-            log_re::error("{}: _bytes_value must be nonnegative when integer. Received: [{}]", __func__, nonnegative_checker);
+            log_msi::error("{}: _bytes_value must be nonnegative when integer. Received: [{}]", __func__, nonnegative_checker);
             return USER_INPUT_FORMAT_ERR;
         }
     }
 
-    return chl_set_logical_quota(rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
+    return chl_set_logical_quota(_rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
 } // msi_set_logical_quota

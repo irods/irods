@@ -1490,9 +1490,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
     }
 
     if ( strcmp( generalAdminInp->arg0, "calc_logical_usage" ) == 0 ) {
-        status = chl_calc_logical_usage_and_quota(rsComm);
-
-        return status;
+        return chl_calc_logical_usage_and_quota(rsComm);
     }
 
     if ( strcmp( generalAdminInp->arg0, "set_logical_quota" ) == 0 ) {

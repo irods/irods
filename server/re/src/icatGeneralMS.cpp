@@ -140,7 +140,7 @@ msiQuota( ruleExecInfo_t *rei ) {
  * \sa none
 **/
 int
-msi_calc_logical_usage( ruleExecInfo_t *rei ) {
+msi_calc_logical_usage( ruleExecInfo_t *_rei ) {
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -152,7 +152,7 @@ msi_calc_logical_usage( ruleExecInfo_t *rei ) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
 
-    return chl_calc_logical_usage_and_quota(rei->rsComm);
+    return chl_calc_logical_usage_and_quota(_rei->rsComm);
 }
 
 /**
