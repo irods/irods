@@ -109,6 +109,7 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
 @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Checks local resource vault.")
 class test_no_accidental_data_loss_on_unlink__issue_8441(unittest.TestCase):
+
     @classmethod
     def setUpClass(self):
         self.admin = session.mkuser_and_return_session("rodsadmin", "otherrods", "rods", lib.get_hostname())
@@ -173,6 +174,95 @@ class test_no_accidental_data_loss_on_unlink__issue_8441(unittest.TestCase):
         # Assert that the unregister failed.
         self.assertTrue(lib.replica_exists_on_resource(owner, object_path, self.resource),
                         msg=f"Replica for [{object_path}] was unregistered unexpectedly.")
+
+    def test_irm_force_unlink_all_permission_combinations__issue_8450(self):
+        # All supported iRODS permission levels in ascending order.
+        all_permissions = lib.irods_permissions
+
+        import enum
+        class Outcome(enum.Enum):
+            DEL = 'DEL'  # file deleted
+            SIL = 'SIL'  # file not deleted silently
+            ERR = 'ERR'  # file not deleted with error
+            DNE = 'DNE'  # file not found (object not visible to executor)
+
+        DEL = Outcome.DEL
+        SIL = Outcome.SIL
+        ERR = Outcome.ERR
+
+        # Expected outcomes for a regular user (alice) trying to irm -f an admin-owned object.
+        # Rows = collection permission, Columns = object permission (in all_permissions order).
+        # fmt: off
+        expected_as_rodsuser = {
+            #                  null  read_metadata  read_object  create_metadata  modify_metadata  delete_metadata  create_object  modify_object  delete_object  own
+            'null':           [SIL,  SIL,           SIL,         SIL,             SIL,             SIL,             SIL,           SIL,           SIL,           SIL],
+            'read_metadata':  [SIL,  SIL,           SIL,         SIL,             SIL,             SIL,             SIL,           SIL,           SIL,           SIL],
+            'read_object':    [SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'create_metadata':[SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'modify_metadata':[SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'delete_metadata':[SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'create_object':  [SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'modify_object':  [SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'delete_object':  [SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'own':            [SIL,  SIL,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+        }
+
+        # Expected outcomes for an admin (otherrods) trying to irm -f a user-owned object.
+        # fmt: off
+        expected_as_rodsadmin = {
+            #                  null  read_metadata  read_object  create_metadata  modify_metadata  delete_metadata  create_object  modify_object  delete_object  own
+            'null':           [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'read_metadata':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'read_object':    [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'create_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'modify_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'delete_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'create_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'modify_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'delete_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            'own':            [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+        }
+        # fmt: on
+
+        # Each entry is (executor, owner, object_path, physical_path, expected_matrix).
+        test_cases = [
+            (self.user,  self.admin, self.admin_data_object, self.admin_physical_path, expected_as_rodsuser),
+            (self.admin, self.user,  self.user_data_object,  self.user_physical_path,  expected_as_rodsadmin),
+        ]
+
+        for executor, owner, object_path, physical_path, expected in test_cases:
+            collection_path = os.path.dirname(object_path)
+
+            for coll_perm in all_permissions:
+                for i, obj_perm in enumerate(all_permissions):
+                    with self.subTest(executor=executor.username, coll_perm=coll_perm, obj_perm=obj_perm):
+                        try:
+                            owner.assert_icommand(["ichmod", coll_perm, executor.username, collection_path])
+                            owner.assert_icommand(["ichmod", obj_perm,  executor.username, object_path])
+
+                            _, err, rc = executor.run_icommand(["irm", "-f", object_path])
+
+                            file_gone = not os.path.exists(physical_path)
+
+                            if file_gone:
+                                outcome = DEL
+                                # Recreate for subsequent iterations.
+                                owner.assert_icommand(["itouch", "-R", self.resource, object_path])
+                            elif rc != 0:
+                                outcome = ERR
+                            else:
+                                outcome = SIL
+
+                            self.assertEqual(expected[coll_perm][i], outcome,
+                                msg=f"executor={executor.username} coll_perm={coll_perm} obj_perm={obj_perm}: "
+                                    f"expected {expected[coll_perm][i]}, got {outcome}")
+                            if outcome == ERR:
+                                self.assertIn("CAT_NO_ACCESS_PERMISSION", err,
+                                    msg=f"executor={executor.username} coll_perm={coll_perm} obj_perm={obj_perm}: "
+                                        f"expected CAT_NO_ACCESS_PERMISSION in stderr: [{err}]")
+                        finally:
+                            # Restore the owner's own permission so subsequent iterations work correctly.
+                            owner.run_icommand(["ichmod", "-M", "own", owner.username, object_path])
 
     def test_as_user_with_modify_on_collection_and_modify_on_object(self):
         owner = self.admin
