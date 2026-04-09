@@ -1520,10 +1520,6 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
-
     @unittest.skip("NOTSURE / FIXME ... -K not supported, perhaps")
     def test_local_iput_checksum(self):
         pass
@@ -1874,10 +1870,6 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
-
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -2704,10 +2696,6 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
-
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -3321,10 +3309,6 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
-
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -3639,10 +3623,6 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
-
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -4216,10 +4196,6 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
-
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -4902,10 +4878,6 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 1 ", " & " + self.testfile])
         # should be listed 2x
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 2 ", " & " + self.testfile])
-
-    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
-    def test_local_iput_collision_with_wlock(self):
-        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
