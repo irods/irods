@@ -12,7 +12,9 @@ else:
 from . import session
 from .. import test
 from .. import lib
+from .. import paths
 from ..configuration import IrodsConfig
+
 
 class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -374,6 +376,139 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             lib.remove_resource(self.admin, resc1)
             lib.remove_resource(self.admin, resc2)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Checks local resource vault.")
+    def test_itrim_all_permission_combinations__issue_8450(self):
+        trim_resource = "trim_resc"
+        keep_resource = "keep_resc"
+        trim_vault_path = os.path.join(paths.home_directory(), f"{trim_resource}_vault")
+        keep_vault_path = os.path.join(paths.home_directory(), f"{keep_resource}_vault")
+
+        user = session.mkuser_and_return_session('rodsuser', "alice", "apass", lib.get_hostname())
+        user_collection = "/".join([user.session_collection, self.id() + "-coll"])
+        admin_collection = "/".join([self.admin.session_collection, self.id() + "-coll"])
+        user_data_object = "/".join([user_collection, self.id() + ".data"])
+        admin_data_object = "/".join([admin_collection, self.id() + ".data"])
+        user_trim_physical_path = os.path.join(
+            trim_vault_path, os.path.sep.join(user_data_object.split("/")[2:]))
+        admin_trim_physical_path = os.path.join(
+            trim_vault_path, os.path.sep.join(admin_data_object.split("/")[2:]))
+
+        try:
+            self.admin.assert_icommand(
+                ["iadmin", "mkresc", trim_resource, "unixfilesystem",
+                 ":".join([test.settings.HOSTNAME_1, trim_vault_path])], "STDOUT")
+            self.admin.assert_icommand(
+                ["iadmin", "mkresc", keep_resource, "unixfilesystem",
+                 ":".join([test.settings.HOSTNAME_1, keep_vault_path])], "STDOUT")
+
+            user.assert_icommand(["imkdir", user_collection])
+            user.assert_icommand(["itouch", "-R", trim_resource, user_data_object])
+            self.assertTrue(os.path.exists(user_trim_physical_path),
+                            msg=f"Data not created at [{user_trim_physical_path}] as expected.")
+            self.admin.assert_icommand(["imkdir", admin_collection])
+            self.admin.assert_icommand(["itouch", "-R", trim_resource, admin_data_object])
+            self.assertTrue(os.path.exists(admin_trim_physical_path),
+                            msg=f"Data not created at [{admin_trim_physical_path}] as expected.")
+            user.assert_icommand(["irepl", "-R", keep_resource, user_data_object])
+            self.admin.assert_icommand(["irepl", "-R", keep_resource, admin_data_object])
+
+            all_permissions = lib.irods_permissions
+
+            import enum
+            class Outcome(enum.Enum):
+                DEL = 'DEL'  # replica physically removed
+                SIL = 'SIL'  # replica not removed silently (rc=0, no error)
+                ERR = 'ERR'  # replica not removed, CAT_NO_ACCESS_PERMISSION error
+                DNE = 'DNE'  # replica not removed and the reason given is that the object does not exist
+
+            DEL = Outcome.DEL
+            SIL = Outcome.SIL
+            ERR = Outcome.ERR
+            DNE = Outcome.DNE
+
+            # Expected outcomes for a regular user (alice) trying to itrim -N1 -S an admin-owned object.
+            # Rows = collection permission, Columns = object permission (in all_permissions order).
+            # fmt: off
+            expected_as_rodsuser = {
+                #                  null  read_metadata  read_object  create_metadata  modify_metadata  delete_metadata  create_object  modify_object  delete_object  own
+                'null':           [DNE,  DNE,           DNE,         DNE,             DNE,             DNE,             DNE,           DNE,           DNE,           DNE],
+                'read_metadata':  [DNE,  DNE,           DNE,         DNE,             DNE,             DNE,             DNE,           DNE,           DNE,           DNE],
+                'read_object':    [DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'create_metadata':[DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'modify_metadata':[DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'delete_metadata':[DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'create_object':  [DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'modify_object':  [DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'delete_object':  [DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'own':            [DNE,  DNE,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            }
+
+            # Expected outcomes for an admin (otherrods) trying to itrim -N1 -S a user-owned object.
+            expected_as_rodsadmin = {
+                #                  null  read_metadata  read_object  create_metadata  modify_metadata  delete_metadata  create_object  modify_object  delete_object  own
+                'null':           [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'read_metadata':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'read_object':    [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'create_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'modify_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'delete_metadata':[ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'create_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'modify_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'delete_object':  [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+                'own':            [ERR,  ERR,           ERR,         ERR,             ERR,             ERR,             ERR,           ERR,           DEL,           DEL],
+            }
+            # fmt: on
+
+            # Each entry is (executor, owner, object_path, trim_physical_path, expected_matrix).
+            test_cases = [
+                (user,        self.admin, admin_data_object, admin_trim_physical_path, expected_as_rodsuser),
+                (self.admin,  user,       user_data_object,  user_trim_physical_path,  expected_as_rodsadmin),
+            ]
+
+            for executor, owner, object_path, physical_path, expected in test_cases:
+                collection_path = os.path.dirname(object_path)
+
+                for coll_perm in all_permissions:
+                    for i, obj_perm in enumerate(all_permissions):
+                        with self.subTest(executor=executor.username, coll_perm=coll_perm, obj_perm=obj_perm):
+                            owner.assert_icommand(["ichmod", coll_perm, executor.username, collection_path])
+                            owner.assert_icommand(["ichmod", obj_perm,  executor.username, object_path])
+
+                            _, err, rc = executor.run_icommand(["itrim", "-N1", "-S", trim_resource, object_path])
+
+                            replica_gone = not os.path.exists(physical_path)
+
+                            if replica_gone:
+                                outcome = DEL
+                                # Recreate replica on trim_resource for subsequent iterations.
+                                owner.assert_icommand(["irepl", "-R", trim_resource, object_path])
+                            elif rc != 0 and "does not exist" in err:
+                                outcome = DNE
+                            elif rc != 0:
+                                outcome = ERR
+                            else:
+                                outcome = SIL
+
+                            self.assertEqual(expected[coll_perm][i], outcome,
+                                msg=f"executor={executor.username} coll_perm={coll_perm} obj_perm={obj_perm}: "
+                                    f"expected {expected[coll_perm][i]}, got {outcome}")
+                            if outcome == ERR:
+                                self.assertIn("CAT_NO_ACCESS_PERMISSION", err,
+                                    msg=f"executor={executor.username} coll_perm={coll_perm} obj_perm={obj_perm}: "
+                                        f"expected CAT_NO_ACCESS_PERMISSION in stderr: [{err}]")
+
+                            # Restore the owner's own permission so subsequent iterations work correctly.
+                            owner.run_icommand(["ichmod", "-M", "own", owner.username, object_path])
+
+        finally:
+            user.run_icommand(["irm", "-rf", user_collection])
+            self.admin.run_icommand(["irm", "-rf", admin_collection])
+            user.__exit__()
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.run_icommand(['iadmin', 'rmuser', user.username])
+                admin_session.run_icommand(["iadmin", "rmresc", trim_resource])
+                admin_session.run_icommand(["iadmin", "rmresc", keep_resource])
+
 
 class test_itrim_target_replica_selection_decision_making__issue_7515(unittest.TestCase):
 
@@ -582,3 +717,4 @@ class test_itrim_target_replica_selection_decision_making__issue_7515(unittest.T
 		end		--&&
 		"""
 		self.do_test([1, 1, 1, 1], [None, None, 1, 1])
+

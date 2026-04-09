@@ -903,3 +903,17 @@ def user_exists(session, user_name, zone_name=None):
     out = session.run_icommand(
         ['iquest', f"select USER_ID where USER_NAME = '{user_name}' and USER_ZONE = '{zone_name}'"])[0]
     return 'CAT_NO_ROWS_FOUND' not in out
+
+# All supported iRODS permission levels in ascending order.
+irods_permissions = [
+    'null',
+    'read_metadata',
+    'read_object',
+    'create_metadata',
+    'modify_metadata',
+    'delete_metadata',
+    'create_object',
+    'modify_object',
+    'delete_object',
+    'own',
+]
