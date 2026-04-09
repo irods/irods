@@ -124,7 +124,9 @@ API_NUMBER(DATA_OBJ_FSYNC_AN,                       698)
 API_NUMBER(GET_MISC_SVR_INFO_AN,                    700)
 API_NUMBER(GENERAL_ADMIN_AN,                        701)
 API_NUMBER(GEN_QUERY_AN,                            702)
+// DEPRECATED: Legacy authentication APIs are deprecated. Use AUTHENTICATION_APN (110000) instead.
 API_NUMBER(AUTH_REQUEST_AN,                         703)
+// DEPRECATED: Legacy authentication APIs are deprecated. Use AUTHENTICATION_APN (110000) instead.
 API_NUMBER(AUTH_RESPONSE_AN,                        704)
 API_NUMBER(AUTH_CHECK_AN,                           705)
 API_NUMBER(MOD_AVU_METADATA_AN,                     706)
@@ -145,6 +147,7 @@ API_NUMBER(DATABASE_RESC_CLOSE_AN,                  721)
 API_NUMBER(SPECIFIC_QUERY_AN,                       722)
 API_NUMBER(TICKET_ADMIN_AN,                         723)
 API_NUMBER(GET_TEMP_PASSWORD_FOR_OTHER_AN,          724)
+// DEPRECATED: Legacy authentication APIs are deprecated. Use AUTHENTICATION_APN (110000) instead.
 API_NUMBER(PAM_AUTH_REQUEST_AN,                     725)
 API_NUMBER(GET_LIMITED_PASSWORD_AN,                 726)
 
@@ -156,7 +159,9 @@ API_NUMBER(REPLICA_TRUNCATE_AN,                     802)
 API_NUMBER(SSL_START_AN,                            1100)
 API_NUMBER(SSL_END_AN,                              1101)
 
+// DEPRECATED: Legacy authentication APIs are deprecated. Use AUTHENTICATION_APN (110000) instead.
 API_NUMBER(AUTH_PLUG_REQ_AN,                        1201)
+// DEPRECATED: Legacy authentication APIs are deprecated. Use AUTHENTICATION_APN (110000) instead.
 API_NUMBER(AUTH_PLUG_RESP_AN,                       1202)
 API_NUMBER(GET_HIER_FOR_RESC_AN,                    1203)
 API_NUMBER(GET_HIER_FROM_LEAF_ID_AN,                1204)
