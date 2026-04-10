@@ -16382,7 +16382,7 @@ irods::error db_calc_logical_usage_and_quota_op(
     // clang-format on
 
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        status = 0;    /* no files, OK */
+        status = 0;
     }
     if ( status != 0 ) {
         _rollback(__func__);

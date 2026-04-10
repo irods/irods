@@ -1499,6 +1499,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         // Only allow negative values internally-- error out if encountered here
         if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg3, generalAdminInp->arg3 + std::strlen(generalAdminInp->arg3), nonnegative_checker); ec != std::errc{}) {
            log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg3);
+           return SYS_INVALID_INPUT_PARAM;
         }
         if(nonnegative_checker < 0) {
            log_api::error("{}: set_logical_quota: Third argument must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
@@ -1520,6 +1521,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         // arg2 should also be nonnegative in this branch
         if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg2, generalAdminInp->arg2 + std::strlen(generalAdminInp->arg2), nonnegative_checker); ec != std::errc{}) {
            log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg2);
+           return SYS_INVALID_INPUT_PARAM;
         }
         if(nonnegative_checker < 0) {
            log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
