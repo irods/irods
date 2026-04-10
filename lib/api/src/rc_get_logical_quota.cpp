@@ -30,8 +30,8 @@
  * \sa none
 **/
 int
-rc_get_logical_quota( struct RcComm *conn, getLogicalQuotaInp_t *getLogicalQuotaInp,
-                logicalQuotaList_t **logicalQuotaList ) {
-    return procApiRequest(conn, GET_LOGICAL_QUOTA_AN,  getLogicalQuotaInp, nullptr, reinterpret_cast<void**>(logicalQuotaList), nullptr);
+rc_get_logical_quota( struct RcComm *_conn, getLogicalQuotaInp_t *_getLogicalQuotaInp,
+                logicalQuotaList_t **_logicalQuotaList ) {
+    return procApiRequest(_conn, GET_LOGICAL_QUOTA_AN,  _getLogicalQuotaInp, nullptr, reinterpret_cast<void**>(_logicalQuotaList), nullptr);
 
 }

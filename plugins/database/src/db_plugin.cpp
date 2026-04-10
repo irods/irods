@@ -16529,7 +16529,7 @@ irods::error db_set_logical_quota_op(
             _rollback(__func__);
             return ERROR( status, "Logical quota deletion failure" );
         }
-    } 
+    }
     else if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
         // If the UPDATE did not update any rows and at least one value is positive, this is a new quota row
 
@@ -16558,7 +16558,7 @@ irods::error db_set_logical_quota_op(
                 _rollback(__func__);
                 return ERROR( status, "Logical quota deletion failure" );
             }
-    } 
+    }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status < 0 ) {

@@ -4262,34 +4262,34 @@ clearAuthResponseInp( void * inauthResponseInp ) {
     return;
 }
 
-void clearGetLogicalQuotaInp(void* getLogicalQuotaInput) {
+void clearGetLogicalQuotaInp(void* _getLogicalQuotaInput) {
     getLogicalQuotaInp_t *getLogicalQuotaInp;
 
     if(!getLogicalQuotaInput) {
         return;
     }
 
-    getLogicalQuotaInp = static_cast<getLogicalQuotaInp_t*>(getLogicalQuotaInput);
+    getLogicalQuotaInp = static_cast<getLogicalQuotaInp_t*>(_getLogicalQuotaInput);
     clearKeyVal(&getLogicalQuotaInp->cond_input);
     free_pointer(getLogicalQuotaInp->coll_name);
-    std::memset(getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t)); 
+    std::memset(getLogicalQuotaInp, 0, sizeof(getLogicalQuotaInp_t));
 
     return;
 }
 
-void clearLogicalQuotaList(void* inlogicalQuotaList) {
+void clearLogicalQuotaList(void* _logicalQuotaList) {
     logicalQuotaList_t *logicalQuotaList;
 
-    if(!inlogicalQuotaList) {
+    if(!_logicalQuotaList) {
         return;
     }
 
-    logicalQuotaList = static_cast<logicalQuotaList_t*>(inlogicalQuotaList);
+    logicalQuotaList = static_cast<logicalQuotaList_t*>(_logicalQuotaList);
     for(int i = 0; i < logicalQuotaList->len; i++) {
         free_pointer(logicalQuotaList->list[i].coll_name);
     }
     free_pointer(logicalQuotaList->list);
-    std::memset(logicalQuotaList, 0, sizeof(logicalQuotaList_t)); 
+    std::memset(logicalQuotaList, 0, sizeof(logicalQuotaList_t));
 
     return;
 }
