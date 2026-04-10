@@ -1,5 +1,6 @@
 #include "irods/rs_get_logical_quota.hpp"
 
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
@@ -68,26 +69,29 @@ rs_get_logical_quota(struct RsComm *_comm, getLogicalQuotaInp_t *_get_logical_qu
 // 2 - object count
 // 3 - both
 int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) {
-    gridConfigurationInp_t gcinp { {"logical_quota"}, {"enforcement_enabled"}, { 0 } };
+    gridConfigurationInp_t gcinp { {"logical_quotas"}, {"enforcement_enabled"}, { 0 } };
     gridConfigurationOut_t *gcout{};
+
+    const auto free_gcout = irods::at_scope_exit{[&gcout] { std::free(gcout); }};
 
     int status = rs_get_grid_configuration_value(_comm, &gcinp, &gcout);
     if(status < 0) {
-        log_api::warn("[{}]: Failed to get logical quota enforcement status. (ec=[{}]) Logical quotas will not be enforced.", __func__, status);
+        log_api::warn("{}: Failed to get logical quota enforcement status. (ec=[{}]) Logical quotas will not be enforced.", __func__, status);
         return 0;
-    } else if(std::strncmp(gcout->option_value, "0", 2) == 0) {
+    }
+
+    if(std::strncmp(gcout->option_value, "0", 2) == 0) {
         // No logical quota enforcement
-        std::free(gcout);
         return 0;
-    } else if(std::strncmp(gcout->option_value, "1", 2) != 0) {
+    }
+
+    if(std::strncmp(gcout->option_value, "1", 2) != 0) {
         // Strange value set, so log a message
-        log_api::warn("[{}]: Received unknown value [{}] when fetching logical quota enforcement status. (Set to \"1\" to enable enforcement.) Logical quotas will not be enforced.", __func__, gcout->option_value);
-        std::free(gcout);
+        log_api::warn("{}: Received unknown value [{}] when fetching logical quota enforcement status. (Set to \"1\" to enable enforcement.) Logical quotas will not be enforced.", __func__, gcout->option_value);
         return 0;
     }
 
     // No longer needed after this point
-    std::free(gcout);
 
     getLogicalQuotaInp_t inp{};
     logicalQuotaList_t* out{};
@@ -95,7 +99,7 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
     inp.coll_name = const_cast<char*>(tmp.c_str());
     status = rs_get_logical_quota(_comm, &inp, &out);
     if(status < 0) {
-        log_api::error("[{}]: rs_get_logical_quota failed with ec=[{}] ", __func__, status);
+        log_api::error("{}: rs_get_logical_quota failed with ec=[{}] ", __func__, status);
         return status;
     }
 
