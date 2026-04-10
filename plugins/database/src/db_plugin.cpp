@@ -16462,16 +16462,21 @@ irods::error db_set_logical_quota_op(
     std::memcpy(coll_id, icss.stmtPtr[statementNum]->resultValue[0], 21);
 
 
-    // This parameter affects the delete/update sequence below
-    // 0 means both byte_limit and object_limit are non-negative
-    // 1 means only byte_limit is negative
-    // 2 means only object_limit is negative
-    // 3 means both are negative, which means "do nothing"
+    // Negative input parameters represent a no-op: if the value is
+    // set, keep the existing value. If it is unset (i.e. it is a new quota)
+    // it will be set to 0.
+
+    // The following parameter calculates the sign of the inputs
+    // and will affect the delete/update sequence below.
+    // 0 means both byte_limit and object_limit are non-negative.
+    // 1 means only byte_limit is negative.
+    // 2 means only object_limit is negative.
+    // 3 means both are negative, which is a true no-op.
     const int query_selection = (byte_limit < 0) + 2*(object_limit < 0);
 
     getNowStr( myTime );
 
-    const char* update_strings[3] = {"UPDATE R_LOGICAL_QUOTA_MAIN "
+    std::array<const char*, 3> update_strings = {"UPDATE R_LOGICAL_QUOTA_MAIN "
                                       "SET max_bytes = ?, "
                                           "max_objects = ?, "
                                           "modify_ts = ? "

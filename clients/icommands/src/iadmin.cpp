@@ -1001,8 +1001,9 @@ auto show_logical_quotas(const char* _coll_name = nullptr) -> int
     if(status < 0) {
         char* sub_error_name{};
         const char* error_name = rodsErrorName(status, &sub_error_name);
-        std::cerr << "rc_get_logical_quota failed with error " << error_name << " [(" << status << ")]" << std::endl;
+        std::cerr << "rc_get_logical_quota failed with error " << error_name << " with suberror " << (sub_error_name ? sub_error_name : "N/A") << " [(" << status << ")]" << std::endl;
         printErrorStack(Conn->rError);
+        std::free(sub_error_name);
         return 1;
     }
 
@@ -1436,16 +1437,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                                     "\tiadmin slq <collname> <maxbytes> <maxobjects>\n"
                                     "\tiadmin slq <collname> bytes value\n"
                                     "\tiadmin slq <collname> objects value\n";
-        if(strlen(cmdToken[1]) == 0) {
+        if(strlen(cmdToken[1]) == 0 || strlen(cmdToken[2]) == 0 || strlen(cmdToken[3]) == 0  ) {
             fprintf(stderr, "%s", usage_message);
-        }
-
-        if(strlen(cmdToken[2]) == 0) {
-            fprintf(stderr, "%s", usage_message);
-        }
-
-        if(strlen(cmdToken[3]) == 0) {
-            fprintf(stderr, "%s", usage_message);
+            return -2;
         }
 
         generalAdmin( 0, "set_logical_quota",
