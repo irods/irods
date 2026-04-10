@@ -1522,7 +1522,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
            log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg2);
         }
         if(nonnegative_checker < 0) {
-           log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer specified. Received: [{}]", __func__, nonnegative_checker);
+           log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
             return USER_INPUT_FORMAT_ERR;
         }
 

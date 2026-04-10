@@ -4265,7 +4265,7 @@ clearAuthResponseInp( void * inauthResponseInp ) {
 void clearGetLogicalQuotaInp(void* _getLogicalQuotaInput) {
     getLogicalQuotaInp_t *getLogicalQuotaInp;
 
-    if(!getLogicalQuotaInput) {
+    if(!_getLogicalQuotaInput) {
         return;
     }
 

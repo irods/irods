@@ -46,7 +46,7 @@ rs_get_logical_quota(struct RsComm *_comm, getLogicalQuotaInp_t *_get_logical_qu
     rodsServerHost_t *rodsServerHost{};
     int status = 0;
 
-    status = getAndConnRcatHost(_comm, SECONDARY_RCAT,_get_logical_quota_inp->coll_name, &rodsServerHost);
+    status = getAndConnRcatHost(_comm, PRIMARY_RCAT, _get_logical_quota_inp->coll_name, &rodsServerHost);
 
     if ( status < 0 ) {
         return status;
@@ -114,4 +114,4 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
     }
     clearLogicalQuotaList(out);
     return status;
-}
+} // check_logical_quota_violation

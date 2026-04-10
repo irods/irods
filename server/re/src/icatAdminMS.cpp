@@ -816,7 +816,6 @@ int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msPar
         return INVALID_INPUT_ARGUMENT_NULL_POINTER;
     }
 
-
     // Admin check
     if ( _rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         log_msi::error("{}: User [{}] is not local admin.", __func__, _rei->uoic->userName);
@@ -863,7 +862,7 @@ int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msPar
             log_msi::error("{}: Failed to parse parsed_bytes_value=[{}] as integer", __func__, parsed_bytes_value);
         }
         if(nonnegative_checker < 0) {
-            log_msi::error("{}: _bytes_value must be nonnegative when integer. Received: [{}]", __func__, nonnegative_checker);
+            log_msi::error("{}: _bytes_value must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
             return USER_INPUT_FORMAT_ERR;
         }
     }

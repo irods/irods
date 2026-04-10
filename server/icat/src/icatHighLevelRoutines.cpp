@@ -4912,4 +4912,3 @@ auto chl_check_logical_quota(RsComm* _comm, const char* _coll_name, std::vector<
     const auto ret = db->call(_comm, irods::DATABASE_OP_CHECK_LOGICAL_QUOTA, ptr, _coll_name, _quota_values);
     return static_cast<int>(ret.code());
 } // chl_check_logical_quota
-
