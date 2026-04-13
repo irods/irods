@@ -4541,7 +4541,8 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
                                        const std::vector<leaf_bundle_t>* _bundles,
                                        const std::string* _invocation_timestamp,
                                        dist_child_result_t* _results,
-size_t _offset                                       ) {
+                                       int _offset)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
@@ -4579,21 +4580,23 @@ size_t _offset                                       ) {
               size_t,
               const std::vector<leaf_bundle_t>*,
               const std::string*,
-              dist_child_result_t* >(
+              dist_child_result_t*,
+              int >(
                   0,
-                  irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
+                  irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
                   ptr,
                   _count,
                   _child_idx,
                   _bundles,
                   _invocation_timestamp,
-                  _results );
+                  _results,
+                  _offset );
     if (!ret.ok()) {
         irods::log(PASS(ret));
     }
     return ret.code();
 
-} // chlGetReplListForLeafBundles
+} // chlGetReplListForLeafBundlesOffset
 
 auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t _data_id) -> int
 {
