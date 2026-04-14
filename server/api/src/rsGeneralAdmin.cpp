@@ -911,7 +911,6 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
             std::string_view option = (nullptr != generalAdminInp->arg3) ? generalAdminInp->arg3 : "";
 
-            // TODO(#8697): Should we prevent clearing the current user's password? What about rodsadmin accounts?
             if ("remove_password" == option) {
                 std::vector<char> just_user_name(NAME_LEN + 1, '\0');
                 std::vector<char> zone_name(NAME_LEN + 1, '\0');
@@ -927,6 +926,21 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                 const auto input =
                     nlohmann::json{{"user_name", just_user_name.data()},
                                    {"zone_name", ('\0' == zone_name.at(0)) ? getLocalZoneName() : zone_name.data()}};
+
+                // Prevent removing password for the currently authenticated user.
+                const auto* client_user_name = static_cast<const char*>(rsComm->clientUser.userName);
+                const auto* client_zone_name = static_cast<const char*>(rsComm->clientUser.rodsZone);
+                if (client_user_name == input.at("user_name").get_ref<const std::string&>() &&
+                    client_zone_name == input.at("zone_name").get_ref<const std::string&>())
+                {
+                    constexpr auto err = SYS_NOT_ALLOWED;
+                    constexpr const char* msg =
+                        "Removing password for the currently authenticated user is not allowed.";
+                    addRErrorMsg(&rsComm->rError, err, msg);
+                    log_api::error("{}: {}", __func__, msg);
+                    return err;
+                }
+
                 return chl_remove_password(rsComm, input.dump().c_str());
             }
 
