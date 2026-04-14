@@ -13,7 +13,7 @@ namespace irods {
     using leaf_bundle_t = resource_manager::leaf_bundle_t;
 
     // throws irods::exception
-    void update_out_of_date_replicas(
+    bool update_out_of_date_replicas(
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
@@ -21,7 +21,7 @@ namespace irods {
         const std::string& resource_name);
 
     // throws irods::exception
-    void create_missing_replicas(
+    bool create_missing_replicas(
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,

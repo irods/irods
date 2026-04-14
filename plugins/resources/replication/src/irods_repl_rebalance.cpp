@@ -435,7 +435,7 @@ namespace {
 
 namespace irods {
     // throws irods::exception
-    void update_out_of_date_replicas(
+    bool update_out_of_date_replicas(
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
@@ -528,18 +528,20 @@ namespace irods {
                 THROW(first_error.code(), first_error.result());
             }
         }
+        return static_cast<bool>(replicas_to_skip);
     }
 
     // throws irods::exception
-    void create_missing_replicas(
+    bool create_missing_replicas(
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
         const std::string& _invocation_timestamp,
         const std::string& _resource_name) {
+        bool did_skip_some_repls{};
         for (size_t i=0; i<_leaf_bundles.size(); ++i) {
-            const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
             int repls_to_skip{};
+            const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
             while (true) {
                 dist_child_result_t data_ids_needing_new_replicas;
                 const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundlesOffset(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas, repls_to_skip);
@@ -549,6 +551,10 @@ namespace irods {
                           % _resource_name
                           % i
                           % leaf_bundles_to_string(_leaf_bundles));
+                }
+
+                if (repls_to_skip > 0) {
+                    did_skip_some_repls = true;
                 }
 
                 rodsLog(LOG_WARNING, "Ignored size: %i.", repls_to_skip);
@@ -567,5 +573,6 @@ namespace irods {
                     _ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas, repls_to_skip);
             }
         }
+        return did_skip_some_repls;
     }
 } // namespace irods
