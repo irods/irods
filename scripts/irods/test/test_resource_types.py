@@ -1,4 +1,5 @@
-from __future__ import print_function
+from pathlib import Path
+from threading import Timer
 import getpass
 import hashlib
 import inspect
@@ -7,19 +8,14 @@ import os
 import psutil
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
-from threading import Timer
+import textwrap
 import textwrap
 import time
-import socket
-import textwrap
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from ..test.command import assert_command
 from ..configuration import IrodsConfig
@@ -2150,6 +2146,183 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         # local cleanup
         if os.path.exists(filepath):
             os.unlink(filepath)
+
+    def _do_test_create_univmss_resource_using_context_string__issue_8928(self, script_filename, resource_context):
+        def create_executable_univmss_script_from_template(filename):
+            univmss_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', filename)
+            if not os.path.exists(univmss_testing):
+                univmss_template = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh.template')
+                with open(univmss_template) as f:
+                    univmss_contents = f.read().replace('template-','')
+                with open(univmss_testing, 'w') as f:
+                    f.write(univmss_contents)
+                os.chmod(univmss_testing, 0o544)
+            return univmss_testing
+
+        compound_resc_name = 'issue_8928_compound_resc'
+        cache_resc_name = 'issue_8928_cache_resc'
+
+        univmss_resc_name = 'issue_8928_umss_resc'
+        vault_path = f'{self.admin.local_session_dir}/{univmss_resc_name}_vault'
+        resc_hostname = socket.gethostname()
+        vault = f'{resc_hostname}:{vault_path}'
+
+        # The logical path to the data object used to confirm the resource is working.
+        data_object = f'{self.user0.session_collection}/issue_8928_data_object.txt'
+
+        # The absolute path to the executable script that will be used by the univmss resource.
+        script_path = None
+
+        try:
+            # Create an executable copy of the univmss script template.
+            script_path = create_executable_univmss_script_from_template(script_filename)
+            self.assertTrue(os.path.exists(f'{paths.irods_directory()}/msiExecCmd_bin/{script_filename}'))
+
+            # Create the univmss resource.
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', univmss_resc_name, 'univmss', vault, resource_context], 'STDOUT', [f'"{resource_context}"\n'])
+
+            # Create a unixfilesystem and compound resource to aid in testing the univmss resource.
+            # The univmss resource must be the archive resource.
+            lib.create_ufs_resource(self.admin, cache_resc_name)
+            self.admin.assert_icommand(['iadmin', 'mkresc', compound_resc_name, 'compound'], 'STDOUT', [compound_resc_name])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resc_name, cache_resc_name, 'cache'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resc_name, univmss_resc_name, 'archive'])
+
+            # Show the univmss resource is functional.
+            self.user0.assert_icommand(['istream', 'write', '-R', compound_resc_name, data_object], input='data')
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, data_object, univmss_resc_name))
+            self.assertEqual(lib.get_replica_status_for_resource(self.user0, data_object, univmss_resc_name), '1')
+
+        finally:
+            self.user0.run_icommand(['irm', '-f', data_object])
+
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', compound_resc_name, cache_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', compound_resc_name, univmss_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', univmss_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', cache_resc_name])
+            self.admin.run_icommand(['iadmin', 'rmresc', compound_resc_name])
+
+            if script_path:
+                os.unlink(script_path)
+
+    def test_create_univmss_resource_using_non_key_value_form_of_context_string__issue_8928(self):
+        script_filename = 'issue_8928_non_kv_form_univmss.sh'
+        self._do_test_create_univmss_resource_using_context_string__issue_8928(script_filename, script_filename)
+
+    def test_create_univmss_resource_using_key_value_form_of_context_string__issue_8928(self):
+        script_filename = 'issue_8928_kv_form_univmss.sh'
+        resource_context = f'escape_single_quotes=1;script={script_filename}'
+        self._do_test_create_univmss_resource_using_context_string__issue_8928(script_filename, resource_context)
+
+    def test_univmss_resource_plugin_supports_paths_containing_single_quotes__issue_8928(self):
+        filename = "issue'8928.txt"
+        file_path = f'{self.user0.local_session_dir}/{filename}'
+        local_file_path = Path(file_path)
+        local_file_path.touch()
+
+        # Stores the new name of the data object. This is for testing rename.
+        # Defined here for cleanup purposes.
+        new_filename = None
+
+        # Capture the original context string.
+        _, out, _ = self.admin.assert_icommand(['iquest', '%s', "select RESC_CONTEXT where RESC_NAME = 'archiveResc'"], 'STDOUT')
+        original_resc_context = out.strip()
+
+        try:
+            # The logical path of the data object used throughout the test.
+            logical_path = f'{self.user0.session_collection}/{filename}'
+
+            # TODO(#8935): Remove this line when the default for "escape_single_quotes" changes in iRODS 6.
+            with self.subTest('iput fails when path contains single quotes and escape_single_quotes not enabled'):
+                self.user0.assert_icommand(['iput', file_path], 'STDERR', ['-550000 UNIV_MSS_SYNCTOARCH_ERR'])
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '0')
+                self.user0.assert_icommand(['irm', '-f', filename], 'STDERR', ['-552000 UNIV_MSS_UNLINK_ERR'])
+
+            # TODO(#8935): Remove this line when the default for "escape_single_quotes" changes in iRODS 6.
+            self.admin.assert_icommand(['iadmin', 'modresc', 'archiveResc', 'context', 'script=univMSSInterface.sh;escape_single_quotes=1;'])
+
+            # The following subtests verify the sync-to-archive functionality behaves as expected.
+            #
+            # NOTE: chmod, mkdir, stat, and other univmss plugin operations are verified indirectly,
+            # hence why they do not have dedicated tests.
+            with self.subTest('Sync-to-Archive - iput'):
+                # Create a new data object. The bug normally produces an error here. This should succeed
+                # now that single quotes are escaped.
+                self.user0.assert_icommand(['iput', file_path])
+
+                # Verify that all replicas are good.
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+                # Remove the data object for the next subtest.
+                self.user0.assert_icommand(['irm', '-f', filename])
+
+            with self.subTest('Sync-to-Archive - itouch'):
+                self.user0.assert_icommand(['itouch', filename])
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+                self.user0.assert_icommand(['irm', '-f', filename])
+
+            with self.subTest('Sync-to-Archive - istream write'):
+                self.user0.assert_icommand(['istream', 'write', filename], input='data')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+                self.user0.assert_icommand(['irm', '-f', filename])
+
+            # These subtests verify the stage-to-cache functionality behaves as expected.
+            with self.subTest('Stage-to-Cache - iget'):
+                self.user0.assert_icommand(['itouch', filename])
+                self.user0.assert_icommand(['itrim', '-N1', '-n0', filename], 'STDOUT', ['data objects trimmed = 1.'])
+                self.user0.assert_icommand(['iget', filename, '-'], 'STDOUT')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+            with self.subTest('Stage-to-Cache - istream read'):
+                self.user0.assert_icommand(['itrim', '-N1', '-n2', filename], 'STDOUT', ['data objects trimmed = 1.'])
+                self.user0.assert_icommand(['istream', 'read', filename], 'STDOUT')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+            with self.subTest('Stage-to-Cache - overwrite'):
+                self.user0.assert_icommand(['itrim', '-N1', '-n2', filename], 'STDOUT', ['data objects trimmed = 1.'])
+
+                # Show that we must use the force flag to overwrite the data object.
+                self.user0.assert_icommand(['iput', file_path], 'STDERR', ['-312000 OVERWRITE_WITHOUT_FORCE_FLAG'])
+
+                self.user0.assert_icommand(['iput', '-f', file_path], 'STDOUT')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+            # This subtest is specifically about renaming data objects.
+            with self.subTest('Rename'):
+                self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['itouch', filename])
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+                new_filename = filename + "'renamed"
+                new_logical_path = f'{self.user0.session_collection}/{new_filename}'
+                self.user0.assert_icommand(['imv', filename, new_filename])
+                self.assertFalse(lib.replica_exists(self.user0, logical_path, 0))
+                self.assertTrue(lib.replica_exists(self.user0, new_logical_path, 0))
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, new_logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, new_logical_path, 'archiveResc'), '1')
+
+                self.user0.assert_icommand(['imv', new_filename, filename])
+                self.assertTrue(lib.replica_exists(self.user0, logical_path, 0))
+                self.assertFalse(lib.replica_exists(self.user0, new_logical_path, 0))
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+
+        finally:
+            if new_filename:
+                self.user0.run_icommand(['irm', '-f', new_filename])
+
+            self.user0.run_icommand(['irm', '-f', filename])
+
+            # TODO(#8935): Remove this line when the default for "escape_single_quotes" changes in iRODS 6.
+            self.admin.run_icommand(['iadmin', 'modresc', 'archiveResc', 'context', original_resc_context])
 
 
 class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
