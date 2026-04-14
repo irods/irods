@@ -1,4 +1,3 @@
-from __future__ import print_function
 import base64
 import collections
 import contextlib
@@ -26,9 +25,9 @@ import tempfile
 import time
 import random
 
-from .exceptions import IrodsError, IrodsWarning
 from . import execute
 from . import paths
+from .exceptions import IrodsError, IrodsWarning
 
 # get the fully qualified domain name
 #(no, really, getfqdn() is insufficient)
