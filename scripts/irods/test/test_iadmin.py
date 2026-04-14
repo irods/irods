@@ -3121,3 +3121,23 @@ class test_moduser_remove_password__issue_2899(unittest.TestCase):
 
         finally:
             IrodsController().reload_configuration()
+
+    def test_moduser_remove_password_for_authenticated_user_results_in_an_error__issue_8747(self):
+        # A user cannot remove its own password...
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.admin.username, "remove_password"], "STDERR", "-169000 SYS_NOT_ALLOWED")
+
+        # ...but another admin should be able to remove the password.
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(
+                ["iadmin", "moduser", self.admin.username, "remove_password"], desired_rc=0)
+
+    def test_moduser_remove_password_fails_for_service_account_rodsadmin__issue_8747(self):
+        with session.make_session_for_existing_admin() as admin_session:
+            # The service account rodsadmin cannot clear its own password...
+            admin_session.assert_icommand(
+                ["iadmin", "moduser", admin_session.username, "remove_password"], "STDERR", "-169000 SYS_NOT_ALLOWED")
+
+            # ...and neither can another rodsadmin.
+            self.admin.assert_icommand(
+                ["iadmin", "moduser", admin_session.username, "remove_password"], "STDERR", "-169000 SYS_NOT_ALLOWED")
