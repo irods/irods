@@ -987,13 +987,12 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
 auto list_logical_quotas(const char* _coll_name = nullptr) -> int
 {
     getLogicalQuotaInp_t getLogicalQuotaInp{};
-    getLogicalQuotaInp.coll_name = const_cast<char*>(_coll_name);
+    getLogicalQuotaInp.coll_name = strdup(_coll_name);
     logicalQuotaList_t* logicalQuotaList = nullptr;
 
-    irods::at_scope_exit free_output{[&logicalQuotaList] {
-        if(logicalQuotaList) {
-            std::free(logicalQuotaList);
-        }
+    irods::at_scope_exit free_output{[&logicalQuotaList, &getLogicalQuotaInp] {
+        clearLogicalQuotaList(logicalQuotaList);
+        clearGetLogicalQuotaInp(&getLogicalQuotaInp);
     }};
 
     const auto status = rc_get_logical_quota(Conn, &getLogicalQuotaInp, &logicalQuotaList);
