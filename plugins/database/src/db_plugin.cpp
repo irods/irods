@@ -16497,6 +16497,7 @@ irods::error db_set_logical_quota_op(
     switch(query_selection) {
     case 0:
         cllBindVars[cllBindVarCount++] = byte_limit_string.c_str();
+        [[fallthrough]];
     case 1:
         cllBindVars[cllBindVarCount++] = object_limit_string.c_str();
         break;

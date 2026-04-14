@@ -984,7 +984,7 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
     return 0;
 } // show_resource_quotas
 
-auto show_logical_quotas(const char* _coll_name = nullptr) -> int
+auto list_logical_quotas(const char* _coll_name = nullptr) -> int
 {
     getLogicalQuotaInp_t getLogicalQuotaInp{};
     getLogicalQuotaInp.coll_name = const_cast<char*>(_coll_name);
@@ -1019,7 +1019,7 @@ auto show_logical_quotas(const char* _coll_name = nullptr) -> int
     }
 
     return 0;
-} // show_logical_quotas
+} // list_logical_quotas
 
 int
 generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
@@ -1449,7 +1449,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if ( strcmp( cmdToken[0], "llq" ) == 0 ) {
-        return show_logical_quotas(cmdToken[1]);
+        return list_logical_quotas(cmdToken[1]);
     }
 
     if ( strcmp( cmdToken[0], "lq" ) == 0 ) {

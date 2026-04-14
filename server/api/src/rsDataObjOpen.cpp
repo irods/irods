@@ -1370,7 +1370,11 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return USER_INCOMPATIBLE_OPEN_FLAGS;
     }
 
-    const auto checkQuotaFlags = ((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) + 2*(!!(dataObjInp->openFlags & O_CREAT));
+    // Multiply each violation mode with the respective boolean expression
+    // that would trigger it
+    // BYTES: When the object can be written to
+    // OBJECTS: If the object is being created
+    const auto checkQuotaFlags = static_cast<int>(irods::LogicalQuotaViolation::BYTES)*((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) | static_cast<int>(irods::LogicalQuotaViolation::OBJECTS)*(!!(dataObjInp->openFlags & O_CREAT));
     // Check quota enforcement before open
     if(checkQuotaFlags) {
         fs::path path{dataObjInp->objPath};
@@ -1380,7 +1384,7 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return status;
         }
         if(checkQuotaFlags & status) {
-            log_api::info("{}: Logical quota violation with status [{}] and openFlags [{:o}]", __func__, status, dataObjInp->openFlags);
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and openFlags [{:o}]", __func__, dataObjInp->objPath, status, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }
     }

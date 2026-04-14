@@ -37,16 +37,16 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
 
             # Negative values
             self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', 'bytes', '--', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', 'objects', '--', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', '0', '--', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', '--', '-10000', '10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', '--', '-10000', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '--', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '--', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '--', '-10000', '10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '--', '-10000', '-10000'], 'STDERR_SINGLELINE', 'USER_INPUT_FORMAT_ERR' )
 
             # Invalid final parameter
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', 'bytes', 'tomatoes'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', 'tomatoes'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM' )
 
             # Numeric overflow
-            self.admin.assert_icommand(['iadmin', 'slq', f'{self.quota_user.session_collection}', 'bytes', '218128128218374562312312412412'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM' )
+            self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', '218128128218374562312312412412'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM' )
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
 
@@ -91,7 +91,7 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
             _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '10000', '50', str(4096*3 - 10000), str(3 - 50))) in out)
 
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
 
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'bytes', '100000'])
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '2'])
@@ -99,13 +99,13 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
 
             _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '100000', '2', str(4096*3 - 100000), str(3 - 2))) in out)
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{file_name}_4'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, 'objects', '10'])
             self.admin.assert_icommand(['iadmin', 'clu'])
             _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '100000', '10', str(4096*3 - 100000), str(3 - 10))) in out)
 
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_4'])
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{file_name}_4'])
 
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
@@ -204,7 +204,7 @@ class Test_Logical_Quotas(session.make_sessions_mixin([('otherrods', 'rods')], [
             self.admin.assert_icommand(['irule', f'msi_calc_logical_usage', 'null', 'null'])
             _, out, _ = self.admin.assert_icommand(['iadmin', 'llq'], 'STDOUT_SINGLELINE', self.quota_user.session_collection)
             self.assertTrue((self.llq_output_template % (self.quota_user.session_collection, '3000', '10', str(4096 - 3000), str(1 - 10))) in out)
-            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), '{file_name}_2'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
+            self.quota_user.assert_icommand(['iput', os.path.join(self.quota_user.local_session_dir, file_name), f'{file_name}_2'],'STDERR_SINGLELINE', 'LOGICAL_QUOTA_EXCEEDED')
         finally:
             self.admin.assert_icommand(['iadmin', 'slq', self.quota_user.session_collection, '0', '0'])
             self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'logical_quotas', 'enforcement_enabled', '0'])

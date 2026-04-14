@@ -1,6 +1,7 @@
 /// \file
 
 #include "irods/rcMisc.h"
+#include "irods/generalAdmin.h"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/miscServerFunct.hpp"
@@ -8,6 +9,7 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/rsModAccessControl.hpp"
+#include "irods/rsGeneralAdmin.hpp"
 #include "irods/irods_re_structs.hpp"
 
 namespace
@@ -141,18 +143,30 @@ msiQuota( ruleExecInfo_t *rei ) {
 **/
 int
 msi_calc_logical_usage( ruleExecInfo_t *_rei ) {
-    std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
-        return ret.code();
+    if (nullptr == _rei || nullptr == _rei->rsComm) {
+        log_msi::error("{}: Input rei or rei->rsComm is nullptr.", __func__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role) {
-        return SYS_NO_RCAT_SERVER_ERR;
+    if ( _rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        log_msi::error("{}: User {} is not authorized to call this microservice.", __func__, _rei->uoic->userName);
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
-    return chl_calc_logical_usage_and_quota(_rei->rsComm);
+    generalAdminInp_t generalAdminInp{};
+    generalAdminInp.arg0 = "calc_logical_usage";
+
+    generalAdminInp.arg1 = "";
+    generalAdminInp.arg2 = "";
+    generalAdminInp.arg3 = "";
+    generalAdminInp.arg4 = "";
+    generalAdminInp.arg5 = "";
+    generalAdminInp.arg6 = "";
+    generalAdminInp.arg7 = "";
+    generalAdminInp.arg8 = "";
+    generalAdminInp.arg9 = "";
+
+    return rsGeneralAdmin(_rei->rsComm, &generalAdminInp);
 }
 
 /**

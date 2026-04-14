@@ -839,33 +839,18 @@ int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msPar
         return USER_PARAM_TYPE_ERR;
     }
 
-    rodsLong_t nonnegative_checker;
-    if (const auto [ptr, ec] = std::from_chars(parsed_objects_value, parsed_objects_value + std::strlen(parsed_objects_value), nonnegative_checker); ec != std::errc{}) {
-        log_msi::error("{}: Failed to parse parsed_objects_value=[{}] as integer", __func__, parsed_objects_value);
-    }
-    if(nonnegative_checker < 0) {
-        log_msi::error("{}: _objects_value must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
-        return USER_INPUT_FORMAT_ERR;
-    }
+    generalAdminInp_t generalAdminInp{};
+    generalAdminInp.arg0 = "set_logical_quota";
+    generalAdminInp.arg1 = parsed_coll_name;
+    generalAdminInp.arg2 = parsed_bytes_value;
+    generalAdminInp.arg3 = parsed_objects_value;
 
-    char negative_one[3] = "-1";
+    generalAdminInp.arg4 = "";
+    generalAdminInp.arg5 = "";
+    generalAdminInp.arg6 = "";
+    generalAdminInp.arg7 = "";
+    generalAdminInp.arg8 = "";
+    generalAdminInp.arg9 = "";
 
-    if(std::strncmp(parsed_bytes_value, "bytes", 6) == 0) {
-        // When setting "bytes" only, final argument is value
-        parsed_bytes_value = parsed_objects_value;
-        parsed_objects_value = &negative_one[0];
-    }
-    else if(std::strncmp(parsed_bytes_value, "objects", 8) == 0) {
-        parsed_bytes_value = &negative_one[0];
-    } else {
-        if (const auto [ptr, ec] = std::from_chars(parsed_bytes_value, parsed_bytes_value + std::strlen(parsed_bytes_value), nonnegative_checker); ec != std::errc{}) {
-            log_msi::error("{}: Failed to parse parsed_bytes_value=[{}] as integer", __func__, parsed_bytes_value);
-        }
-        if(nonnegative_checker < 0) {
-            log_msi::error("{}: _bytes_value must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
-            return USER_INPUT_FORMAT_ERR;
-        }
-    }
-
-    return chl_set_logical_quota(_rei->rsComm, parsed_coll_name, parsed_bytes_value, parsed_objects_value);
+    return rsGeneralAdmin(_rei->rsComm, &generalAdminInp);
 } // msi_set_logical_quota

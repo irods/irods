@@ -31,7 +31,8 @@ namespace
         }
         // Always fail if over object limit (registration makes new objects).
         // Fail when trying to register a nonempty object if over byte limit.
-        if((status & 2) || ((status & 1) && _dataObjInfo.dataSize > 0)) {
+        if((status & static_cast<int>(irods::LogicalQuotaViolation::OBJECTS)) || ((status & static_cast<int>(irods::LogicalQuotaViolation::BYTES)) && _dataObjInfo.dataSize > 0)) {
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and datasize [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
             return LOGICAL_QUOTA_EXCEEDED;
         }
         return 0;
