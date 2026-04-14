@@ -500,6 +500,20 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
+        # Don't use the default rebalance limit
+        # use a smaller limit to...
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_rebalance_pre(*INSTANCE_NAME, *CONTEXT, *OUT) {
+                    *OUT="replication_rebalance_limit=32";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_rebalance_pre(rule_args, callback, rei):
+                    rule_args[0] = 'replication_rebalance_limit=32'
+            ''')
+        }
+
         # =-=-=-=-=-=-=-
         # STANDUP
         self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
@@ -524,52 +538,60 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin addchildtoresc pt_c2 leaf_c")
 
         try:
-            # =-=-=-=-=-=-=-
-            # place data into the resource
-            test_file = "iput_test_file"
-            lib.make_file(test_file, 10)
-            num_children = 600
-            bad_file_indices = (1,3,5)
-            for i in range(num_children):
-                self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # Trim so we get more replication going
-            for i in range(num_children):
-                self.admin.assert_icommand("itrim -N2 -n 0 foo%d" % (i), 'STDOUT_SINGLELINE', 'Total size trimmed')
+                # =-=-=-=-=-=-=-
+                # place data into the resource
+                test_file = "iput_test_file"
+                lib.make_file(test_file, 10)
+                num_children = 64
+                bad_file_indices = (1,3,5)
+                for i in range(num_children):
+                    self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
 
-            # Invalidate all replicas of "foo{i}"
-            for file in [f"foo{i}" for i in bad_file_indices]:
-                self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
-                self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '2', 'DATA_REPL_STATUS', '0'])
+                # Trim so we get more replication going
+                for i in range(num_children):
+                    self.admin.assert_icommand("itrim -N2 -n 0 foo%d" % (i), 'STDOUT_SINGLELINE', 'Total size trimmed')
 
-            # =-=-=-=-=-=-=-
-            # visualize our tree
-            self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+                # Invalidate all replicas of "foo{i}"
+                for file in [f"foo{i}" for i in bad_file_indices]:
+                    self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
+                    self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '2', 'DATA_REPL_STATUS', '0'])
 
-            # =-=-=-=-=-=-=-
-            # call rebalance function - the thing were actually testing... finally.
-            self.admin.assert_icommand("iadmin modresc pt rebalance")
+                # =-=-=-=-=-=-=-
+                # visualize our tree
+                self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
-            # =-=-=-=-=-=-=-
-            # visualize our rebalance
-            self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+                # =-=-=-=-=-=-=-
+                # call rebalance function - the thing were actually testing... finally.
+                self.admin.assert_icommand("iadmin modresc pt rebalance")
 
-            for file in [f"foo{i}" for i in bad_file_indices]:
-                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
-                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
-            
-            # =-=-=-=-=-=-=-
-            # assert that all the appropriate repl numbers exist for all the children
-            for file in [f"foo{i}" for i in range(num_children) if i not in bad_file_indices]:
-                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
-                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
-                self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
+                # =-=-=-=-=-=-=-
+                # visualize our rebalance
+                self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+                # TODO: Check for the absence of '3'
+                # Maybe assert icommand fail?
+                for file in [f"foo{i}" for i in bad_file_indices]:
+                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
+                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
+                
+                # =-=-=-=-=-=-=-
+                # assert that all the appropriate repl numbers exist for all the children
+                for file in [f"foo{i}" for i in range(num_children) if i not in bad_file_indices]:
+                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
+                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
+                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
 
         finally:
             # =-=-=-=-=-=-=-
             # TEARDOWN
             for i in range(num_children):
                 self.admin.assert_icommand("irm -f foo%d" % i)
+
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand("iadmin rmchildfromresc pt_c2 leaf_c")
             self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
