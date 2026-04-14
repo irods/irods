@@ -1,30 +1,34 @@
-#include "irods/msParam.h"
 #include "irods/generalAdmin.h"
-#include "irods/physPath.hpp"
-#include "irods/reIn2p3SysRule.hpp"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rsExecCmd.hpp"
-#include "irods/irods_resource_plugin.hpp"
-#include "irods/irods_file_object.hpp"
-#include "irods/irods_physical_object.hpp"
 #include "irods/irods_collection_object.hpp"
-#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_physical_object.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/irods_resource_constants.hpp"
+#include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_resource_redirect.hpp"
 #include "irods/irods_stacktrace.hpp"
-#include "irods/irods_re_structs.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/physPath.hpp"
+#include "irods/reIn2p3SysRule.hpp"
+#include "irods/rsExecCmd.hpp"
 #include "irods/voting.hpp"
 
-#include <boost/lexical_cast.hpp>
-#include <boost/function.hpp>
-#include <boost/any.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cstring>
 #include <iostream>
 #include <sstream>
-#include <vector>
 #include <string>
+#include <string_view>
+#include <vector>
 
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
@@ -47,9 +51,53 @@ inline irods::error univ_mss_check_param(
 #define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
 #define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
 
-// =-=-=-=-=-=-=-
-/// @brief token to index the script property
-const std::string SCRIPT_PROP( "script" );
+namespace
+{
+    using log_resc = irods::experimental::log::resource;
+
+    // The context string property for identifying the script/binary to execute.
+    const char* const SCRIPT_PROP = "script";
+
+    // The context string property for escaping single quotes in paths.
+    const char* const ESCAPE_SINGLE_QUOTES = "escape_single_quotes";
+
+    // Returns the input string with single quotes escaped when the ESCAPE_SINGLE_QUOTES
+    // property is set to "1". Otherwise, the input string is returned unchanged.
+    auto escape_single_quotes(irods::plugin_context& _ctx, const std::string& _input) -> std::string
+    {
+        std::string resc_name;
+        if (const auto err = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resc_name); !err.ok()) {
+            log_resc::debug("{}: Could not retrieve name of univmss resource.", __func__);
+            resc_name = "<unavailable>";
+        }
+
+        std::string value;
+        if (const auto err = _ctx.prop_map().get<std::string>(ESCAPE_SINGLE_QUOTES, value); err.ok()) {
+            boost::trim(value);
+        }
+        else {
+            // If we're here, then something horrible has happened. The plugin always sets
+            // a default value for this property.
+            log_resc::critical(
+                "{}: Missing context string property [{}] for univmss resource [{}]. Escaping single quotes "
+                "in paths is disabled.",
+                __func__,
+                ESCAPE_SINGLE_QUOTES,
+                resc_name);
+            return _input;
+        }
+
+        if ("1" != value) {
+            log_resc::debug(
+                "{}: Escaping single quotes in paths is disabled for univmss resource [{}].", __func__, resc_name);
+            return _input;
+        }
+
+        log_resc::debug(
+            "{}: Escaping single quotes in paths is enabled for univmss resource [{}].", __func__, resc_name);
+        return boost::replace_all_copy(_input, "'", "\\'");
+    } // escape_single_quotes
+} // anonymous namespace
 
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX create
@@ -123,10 +171,12 @@ irods::error univ_mss_file_unlink(
     irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
     std::string filename = fco->physical_path();
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+
     execCmd_t execCmdInp;
     memset( &execCmdInp, 0, sizeof( execCmdInp ) );
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "rm '%s'", filename.c_str() );
+    snprintf(execCmdInp.cmdArgv, sizeof(execCmdInp.cmdArgv), "rm '%s'", escaped_filename.c_str());
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "localhost" );
 
     execCmdOut_t *execCmdOut = NULL;
@@ -186,9 +236,11 @@ irods::error univ_mss_file_stat(
     struct tm mytm;
     time_t myTime;
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-    snprintf( cmdArgv, sizeof( cmdArgv ), "stat '%s' ", filename.c_str() );
+    snprintf(cmdArgv, sizeof(cmdArgv), "stat '%s' ", escaped_filename.c_str());
     rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
     rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
@@ -296,9 +348,11 @@ irods::error univ_mss_file_chmod(
         mode = getDefFileMode();
     }
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "chmod '%s' %o", filename.c_str(), mode );
+    snprintf(execCmdInp.cmdArgv, sizeof(execCmdInp.cmdArgv), "chmod '%s' %o", escaped_filename.c_str(), mode);
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
     execCmdOut_t *execCmdOut = NULL;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
@@ -346,12 +400,14 @@ irods::error univ_mss_file_mkdir(
     irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
     std::string dirname = fco->physical_path();
 
+    const auto escaped_dirname = escape_single_quotes(_ctx, dirname);
+
     int status = 0;
     execCmd_t execCmdInp;
 
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mkdir '%s'", dirname.c_str() );
+    snprintf(execCmdInp.cmdArgv, sizeof(execCmdInp.cmdArgv), "mkdir '%s'", escaped_dirname.c_str());
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
     execCmdOut_t *execCmdOut = NULL;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
@@ -458,11 +514,18 @@ irods::error univ_mss_file_rename(
     int status = 0;
     err = univ_mss_file_mkdir( context );
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+    const auto escaped_new_filename = escape_single_quotes(_ctx, _new_file_name);
+
     execCmd_t execCmdInp;
 
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mv '%s' '%s'", filename.c_str(), _new_file_name );
+    snprintf(execCmdInp.cmdArgv,
+             sizeof(execCmdInp.cmdArgv),
+             "mv '%s' '%s'",
+             escaped_filename.c_str(),
+             escaped_new_filename.c_str());
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
     execCmdOut_t *execCmdOut = NULL;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
@@ -534,12 +597,15 @@ irods::error univ_mss_file_stage_to_cache(
 
     int status = 0;
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+    const auto escaped_cache_filename = escape_single_quotes(_ctx, _cache_file_name);
+
     std::stringstream cmdArgv;
-    cmdArgv << "stageToCache '" << filename << "' '" << _cache_file_name << "'";
+    cmdArgv << "stageToCache '" << escaped_filename << "' '" << escaped_cache_filename << "'";
 
     execCmd_t execCmdInp;
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
-    snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s",  script.c_str() );
+    snprintf(execCmdInp.cmd, sizeof(execCmdInp.cmd), "%s", script.c_str());
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "%s", cmdArgv.str().c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
 
@@ -618,10 +684,17 @@ irods::error univ_mss_file_sync_to_arch(
         return PASSMSG( __FUNCTION__, err );
     }
 
+    const auto escaped_filename = escape_single_quotes(_ctx, filename);
+    const auto escaped_cache_filename = escape_single_quotes(_ctx, _cache_file_name);
+
     execCmd_t execCmdInp;
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "syncToArch '%s' '%s'", _cache_file_name, filename.c_str() );
+    snprintf(execCmdInp.cmdArgv,
+             sizeof(execCmdInp.cmdArgv),
+             "syncToArch '%s' '%s'",
+             escaped_cache_filename.c_str(),
+             escaped_filename.c_str());
     rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     if ( status == 0 ) {
@@ -743,40 +816,72 @@ irods::error univ_mss_file_rebalance(
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle universal mss resources
 //    context string will hold the script to be called.
-class univ_mss_resource : public irods::resource {
-    public:
-        univ_mss_resource( const std::string& _inst_name,
-                           const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
+class univ_mss_resource : public irods::resource
+{
+  public:
+    univ_mss_resource(const std::string& _inst_name, const std::string& _context)
+        : irods::resource(_inst_name, _context)
+    {
+        // Default to "0" to avoid breaking existing deployments. This makes it
+        // more noticeable during debugging sessions and removes the need to handle
+        // cases where the property isn't set in the context string.
+        //
+        // TODO(#8935): Set to "1" in iRODS 6.
+        properties_.set<std::string>(ESCAPE_SINGLE_QUOTES, "0");
 
-            // =-=-=-=-=-=-=-
-            // check the context string for inappropriate path behavior
-            if ( context_.find( "/" ) != std::string::npos ) {
-                std::stringstream msg;
-                msg << "univmss resource :: the path [";
-                msg << context_;
-                msg << "] should be a single file name which should reside in msiExecCmd_bin";
-                rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
+        const auto log_warning_if_script_path_is_invalid = [&_inst_name](const std::string_view _sv) {
+            if (_sv.empty()) {
+                log_resc::warn(
+                    "univmss resource: No script defined for instance [{}]. Check context string for errors.",
+                    _inst_name);
+            }
+            else if (_sv.find('/') != std::string_view::npos) {
+                log_resc::warn("univmss resource: Expected a single filename which must reside in msiExecCmd_bin. "
+                               "Script is set to [{}] for instance [{}]. Check context string for errors.",
+                               _sv,
+                               _inst_name);
+            }
+        };
+
+        // The presence of an equal sign signals that the admin must have set
+        // properties using the key-value pair form.
+        if (_context.find('=') != std::string::npos) {
+            irods::kvp_map_t kvp;
+            if (const auto err = irods::parse_kvp_string(_context, kvp); !err.ok()) {
+                log_resc::error(
+                    "univmss resource: Failed to parse context string [{}] for instance [{}].", _context, _inst_name);
+                return;
             }
 
-            // =-=-=-=-=-=-=-
-            // assign context string as the univ mss script to call
-            properties_.set< std::string >( SCRIPT_PROP, context_ );
+            for (auto&& [key, value] : kvp) {
+                if (SCRIPT_PROP == key) {
+                    log_warning_if_script_path_is_invalid(value);
+                }
+                properties_.set<std::string>(key, value);
+            }
+
+            return;
         }
 
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            _flg = false;
-            return SUCCESS();
-        }
+        // Fallback to checking the context string for inappropriate path behavior.
+        // The context string is expected to be the name of a script or binary located
+        // in msiExecCmd_bin. This aligns with the original behavior of the plugin.
+        log_warning_if_script_path_is_invalid(context_);
 
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            return ERROR( -1, "nop" );
-        }
+        // assign context string as the univ mss script to call
+        properties_.set<std::string>(SCRIPT_PROP, context_);
+    }
 
+    irods::error need_post_disconnect_maintenance_operation(bool& _flg) override
+    {
+        _flg = false;
+        return SUCCESS();
+    }
+
+    irods::error post_disconnect_maintenance_operation(irods::pdmo_type&) override
+    {
+        return ERROR(-1, "nop");
+    }
 }; // class univ_mss_resource
 
 // =-=-=-=-=-=-=-
