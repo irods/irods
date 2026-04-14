@@ -1014,7 +1014,10 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
         const std::string max_objects_string = std::to_string(quotaEntry.max_objects);
         const std::string bytes_over_string = std::to_string(quotaEntry.over_bytes);
         const std::string objects_over_string = std::to_string(quotaEntry.over_objects);
-        std::cout << "Collection name: " << quotaEntry.coll_name << "\nMaximum bytes: " << (byte_limit_enforced ? max_byte_string.c_str() : "<unset>") << "\nMaximum objects: " << (object_limit_enforced ? max_objects_string.c_str() : "<unset>") << "\nBytes over: " << (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>") << "\nObjects over: " << (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>" ) << "\n" << std::endl;
+        std::cout << "Collection name: " << quotaEntry.coll_name << "\nMaximum bytes: " << (byte_limit_enforced ? max_byte_string.c_str() : "<unset>") << "\nMaximum objects: " << (object_limit_enforced ? max_objects_string.c_str() : "<unset>") << "\nBytes over: " << (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>") << "\nObjects over: " << (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>" ) << "\n";
+        if(i != logicalQuotaList->len - 1) {
+            std::cout << "\n";
+        }
     }
 
     return 0;
