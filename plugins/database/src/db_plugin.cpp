@@ -13702,7 +13702,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
     not_child_array.pop_back(); // trim last ','
 
 #ifdef ORA_ICAT
-    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
+    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d order by data_id") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #elif MY_ICAT
     /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
     const std::string query = (boost::format(
@@ -13710,7 +13710,9 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
         "  where resc_id in (%s) and data_id not in ( "
         "    select data_id from R_DATA_MAIN "
         "      where resc_id in (%s) "
-        "  ) and modify_ts <= '%s' limit %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
+        "  ) and modify_ts <= '%s' "
+        "order by data_id "
+        "limit %d,18446744073709551615") % not_child_array % child_array % _invocation_timestamp->c_str() % _offset).str();
 #else
     /* Postgres */
     const std::string query = (boost::format(
@@ -13719,7 +13721,9 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
         "except "
         "  select data_id from R_DATA_MAIN "
         "    where resc_id in (%s) "
-        "limit %d") % not_child_array % _invocation_timestamp->c_str() % child_array % _count).str();
+        "order by data_id "
+        "offset %d"
+        "limit %d") % not_child_array % _invocation_timestamp->c_str() % child_array % _offset % _count).str();
 #endif
 
     _results->reserve(_count);

@@ -313,7 +313,7 @@ namespace {
                                     const size_t _bun_idx,
                                     const std::vector<leaf_bundle_t>& _bundles,
                                     const dist_child_result_t& _data_ids_to_replicate,
-                                std::vector<rodsLong_t>& _num_repls_to_skip)
+                                int& _num_repls_to_skip)
     {
         if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
@@ -342,8 +342,8 @@ namespace {
                 source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
             }
             catch (...) {
-                _num_repls_to_skip.push_back(data_id_to_replicate);
-                                rodsLog(LOG_WARNING, "Cannot perform rebalance. Skipping %i items next iter.", _num_repls_to_skip.size());
+                _num_repls_to_skip++;
+                rodsLog(LOG_WARNING, "Cannot perform rebalance. Skipping %i items next iter.", _num_repls_to_skip);
                 continue;
             }
 
@@ -539,10 +539,10 @@ namespace irods {
         const std::string& _resource_name) {
         for (size_t i=0; i<_leaf_bundles.size(); ++i) {
             const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
-            std::vector<rodsLong_t> repls_to_skip;
+            int repls_to_skip{};
             while (true) {
                 dist_child_result_t data_ids_needing_new_replicas;
-                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundlesOffset(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas, static_cast<int>(repls_to_skip.size()));
+                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundlesOffset(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas, repls_to_skip);
                 if (status_chlGetReplListForLeafBundles != 0) {
                     THROW(status_chlGetReplListForLeafBundles,
                           boost::format("failed to get data objects needing new replicas for resource [%s] bundle index [%d] bundles [%s]")
@@ -551,13 +551,7 @@ namespace irods {
                           % leaf_bundles_to_string(_leaf_bundles));
                 }
 
-                // REMOVE: Logging the 'skipped' items and the 'real' items
-                auto res = std::accumulate(std::cbegin(repls_to_skip), std::cend(repls_to_skip), std::string{"["}, [](std::string&& _s, const rodsLong_t _d) -> std::string {
-                    return fmt::format("{},{}", _s, _d);
-                });
-                res.append("]");
-
-                rodsLog(LOG_WARNING, "Ignored size: %i. Ignored list: %s", repls_to_skip.size(), res.c_str());
+                rodsLog(LOG_WARNING, "Ignored size: %i.", repls_to_skip);
 
                 auto res2 = std::accumulate(std::cbegin(data_ids_needing_new_replicas), std::cend(data_ids_needing_new_replicas), std::string{"["}, [](std::string&& _s, const rodsLong_t _d) -> std::string {
                     return fmt::format("{},{}", _s, _d);
