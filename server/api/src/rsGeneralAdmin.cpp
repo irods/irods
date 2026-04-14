@@ -57,6 +57,67 @@ namespace
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
 
+    auto user_is_service_account_rodsadmin(RsComm& rsComm, const std::string_view _user_name) -> bool
+    {
+        BytesBuf* bbuf = nullptr;
+        const auto free_buf = irods::at_scope_exit{[&bbuf] { freeBBuf(bbuf); }};
+
+        if (const auto err = rsZoneReport(&rsComm, &bbuf); err < 0) {
+            const auto msg = fmt::format(
+                "[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.", __func__, __LINE__);
+            addRErrorMsg(&rsComm.rError, err, msg.c_str());
+            THROW(err, msg); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        }
+
+        try {
+            const auto* buf = static_cast<char*>(bbuf->buf);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const nlohmann::json zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
+            const auto& zones = zone_report.at("zones");
+
+            const auto* local_zone_name = getLocalZoneName();
+
+            const auto user_is_zone_user = [_user_name](const nlohmann::json& _server) -> bool {
+                const auto& server_config = _server.at("server_config");
+                const auto& server_admin = server_config.at("zone_user").get_ref<const std::string&>();
+                return server_admin == _user_name;
+            };
+
+            for (const auto& zone : zones) {
+                const nlohmann::json* catalog_server = nullptr;
+                const auto& servers = zone.at("servers");
+                for (const auto& server : servers) {
+                    if (server.at("server_config").at("catalog_service_role").get_ref<const std::string&>() ==
+                        "provider")
+                    {
+                        catalog_server = &server;
+                        break;
+                    }
+                }
+
+                // Skip servers that do not belong to the local zone.
+                if (nullptr != catalog_server &&
+                    catalog_server->at("server_config").at("zone_name").get_ref<const std::string&>() !=
+                        local_zone_name)
+                {
+                    continue;
+                }
+
+                for (const auto& server : servers) {
+                    if (user_is_zone_user(server)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (const nlohmann::json::exception& e) {
+            log_api::error(
+                "{}: JSON error occurred. Check your zone report for server configuration errors.", __func__);
+            THROW(SYS_LIBRARY_ERROR, e.what()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        }
+        return false;
+    } // user_is_service_account_rodsadmin
+
     auto throw_if_downgrading_irods_service_account_rodsadmin(
         RsComm& rsComm,
         const std::string_view _option, // NOLINT(bugprone-easily-swappable-parameters)
@@ -936,6 +997,15 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                     constexpr auto err = SYS_NOT_ALLOWED;
                     constexpr const char* msg =
                         "Removing password for the currently authenticated user is not allowed.";
+                    addRErrorMsg(&rsComm->rError, err, msg);
+                    log_api::error("{}: {}", __func__, msg);
+                    return err;
+                }
+
+                // Prevent removing password for a service account rodsadmin in this zone.
+                if (user_is_service_account_rodsadmin(*rsComm, just_user_name.data())) {
+                    constexpr auto err = SYS_NOT_ALLOWED;
+                    constexpr const char* msg = "Removing password for a service account rodsadmin is not allowed.";
                     addRErrorMsg(&rsComm->rError, err, msg);
                     log_api::error("{}: {}", __func__, msg);
                     return err;
