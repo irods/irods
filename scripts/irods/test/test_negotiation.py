@@ -185,11 +185,23 @@ class test_server_authentication__issue_2295(unittest.TestCase):
             # Remove the data object just in case it was created.
             self.admin.assert_icommand(['irm', "-f", logical_path])
 
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'This test must be run in topology on a catalog provider.')
+    @unittest.skipIf(
+        test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'This test must be run in topology on a catalog provider.'
+    )
     def test_zone_keys_mismatch_on_provider_causes_failure_to_connect_to_consumer(self):
         self.do_signed_zone_key_mismatch_test_on_provider("zone_key", "zone_key_mismatch")
 
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'This test must be run in topology on a catalog provider.')
+    @unittest.skipIf(
+        test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'This test must be run in topology on a catalog provider.'
+    )
     def test_negotiation_keys_mismatch_on_provider_causes_failure_to_connect_to_consumer(self):
         self.do_signed_zone_key_mismatch_test_on_provider("negotiation_key", "32_byte_negotiation_key_mismatch")
 
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'This test must be run in topology on a catalog provider.')
+    @unittest.skipIf(
+        test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'This test must be run in topology on a catalog provider.'
+    )
     def test_hash_scheme_mismatch_on_provider_causes_failure_to_connect_to_consumer(self):
         self.do_signed_zone_key_mismatch_test_on_provider("zone_key_signing_hash_scheme", "sha256")
