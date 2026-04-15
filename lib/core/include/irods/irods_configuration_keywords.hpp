@@ -211,8 +211,6 @@ namespace irods
 
     extern const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME;
 
-    extern const char* const KW_CFG_USER_PASSWORD_STORAGE_MODE;
-
     extern const char* const KW_CFG_ZONE_KEY_SIGNING_HASH_SCHEME;
 } // namespace irods
 
