@@ -5,6 +5,7 @@
 #include "irods/fileClose.h"
 #include "irods/icatDefines.h"
 #include "irods/irods_default_paths.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_re_structs.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_redirect.hpp"
@@ -21,6 +22,11 @@
 #include <boost/thread/mutex.hpp>
 
 #include <filesystem>
+
+namespace
+{
+    using log_api = irods::experimental::log::api;
+} // anonymous namespace
 
 boost::mutex ExecCmdMutex;
 int initExecCmdMutex() {
@@ -369,6 +375,12 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     std::strncpy(cmdPath, cmd_path.c_str(), LONG_NAME_LEN);
     rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
     initCmdArg( av, execCmdInp->cmdArgv, cmdPath );
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    for (int i = 0; av[i]; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+        log_api::debug("{}: execv argument {} = [{}]", __func__, i, av[i]);
+    }
 
     closeAllL1desc( ThisComm );
 
