@@ -393,14 +393,6 @@
                 "verify_server"
             ]
         },
-        "user_password_storage_mode": {
-            "type": "enum",
-            "enum": [
-                "legacy",
-                "hashed",
-                "both"
-            ]
-        },
         "zone_auth_scheme" : {
             "type": "string",
             "maxLength": 63

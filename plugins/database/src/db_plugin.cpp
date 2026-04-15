@@ -324,6 +324,62 @@ namespace
         return SUCCESS();
     } // get_token_lifetime_configuration
 
+    auto get_password_storage_mode_configuration(std::string& _out) -> irods::error
+    {
+        constexpr auto max_size_for_option_value = 2700;
+        constexpr auto default_password_storage_mode = "legacy";
+        constexpr const char* config_namespace = "authentication";
+        constexpr const char* config_option_name = "password_storage_mode";
+
+        std::array<char, max_size_for_option_value + 1> password_storage_mode_str{};
+        std::vector<std::string> bindVars{config_namespace, config_option_name};
+
+        // The cValSize parameter eventually is used in a call to sprintf, so at most cValSize - 1 characters are
+        // printed to the buffer. This ensures that the string will be null terminated.
+        const int status = cmlGetStringValueFromSql(
+            "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
+            password_storage_mode_str.data(),
+            password_storage_mode_str.size(),
+            bindVars,
+            &icss);
+
+        if (status < 0) {
+            if (CAT_NO_ROWS_FOUND == status) {
+                _out = default_password_storage_mode;
+                log_db::warn("{}: Could not find entry in R_GRID_CONFIGURATION matching namespace:[{}] and "
+                             "option:[{}]. Using default value [{}].",
+                             __func__,
+                             config_namespace,
+                             config_option_name,
+                             _out);
+                return SUCCESS();
+            }
+            log_db::error("{}: cmlGetStringValueFromSql failure: {}", __func__, status);
+            return ERROR(status, "Failed to get auth token lifetime configuration.");
+        }
+
+        constexpr std::array<std::string_view, 3> modes{"legacy", "hashed", "both"};
+        const auto password_storage_mode_is_valid =
+            std::any_of(modes.begin(), modes.end(), [&password_storage_mode_str](const auto& mode) {
+                return mode == password_storage_mode_str.data();
+            });
+        if (!password_storage_mode_is_valid) {
+            _out = default_password_storage_mode;
+            log_db::warn("{}: Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
+                         "default value [{}]",
+                         __func__,
+                         config_namespace,
+                         config_option_name,
+                         password_storage_mode_str.data(),
+                         _out);
+        }
+        else {
+            _out = password_storage_mode_str.data();
+        }
+
+        return SUCCESS();
+    } // get_password_storage_mode_configuration
+
     // Computes SHA256 hash of the provided token and salt.
     auto hash_session_token(const std::string& _token, const std::string& _salt) -> std::string
     {
@@ -7280,17 +7336,14 @@ irods::error db_mod_user_op(
             return ERROR( status2, "icatApplyRule failed" );
         }
 
-        const auto config_handle{irods::server_properties::instance().map()};
-        const auto& config{config_handle.get_json()};
-        auto store_hashed_password = false;
-        auto store_scrambled_password = true;
-        if (const auto password_storage_mode_iter = config.find(irods::KW_CFG_USER_PASSWORD_STORAGE_MODE);
-            config.end() != password_storage_mode_iter)
-        {
-            const auto& password_storage_mode = password_storage_mode_iter->get_ref<const std::string&>();
-            store_scrambled_password = (password_storage_mode != "hashed");
-            store_hashed_password = (password_storage_mode != "legacy");
+        // Get the password storage mode configuration.
+        std::string password_storage_mode;
+        if (const auto err = get_password_storage_mode_configuration(password_storage_mode); !err.ok()) {
+            return err;
         }
+        // If the password_storage_mode configuration is an invalid value, it defaults to "legacy".
+        const auto store_scrambled_password = (password_storage_mode != "hashed");
+        const auto store_hashed_password = (password_storage_mode != "legacy");
 
         if (store_hashed_password) {
             try {

@@ -2616,6 +2616,7 @@ usage( char *subOpt ) {
                                             "authentication   password_max_time",
                                             "authentication   password_min_time",
                                             "authentication   password_reuse_previous",
+                                            "authentication   password_storage_mode",
                                             "authentication   token_lifetime_in_seconds",
                                             ""};
 
@@ -2644,6 +2645,7 @@ usage( char *subOpt ) {
                                             "authentication   password_max_time",
                                             "authentication   password_min_time",
                                             "authentication   password_reuse_previous",
+                                            "authentication   password_storage_mode",
                                             "authentication   token_lifetime_in_seconds",
                                             "database         schema_version",
                                             "delay_server     leader",

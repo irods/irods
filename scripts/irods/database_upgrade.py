@@ -285,6 +285,9 @@ def run_update(irods_config, cursor, is_upgrade):
                     ");"
             )
 
+        # password storage mode setting
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_storage_mode', 'legacy');")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
