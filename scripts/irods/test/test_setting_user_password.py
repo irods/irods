@@ -14,12 +14,10 @@ from ..controller import IrodsController
 from ..exceptions import IrodsError
 
 
-def configure_password_storage_mode(value):
-	# Update server config and reload configuration.
-	config = IrodsConfig()
-	config.server_config["user_password_storage_mode"] = value
-	lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-	IrodsController(config).reload_configuration()
+def configure_password_storage_mode(admin_session, value):
+	admin_session.assert_icommand(
+		["iadmin", "set_grid_configuration", "authentication", "password_storage_mode", value])
+	IrodsController().reload_configuration()
 
 
 def authenticate_with_scheme(user_session, scheme_name, password, should_fail=False):
@@ -90,12 +88,14 @@ class test_modifying_user_password(unittest.TestCase):
 		self.admin.assert_icommand(["iadmin", "rmuser", self.test_user.username])
 
 	def test_config_legacy_sets_password_for_native_scheme_but_not_irods_scheme(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "legacy"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "legacy"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_PASSWORD
 			# but not R_USER_CREDENTIALS.
@@ -125,15 +125,20 @@ class test_modifying_user_password(unittest.TestCase):
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_hashed_sets_password_for_irods_scheme_but_not_native_scheme(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "hashed"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "hashed"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_CREDENTIALS
 			# but not R_USER_PASSWORD.
@@ -163,15 +168,20 @@ class test_modifying_user_password(unittest.TestCase):
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(self.test_user, "irods", should_fail=False, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_sets_password_for_both_native_and_irods_schemes(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "both"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "both"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_PASSWORD
 			# and also R_USER_CREDENTIALS.
@@ -201,15 +211,20 @@ class test_modifying_user_password(unittest.TestCase):
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(self.test_user, "irods", should_fail=False, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_both_with_long_passwords(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "both"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "both"])
+			IrodsController().reload_configuration()
 
 			# Set user password to a very long string (257 characters) and try to send it in scrambled form.
 			long_password = "1234567_" * 32 + "z"
@@ -238,15 +253,20 @@ class test_modifying_user_password(unittest.TestCase):
 				# Authenticate with irods scheme - should fail.
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=long_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_legacy_with_long_passwords(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "legacy"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "legacy"])
+			IrodsController().reload_configuration()
 
 			# Set user password to a very long string (257 characters) and try to send it in scrambled form.
 			long_password = "1234567_" * 32 + "z"
@@ -275,16 +295,21 @@ class test_modifying_user_password(unittest.TestCase):
 				# Authenticate with irods scheme - should fail.
 				authenticate_with_scheme(self.test_user, "irods", should_fail=True, password=long_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	@unittest.skip("TODO(#8730): This test fails because we cannot handle passwords over 42 characters.")
 	def test_config_hashed_with_long_passwords(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "hashed"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "hashed"])
+			IrodsController().reload_configuration()
 
 			# Set user password to a very long string (257 characters) and try to send it in scrambled form.
 			long_password = "1234567_" * 32 + "z"
@@ -312,13 +337,19 @@ class test_modifying_user_password(unittest.TestCase):
 				# Authenticate with irods scheme - should succeed.
 				authenticate_with_scheme(self.test_user, "irods", should_fail=False, password=long_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
 class test_igroupadmin_mkuser(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
+		# Create an admin user / session for all the tests so we don't have to keep making it for each test.
+		self.admin = session.mkuser_and_return_session("rodsadmin", "otherrods", "rods", lib.get_hostname())
+
 		# Create a groupadmin user / session for all the tests so we don't have to keep making it for each test.
 		self.groupadmin = session.mkuser_and_return_session("groupadmin", "grouper", "gpass", lib.get_hostname())
 
@@ -345,10 +376,12 @@ class test_igroupadmin_mkuser(unittest.TestCase):
 			shutil.copyfile(self.server_config_backup, paths.server_config_path())
 			IrodsController().reload_configuration()
 
-		# Exit the test admin session and remove the user.
+		# Exit the test admin sessions and remove the users.
+		self.admin.__exit__()
 		self.groupadmin.__exit__()
 		with session.make_session_for_existing_admin() as admin_session:
 			admin_session.run_icommand(["iadmin", "rmuser", self.groupadmin.username])
+			admin_session.run_icommand(["iadmin", "rmuser", self.admin.username])
 
 	def tearDown(self):
 		# Exit the test user session and remove the user, if the user was created.
@@ -357,12 +390,14 @@ class test_igroupadmin_mkuser(unittest.TestCase):
 				admin_session.run_icommand(["iadmin", "rmuser", self.test_user_name])
 
 	def test_config_legacy_sets_password_for_native_scheme_but_not_irods_scheme(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "legacy"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "legacy"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_PASSWORD
 			# but not R_USER_CREDENTIALS.
@@ -404,15 +439,20 @@ class test_igroupadmin_mkuser(unittest.TestCase):
 				authenticate_with_scheme(test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(test_user, "irods", should_fail=True, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_hashed_sets_password_for_irods_scheme_but_not_native_scheme(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "hashed"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "hashed"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_CREDENTIALS
 			# but not R_USER_PASSWORD.
@@ -454,15 +494,20 @@ class test_igroupadmin_mkuser(unittest.TestCase):
 				authenticate_with_scheme(test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(test_user, "irods", should_fail=False, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 	def test_config_sets_password_for_both_native_and_irods_schemes(self):
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration.
-			config.server_config["user_password_storage_mode"] = "both"
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			IrodsController(config).reload_configuration()
+		namespace = 'authentication'
+		option_name = 'password_storage_mode'
+		original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+		try:
+			# Update grid config and reload configuration.
+			self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "both"])
+			IrodsController().reload_configuration()
 
 			# Set user password and send in scrambled form. This should set the user's password in R_USER_PASSWORD
 			# and also R_USER_CREDENTIALS.
@@ -504,30 +549,13 @@ class test_igroupadmin_mkuser(unittest.TestCase):
 				authenticate_with_scheme(test_user, "irods", should_fail=True, password=scrambled_password)
 				authenticate_with_scheme(test_user, "irods", should_fail=False, password=non_scrambled_password)
 
-		IrodsController().reload_configuration()
+		finally:
+			self.admin.assert_icommand(
+				['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
+			IrodsController().reload_configuration()
 
 
 class test_invalid_configurations_and_options(unittest.TestCase):
-	@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for this test.")
-	def test_invalid_password_storage_mode_value_causes_configuration_reload_to_fail(self):
-		# A test to see what the server does when the configuration is an invalid value cannot be created because the
-		# server validates the configuration before starting. The invalid configuration causes the validation to fail
-		# and so the configuration does not reload. If we could test this, we would expect setting user passwords to
-		# fail for all cases and return an error because the configuration cannot direct what should happen.
-		config = IrodsConfig()
-		with lib.file_backed_up(config.server_config_path):
-			# Update server config and reload configuration. This should cause an error.
-			invalid_config = "banana"
-			config.server_config["user_password_storage_mode"] = invalid_config
-			lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-			res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
-			self.assertNotEqual(res.returncode, 0)
-			self.assertIn('"valid": false', res.stderr)
-			self.assertIn('"instanceLocation": "/user_password_storage_mode"', res.stderr)
-			self.assertIn(f'"error": "\'{invalid_config}\' is not a valid enum value."', res.stderr)
-
-		IrodsController().reload_configuration()
-
 	def test_igroupadmin_mkuser_no_scramble_option_requires_optional_zone_to_be_specified(self):
 		user_name = "nobody"
 		with session.make_session_for_existing_admin() as admin_session:
@@ -548,12 +576,15 @@ class ipasswd_test_base(unittest.TestCase):
 		shutil.copyfile(paths.server_config_path(), cls.server_config_backup)
 		with open(paths.server_config_path()) as f:
 			server_config = json.load(f)
-		server_config["user_password_storage_mode"] = cls.password_storage_mode
 		# Configure insecure mode for irods authentication scheme if the tests are not being run with TLS enabled.
 		if False == test.settings.USE_SSL:
 			server_config['plugin_configuration']['authentication']['irods'] = {'insecure_mode': True}
 		# Update the server configuration and reload the configuration.
 		lib.update_json_file_from_dict(paths.server_config_path(), server_config)
+		cls.original_password_storage_mode = cls.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', "authentication", "password_storage_mode"], 'STDOUT')[1].strip()
+		cls.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", cls.password_storage_mode])
 		IrodsController().reload_configuration()
 
 		cls.old_password = "old_password"
@@ -564,6 +595,8 @@ class ipasswd_test_base(unittest.TestCase):
 	def tearDownClass(cls):
 		# Restore the original server configuration.
 		shutil.copyfile(cls.server_config_backup, paths.server_config_path())
+		cls.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", cls.original_password_storage_mode])
 		IrodsController().reload_configuration()
 
 		# Exit the test admin session and remove the user.
@@ -582,6 +615,9 @@ class ipasswd_test_base(unittest.TestCase):
 		# Exit the test user session and remove the user.
 		self.test_user.__exit__()
 		self.admin.assert_icommand(["iadmin", "rmuser", self.test_user.username])
+		# Set the password storage mode back to whatever is required for this test class as it may have changed.
+		self.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", self.password_storage_mode])
 		IrodsController().reload_configuration()
 
 	def configure_user_session_auth_scheme(self, auth_scheme):
@@ -601,7 +637,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 1
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -616,7 +652,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 2
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -634,7 +670,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 3
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -649,7 +685,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 4
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -667,7 +703,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 5
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -682,7 +718,7 @@ class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 6
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -706,7 +742,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 7
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -721,7 +757,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 8
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
@@ -740,7 +776,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 9
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -755,7 +791,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 10
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
@@ -774,7 +810,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 11
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("native")
 
 			# Change password using native credentials to authenticate.
@@ -789,7 +825,7 @@ class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 12
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
@@ -814,7 +850,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 13
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -830,7 +866,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 14
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -848,7 +884,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 15
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -864,7 +900,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 16
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -882,7 +918,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 17
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -898,7 +934,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 18
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
@@ -918,7 +954,7 @@ class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 		# scheme rather than authenticating with a session token.
 		irods_auth_password_prompt = "Enter your iRODS password:"
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Authenticate the user so that we have a session token.
@@ -990,7 +1026,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_legacy_auth_scheme_native(self):
 		# Case 19
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -1006,7 +1042,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_legacy_auth_scheme_irods(self):
 		# Case 20
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("legacy")
+			configure_password_storage_mode(self.admin, "legacy")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
@@ -1025,7 +1061,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_hashed_auth_scheme_native(self):
 		# Case 21
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -1041,7 +1077,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_hashed_auth_scheme_irods(self):
 		# Case 22
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("hashed")
+			configure_password_storage_mode(self.admin, "hashed")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
@@ -1060,7 +1096,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_both_auth_scheme_native(self):
 		# Case 23
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("native")
 
 			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
@@ -1076,7 +1112,7 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 	def test_password_storage_mode_both_auth_scheme_irods(self):
 		# Case 24
 		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode("both")
+			configure_password_storage_mode(self.admin, "both")
 			self.configure_user_session_auth_scheme("irods")
 
 			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.

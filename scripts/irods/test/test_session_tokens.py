@@ -30,15 +30,18 @@ class test_session_token_lifetime_configuration(unittest.TestCase):
 			server_config['plugin_configuration']['authentication']['irods'] = {
 				'insecure_mode': True
 			}
-		server_config["user_password_storage_mode"] = "both"
 		lib.update_json_file_from_dict(paths.server_config_path(), server_config)
+		with session.make_session_for_existing_admin() as admin_session:
+			cls.original_password_storage_mode = admin_session.assert_icommand(
+				['iadmin', 'get_grid_configuration', "authentication", "password_storage_mode"], 'STDOUT')[1].strip()
+			admin_session.assert_icommand(['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", "both"])
 		IrodsController().reload_configuration()
 
 		# Create an admin user / session for all the tests so we don't have to keep making sessions for each test.
 		cls.admin = session.mkuser_and_return_session("rodsadmin", "otherrods", "rods", lib.get_hostname())
 
 		# Create a test user and set the user's password. This should allow for authenticating both with native and
-		# irods auth schemes due to the user_password_storage_mode configuration being set to "both" above.
+		# irods auth schemes due to the password_storage_mode configuration being set to "both" above.
 		cls.test_user = session.mkuser_and_return_session("rodsuser", "bilbo", "baggins", lib.get_hostname())
 
 		# Change the user's authentication scheme to irods authentication because that's what all of these tests use.
@@ -49,6 +52,8 @@ class test_session_token_lifetime_configuration(unittest.TestCase):
 	def tearDownClass(cls):
 		# Restore the original server configuration if necessary.
 		shutil.copyfile(cls.server_config_backup, paths.server_config_path())
+		cls.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", cls.original_password_storage_mode])
 		IrodsController().reload_configuration()
 
 		# Exit the test admin and test user session and remove the user. Have to authenticate using native
@@ -119,10 +124,13 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 			server_config['plugin_configuration']['authentication']['irods'] = {
 				'insecure_mode': True
 			}
-		server_config["user_password_storage_mode"] = "both"
 		lib.update_json_file_from_dict(paths.server_config_path(), server_config)
 
 		# Set the grid configuration to the desired value and reload configuration.
+		self.original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', "authentication", "password_storage_mode"], 'STDOUT')[1].strip()
+		self.admin.assert_icommand(['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", "both"])
+
 		self.original_token_lifetime = self.admin.assert_icommand(
 			["iadmin", "get_grid_configuration", self.configuration_namespace, self.configuration_option_name], "STDOUT")[1].strip()
 		self.admin.assert_icommand(
@@ -130,7 +138,7 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 		IrodsController().reload_configuration()
 
 		# Create a test user and set the user's password. This should allow for authenticating both with native and
-		# irods auth schemes due to the user_password_storage_mode configuration being set to "both" above.
+		# irods auth schemes due to the password_storage_mode configuration being set to "both" above.
 		self.test_rodsadmin = session.mkuser_and_return_session(
 			"rodsadmin", "test_rodsadmin", "rodsadminpass", lib.get_hostname())
 		self.test_rodsuser = session.mkuser_and_return_session(
@@ -150,6 +158,8 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 		shutil.copyfile(self.server_config_backup, paths.server_config_path())
 		self.admin.assert_icommand(
 			["iadmin", "set_grid_configuration", self.configuration_namespace, self.configuration_option_name, self.original_token_lifetime])
+		self.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", self.original_password_storage_mode])
 		IrodsController().reload_configuration()
 
 		# Exit test user sessions and remove the users. Have to re-authenticate because the users may not have
@@ -274,12 +284,14 @@ class test_remove_session_tokens(unittest.TestCase):
 		shutil.copyfile(paths.server_config_path(), self.server_config_backup)
 		with open(paths.server_config_path()) as f:
 			server_config = json.load(f)
-		server_config["user_password_storage_mode"] = "both"
 		# Configure insecure mode for irods authentication scheme if the tests are not being run with TLS enabled.
 		if False == test.settings.USE_SSL:
 			server_config['plugin_configuration']['authentication']['irods'] = {'insecure_mode': True}
 		# Update the server configuration and reload the configuration.
 		lib.update_json_file_from_dict(paths.server_config_path(), server_config)
+		self.original_password_storage_mode = self.admin.assert_icommand(
+			['iadmin', 'get_grid_configuration', "authentication", "password_storage_mode"], 'STDOUT')[1].strip()
+		self.admin.assert_icommand(['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", "both"])
 
 		# Configure the session token lifetime to something short so we can test in a reasonable amount of time.
 		self.token_lifetime_value = 5
@@ -312,6 +324,8 @@ class test_remove_session_tokens(unittest.TestCase):
 	def tearDownClass(self):
 		# Restore the original server configuration.
 		shutil.copyfile(self.server_config_backup, paths.server_config_path())
+		self.admin.assert_icommand(
+			['iadmin', 'set_grid_configuration', "authentication", "password_storage_mode", self.original_password_storage_mode])
 		IrodsController().reload_configuration()
 
 		# Exit the test admin and test user session and remove the user. Have to authenticate using native
