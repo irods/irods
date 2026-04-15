@@ -769,43 +769,6 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     return status;
 }
 
-/**
- * \fn msi_set_logical_quota(msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *rei)
- *
- * \brief Sets byte/object count quota for a collection
- *
- * \module core
- *
- * \since 5.1.0
- *
- *
- *
- * \note  This microservice sets a byte/object count quota for a collection.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] _coll_name - a STR_MS_T - A valid collection to apply the quota to
- * \param[in] _bytes_value - a STR_MS_T that sets the byte limit for the collection, OR "bytes" OR "objects"
- * \param[in] _objects_value - a STR_MS_T that sets the object count limit for the collection, OR
- *      If _bytes_value is "bytes", this will specify the byte count limit.
- *      If _bytes_value is "objects", this will specify the object count limit.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence rei->uoic->authInfo.authFlag must be >= 5 (local admin)
- * \DolVarModified None
- * \iCatAttrDependence None
- * \iCatAttrModified Updates/inserts into R_LOGICAL_QUOTA_MAIN
- * \sideeffect None
- *
- * \return integer
- * \retval 0 on success
- * \pre None
- * \post None
- * \sa None
- **/
-
 int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei)
 {
 

@@ -1427,18 +1427,18 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                       "", "", "", "", "" );
         return 0;
     }
-    if ( strcmp( cmdToken[0], "clu" ) == 0 ) {
+    if ( strcmp( cmdToken[0], "calculate_logical_quotas" ) == 0 ) {
         generalAdmin( 0, "calc_logical_usage",
                       "", "", "",
                       "", "", "", "", "", "" );
         return 0;
     }
 
-    if ( strcmp( cmdToken[0], "slq" ) == 0 ) {
+    if ( strcmp( cmdToken[0], "set_logical_quota" ) == 0 ) {
         const char* usage_message = "Usage:\n"
-                                    "\tiadmin slq <collname> <maxbytes> <maxobjects>\n"
-                                    "\tiadmin slq <collname> bytes value\n"
-                                    "\tiadmin slq <collname> objects value\n";
+                                    "\tiadmin set_logical_quota <collname> <maxbytes> <maxobjects>\n"
+                                    "\tiadmin set_logical_quota <collname> bytes value\n"
+                                    "\tiadmin set_logical_quota <collname> objects value\n";
         if(strlen(cmdToken[1]) == 0 || strlen(cmdToken[2]) == 0 || strlen(cmdToken[3]) == 0  ) {
             fprintf(stderr, "%s", usage_message);
             return -2;
@@ -1450,7 +1450,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
 
-    if ( strcmp( cmdToken[0], "llq" ) == 0 ) {
+    if ( strcmp( cmdToken[0], "list_logical_quotas" ) == 0 ) {
         return list_logical_quotas(cmdToken[1]);
     }
 

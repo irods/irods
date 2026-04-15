@@ -1357,6 +1357,7 @@ namespace
 int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     namespace fs = irods::experimental::filesystem;
+    using lq_violation = irods::logical_quotas::logical_quota_violation;
 
     if (!dataObjInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1374,16 +1375,16 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     // that would trigger it
     // BYTES: When the object can be written to
     // OBJECTS: If the object is being created
-    const auto checkQuotaFlags = static_cast<int>(irods::LogicalQuotaViolation::BYTES)*((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) | static_cast<int>(irods::LogicalQuotaViolation::OBJECTS)*(!!(dataObjInp->openFlags & O_CREAT));
+    const auto check_quota_flags = static_cast<int>(lq_violation::BYTES)*((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) | static_cast<int>(lq_violation::OBJECTS)*(!!(dataObjInp->openFlags & O_CREAT));
     // Check quota enforcement before open
-    if(checkQuotaFlags) {
+    if(check_quota_flags) {
         fs::path path{dataObjInp->objPath};
         int status = check_logical_quota_violation(rsComm, path.parent_path().c_str());
         if(status < 0) {
             log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
-        if(checkQuotaFlags & status) {
+        if(check_quota_flags & status) {
             log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and openFlags [{:o}]", __func__, dataObjInp->objPath, status, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }

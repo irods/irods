@@ -24,6 +24,7 @@ namespace
 
     int checkQuotaViolationForReg(struct RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
         fs::path path{_dataObjInfo.objPath};
+        using lq_violation = irods::logical_quotas::logical_quota_violation;
         int status = check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
         if(status < 0) {
             log_api::error("check_logical_quota_violation failed with error [{}]", status);
@@ -31,7 +32,7 @@ namespace
         }
         // Always fail if over object limit (registration makes new objects).
         // Fail when trying to register a nonempty object if over byte limit.
-        if((status & static_cast<int>(irods::LogicalQuotaViolation::OBJECTS)) || ((status & static_cast<int>(irods::LogicalQuotaViolation::BYTES)) && _dataObjInfo.dataSize > 0)) {
+        if((status & static_cast<int>(lq_violation::OBJECTS)) || ((status & static_cast<int>(lq_violation::BYTES)) && _dataObjInfo.dataSize > 0)) {
             log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and datasize [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
             return LOGICAL_QUOTA_EXCEEDED;
         }

@@ -69,6 +69,8 @@ rs_get_logical_quota(struct RsComm *_comm, getLogicalQuotaInp_t *_get_logical_qu
 // 2 - object count
 // 3 - both
 int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) {
+    using lq_violation = irods::logical_quotas::logical_quota_violation;
+
     gridConfigurationInp_t gcinp { {"logical_quotas"}, {"enforcement_enabled"}, { 0 } };
     gridConfigurationOut_t *gcout{};
 
@@ -77,18 +79,18 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
     int status = rs_get_grid_configuration_value(_comm, &gcinp, &gcout);
     if(status < 0) {
         log_api::warn("{}: Failed to get logical quota enforcement status. (ec=[{}]) Logical quotas will not be enforced.", __func__, status);
-        return static_cast<int>(irods::LogicalQuotaViolation::NONE);
+        return static_cast<int>(lq_violation::NONE);
     }
 
     if(std::strncmp(gcout->option_value, "0", 2) == 0) {
         // No logical quota enforcement
-        return static_cast<int>(irods::LogicalQuotaViolation::NONE);
+        return static_cast<int>(lq_violation::NONE);
     }
 
     if(std::strncmp(gcout->option_value, "1", 2) != 0) {
         // Strange value set, so log a message
         log_api::warn("{}: Received unknown value [{}] when fetching logical quota enforcement status. (Set to \"1\" to enable enforcement.) Logical quotas will not be enforced.", __func__, gcout->option_value);
-        return static_cast<int>(irods::LogicalQuotaViolation::NONE);
+        return static_cast<int>(lq_violation::NONE);
     }
 
     getLogicalQuotaInp_t inp{};
@@ -101,13 +103,13 @@ int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) 
         return status;
     }
 
-    status = static_cast<int>(irods::LogicalQuotaViolation::NONE);
-    for(int i = 0; i < out->len && status != static_cast<int>(irods::LogicalQuotaViolation::DUAL); i++) {
+    status = static_cast<int>(lq_violation::NONE);
+    for(int i = 0; i < out->len && status != static_cast<int>(lq_violation::BYTES_AND_OBJECTS); i++) {
        if(out->list[i].over_bytes > 0) {
-            status |= static_cast<int>(irods::LogicalQuotaViolation::BYTES);
+            status |= static_cast<int>(lq_violation::BYTES);
        }
        if(out->list[i].over_objects > 0) {
-            status |= static_cast<int>(irods::LogicalQuotaViolation::OBJECTS);
+            status |= static_cast<int>(lq_violation::OBJECTS);
        }
     }
     clearLogicalQuotaList(out);
