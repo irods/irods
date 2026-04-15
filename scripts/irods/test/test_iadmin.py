@@ -3076,50 +3076,54 @@ class test_moduser_remove_password__issue_2899(unittest.TestCase):
     def test_moduser_remove_password_for_user_with_a_legacy_password(self):
         native_password = "native_password"
         irods_password = "irods_password"
+
+        namespace = 'authentication'
+        option_name = 'password_storage_mode'
+        original_password_storage_mode = self.admin.assert_icommand(
+            ['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1].strip()
+
         try:
-            config = IrodsConfig()
-            with lib.file_backed_up(paths.server_config_path()):
-                with self.subTest("native password only is not affected by remove_password"):
-                    # Configure the password storage mode to legacy, just in case.
-                    config.server_config["user_password_storage_mode"] = "legacy"
-                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-                    IrodsController(config).reload_configuration()
+            with self.subTest("native password only is not affected by remove_password"):
+                # Configure the password storage mode to legacy, just in case.
+                self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "legacy"])
+                IrodsController().reload_configuration()
 
-                    # Set the user's password for native authentication.
-                    self.admin.assert_icommand(
-                        ['iadmin', 'moduser', self.test_user.username, "password", native_password])
-                    self.assertTrue(self.user_has_native_password())
+                # Set the user's password for native authentication.
+                self.admin.assert_icommand(
+                    ['iadmin', 'moduser', self.test_user.username, "password", native_password])
+                self.assertTrue(self.user_has_native_password())
 
-                    # Now run remove_password, to no effect (and no errors). The user should still be able use native
-                    # authentication.
-                    self.admin.assert_icommand(
-                        ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
-                    self.assertTrue(self.user_has_native_password())
+                # Now run remove_password, to no effect (and no errors). The user should still be able use native
+                # authentication.
+                self.admin.assert_icommand(
+                    ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
+                self.assertTrue(self.user_has_native_password())
 
-                with self.subTest("irods and native passwords set is only affected by remove_password for irods auth"):
-                    # Configure the password storage mode to hashed so that setting the password updates the irods
-                    # password and not the native password.
-                    config.server_config["user_password_storage_mode"] = "hashed"
-                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-                    IrodsController(config).reload_configuration()
+            with self.subTest("irods and native passwords set is only affected by remove_password for irods auth"):
+                # Configure the password storage mode to hashed so that setting the password updates the irods
+                # password and not the native password.
+                self.admin.assert_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, "hashed"])
+                IrodsController().reload_configuration()
 
-                    # Ensure that the user does not have a password for use with irods authentication.
-                    self.assertFalse(self.user_has_irods_password())
+                # Ensure that the user does not have a password for use with irods authentication.
+                self.assertFalse(self.user_has_irods_password())
 
-                    # Set the user's password for irods authentication and confirm that the user has passwords set for
-                    # both the irods and native authentication schemes.
-                    self.admin.assert_icommand(
-                        ['iadmin', 'moduser', self.test_user.username, "password", irods_password, "no-scramble"])
-                    self.assertTrue(self.user_has_native_password())
-                    self.assertTrue(self.user_has_irods_password())
+                # Set the user's password for irods authentication and confirm that the user has passwords set for
+                # both the irods and native authentication schemes.
+                self.admin.assert_icommand(
+                    ['iadmin', 'moduser', self.test_user.username, "password", irods_password, "no-scramble"])
+                self.assertTrue(self.user_has_native_password())
+                self.assertTrue(self.user_has_irods_password())
 
-                    # Now run remove_password. The user should only have a password set for native authentication again.
-                    self.admin.assert_icommand(
-                        ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
-                    self.assertTrue(self.user_has_native_password())
-                    self.assertFalse(self.user_has_irods_password())
+                # Now run remove_password. The user should only have a password set for native authentication again.
+                self.admin.assert_icommand(
+                    ["iadmin", "moduser", self.test_user.username, "remove_password"], desired_rc=0)
+                self.assertTrue(self.user_has_native_password())
+                self.assertFalse(self.user_has_irods_password())
 
         finally:
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', namespace, option_name, original_password_storage_mode])
             IrodsController().reload_configuration()
 
     def test_moduser_remove_password_for_authenticated_user_results_in_an_error__issue_8747(self):
