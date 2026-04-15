@@ -505,12 +505,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         pep_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
                 pep_resource_rebalance_pre(*INSTANCE_NAME, *CONTEXT, *OUT) {
-                    *OUT="replication_rebalance_limit=32";
+                    *OUT="replication_rebalance_limit=1";
                 }
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def pep_resource_rebalance_pre(rule_args, callback, rei):
-                    rule_args[0] = 'replication_rebalance_limit=32'
+                    rule_args[0] = 'replication_rebalance_limit=1'
             ''')
         }
 
@@ -546,7 +546,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 # place data into the resource
                 test_file = "iput_test_file"
                 lib.make_file(test_file, 10)
-                num_children = 64
+                num_children = 10
                 bad_file_indices = (1,3,5)
                 for i in range(num_children):
                     self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
@@ -566,7 +566,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
                 # =-=-=-=-=-=-=-
                 # call rebalance function - the thing were actually testing... finally.
-                self.admin.assert_icommand("iadmin modresc pt rebalance")
+                self.admin.assert_icommand("iadmin modresc pt rebalance", "STDERR", "-1834000 REBALANCE_NOT_COMPLETE", desired_rc=4)
 
                 # =-=-=-=-=-=-=-
                 # visualize our rebalance
