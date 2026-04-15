@@ -1,4 +1,5 @@
 #include "irods/private/irods_repl_rebalance.hpp"
+#include "irods/irods_exception.hpp"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
@@ -341,9 +342,12 @@ namespace {
             try {
                 source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
             }
-            catch (...) {
+            catch (const irods::exception& _e) {
+                if (_e.code() != CAT_NO_ROWS_FOUND) {
+                     throw;
+                }
+                rodsLog(LOG_WARNING, "Cannot perform rebalance on id [%lld]. Skipping.", data_id_to_replicate);
                 _num_repls_to_skip++;
-                rodsLog(LOG_WARNING, "Cannot perform rebalance. Skipping %i items next iter.", _num_repls_to_skip);
                 continue;
             }
 
@@ -471,8 +475,11 @@ namespace irods {
                     source_info =
                         get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
                 }
-                catch (...) {
-                    rodsLog(LOG_WARNING, "Cannot update replica. Skipping.");
+                catch (const irods::exception& _e) {
+                    if (_e.code() != CAT_NO_ROWS_FOUND) {
+                        throw;
+                    }
+                    rodsLog(LOG_WARNING, "Cannot update replica [%lld] for data_id [%lld]. Skipping.", replica_to_update.replica_number, replica_to_update.data_id);
                     replicas_to_skip++;
                     continue;
                 }
@@ -557,18 +564,8 @@ namespace irods {
                     did_skip_some_repls = true;
                 }
 
-                rodsLog(LOG_WARNING, "Ignored size: %i.", repls_to_skip);
+                rodsLog(LOG_WARNING, "Ignored size: [%i].", repls_to_skip);
 
-                auto res2 = std::accumulate(std::cbegin(data_ids_needing_new_replicas), std::cend(data_ids_needing_new_replicas), std::string{"["}, [](std::string&& _s, const rodsLong_t _d) -> std::string {
-                    return fmt::format("{},{}", _s, _d);
-                });
-                res2.append("]");
-
-                rodsLog(LOG_WARNING, "Gathered size: %i. Gathered list: %s", data_ids_needing_new_replicas.size(), res2.c_str());
-
-                if (data_ids_needing_new_replicas.empty()) {
-                    break;
-                }
                 proc_results_for_rebalance(
                     _ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas, repls_to_skip);
             }
