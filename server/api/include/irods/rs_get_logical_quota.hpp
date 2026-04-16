@@ -43,7 +43,7 @@ struct RsComm;
 ///         struct LogicalQuota *entry = (*out)->list[i];
 ///         // Do something with the entry.
 ///     }
-///     // Alternatively, use clearLogicalQuotaList().
+///     // Alternatively, use clear_logical_quota_list().
 ///     free((*out)->list);
 ///     free(*out);
 ///

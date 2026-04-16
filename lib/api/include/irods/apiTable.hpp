@@ -1269,7 +1269,7 @@ static irods::apidef_t client_api_table_inp[] = {
         GET_LOGICAL_QUOTA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "getLogicalQuotaInp_PI", 0, "logicalQuotaList_PI", 0,
         boost::any(std::function<int(rsComm_t*,getLogicalQuotaInp_t*,logicalQuotaList_t**)>(RS_GET_LOGICAL_QUOTA)),
-        "api_get_logical_quota", clearGetLogicalQuotaInp, clearLogicalQuotaList,
+        "api_get_logical_quota", clear_get_logical_quota_input, clear_logical_quota_list,
         (funcPtr)CALL_GET_LOGICAL_QUOTA
     }
     // clang-format on

@@ -56,7 +56,7 @@ namespace irods {
                     violation_flags |= logical_quota_violation::OBJECTS;
                }
             }
-            clearLogicalQuotaList(out);
+            clear_logical_quota_list(out);
             return static_cast<int>(violation_flags);
         } // check_logical_quota_violation
     }

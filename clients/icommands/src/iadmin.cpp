@@ -991,8 +991,8 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
     logicalQuotaList_t* logicalQuotaList = nullptr;
 
     irods::at_scope_exit free_output{[&logicalQuotaList, &getLogicalQuotaInp] {
-        clearLogicalQuotaList(logicalQuotaList);
-        clearGetLogicalQuotaInp(&getLogicalQuotaInp);
+        clear_logical_quota_list(logicalQuotaList);
+        clear_get_logical_quota_input(&getLogicalQuotaInp);
     }};
 
     const auto status = rc_get_logical_quota(Conn, &getLogicalQuotaInp, &logicalQuotaList);

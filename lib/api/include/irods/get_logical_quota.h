@@ -82,6 +82,22 @@ typedef struct LogicalQuotaList {
 
 #define logicalQuotaList_PI "int len; struct *logicalQuota_PI(len);"
 
+/// \brief Free memory associated with a heap-allocated GetLogicalQuotaInput.
+///
+/// \param[in] _get_logical_quota_input A void pointer that can be casted to a struct GetLogicalQuotaInput pointer.
+///
+/// This function assumes that the coll_name inside of the structure is also heap-allocated. Do not use this function if that pointer is not to be free()'ed.
+/// \since 5.1.0
+
+void clear_get_logical_quota_input(void* _get_logical_quota_input);
+
+/// \brief Free memory associated with a heap-allocated LogicalQuotaList.
+///
+/// \param[in] _logical_quota_list A void pointer that can be casted to a struct LogicalQuotaList pointer.
+///
+/// \since 5.1.0
+void clear_logical_quota_list(void* _logical_quota_list);
+
 /// Fetch configured logical quotas as well as their respective calculated over-values.
 ///
 /// \param[in] _comm A pointer to a RcComm.
@@ -117,7 +133,7 @@ typedef struct LogicalQuotaList {
 ///         struct LogicalQuota *entry = (*out)->list[i];
 ///         // Do something with the entry.
 ///     }
-///     // Alternatively, use clearLogicalQuotaList().
+///     // Alternatively, use clear_logical_quota_list().
 ///     free((*out)->list);
 ///     free(*out);
 ///
