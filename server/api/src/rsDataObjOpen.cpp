@@ -66,6 +66,7 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/replica_access_table.hpp"
 #include "irods/replica_state_table.hpp"
 #include "irods/scoped_privileged_client.hpp"
@@ -1357,7 +1358,7 @@ namespace
 int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     namespace fs = irods::experimental::filesystem;
-    using lq_violation = irods::logical_quotas::logical_quota_violation;
+    namespace lq = irods::logical_quotas;
 
     if (!dataObjInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1371,20 +1372,25 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return USER_INCOMPATIBLE_OPEN_FLAGS;
     }
 
-    // Multiply each violation mode with the respective boolean expression
-    // that would trigger it
-    // BYTES: When the object can be written to
-    // OBJECTS: If the object is being created
-    const auto check_quota_flags = static_cast<int>(lq_violation::BYTES)*((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) | static_cast<int>(lq_violation::OBJECTS)*(!!(dataObjInp->openFlags & O_CREAT));
+    lq::logical_quota_violation check_quota_flags = lq::logical_quota_violation::NONE;
+
+    // If object is being written to (i.e. not read-only), check for byte limit violations
+    check_quota_flags |= ((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) ? lq::logical_quota_violation::BYTES : lq::logical_quota_violation::NONE;
+
+    // If object could be created (i.e. opened with O_CREAT), check for object limit violations
+    check_quota_flags |= ((dataObjInp->openFlags & O_CREAT) ? lq::logical_quota_violation::OBJECTS : lq::logical_quota_violation::NONE);
+
     // Check quota enforcement before open
-    if(check_quota_flags) {
+    // This if statement checks for a read-only open, which does not require
+    // a quota enforcement check.
+    if(check_quota_flags != lq::logical_quota_violation::NONE) {
         fs::path path{dataObjInp->objPath};
-        int status = check_logical_quota_violation(rsComm, path.parent_path().c_str());
+        int status = lq::check_logical_quota_violation(rsComm, path.parent_path().c_str());
         if(status < 0) {
             log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
-        if(check_quota_flags & status) {
+        if((check_quota_flags & static_cast<lq::logical_quota_violation>(status)) != lq::logical_quota_violation::NONE) {
             log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and openFlags [{:o}]", __func__, dataObjInp->objPath, status, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }

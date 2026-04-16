@@ -7,16 +7,6 @@
 
 struct RsComm;
 
-namespace irods {
-    namespace logical_quotas {
-        enum class logical_quota_violation : int {
-            NONE = 0,
-            BYTES,
-            OBJECTS,
-            BYTES_AND_OBJECTS = 3
-        };
-    }
-}
 
 /// \brief Fetch configured logical quotas as well as their respective calculated over-values.
 ///
@@ -68,22 +58,5 @@ namespace irods {
 ///
 /// \since 5.1.0
 int rs_get_logical_quota( struct RsComm *_rsComm, getLogicalQuotaInp_t *_getLogicalQuotaInp, logicalQuotaList_t **_logicalQuotaList );
-
-/// \brief Check a collection for logical quota violations.
-///
-/// \param[in] _comm A pointer to a RsComm.
-/// \param[in] _coll_name The collection name to check for quota violations.
-///
-/// This function calls rs_get_logical_quota and interprets its results. On success, it will return an irods::logical_quotas::logical_quota_violation corresponding to the violated quotas on the collection.
-///
-/// \return An integer representing an iRODS error code or an irods::logical_quotas::logical_quota_violation.
-/// \retval irods::logical_quotas::logical_quota_violation::NONE (0) for no quotas violated
-/// \retval irods::logical_quotas::logical_quota_violation::BYTES (1) for byte limit violation(s) 
-/// \retval irods::logical_quotas::logical_quota_violation::OBJECTS (2) for object limit violation(s) 
-/// \retval irods::logical_quotas::logical_quota_violation::BYTES_AND_OBJECTS (3) for both limits violated in at least one quota
-/// \retval <0 on failure.
-///
-/// \since 5.1.0
-int check_logical_quota_violation(struct RsComm *_rsComm, const char* _coll_name);
 
 #endif // IRODS_RS_GET_LOGICAL_QUOTA_HPP

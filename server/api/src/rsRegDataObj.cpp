@@ -1,6 +1,7 @@
 #include "irods/regDataObj.h"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/fileDriver.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsRegDataObj.hpp"
 #include "irods/rs_get_logical_quota.hpp"
@@ -23,16 +24,22 @@ namespace
     // clang-format on
 
     int checkQuotaViolationForReg(struct RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
+        namespace lq = irods::logical_quotas;
+
         fs::path path{_dataObjInfo.objPath};
-        using lq_violation = irods::logical_quotas::logical_quota_violation;
-        int status = check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
+        int status = lq::check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
         if(status < 0) {
             log_api::error("check_logical_quota_violation failed with error [{}]", status);
             return status;
         }
-        // Always fail if over object limit (registration makes new objects).
-        // Fail when trying to register a nonempty object if over byte limit.
-        if((status & static_cast<int>(lq_violation::OBJECTS)) || ((status & static_cast<int>(lq_violation::BYTES)) && _dataObjInfo.dataSize > 0)) {
+
+        // Since status is non-negative, it is a logical_quota_violation value
+        lq::logical_quota_violation violation_flags = static_cast<lq::logical_quota_violation>(status);
+
+        // Always fail if over object limit (registration must make a new object).
+        // Fail only when trying to register a nonempty object if byte limit violated.
+        if(((violation_flags & lq::logical_quota_violation::OBJECTS) != lq::logical_quota_violation::NONE) ||
+            ((violation_flags & lq::logical_quota_violation::BYTES) != lq::logical_quota_violation::NONE) && _dataObjInfo.dataSize > 0) {
             log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and datasize [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
             return LOGICAL_QUOTA_EXCEEDED;
         }

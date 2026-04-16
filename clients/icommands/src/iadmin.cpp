@@ -1427,7 +1427,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                       "", "", "", "", "" );
         return 0;
     }
-    if ( strcmp( cmdToken[0], "calculate_logical_quotas" ) == 0 ) {
+    if ( strcmp( cmdToken[0], "calculate_logical_usage" ) == 0 ) {
         generalAdmin( 0, "calc_logical_usage",
                       "", "", "",
                       "", "", "", "", "", "" );
