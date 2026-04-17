@@ -1000,23 +1000,23 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
     if(status < 0) {
         char* sub_error_name{};
         const char* error_name = rodsErrorName(status, &sub_error_name);
-        std::cerr << "rc_get_logical_quota failed with error " << error_name << " with suberror " << (sub_error_name ? sub_error_name : "N/A") << " [(" << status << ")]" << std::endl;
+        fmt::print(stderr, "rc_get_logical_quota failed with error {} and suberror {} ec=[{}]", error_name, (sub_error_name ? sub_error_name : "N/A"), status);
         printErrorStack(Conn->rError);
         std::free(sub_error_name);
         return 1;
     }
 
     for(int i = 0; i < logicalQuotaList->len; i++) {
-        auto quotaEntry = logicalQuotaList->list[i];
+        const auto& quotaEntry = logicalQuotaList->list[i];
         const bool byte_limit_enforced = (0 != quotaEntry.max_bytes);
         const bool object_limit_enforced = (0 != quotaEntry.max_objects);
         const std::string max_byte_string = std::to_string(quotaEntry.max_bytes);
         const std::string max_objects_string = std::to_string(quotaEntry.max_objects);
         const std::string bytes_over_string = std::to_string(quotaEntry.over_bytes);
         const std::string objects_over_string = std::to_string(quotaEntry.over_objects);
-        std::cout << "Collection name: " << quotaEntry.coll_name << "\nMaximum bytes: " << (byte_limit_enforced ? max_byte_string.c_str() : "<unset>") << "\nMaximum objects: " << (object_limit_enforced ? max_objects_string.c_str() : "<unset>") << "\nBytes over: " << (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>") << "\nObjects over: " << (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>" ) << "\n";
+        fmt::print("Collection name: {}\nMaximum bytes: {}\nMaximum objects: {}\nBytes over: {}\nObjects over: {}\n", quotaEntry.coll_name, (byte_limit_enforced ? max_byte_string.c_str() : "<unset>"), (object_limit_enforced ? max_objects_string.c_str() : "<unset>"), (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>"), (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>"));
         if(i != logicalQuotaList->len - 1) {
-            std::cout << "\n";
+            fmt::print("\n");
         }
     }
 

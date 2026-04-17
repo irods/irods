@@ -74,7 +74,7 @@ typedef struct LogicalQuotaList {
     int len;
 
     /// A pointer to an array of logical quota entries.
-    /// There are len entries in this array.
+    /// There are "len" entries in this array.
     ///
     /// \since 5.1.0
     logicalQuota_t* list;
@@ -87,18 +87,22 @@ typedef struct LogicalQuotaList {
 /// \param[in] _get_logical_quota_input A void pointer that can be casted to a struct GetLogicalQuotaInput pointer.
 ///
 /// This function assumes that the coll_name inside of the structure is also heap-allocated. Do not use this function if that pointer is not to be free()'ed.
+///
+/// This function has no effect if the input pointer is null.
+///
 /// \since 5.1.0
-
 void clear_get_logical_quota_input(void* _get_logical_quota_input);
 
 /// \brief Free memory associated with a heap-allocated LogicalQuotaList.
 ///
 /// \param[in] _logical_quota_list A void pointer that can be casted to a struct LogicalQuotaList pointer.
 ///
+/// This function has no effect if the input pointer is null.
+///
 /// \since 5.1.0
 void clear_logical_quota_list(void* _logical_quota_list);
 
-/// Fetch configured logical quotas as well as their respective calculated over-values.
+/// \brief Fetch configured logical quotas as well as their respective calculated over-values.
 ///
 /// \param[in] _comm A pointer to a RcComm.
 /// \param[in] _getLogicalQuotaInp \parblock
@@ -107,7 +111,13 @@ void clear_logical_quota_list(void* _logical_quota_list);
 /// \endparblock
 /// \param[out] _logicalQuotaList A pointer to a LogicalQuotaList pointer that will hold the results of the fetch.
 ///
+/// \parblock
 /// On success, *_logicalQuotaList will hold a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of len LogicalQuota. This array must be free()'d by the caller to leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
+/// \endparblock
+///
+/// \return An integer representing an iRODS error code.
+/// \retval 0 on success.
+/// \retval <0 on failure.
 ///
 /// \usage \parblock
 /// \code{c}
@@ -129,22 +139,17 @@ void clear_logical_quota_list(void* _logical_quota_list);
 ///     }
 ///
 ///     // Process returned quotas.
-///     for(int i = 0; i < (*out)->len; i++) {
-///         struct LogicalQuota *entry = (*out)->list[i];
+///     for (int i = 0; i < out->len; i++) {
+///         struct LogicalQuota *entry = out->list[i];
 ///         // Do something with the entry.
 ///     }
-///     // Alternatively, use clear_logical_quota_list().
-///     free((*out)->list);
-///     free(*out);
 ///
-///     // strdup()'ed above
-///     free(inp.coll_name);
+///     // Alternatively, free by hand-- see implementation for details.
+///     clear_logical_quota_list(out);
+///     clear_get_logical_quota_input(&inp);
+///
 /// \endcode
 /// \endparblock
-///
-/// \return An integer representing an iRODS error code.
-/// \retval 0 on success.
-/// \retval <0 on failure.
 ///
 /// \since 5.1.0
 int rc_get_logical_quota( struct RcComm *_conn, getLogicalQuotaInp_t *_getLogicalQuotaInp, logicalQuotaList_t **_logicalQuotaList );
