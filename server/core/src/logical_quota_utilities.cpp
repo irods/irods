@@ -15,7 +15,7 @@ namespace irods {
         int check_logical_quota_violation(struct RsComm *_comm, const char* _coll_name) {
             using log_server = irods::experimental::log::server;
 
-            gridConfigurationInp_t gcinp { {"logical_quotas"}, {"enforcement_enabled"}, { 0 } };
+            gridConfigurationInp_t gcinp { {"logical_quotas"}, {"enabled"}, { 0 } };
             gridConfigurationOut_t *gcout{};
 
             const auto free_gcout = irods::at_scope_exit{[&gcout] { std::free(gcout); }};

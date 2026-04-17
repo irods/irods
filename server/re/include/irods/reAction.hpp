@@ -52,6 +52,16 @@ int msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *coperator, msPar
 int msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei );
 
 int msiQuota( ruleExecInfo_t *rei );
+
+/// \brief Recalculate logical quota usage totals on all collections.
+///
+/// \param[in] _rei The pointer to the ruleExecInfo_t struct.
+///
+/// \return An integer representing an iRODS error code.
+/// \retval 0 on success.
+/// \retval <0 on failure.
+///
+/// \since 5.1.0
 int msi_calc_logical_usage( ruleExecInfo_t *_rei );
 int msiDeleteUnusedAVUs( ruleExecInfo_t *rei );
 int msiGoodFailure( ruleExecInfo_t *rei );
@@ -96,6 +106,22 @@ int msiRenameCollection( msParam_t *oldName, msParam_t *newName,
 int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei);
 int msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource,
                  msParam_t *value, ruleExecInfo_t *rei );
+
+/// \brief Set a logical quota on a collection.
+///
+/// \param[in] _coll_name A pointer to a msParam_t of type STR_MS_T. It specifies the collection name to which the quota will be applied.
+/// \param[in] _bytes_value \parblock
+/// A pointer to a msParam_t of type STR_MS_T. It should be the string "bytes", "objects", or an integer in the range [0, 2^63-1].
+/// If "bytes" or "objects" is specified, it will only set the byte limit or object limit for the quota to the value specified in _objects_value.
+/// \endparblock
+/// \param[in] _objects_value A pointer to a msParam_t of type STR_MS_T. It should bean integer string in the range [0, 2^63-1].
+/// \param[in] _rei The pointer to the ruleExecInfo_t struct.
+///
+/// \return An integer representing an iRODS error code.
+/// \retval 0 on success.
+/// \retval <0 on failure.
+///
+/// \since 5.1.0
 int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei);
 int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* objParam,

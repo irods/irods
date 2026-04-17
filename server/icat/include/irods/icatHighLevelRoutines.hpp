@@ -604,7 +604,7 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int;
 /// \retval <0 On failure.
 ///
 /// \since 5.1.0
-auto chl_calc_logical_usage_and_quota(RsComm* _comm) -> int;
+auto chl_calc_logical_usage_and_quota(RsComm* _comm, const char* _coll_name) -> int;
 
 /// \brief Update or create a new logical quota.
 ///

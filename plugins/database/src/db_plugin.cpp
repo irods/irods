@@ -16328,7 +16328,8 @@ auto db_remove_password_op(irods::plugin_context& _ctx, const char* _json_input)
 } // db_remove_password_op
 
 irods::error db_calc_logical_usage_and_quota_op(
-    irods::plugin_context& _ctx ) {
+    irods::plugin_context& _ctx,
+    [[maybe_unused]] const char* _coll_name) {
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -17080,7 +17081,7 @@ irods::database* plugin_factory(
     pg->add_operation(
         DATABASE_OP_REMOVE_PASSWORD, function<error(plugin_context&, const char*)>(db_remove_password_op));
     pg->add_operation(
-        DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA, function<error(plugin_context&)>(db_calc_logical_usage_and_quota_op));
+        DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA, function<error(plugin_context&, const char*)>(db_calc_logical_usage_and_quota_op));
     pg->add_operation(
         DATABASE_OP_SET_LOGICAL_QUOTA, function<error(plugin_context&, const char*, const char*, const char*)>(db_set_logical_quota_op));
     pg->add_operation(

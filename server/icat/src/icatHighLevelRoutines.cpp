@@ -4853,7 +4853,7 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int
     return static_cast<int>(ret.code());
 } // chl_remove_password
 
-auto chl_calc_logical_usage_and_quota(RsComm* _comm) -> int
+auto chl_calc_logical_usage_and_quota(RsComm* _comm, const char* _coll_name) -> int
 {
     irods::database_object_ptr db_obj_ptr;
     if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {
@@ -4869,7 +4869,7 @@ auto chl_calc_logical_usage_and_quota(RsComm* _comm) -> int
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
     // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
-    const auto ret = db->call(_comm, irods::DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA, ptr);
+    const auto ret = db->call(_comm, irods::DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA, ptr, _coll_name);
     return static_cast<int>(ret.code());
 } // chl_calc_logical_usage_and_quota
 
