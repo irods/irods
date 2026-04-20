@@ -16394,10 +16394,8 @@ irods::error db_calc_logical_usage_and_quota_op(
     if ( status < 0 ) {
         return ERROR( status, "Failed to commit" );
     }
-    else {
-        return SUCCESS();
-    }
 
+    return SUCCESS();
 } // db_calc_logical_usage_and_quota_op
 
 irods::error db_set_logical_quota_op(
@@ -16423,28 +16421,28 @@ irods::error db_set_logical_quota_op(
     int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
 
     if (!_coll_name) {
-        const auto msg = "Invalid argument for logical quota collection name. Received null input argument.";
-        log_db::error(msg);
-        return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+        auto msg = std::string("Invalid argument for logical quota collection name. Received null input argument.");
+        log_db::error("{}: {}", __func__, msg);
+        return ERROR(SYS_INVALID_INPUT_PARAM, std::move(msg));
     }
 
     if (const auto [ptr, ec] = std::from_chars(_byte_limit, _byte_limit + std::strlen(_byte_limit), byte_limit); ec != std::errc{}) {
-        const auto msg = fmt::format("Invalid argument for logical quota byte limit. Could not convert [{}] to an integer.", byte_limit);
-        log_db::error(msg);
-        return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+        auto msg = fmt::format("Invalid argument for logical quota byte limit. Could not convert [{}] to an integer.", byte_limit);
+        log_db::error("{}: {}", __func__, msg);
+        return ERROR(SYS_INVALID_INPUT_PARAM, std::move(msg));
     }
 
     if (const auto [ptr, ec] = std::from_chars(_object_limit, _object_limit + std::strlen(_object_limit), object_limit); ec != std::errc{}) {
-        const auto msg = fmt::format("Invalid argument for logical quota object limit. Could not convert [{}] to an integer.", object_limit);
-        log_db::error(msg);
-        return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+        auto msg = fmt::format("Invalid argument for logical quota object limit. Could not convert [{}] to an integer.", object_limit);
+        log_db::error("{}: {}", __func__, msg);
+        return ERROR(SYS_INVALID_INPUT_PARAM, std::move(msg));
     }
 
     cllBindVars[cllBindVarCount++] = _coll_name;
     status = cmlGetFirstRowFromSql(
-                // FOR UPDATE prevents deletion of this collection until this transaction completes
+                // FOR UPDATE prevents deletion of this collection until this transaction completes.
                 // Code below is dependent on the collection existing.
-                // If a collection is deleted between this SELECT and the INSERT below, there could be a active quota row for a nonexistent collection.
+                // If a collection is deleted between this SELECT and the INSERT below, there could be an active quota row for a nonexistent collection.
                 // This would result in a database row that can't be interacted with, and would require a manual intervention to delete.
                  "SELECT coll_id "
                  "FROM R_COLL_MAIN "
@@ -16456,12 +16454,11 @@ irods::error db_set_logical_quota_op(
         if ( status == CAT_NO_ROWS_FOUND ) {
             return ERROR( CAT_INVALID_ARGUMENT, "Nonexistent collection specified." );
         }
-        const auto msg = fmt::format("Failed to select collection with name {}", _coll_name);
-        return ERROR(status, msg);
+        auto msg = fmt::format("Failed to select collection with name [{}]", _coll_name);
+        return ERROR(status, std::move(msg));
     }
 
     std::memcpy(coll_id, icss.stmtPtr[statementNum]->resultValue[0], 21);
-
 
     // Negative input parameters represent a no-op: if the value is
     // set, keep the existing value. If it is unset (i.e. it is a new quota)
@@ -16473,7 +16470,7 @@ irods::error db_set_logical_quota_op(
     // 1 means only byte_limit is negative.
     // 2 means only object_limit is negative.
     // 3 means both are negative, which is a true no-op.
-    const int query_selection = (byte_limit < 0) + 2*(object_limit < 0);
+    const int query_selection = static_cast<int>(byte_limit < 0) + static_cast<int>(2*(object_limit < 0));
 
     getNowStr( myTime );
 
@@ -16516,12 +16513,12 @@ irods::error db_set_logical_quota_op(
     status =  cmlExecuteNoAnswerSql(update_strings[query_selection], &icss);
 
     if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        log_db::info("{}: Logical quota update failure status=[{}]", __func__, status);
+        log_db::error("{}: Logical quota update failure status=[{}]", __func__, status);
         _rollback(__func__);
         return ERROR( status, "Logical quota update failure" );
-
     }
-    else if(byte_limit <= 0 && object_limit <= 0) {
+
+    if(byte_limit <= 0 && object_limit <= 0) {
         // If both byte_limit and object_limit are nonpositive, a delete is all that is possible
         cllBindVars[cllBindVarCount++] = coll_id;
         status = cmlExecuteNoAnswerSql(
@@ -16532,7 +16529,7 @@ irods::error db_set_logical_quota_op(
                  , &icss);
 
         if(status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-            log_db::info("{}: Logical quota deletion failure status=[{}]", __func__, status);
+            log_db::error("{}: Logical quota deletion failure status=[{}]", __func__, status);
             _rollback(__func__);
             return ERROR( status, "Logical quota deletion failure" );
         }
@@ -16561,9 +16558,9 @@ irods::error db_set_logical_quota_op(
                           "VALUES(?, ?, ?, ?, ?, ?)",
                           &icss);
             if ( status != 0) {
-                log_db::info("{}: Logical quota insert failure {}", __func__, status);
+                log_db::error("{}: Logical quota insert failure {}", __func__, status);
                 _rollback(__func__);
-                return ERROR( status, "Logical quota deletion failure" );
+                return ERROR( status, "Logical quota insert failure" );
             }
     }
 
@@ -16598,7 +16595,7 @@ irods::error db_check_logical_quota_op(
     status = cmlCheckDir(_coll_name, _ctx.comm()->clientUser.userName, _ctx.comm()->clientUser.rodsZone, ACCESS_READ_OBJECT, &icss, (_ctx.comm()->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH));
 
     if(status < 0) {
-        log_db::info("[{}]: cmlCheckDir failed for collection name [{}] with status=[{}]", __func__, _coll_name, status);
+        log_db::info("{}: cmlCheckDir failed for collection name [{}] with status=[{}]", __func__, _coll_name, status);
         return ERROR( status, "Insufficient privileges to collection or nonexistent collection specified." );
     }
 
@@ -16613,12 +16610,21 @@ irods::error db_check_logical_quota_op(
                      "R_LOGICAL_QUOTA_MAIN "
                 "WHERE R_COLL_MAIN.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
                   "AND ? LIKE CONCAT(R_COLL_MAIN.coll_name, '%') "
+                   // Orders the returned quotas by applying the polynomial function f(x) = (x+1)(x)(x-2)
+                   // to the signum of the returned over values.
+                   // This function has the property that if any input is 1
+                   // i.e. one of the returned quotas is positive and violating the limit
+                   // then the returned value is 2, which turns the final expression positive, regardless of the other value.
+                   // This means returned quotas will be ordered like so:
+                   // 1. Quotas with both limits violated
+                   // 2. Quotas with either limit violated
+                   // 3. Other quotas
                   "ORDER BY ((SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)-2) + (SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)-2)) DESC",
                     &statementNum, 0, &icss );
     }
     else {
-    // If coll_name is null, get all applicable quotas
-    // Useful if an admin wants to see all quotas
+    // If coll_name is null, get all applicable quotas.
+    // Useful if an admin wants to see all quotas.
 
     // Only allow admins to check all quotas
     if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
@@ -16634,25 +16640,37 @@ irods::error db_check_logical_quota_op(
                 "FROM R_COLL_MAIN, "
                      "R_LOGICAL_QUOTA_MAIN "
                 "WHERE R_COLL_MAIN.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
+                   // Orders the returned quotas by applying the polynomial function f(x) = (x+1)(x)(x-2)
+                   // to the signum of the returned over values.
+                   // This function has the property that if any input is 1
+                   // i.e. one of the returned quotas is positive and violating the limit
+                   // then the returned value is 2, which turns the final expression positive, regardless of the other value.
+                   // This means returned quotas will be ordered like so:
+                   // 1. Quotas with both limits violated
+                   // 2. Quotas with either limit violated
+                   // 3. Other quotas
                   "ORDER BY ((SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)-2) + (SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)-2)) DESC",
                     &statementNum, 0, &icss );
     }
 
     if (CAT_NO_ROWS_FOUND == status) {
-        log_db::info("Logical quota check - no quotas applied to [{}]", _coll_name);
+        log_db::info("{}: Logical quota check - no quotas applied to [{}]", __func__, _coll_name);
         cmlFreeStatement(statementNum, &icss);
         return SUCCESS();
     }
 
     if ( status != 0 ) {
         cmlFreeStatement(statementNum, &icss);
+        log_db::error("{}: Logical quota check failed with ec=[{}]", __func__, status);
         return ERROR( status, "Logical quota check failed." );
     }
+
     auto values_ary = icss.stmtPtr[statementNum]->resultValue;
-    _quota_values->push_back(std::make_tuple(icss.stmtPtr[statementNum]->resultValue[0], std::strtoll(values_ary[1], NULL, 0), std::strtoll(values_ary[2], NULL, 0), std::strtoll(values_ary[3], NULL, 0), std::strtoll(values_ary[4], NULL, 0)));
+    _quota_values->push_back(std::make_tuple(icss.stmtPtr[statementNum]->resultValue[0], std::strtoll(values_ary[1], nullptr, 0), std::strtoll(values_ary[2], nullptr, 0), std::strtoll(values_ary[3], nullptr, 0), std::strtoll(values_ary[4], nullptr, 0)));
     while((status = cmlGetNextRowFromStatement(statementNum, &icss)) != CAT_NO_ROWS_FOUND) {
         if(status != 0) {
             cmlFreeStatement(statementNum, &icss);
+            log_db::error("{}: Logical quota check next-row fetch failed with ec=[{}]", __func__, status);
             return ERROR( status, "Logical quota next-row fetch failed." );
         }
         values_ary = icss.stmtPtr[statementNum]->resultValue;
