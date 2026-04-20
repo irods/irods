@@ -597,7 +597,7 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int;
 
 /// \brief Trigger logical quota recalculation based on total object size/count.
 ///
-/// \param[in]  _comm   The communication object.
+/// \param[in] _comm The communication object.
 ///
 /// \return An integer.
 /// \retval  0 On success.
@@ -608,10 +608,10 @@ auto chl_calc_logical_usage_and_quota(RsComm* _comm, const char* _coll_name) -> 
 
 /// \brief Update or create a new logical quota.
 ///
-/// \param[in]  _comm   The communication object.
-/// \param[in]  _coll_name   The collection name to which the logical quota will apply.
-/// \param[in]  _byte_limit   The byte limit for the collection. Negative values will be a no-op for existing quotas and set to 0 (unenforced) for new quotas.
-/// \param[in]  _object_limit   The object limit for the collection. Negative values will be a no-op for existing quotas and set to 0 (unenforced) for new quotas.
+/// \param[in] _comm The communication object.
+/// \param[in] _coll_name The collection name to which the logical quota will apply.
+/// \param[in] _byte_limit The byte limit for the collection. Negative values will be a no-op for existing quotas and set to 0 (unenforced) for new quotas.
+/// \param[in] _object_limit The object limit for the collection. Negative values will be a no-op for existing quotas and set to 0 (unenforced) for new quotas.
 ///
 /// \return An integer.
 /// \retval  0 On success.
@@ -622,20 +622,21 @@ auto chl_set_logical_quota(RsComm* _comm, const char* _coll_name, const char* _b
 
 /// \brief Fetch a list of logical quotas.
 ///
-/// \param[in]  _comm   The communication object.
-/// \param[in]  _coll_name   \parblock
+/// \param[in] _comm The communication object.
+/// \param[in] _coll_name \parblock
 /// The collection name to fetch applicable logical quotas for.
 /// This will fetch any quotas applied to a particular collection as well as any quotas set on ancestors.
 /// e.g. Passing in /tempZone/home/rods will fetch quotas for /, /tempZone, /tempZone/home, and /tempZone/home/rods, if any of them exist.
 ///
 /// Pass in an empty string or nullptr to fetch all quotas.
 /// \endparblock
-/// \param[out]  _quota_values   \parblock
+/// \param[out] _quota_values \parblock
 /// A vector of tuples, each of which contains the following fields, in order:
 /// Collection name, byte limit, object limit, bytes over, objects over.
 /// "Bytes over" and "objects over" is the difference between the total bytes/objects stored in the collection and the set byte/object limit.
 /// i.e. bytes_over = total_bytes_in_collection - byte_limit
 /// \endparblock
+///
 /// \return An integer.
 /// \retval  0 On success.
 /// \retval <0 On failure.

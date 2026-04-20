@@ -1495,7 +1495,6 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
     }
 
     if ( strcmp( generalAdminInp->arg0, "set_logical_quota" ) == 0 ) {
-
         rodsLong_t nonnegative_checker;
         // Only allow negative values internally-- error out if encountered here
         if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg3, generalAdminInp->arg3 + std::strlen(generalAdminInp->arg3), nonnegative_checker); ec != std::errc{}) {
@@ -1508,35 +1507,26 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         }
 
         if(strcmp(generalAdminInp->arg2, "bytes") == 0) {
-        status = chl_set_logical_quota(rsComm,
-                                          generalAdminInp->arg1,
-                                          generalAdminInp->arg3,
-                                          "-1");
+            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg3, "-1");
+        }
 
-        } else if(strcmp(generalAdminInp->arg2, "objects") == 0) {
-        status = chl_set_logical_quota(rsComm,
-                                          generalAdminInp->arg1,
-                                          "-1",
-                                          generalAdminInp->arg3);
-        } else {
-        // arg2 should also be nonnegative in this branch
+        if(strcmp(generalAdminInp->arg2, "objects") == 0) {
+            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, "-1", generalAdminInp->arg3);
+        }
+
+        // arg2 should be nonnegative here
         if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg2, generalAdminInp->arg2 + std::strlen(generalAdminInp->arg2), nonnegative_checker); ec != std::errc{}) {
            log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg2);
            return SYS_INVALID_INPUT_PARAM;
         }
+
         if(nonnegative_checker < 0) {
            log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
             return USER_INPUT_FORMAT_ERR;
         }
 
-        status = chl_set_logical_quota(rsComm,
-                                          generalAdminInp->arg1,
-                                          generalAdminInp->arg2,
-                                          generalAdminInp->arg3);
-        }
-        return status;
+        return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg2, generalAdminInp->arg3);
     }
-
 
     if (std::strcmp(generalAdminInp->arg0, "set_delay_server") == 0) {
         if (!generalAdminInp->arg1) {

@@ -7,7 +7,6 @@
 
 struct RsComm;
 
-
 /// \brief Fetch configured logical quotas as well as their respective calculated over-values.
 ///
 /// \param[in] _comm A pointer to a RsComm.
@@ -17,11 +16,17 @@ struct RsComm;
 /// \endparblock
 /// \param[out] _logicalQuotaList A pointer to a LogicalQuotaList pointer that will hold the results of the fetch.
 ///
+/// \parblock
 /// On success, *_logicalQuotaList will hold a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of len LogicalQuota. This array must be free()'d by the caller to leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
+/// \endparblock
+///
+/// \return An integer representing an iRODS error code.
+/// \retval 0 on success.
+/// \retval <0 on failure.
 ///
 /// \usage \parblock
 /// \code{c}
-///     RcComm* comm = // Our iRODS connection.
+///     RsComm* comm = // Our iRODS connection.
 ///
 ///     struct LogicalQuotaList *out = NULL;
 ///
@@ -39,22 +44,17 @@ struct RsComm;
 ///     }
 ///
 ///     // Process returned quotas.
-///     for(int i = 0; i < (*out)->len; i++) {
-///         struct LogicalQuota *entry = (*out)->list[i];
+///     for (int i = 0; i < out->len; i++) {
+///         struct LogicalQuota *entry = out->list[i];
 ///         // Do something with the entry.
 ///     }
-///     // Alternatively, use clear_logical_quota_list().
-///     free((*out)->list);
-///     free(*out);
 ///
-///     // strdup()'ed above
-///     free(inp.coll_name);
+///     // Alternatively, free by hand-- see implementation for details.
+///     clear_logical_quota_list(out);
+///     clear_get_logical_quota_input(&inp);
+///
 /// \endcode
 /// \endparblock
-///
-/// \return An integer representing an iRODS error code.
-/// \retval 0 on success.
-/// \retval <0 on failure.
 ///
 /// \since 5.1.0
 int rs_get_logical_quota( struct RsComm *_rsComm, getLogicalQuotaInp_t *_getLogicalQuotaInp, logicalQuotaList_t **_logicalQuotaList );

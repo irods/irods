@@ -771,7 +771,6 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
 
 int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei)
 {
-
     // Null checks
     // Every calling mode requires all arguments filled
     if (nullptr == _rei || nullptr == _rei->rsComm || nullptr == _coll_name || nullptr == _bytes_value || nullptr == _objects_value) {
@@ -785,7 +784,9 @@ int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msPar
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
-    char *parsed_coll_name, *parsed_bytes_value, *parsed_objects_value;
+    char *parsed_coll_name;
+    char *parsed_bytes_value;
+    char *parsed_objects_value;
     // Parse collection name
     if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == nullptr ) {
         log_msi::error("{}: Null or non-string collection name specified.", __func__);

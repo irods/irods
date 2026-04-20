@@ -1372,25 +1372,31 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return USER_INCOMPATIBLE_OPEN_FLAGS;
     }
 
-    lq::logical_quota_violation check_quota_flags = lq::logical_quota_violation::NONE;
+    lq::violation check_quota_flags = lq::violation::none;
 
     // If object is being written to (i.e. not read-only), check for byte limit violations
-    check_quota_flags |= ((dataObjInp->openFlags & O_ACCMODE) == O_WRONLY || (dataObjInp->openFlags & O_ACCMODE) == O_RDWR) ? lq::logical_quota_violation::BYTES : lq::logical_quota_violation::NONE;
+    if (const auto access_mode = (dataObjInp->openFlags & O_ACCMODE);
+        access_mode == O_WRONLY || access_mode == O_RDWR)
+    {
+        check_quota_flags |= lq::violation::bytes;
+    }
 
     // If object could be created (i.e. opened with O_CREAT), check for object limit violations
-    check_quota_flags |= ((dataObjInp->openFlags & O_CREAT) ? lq::logical_quota_violation::OBJECTS : lq::logical_quota_violation::NONE);
+    if (dataObjInp->openFlags & O_CREAT) {
+        check_quota_flags |=  lq::violation::objects;
+    }
 
-    // Check quota enforcement before open
+    // Check quota enforcement before open.
     // This if statement checks for a read-only open, which does not require
     // a quota enforcement check.
-    if(check_quota_flags != lq::logical_quota_violation::NONE) {
-        fs::path path{dataObjInp->objPath};
+    if(lq::violation::none != check_quota_flags) {
+        const fs::path path{dataObjInp->objPath};
         int status = lq::check_logical_quota_violation(rsComm, path.parent_path().c_str());
         if(status < 0) {
-            log_api::error("check_logical_quota_violation failed with error [{}]", status);
+            log_api::error("{}: check_logical_quota_violation failed with error [{}]", __func__, status);
             return status;
         }
-        if((check_quota_flags & static_cast<lq::logical_quota_violation>(status)) != lq::logical_quota_violation::NONE) {
+        if((check_quota_flags & static_cast<lq::violation>(status)) != lq::violation::none) {
             log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and openFlags [{:o}]", __func__, dataObjInp->objPath, status, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }

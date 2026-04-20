@@ -145,7 +145,7 @@ int
 msi_calc_logical_usage( ruleExecInfo_t *_rei ) {
     if (nullptr == _rei || nullptr == _rei->rsComm) {
         log_msi::error("{}: Input rei or rei->rsComm is nullptr.", __func__);
-        return SYS_INTERNAL_NULL_INPUT_ERR;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
     }
 
     if ( _rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {

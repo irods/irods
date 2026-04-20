@@ -15,32 +15,31 @@
 
 #include "irods/filesystem/path.hpp"
 
-
 namespace
 {
-    // clang-format off
-    namespace fs            = irods::experimental::filesystem;
-    using log_api           = irods::experimental::log::api;
-    // clang-format on
+    namespace fs = irods::experimental::filesystem;
+    using log_api = irods::experimental::log::api;
 
-    int checkQuotaViolationForReg(struct RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
+    int checkQuotaViolationForReg(RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
         namespace lq = irods::logical_quotas;
 
-        fs::path path{_dataObjInfo.objPath};
+        const fs::path path{_dataObjInfo.objPath};
         int status = lq::check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
         if(status < 0) {
-            log_api::error("check_logical_quota_violation failed with error [{}]", status);
+            log_api::error("{}: check_logical_quota_violation failed with error [{}]", __func__, status);
             return status;
         }
 
-        // Since status is non-negative, it is a logical_quota_violation value
-        lq::logical_quota_violation violation_flags = static_cast<lq::logical_quota_violation>(status);
+        // Since status is non-negative, it is a logical_quota::violation value
+        lq::violation violation_flags = static_cast<lq::violation>(status);
 
         // Always fail if over object limit (registration must make a new object).
         // Fail only when trying to register a nonempty object if byte limit violated.
-        if(((violation_flags & lq::logical_quota_violation::OBJECTS) != lq::logical_quota_violation::NONE) ||
-            ((violation_flags & lq::logical_quota_violation::BYTES) != lq::logical_quota_violation::NONE) && _dataObjInfo.dataSize > 0) {
-            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and datasize [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
+        const auto object_count_violation = ((violation_flags & lq::violation::objects) != lq::violation::none);
+        const auto byte_count_violation = (((violation_flags & lq::violation::bytes) != lq::violation::none) && _dataObjInfo.dataSize > 0);
+
+        if(object_count_violation || byte_count_violation) {
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and data size [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
             return LOGICAL_QUOTA_EXCEEDED;
         }
         return 0;
@@ -59,8 +58,8 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     *outDataObjInfo = NULL;
 
     // Check quota enforcement before register
-    if(int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
-        log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+    if(const int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
+        log_api::warn("{}: Failure due to logical quota violation or error; ec=[{}]", __func__, ec);
         return ec;
     }
 
@@ -169,8 +168,8 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
     // Check quota enforcement before register
-    if(int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
-        log_api::warn("[{}] failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+    if(const int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
+        log_api::warn("{}: Failure due to logical quota violation or error; ec=[{}]", __func__, ec);
         return ec;
     }
 
