@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
 import irods.setup_options
 
@@ -301,6 +302,13 @@ def get_irods_user_and_group(irods_config):
             input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS Service Account Group'))
     return (irods_user, irods_group)
 
+def try_chown(path, uid, gid, *args, **kwargs):
+    l = logging.getLogger(__name__)
+    try:
+        os.chown(path, uid, gid, *args, **kwargs)
+    except Exception as e:
+        l.warning("Failed to set ownership of %s: %s", path, e)
+
 def setup_service_account(irods_config, irods_user, irods_group):
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Setting up the service account'))
@@ -335,31 +343,29 @@ def setup_service_account(irods_config, irods_user, irods_group):
         print('IRODS_SERVICE_ACCOUNT_NAME=%s' % (irods_user), file=f)
         print('IRODS_SERVICE_GROUP_NAME=%s' % (irods_group), file=f)
 
+    irods_uid = pwd.getpwnam(irods_user).pw_uid
+    irods_gid = grp.getgrnam(irods_group).gr_gid
+
     l.info('Setting owner of %s to %s:%s',
             irods_config.irods_directory, irods_user, irods_group)
     for (root, _, files) in os.walk(irods_config.irods_directory):
-        os.lchown(root,
-                pwd.getpwnam(irods_user).pw_uid,
-                grp.getgrnam(irods_group).gr_gid)
+        try_chown(root, irods_uid, irods_gid, follow_symlinks=False)
         for filename in files:
-            os.lchown(os.path.join(root, filename),
-                    pwd.getpwnam(irods_user).pw_uid,
-                    grp.getgrnam(irods_group).gr_gid)
+            try_chown(os.path.join(root, filename), irods_uid, irods_gid, follow_symlinks=False)
 
     l.info('Setting owner of %s to %s:%s',
             irods_config.config_directory, irods_user, irods_group)
     for (root, _, files) in os.walk(irods_config.config_directory):
-        os.lchown(root,
-                pwd.getpwnam(irods_user).pw_uid,
-                grp.getgrnam(irods_group).gr_gid)
+        try_chown(root, irods_uid, irods_gid, follow_symlinks=False)
         for filename in files:
-            os.lchown(os.path.join(root, filename),
-                    pwd.getpwnam(irods_user).pw_uid,
-                    grp.getgrnam(irods_group).gr_gid)
+            try_chown(os.path.join(root, filename), irods_uid, irods_gid, follow_symlinks=False)
 
-    os.lchown(os.path.join(irods.paths.runstate_directory(), 'irods'),
-              pwd.getpwnam(irods_user).pw_uid,
-              grp.getgrnam(irods_group).gr_gid)
+    try_chown(
+        os.path.join(irods.paths.runstate_directory(), 'irods'),
+        irods_uid,
+        irods_gid,
+        follow_symlinks=False
+    )
 
     #owner of top-level directory changed, clear the cache
     irods_config.clear_cache()
