@@ -245,45 +245,47 @@ def run_update(irods_config, cursor, is_upgrade):
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'token_lifetime_in_seconds', '1209600');")
 
         # Add new column to R_USER_SESSION_KEY for storing salts.
-        if "oracle" == irods_config.catalog_database_type:
-            database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add (salt varchar2(32));")
-        else:
-            database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add column salt varchar(32);")
+        if is_upgrade:
+            if "oracle" == irods_config.catalog_database_type:
+                database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add (salt varchar2(32));")
+            else:
+                database_connect.execute_sql_statement(cursor, "alter table R_USER_SESSION_KEY add column salt varchar(32);")
 
         # pam password reuse setting
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_reuse_previous', '1');")
 
         # Add R_USER_CREDENTIALS table.
-        if "oracle" == irods_config.catalog_database_type:
-            database_connect.execute_sql_statement(
-                cursor,
-                "create table R_USER_CREDENTIALS"
-                    "("
-                        "user_id "           "integer, "
-                        "hashed_password "   "varchar(2700), "
-                        "salt "              "varchar(32), "
-                        "hashing_algorithm " "varchar(250), "
-                        "hashing_parameters ""varchar(2700), "
-                        "create_time "       "varchar(32), "
-                        "modify_time "       "varchar(32), "
-                        "expiration_time "   "varchar(32)"
-                    ");"
-            )
-        else:
-            database_connect.execute_sql_statement(
-                cursor,
-                "create table R_USER_CREDENTIALS"
-                    "("
-                        "user_id "           "bigint, "
-                        "hashed_password "   "varchar(2700), "
-                        "salt "              "varchar(32), "
-                        "hashing_algorithm " "varchar(250), "
-                        "hashing_parameters ""varchar(2700), "
-                        "create_time "       "varchar(32), "
-                        "modify_time "       "varchar(32), "
-                        "expiration_time "   "varchar(32)"
-                    ");"
-            )
+        if is_upgrade:
+            if "oracle" == irods_config.catalog_database_type:
+                database_connect.execute_sql_statement(
+                    cursor,
+                    "create table R_USER_CREDENTIALS"
+                        "("
+                            "user_id "           "integer, "
+                            "hashed_password "   "varchar(2700), "
+                            "salt "              "varchar(32), "
+                            "hashing_algorithm " "varchar(250), "
+                            "hashing_parameters ""varchar(2700), "
+                            "create_time "       "varchar(32), "
+                            "modify_time "       "varchar(32), "
+                            "expiration_time "   "varchar(32)"
+                        ");"
+                )
+            else:
+                database_connect.execute_sql_statement(
+                    cursor,
+                    "create table R_USER_CREDENTIALS"
+                        "("
+                            "user_id "           "bigint, "
+                            "hashed_password "   "varchar(2700), "
+                            "salt "              "varchar(32), "
+                            "hashing_algorithm " "varchar(250), "
+                            "hashing_parameters ""varchar(2700), "
+                            "create_time "       "varchar(32), "
+                            "modify_time "       "varchar(32), "
+                            "expiration_time "   "varchar(32)"
+                        ");"
+                )
 
         # password storage mode setting
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_storage_mode', 'legacy');")
