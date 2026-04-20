@@ -106,7 +106,7 @@ create table R_RULE_EXEC ( rule_exec_id INT64TYPE not null, rule_name varchar(27
 
 create table R_USER_GROUP ( group_user_id INT64TYPE not null, user_id INT64TYPE not null, create_ts varchar(32), modify_ts varchar(32)) ;
 
-create table R_USER_SESSION_KEY ( user_id INT64TYPE not null, session_key varchar(1000) not null, session_info varchar(1000) , auth_scheme varchar(250) not null, session_expiry_ts varchar(32) not null, create_ts varchar(32), modify_ts varchar(32)) ;
+create table R_USER_SESSION_KEY ( user_id INT64TYPE not null, session_key varchar(1000) not null, session_info varchar(1000) , auth_scheme varchar(250) not null, session_expiry_ts varchar(32) not null, create_ts varchar(32), modify_ts varchar(32), salt varchar(32)) ;
 
 create table R_USER_PASSWORD ( user_id INT64TYPE not null, rcat_password varchar(250) not null, pass_expiry_ts varchar(32) not null, create_ts varchar(32), modify_ts varchar(32)) ;
 
@@ -153,6 +153,8 @@ create table R_TICKET_ALLOWED_USERS ( ticket_id INT64TYPE not null, user_name va
 create table R_TICKET_ALLOWED_GROUPS ( ticket_id INT64TYPE not null, group_name varchar(250) not null);
 
 create table R_GRID_CONFIGURATION ( namespace varchar(2700), option_name varchar(2700), option_value varchar(2700));
+
+create table R_USER_CREDENTIALS (user_id INT64TYPE, hashed_password varchar(2700), salt varchar(32), hashing_algorithm varchar(250), hashing_parameters varchar(2700), create_time varchar(32), modify_time varchar(32), expiration_time varchar(32));
 
 #ifdef mysql
 
