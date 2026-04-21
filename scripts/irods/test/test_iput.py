@@ -478,6 +478,122 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
         do_test_force_iput_to_new_resource_results_in_error__issue_5575(self, 40000000)
 
 
+    def test_iput_all_flag_updates_all_replicas__issue_8629(self):
+        resc1 = 'test_iput_all_flag_resc1'
+        resc2 = 'test_iput_all_flag_resc2'
+        resc3 = 'test_iput_all_flag_resc3'
+        filename = 'test_iput_all_flag_file1.txt'
+        filename2 = 'test_iput_all_flag_file2.txt'
+        local_file = os.path.join(self.user.local_session_dir, filename)
+        local_file2 = os.path.join(self.user.local_session_dir, filename2)
+        logical_path = os.path.join(self.user.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1)
+            lib.create_ufs_resource(self.admin, resc2)
+            lib.create_ufs_resource(self.admin, resc3)
+
+            lib.make_file(local_file, 1024, 'arbitrary')
+            self.user.assert_icommand(['iput', '-R', resc1, local_file, logical_path])
+            self.user.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.user.assert_icommand(['irepl', '-R', resc3, logical_path])
+
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, resc2))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, resc3))
+
+            lib.make_file(local_file2, 2048, 'arbitrary')
+            self.user.assert_icommand(['iput', '-a', '-f', local_file2, logical_path])
+
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc1, ' & ', '2048'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc2, ' & ', '2048'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc3, ' & ', '2048'])
+
+        finally:
+            self.user.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc1])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc2])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc3])
+            os.unlink(local_file)
+            os.unlink(local_file2)
+
+    def test_iput_all_flag_updates_stale_replicas__issue_8629(self):
+        resc1 = 'test_iput_all_stale_resc1'
+        resc2 = 'test_iput_all_stale_resc2'
+        resc3 = 'test_iput_all_stale_resc3'
+        filename = 'test_iput_all_stale_file1.txt'
+        filename2 = 'test_iput_all_stale_file2.txt'
+        filename3 = 'test_iput_all_stale_file3.txt'
+        local_file = os.path.join(self.user.local_session_dir, filename)
+        local_file2 = os.path.join(self.user.local_session_dir, filename2)
+        local_file3 = os.path.join(self.user.local_session_dir, filename3)
+        logical_path = os.path.join(self.user.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1)
+            lib.create_ufs_resource(self.admin, resc2)
+            lib.create_ufs_resource(self.admin, resc3)
+
+            lib.make_file(local_file, 1024, 'arbitrary')
+            self.user.assert_icommand(['iput', '-R', resc1, local_file, logical_path])
+            self.user.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.user.assert_icommand(['irepl', '-R', resc3, logical_path])
+
+            # Overwrite only resc1's replica, leaving resc2 and resc3 stale.
+            lib.make_file(local_file2, 2048, 'arbitrary')
+            self.user.assert_icommand(['iput', '-f', '-R', resc1, local_file2, logical_path])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc1, ' & ', '2048'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc2, ' X ', '1024'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc3, ' X ', '1024'])
+
+            # iput -a -f should update all stale replicas to the new content.
+            lib.make_file(local_file3, 4096, 'arbitrary')
+            self.user.assert_icommand(['iput', '-a', '-f', local_file3, logical_path])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc1, ' & ', '4096'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc2, ' & ', '4096'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc3, ' & ', '4096'])
+
+        finally:
+            self.user.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc1])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc2])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc3])
+            os.unlink(local_file)
+            os.unlink(local_file2)
+            os.unlink(local_file3)
+
+    def test_iput_all_flag_without_force_fails__issue_8629(self):
+        resc1 = 'test_iput_all_noforce_resc1'
+        resc2 = 'test_iput_all_noforce_resc2'
+        filename = 'test_iput_all_noforce_file1.txt'
+        filename2 = 'test_iput_all_noforce_file2.txt'
+        local_file = os.path.join(self.user.local_session_dir, filename)
+        local_file2 = os.path.join(self.user.local_session_dir, filename2)
+        logical_path = os.path.join(self.user.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1)
+            lib.create_ufs_resource(self.admin, resc2)
+
+            lib.make_file(local_file, 1024, 'arbitrary')
+            self.user.assert_icommand(['iput', '-R', resc1, local_file, logical_path])
+            self.user.assert_icommand(['irepl', '-R', resc2, logical_path])
+
+            # iput -a without -f should fail when the object already exists.
+            lib.make_file(local_file2, 2048, 'arbitrary')
+            self.user.assert_icommand(['iput', '-a', local_file2, logical_path], 'STDERR', 'OVERWRITE_WITHOUT_FORCE_FLAG')
+
+            # Both replicas should be unchanged.
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc1, ' & ', '1024'])
+            self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [resc2, ' & ', '1024'])
+
+        finally:
+            self.user.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc1])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc2])
+            os.unlink(local_file)
+            os.unlink(local_file2)
+
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_checksum_is_erased_on_single_buffer_overwrite__issue_5496(self):
         self.do_test_issue_5496_impl(500)
