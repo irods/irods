@@ -836,9 +836,13 @@ class Test_Logical_Quotas(
 
         max_bytes = 4000
         try:
+            rep_instance_name = "irods_rule_engine_plugin-irods_rule_language-instance"
+
             self.admin.assert_icommand(
                 [
                     "irule",
+                    "-r",
+                    rep_instance_name,
                     f'msi_set_logical_quota("{self.quota_user.session_collection}", "bytes", "{max_bytes}")',
                     "null",
                     "null",
@@ -869,6 +873,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "irule",
+                    "-r",
+                    rep_instance_name,
                     f'msi_set_logical_quota("{self.quota_user.session_collection}", "{other_max_bytes}", "{max_objects}")',
                     "null",
                     "null",
@@ -901,7 +907,14 @@ class Test_Logical_Quotas(
                 ]
             )
             self.admin.assert_icommand(
-                ["irule", f"msi_calc_logical_usage", "null", "null"]
+                [
+                    "irule",
+                    "-r",
+                    rep_instance_name,
+                    f"msi_calc_logical_usage",
+                    "null",
+                    "null",
+                ]
             )
             _, out, _ = self.admin.assert_icommand(
                 ["iadmin", "list_logical_quotas"],
