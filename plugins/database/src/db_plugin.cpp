@@ -16657,7 +16657,7 @@ irods::error db_check_logical_quota_op(
                      "R_LOGICAL_QUOTA_MAIN "
                 "WHERE R_COLL_MAIN.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
                   "AND ? LIKE CONCAT(R_COLL_MAIN.coll_name, '%') "
-                   // Orders the returned quotas by applying the polynomial function f(x) = (x+1)(x)(x-2)
+                   // Orders the returned quotas by applying the polynomial function f(x) = (x+1)(-x)(x-2)
                    // to the signum of the returned over values.
                    // This function has the property that if any input is 1
                    // i.e. one of the returned quotas is positive and violating the limit
