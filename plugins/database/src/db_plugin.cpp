@@ -16350,12 +16350,18 @@ irods::error db_calc_logical_usage_and_quota_op(
     // clang-format off
     status = cmlExecuteNoAnswerSql(
 #ifdef MY_ICAT
+        // Update logical quota table
         "UPDATE R_LOGICAL_QUOTA_MAIN "
+        // using values from:
         "LEFT JOIN "
+          // Subquery: SELECT collection id, byte total, object count total from
           "(SELECT bcoll AS basecoll, "
                   "SUM(d_size) AS byte_total, "
                   "COUNT(d_id) AS obj_total "
            "FROM "
+             // Subquery: Rank each data object row by its replication status.
+             // Additionally, zero out the sizes for any replication status not in
+             // the set {0, 1, 4}.
              "(SELECT RCM1.coll_id AS bcoll, "
                      "CASE "
                          "WHEN R_DATA_MAIN.data_is_dirty = 0 THEN R_DATA_MAIN.data_size "
@@ -16364,7 +16370,11 @@ irods::error db_calc_logical_usage_and_quota_op(
                          "ELSE 0 "
                      "END AS d_size, "
                      "data_id AS d_id, "
-                     "RANK() OVER(PARTITION BY R_DATA_MAIN.data_id "
+                     // Prioritize good replicas, then write-locked,
+                     // then stale. Remaining replicas are lowest priority.
+                     // Order by data size as secondary key (to select largest
+                     // stale replica).
+                     "ROW_NUMBER() OVER(PARTITION BY R_DATA_MAIN.data_id "
                                  "ORDER BY (CASE "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 1 THEN 4 "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 4 THEN 3 "
@@ -16376,8 +16386,12 @@ irods::error db_calc_logical_usage_and_quota_op(
                    "R_COLL_MAIN RCM2 "
               "WHERE R_DATA_MAIN.coll_id = RCM2.coll_id "
                 "AND RCM2.coll_name LIKE CONCAT(RCM1.coll_name, '%')) ranked_objs "
+           // Only count one data object that is top-ranked.
            "WHERE ranked_objs.replica_rank = 1 "
            "GROUP BY basecoll) AS totals ON totals.basecoll = R_LOGICAL_QUOTA_MAIN.coll_id "
+        // Use SIGN to set the values to 0 if max_bytes/max_objects is also zero.
+        // Square the SIGN in case of a negative max_bytes/max_objects value
+        // (should never happen, but guard against it anyways).
         "SET over_bytes = SIGN(max_bytes)*SIGN(max_bytes)*(COALESCE(byte_total, 0) - max_bytes), "
             "over_objects = SIGN(max_objects)*SIGN(max_objects)*(COALESCE(obj_total, 0) - max_objects), "
             "modify_ts = ?",
@@ -16397,7 +16411,7 @@ irods::error db_calc_logical_usage_and_quota_op(
                          "ELSE 0 "
                      "END AS d_size, "
                      "data_id AS d_id, "
-                     "RANK() OVER(PARTITION BY R_DATA_MAIN.data_id "
+                     "ROW_NUMBER() OVER(PARTITION BY R_DATA_MAIN.data_id "
                                  "ORDER BY (CASE "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 1 THEN 4 "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 4 THEN 3 "

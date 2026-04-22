@@ -162,6 +162,7 @@ class Test_Logical_Quotas(
                 "STDERR_SINGLELINE",
                 "-130000 SYS_INVALID_INPUT_PARAM",
             )
+
         finally:
             self.admin.assert_icommand(
                 [
@@ -230,6 +231,7 @@ class Test_Logical_Quotas(
                 )
                 in out
             )
+
         finally:
             self.admin.assert_icommand(
                 [
@@ -908,6 +910,7 @@ class Test_Logical_Quotas(
                 "STDERR_SINGLELINE",
                 "-186000 LOGICAL_QUOTA_EXCEEDED",
             )
+
         finally:
             self.admin.assert_icommand(
                 [
@@ -1067,6 +1070,7 @@ class Test_Logical_Quotas(
                     f"{self.quota_user.session_collection}/{file_name}_4",
                 ]
             )
+
         finally:
             # Run and don't assert these-- if failure happens midway
             # we can't guarantee what state the catalog is in.
@@ -1119,10 +1123,11 @@ class Test_Logical_Quotas(
             4096,
             contents="arbitrary",
         )
-        lib.create_ufs_resource(self.admin, resc_name)
-        lib.create_ufs_resource(self.admin, other_resc_name)
 
         try:
+            lib.create_ufs_resource(self.admin, resc_name)
+            lib.create_ufs_resource(self.admin, other_resc_name)
+
             # Enable enforcement.
             self.admin.assert_icommand(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
@@ -1167,6 +1172,24 @@ class Test_Logical_Quotas(
                     resc_name,
                     f"{self.quota_user.session_collection}/{dataobj_name}",
                 ]
+            )
+            
+            # Ensure only one copy of the data object is counted, even
+            # when there are two good replicas.
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (self.quota_user.session_collection, "10000", "5", str(4096-10000), str(1-5))
+                )
+                in out
             )
 
             # Replica 0 is now small file and good.
@@ -1739,6 +1762,7 @@ class Test_Logical_Quotas(
                 "STDERR_SINGLELINE",
                 "-186000 LOGICAL_QUOTA_EXCEEDED",
             )
+
         finally:
             self.admin.assert_icommand(
                 [
