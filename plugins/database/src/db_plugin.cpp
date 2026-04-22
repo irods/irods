@@ -16503,7 +16503,7 @@ irods::error db_set_logical_quota_op(
     // 1 means only byte_limit is negative.
     // 2 means only object_limit is negative.
     // 3 means both are negative, which is a true no-op.
-    const int query_selection = static_cast<int>(byte_limit < 0) + static_cast<int>(2*(object_limit < 0));
+    const int query_selection = static_cast<int>(byte_limit < 0) + 2*static_cast<int>(object_limit < 0);
 
     getNowStr( myTime );
 

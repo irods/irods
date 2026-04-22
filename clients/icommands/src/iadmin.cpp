@@ -1000,7 +1000,7 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
     if(status < 0) {
         char* sub_error_name{};
         const char* error_name = rodsErrorName(status, &sub_error_name);
-        fmt::print(stderr, "rc_get_logical_quota failed with error {} and suberror {} ec=[{}]", error_name, (sub_error_name ? sub_error_name : "N/A"), status);
+        fmt::print(stderr, "rc_get_logical_quota failed with error [{}] and suberror [{}] ec=[{}]", error_name, (sub_error_name ? sub_error_name : "N/A"), status);
         printErrorStack(Conn->rError);
         std::free(sub_error_name);
         return 1;
