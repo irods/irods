@@ -246,9 +246,11 @@ class Test_Logical_Quotas(
     def test_logical_quota_enforcement(self):
         file_name = "test_logical_quota_enforcement"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 4096
+        max_bytes = 10000
         lib.make_file(
             file_path,
-            4096,
+            file_size,
             contents="arbitrary",
         )
 
@@ -263,7 +265,7 @@ class Test_Logical_Quotas(
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "bytes",
-                    "10000",
+                    str(max_bytes),
                 ]
             )
             _, out, _ = self.admin.assert_icommand(
@@ -276,9 +278,9 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
+                        str(max_bytes),
                         "<unset>",
-                        "-10000",
+                        str(-max_bytes),
                         "<unenforced>",
                     )
                 )
@@ -304,22 +306,23 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
+                        str(max_bytes),
                         "<unset>",
-                        str(4096 - 10000),
+                        str(file_size - max_bytes),
                         "<unenforced>",
                     )
                 )
                 in out
             )
 
+            max_objects = 50
             self.admin.assert_icommand(
                 [
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "objects",
-                    "50",
+                    str(max_objects),
                 ]
             )
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
@@ -334,10 +337,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "50",
-                        str(4096 - 10000),
-                        str(1 - 50),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size - max_bytes),
+                        str(1 - max_objects),
                     )
                 )
                 in out
@@ -369,10 +372,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "50",
-                        str(4096 * 3 - 10000),
-                        str(3 - 50),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size * 3 - max_bytes),
+                        str(3 - max_objects),
                     )
                 )
                 in out
@@ -400,22 +403,24 @@ class Test_Logical_Quotas(
                 input="some data",
             )
 
+            larger_max_bytes = 100000
             self.admin.assert_icommand(
                 [
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "bytes",
-                    "100000",
+                    str(larger_max_bytes),
                 ]
             )
+            fewer_max_objects = 2
             self.admin.assert_icommand(
                 [
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "objects",
-                    "2",
+                    str(fewer_max_objects),
                 ]
             )
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
@@ -430,10 +435,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "100000",
-                        "2",
-                        str(4096 * 3 - 100000),
-                        str(3 - 2),
+                        str(larger_max_bytes),
+                        str(fewer_max_objects),
+                        str(file_size * 3 - larger_max_bytes),
+                        str(3 - fewer_max_objects),
                     )
                 )
                 in out
@@ -450,7 +455,7 @@ class Test_Logical_Quotas(
             ec, _, _ = self.quota_user.assert_icommand(
                 ["itouch", f"{file_name}_4"],
                 "STDOUT_SINGLELINE",
-                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION"
+                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
             )
             self.assertTrue(ec != 0)
 
@@ -461,13 +466,14 @@ class Test_Logical_Quotas(
                 input="some data",
             )
 
+            more_max_objects = 10
             self.admin.assert_icommand(
                 [
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "objects",
-                    "10",
+                    str(more_max_objects),
                 ]
             )
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
@@ -481,10 +487,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "100000",
-                        "10",
-                        str(4096 * 3 - 100000),
-                        str(3 - 10),
+                        str(larger_max_bytes),
+                        str(more_max_objects),
+                        str(file_size * 3 - larger_max_bytes),
+                        str(3 - more_max_objects),
                     )
                 )
                 in out
@@ -512,6 +518,7 @@ class Test_Logical_Quotas(
             # No quota set.
             self.admin.assert_icommand(["iadmin", "list_logical_quotas"])
 
+            object_only_limit = 4
             # Set object limit only.
             self.admin.assert_icommand(
                 [
@@ -519,7 +526,7 @@ class Test_Logical_Quotas(
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "objects",
-                    "4",
+                    str(object_only_limit),
                 ]
             )
 
@@ -535,9 +542,9 @@ class Test_Logical_Quotas(
                     % (
                         self.quota_user.session_collection,
                         "<unset>",
-                        "4",
+                        str(object_only_limit),
                         "<unenforced>",
-                        str(4 - 4),
+                        str(4 - object_only_limit),
                     )
                 )
                 in out
@@ -564,9 +571,9 @@ class Test_Logical_Quotas(
                     % (
                         self.quota_user.session_collection,
                         "<unset>",
-                        "4",
+                        str(object_only_limit),
                         "<unenforced>",
-                        str(5 - 4),
+                        str(5 - object_only_limit),
                     )
                 )
                 in out
@@ -615,10 +622,11 @@ class Test_Logical_Quotas(
 
         file_name = "test_nested_logical_quota_enforcement"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 10001
         # Create file that triggers quota violation by itself.
         lib.make_file(
             file_path,
-            10001,
+            file_size,
             contents="arbitrary",
         )
 
@@ -631,6 +639,7 @@ class Test_Logical_Quotas(
             innermost_subcoll = ""
 
             max_bytes = 10000
+            original_max_bytes = 10000
             # Set nested quotas.
             # Make outermost quota most restrictive.
 
@@ -706,9 +715,9 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         f"{self.quota_user.session_collection}/{subcoll}",
-                        "10000",
+                        str(original_max_bytes),
                         "<unset>",
-                        str(10001 - 10000),
+                        str(file_size - original_max_bytes),
                         "<unenforced>",
                     )
                 )
@@ -726,8 +735,8 @@ class Test_Logical_Quotas(
                 "-186000 LOGICAL_QUOTA_EXCEEDED",
             )
 
-            # Lift byte restriction on outermost subcoll
-            # Add 2-object quota on outermost
+            # Lift byte restriction on outermost subcoll.
+            # Add 2-object quota on outermost.
             self.admin.assert_icommand(
                 [
                     "iadmin",
@@ -814,21 +823,23 @@ class Test_Logical_Quotas(
     def test_logical_quota_msi(self):
         file_name = "test_logical_quota_msi"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 4096
 
         lib.make_file(
             file_path,
-            4096,
+            file_size,
             contents="arbitrary",
         )
         self.admin.assert_icommand(
             ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
         )
 
+        max_bytes = 4000
         try:
             self.admin.assert_icommand(
                 [
                     "irule",
-                    f'msi_set_logical_quota("{self.quota_user.session_collection}", "bytes", "4000")',
+                    f'msi_set_logical_quota("{self.quota_user.session_collection}", "bytes", "{max_bytes}")',
                     "null",
                     "null",
                 ]
@@ -843,20 +854,22 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "4000",
+                        str(max_bytes),
                         "<unset>",
-                        "-4000",
+                        str(-max_bytes),
                         "<unenforced>",
                     )
                 )
                 in out
             )
 
-            # Check that the alternate invocation works too
+            other_max_bytes = 3000
+            max_objects = 10
+            # Check that the alternate invocation works too.
             self.admin.assert_icommand(
                 [
                     "irule",
-                    f'msi_set_logical_quota("{self.quota_user.session_collection}", "3000", "10")',
+                    f'msi_set_logical_quota("{self.quota_user.session_collection}", "{other_max_bytes}", "{max_objects}")',
                     "null",
                     "null",
                 ]
@@ -870,7 +883,13 @@ class Test_Logical_Quotas(
             self.assertTrue(
                 (
                     self.llq_output_template
-                    % (self.quota_user.session_collection, "3000", "10", "-4000", "0")
+                    % (
+                        self.quota_user.session_collection,
+                        str(other_max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        "0",
+                    )
                 )
                 in out
             )
@@ -894,10 +913,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "3000",
-                        "10",
-                        str(4096 - 3000),
-                        str(1 - 10),
+                        str(other_max_bytes),
+                        str(max_objects),
+                        str(file_size - other_max_bytes),
+                        str(1 - max_objects),
                     )
                 )
                 in out
@@ -929,10 +948,11 @@ class Test_Logical_Quotas(
     def test_logical_quota_grid_configuration_settings(self):
         file_name = "test_logical_quota_grid"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 4096
 
         lib.make_file(
             file_path,
-            4096,
+            file_size,
             contents="arbitrary",
         )
 
@@ -942,6 +962,7 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
 
+            max_bytes = 4000
             # Byte quota is low enough to be violated in one upload.
             self.admin.assert_icommand(
                 [
@@ -949,7 +970,7 @@ class Test_Logical_Quotas(
                     "set_logical_quota",
                     self.quota_user.session_collection,
                     "bytes",
-                    "4000",
+                    str(max_bytes),
                 ]
             )
             _, out, _ = self.admin.assert_icommand(
@@ -962,9 +983,9 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "4000",
+                        str(max_bytes),
                         "<unset>",
-                        "-4000",
+                        str(-max_bytes),
                         "<unenforced>",
                     )
                 )
@@ -991,9 +1012,9 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "4000",
+                        str(max_bytes),
                         "<unset>",
-                        str(4096 - 4000),
+                        str(file_size - max_bytes),
                         "<unenforced>",
                     )
                 )
@@ -1108,19 +1129,22 @@ class Test_Logical_Quotas(
         small_file_path = os.path.join(
             self.quota_user.local_session_dir, small_file_name
         )
+        small_file_size = 2048
         big_file_name = "test_logical_quota_bigfile"
         big_file_path = os.path.join(self.quota_user.local_session_dir, big_file_name)
+        # If modifying, ensure value is >small_file_size
+        big_file_size = 4096
         resc_name = "ufs0_logical_quota_replica"
         other_resc_name = "ufs1_logical_quota_replica"
 
         lib.make_file(
             small_file_path,
-            2048,
+            small_file_size,
             contents="arbitrary",
         )
         lib.make_file(
             big_file_path,
-            4096,
+            big_file_size,
             contents="arbitrary",
         )
 
@@ -1133,14 +1157,16 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
             )
 
-            # Set to 10000 bytes and 5 objects
+            max_bytes = 10000
+            max_objects = 5
+            # Set to 10000 bytes and 5 objects.
             self.admin.assert_icommand(
                 [
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
-                    "10000",
-                    "5",
+                    str(max_bytes),
+                    str(max_objects),
                 ]
             )
             _, out, _ = self.admin.assert_icommand(
@@ -1151,7 +1177,13 @@ class Test_Logical_Quotas(
             self.assertTrue(
                 (
                     self.llq_output_template
-                    % (self.quota_user.session_collection, "10000", "5", "-10000", "-5")
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
                 )
                 in out
             )
@@ -1173,7 +1205,7 @@ class Test_Logical_Quotas(
                     f"{self.quota_user.session_collection}/{dataobj_name}",
                 ]
             )
-            
+
             # Ensure only one copy of the data object is counted, even
             # when there are two good replicas.
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
@@ -1187,7 +1219,13 @@ class Test_Logical_Quotas(
             self.assertTrue(
                 (
                     self.llq_output_template
-                    % (self.quota_user.session_collection, "10000", "5", str(4096-10000), str(1-5))
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(big_file_size - max_bytes),
+                        str(1 - max_objects),
+                    )
                 )
                 in out
             )
@@ -1219,10 +1257,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 - 10000),
-                        str(1 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size - max_bytes),
+                        str(1 - max_objects),
                     )
                 )
                 in out
@@ -1297,10 +1335,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 4096 - 10000),
-                        str(2 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size + big_file_size - max_bytes),
+                        str(2 - max_objects),
                     )
                 )
                 in out
@@ -1342,10 +1380,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 4096 - 10000),
-                        str(3 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size + big_file_size - max_bytes),
+                        str(3 - max_objects),
                     )
                 )
                 in out
@@ -1387,10 +1425,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 4096 + 4096 - 10000),
-                        str(4 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size + big_file_size * 2 - max_bytes),
+                        str(4 - max_objects),
                     )
                 )
                 in out
@@ -1436,10 +1474,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 2048 + 4096 - 10000),
-                        str(4 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size * 2 + big_file_size - max_bytes),
+                        str(4 - max_objects),
                     )
                 )
                 in out
@@ -1480,10 +1518,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 2048 + 4096 - 10000),
-                        str(5 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size * 2 + big_file_size - max_bytes),
+                        str(5 - max_objects),
                     )
                 )
                 in out
@@ -1524,10 +1562,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.quota_user.session_collection,
-                        "10000",
-                        "5",
-                        str(2048 + 2048 + 4096 - 10000),
-                        str(6 - 5),
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size * 2 + big_file_size - max_bytes),
+                        str(6 - max_objects),
                     )
                 )
                 in out
@@ -1611,6 +1649,7 @@ class Test_Logical_Quotas(
         dataobj_name = "test_logical_quota_register"
         file_name = "test_logical_quota_register_file"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 2048
         empty_file_name = "test_logical_quota_register_empty"
         empty_file_path = os.path.join(
             self.quota_user.local_session_dir, empty_file_name
@@ -1618,7 +1657,7 @@ class Test_Logical_Quotas(
 
         lib.make_file(
             file_path,
-            2048,
+            file_size,
             contents="arbitrary",
         )
         lib.make_file(
@@ -1633,6 +1672,8 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
             )
 
+            max_bytes = 4000
+            max_objects = 3
             # Set to 4000 bytes and 3 objects.
             # Use admin session_collection here, since registration
             # is admin-only by default.
@@ -1641,8 +1682,8 @@ class Test_Logical_Quotas(
                     "iadmin",
                     "set_logical_quota",
                     self.admin.session_collection,
-                    "4000",
-                    "3",
+                    str(max_bytes),
+                    str(max_objects),
                 ]
             )
             _, out, _ = self.admin.assert_icommand(
@@ -1653,7 +1694,13 @@ class Test_Logical_Quotas(
             self.assertTrue(
                 (
                     self.llq_output_template
-                    % (self.admin.session_collection, "4000", "3", "-4000", "-3")
+                    % (
+                        self.admin.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
                 )
                 in out
             )
@@ -1690,10 +1737,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.admin.session_collection,
-                        "4000",
-                        "3",
-                        str(2048 * 2 - 4000),
-                        2 - 3,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size * 2 - max_bytes),
+                        2 - max_objects,
                     )
                 )
                 in out
@@ -1743,10 +1790,10 @@ class Test_Logical_Quotas(
                     self.llq_output_template
                     % (
                         self.admin.session_collection,
-                        "4000",
-                        "3",
-                        str(2048 * 2 - 4000),
-                        4 - 3,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size * 2 - max_bytes),
+                        str(4 - max_objects),
                     )
                 )
                 in out
