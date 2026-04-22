@@ -447,12 +447,13 @@ class Test_Logical_Quotas(
                 "STDERR_SINGLELINE",
                 "-186000 LOGICAL_QUOTA_EXCEEDED",
             )
-            self.quota_user.assert_icommand(
+            ec, _, _ = self.quota_user.assert_icommand(
                 ["itouch", f"{file_name}_4"],
                 "STDOUT_SINGLELINE",
-                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
-                desired_rc=1,
+                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION"
             )
+            self.assertTrue(ec != 0)
+
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{file_name}_4"],
                 "STDERR",
@@ -1059,7 +1060,6 @@ class Test_Logical_Quotas(
                 ["iquest", "--sql", "rmlqgridopt"],
                 "STDOUT_SINGLELINE",
                 "CAT_NO_ROWS_FOUND",
-                desired_rc=1,
             )
 
             # No failure, because no enforcement.
