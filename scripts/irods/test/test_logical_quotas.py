@@ -395,7 +395,7 @@ class Test_Logical_Quotas(
                 "STDOUT_SINGLELINE",
                 "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
             )
-            self.assertTrue(ec != 0)
+            self.assertNotEqual(ec, 0)
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{file_name}_4"],
                 "STDERR",
@@ -457,7 +457,7 @@ class Test_Logical_Quotas(
                 "STDOUT_SINGLELINE",
                 "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
             )
-            self.assertTrue(ec != 0)
+            self.assertNotEqual(ec, 0)
 
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{file_name}_4"],
@@ -1219,6 +1219,23 @@ class Test_Logical_Quotas(
                 ]
             )
 
+            self.assertEqual(
+                str(1),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    self.quota_user.default_resource,
+                ),
+            )
+            self.assertEqual(
+                str(1),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    resc_name,
+                ),
+            )
+
             # Ensure only one copy of the data object is counted, even
             # when there are two good replicas.
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
@@ -1253,6 +1270,23 @@ class Test_Logical_Quotas(
                     f"{self.quota_user.session_collection}/{dataobj_name}",
                 ]
             )
+            self.assertEqual(
+                str(1),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    self.quota_user.default_resource,
+                ),
+            )
+            self.assertEqual(
+                str(0),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    resc_name,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             # Check: Replica 1 is stale and replica 0 is good,
@@ -1319,6 +1353,23 @@ class Test_Logical_Quotas(
                 ]
             )
 
+            self.assertEqual(
+                str(0),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_1",
+                    resc_name,
+                ),
+            )
+            self.assertEqual(
+                str(0),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_1",
+                    other_resc_name,
+                ),
+            )
+
             # Force-stale replica 0.
             self.admin.assert_icommand(
                 [
@@ -1332,6 +1383,16 @@ class Test_Logical_Quotas(
                     "0",
                 ]
             )
+
+            self.assertEqual(
+                str(0),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_1",
+                    self.quota_user.default_resource,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             # Check: All replicas are stale, so logical quotas
@@ -1379,6 +1440,16 @@ class Test_Logical_Quotas(
                     "3",
                 ]
             )
+
+            self.assertEqual(
+                str(3),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_2",
+                    self.quota_user.default_resource,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             # Read-locked should not count against byte_limit.
@@ -1424,6 +1495,16 @@ class Test_Logical_Quotas(
                     "4",
                 ]
             )
+
+            self.assertEqual(
+                str(4),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_3",
+                    self.quota_user.default_resource,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             # Write-locked should count against byte_limit.
@@ -1472,6 +1553,16 @@ class Test_Logical_Quotas(
                     "1",
                 ]
             )
+
+            self.assertEqual(
+                str(1),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_1",
+                    resc_name,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             # Since the "3 stale replicas" now has a good replica
@@ -1519,6 +1610,16 @@ class Test_Logical_Quotas(
                     "2",
                 ]
             )
+
+            self.assertEqual(
+                str(2),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_4",
+                    self.quota_user.default_resource,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
             _, out, _ = self.admin.assert_icommand(
@@ -1564,6 +1665,16 @@ class Test_Logical_Quotas(
                     "7",
                 ]
             )
+
+            self.assertEqual(
+                str(7),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_6",
+                    self.quota_user.default_resource,
+                ),
+            )
+
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
             _, out, _ = self.admin.assert_icommand(
                 ["iadmin", "list_logical_quotas"],
