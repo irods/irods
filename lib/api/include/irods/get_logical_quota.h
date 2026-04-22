@@ -49,13 +49,15 @@ typedef struct LogicalQuota {
     /// \since 5.1.0
     rodsLong_t max_objects;
 
-    /// The total number of bytes in the collection exceeds the the current quota's max_bytes by this amount.
+    /// The number of bytes by which the collection size exceeds the current quota's max_bytes.
+    /// e.g. over_bytes = total_collection_size - max_bytes
     /// This value will be negative or zero if the limit has not been exceeded.
     ///
     /// \since 5.1.0
     rodsLong_t over_bytes;
 
-    /// The total number of objects in the collection exceeds the current quota's max_objects by this amount.
+    /// The number of objects by which the collection size exceeds the current quota's max_objects.
+    /// e.g. over_objects = total_collection_size - max_objects
     /// This value will be negative or zero if the limit has not been exceeded.
     ///
     /// \since 5.1.0
@@ -84,9 +86,9 @@ typedef struct LogicalQuotaList {
 
 /// \brief Free memory associated with a heap-allocated GetLogicalQuotaInput.
 ///
-/// \param[in] _get_logical_quota_input A void pointer that can be casted to a struct GetLogicalQuotaInput pointer.
-///
 /// This function assumes that the coll_name inside of the structure is also heap-allocated. Do not use this function if that pointer is not to be free()'ed.
+///
+/// \param[in] _get_logical_quota_input A void pointer that can be casted to a struct GetLogicalQuotaInput pointer.
 ///
 /// This function has no effect if the input pointer is null.
 ///

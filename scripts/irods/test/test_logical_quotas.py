@@ -1266,7 +1266,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
-            # Replica 0 is now small file.
+            # New data object: Replica 0 is now small file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -1344,7 +1344,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
-            # Replica 0 is big file.
+            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -1389,7 +1389,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
-            # Replica 0 is big file.
+            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -1483,7 +1483,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
-            # Replica 0 is big file.
+            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -1527,7 +1527,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
-            # Replica 0 is big file.
+            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
