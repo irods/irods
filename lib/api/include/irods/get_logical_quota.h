@@ -114,7 +114,7 @@ void clear_logical_quota_list(void* _logical_quota_list);
 /// \param[out] _logicalQuotaList A pointer to a LogicalQuotaList pointer that will hold the results of the fetch.
 ///
 /// \parblock
-/// On success, *_logicalQuotaList will hold a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of len LogicalQuota. This array must be free()'d by the caller to leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
+/// On success, *_logicalQuotaList will be a pointer to a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of "len" LogicalQuota structs. This array must be free()'d by the caller to avoid leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
 /// \endparblock
 ///
 /// \return An integer representing an iRODS error code.
