@@ -5,7 +5,7 @@ import os
 import pathlib
 import sys
 
-import irods.setup_options, irods.tls
+import irods.database_interface, irods.setup_options, irods.tls
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -71,12 +71,15 @@ except:
     print('The pyodbc module is required for setup of catalog service providers.', file=sys.stderr)
 
 
-def setup_server(irods_config, json_configuration_file=None, test_mode=False, optional_prompts=None):
-    l = logging.getLogger(__name__)
+# Tracks the selected password storage mode. Historically, there has only been what is now referred to as "legacy", so
+# that is the default value.
+_password_storage_mode = "legacy"
 
-    optional_setup_funcs = {
-        "tls": setup_tls
-    }
+
+def setup_server(irods_config, json_configuration_file=None, test_mode=False, prompt_tls=None, prompt_auth=None):
+    global _password_storage_mode
+
+    l = logging.getLogger(__name__)
 
     if json_configuration_file is not None:
         with open(json_configuration_file) as f:
@@ -119,34 +122,39 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False, op
             os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
         irods_config.commit(json_configuration_dict['service_account_environment'], irods_config.client_environment_path)
         # password
-        irods_config.admin_password = json_configuration_dict['admin_password']
+        _password_storage_mode = json_configuration_dict.get("password_storage_mode", _password_storage_mode)
+        irods_config.set_admin_password(
+            json_configuration_dict['admin_password'],
+            create_legacy_password_file=(_password_storage_mode != "hashed")
+        )
     else:
         # role
         determine_server_role(irods_config)
         # database
         if irods_config.is_provider:
-            from irods import database_interface
             l.info(irods.lib.get_header('Configuring the database communications'))
-            database_interface.setup_database_config(irods_config)
+            irods.database_interface.setup_database_config(irods_config)
         # default resource
         default_resource_name, default_resource_directory = setup_storage(irods_config)
-        # Go through any optional setup prompted by setup script options.
-        for prompt_name in optional_prompts or []:
-            if (setup_func := optional_setup_funcs.get(prompt_name)) is None:
-                l.warning(f"No setup function found for optional prompt '{prompt_name}'. Skipping.")
-                continue
-            setup_func(irods_config)
+        if prompt_auth:
+            setup_auth(irods_config)
+        if prompt_tls or irods_config.server_config["zone_auth_scheme"] != "native":
+            setup_tls(irods_config)
         # server config
         setup_server_config(irods_config)
         # client environment and password
         setup_client_environment(irods_config)
 
     if irods_config.is_provider:
-        from irods import database_interface
         l.info(irods.lib.get_header('Setting up the database'))
-        database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
+        irods.database_interface.setup_catalog(
+            irods_config,
+            default_resource_directory=default_resource_directory,
+            default_resource_name=default_resource_name,
+            password_storage_mode=_password_storage_mode
+        )
         l.info(irods.lib.get_header('Applying updates to database'))
-        database_interface.run_catalog_update(irods_config, is_upgrade=False)
+        irods.database_interface.run_catalog_update(irods_config, is_upgrade=False)
 
     # Copy iRODS Rule Language (NREP) files into correct directory if this is a new install.
     for f in ['core.re', 'core.dvm', 'core.fnm']:
@@ -401,6 +409,53 @@ def setup_storage(irods_config):
     return (resource_name, resource_vault_path)
 
 
+def setup_auth(irods_config):
+    global _password_storage_mode
+
+    l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Setting up auth'))
+
+    while True:
+        # Prompt user for which password storage mode to use in this zone.
+        default_password_storage_mode = "both"
+        password_storage_modes = ["legacy", "hashed", "both"]
+        _password_storage_mode = irods.lib.default_prompt(
+            "Password storage mode",
+            default=password_storage_modes,
+            previous=password_storage_modes.index(default_password_storage_mode) + 1,
+            input_filter=irods.lib.set_filter(password_storage_modes, field='Password storage mode'))
+
+        # "legacy" password storage mode implies "native" authentication scheme.
+        # "hashed" password storage mode implies "irods" authentication scheme.
+        # "both" password storage mode requires another prompt to find which authentication scheme to use in this zone
+        # since either "native" or "irods" can be used.
+        if _password_storage_mode == "both":
+            default_auth_scheme = "native"
+            auth_scheme_choices = ["irods", "native"]
+            auth_scheme = irods.lib.default_prompt(
+                "Zone authentication scheme",
+                default=auth_scheme_choices,
+                previous=auth_scheme_choices.index(default_auth_scheme) + 1,
+                input_filter=irods.lib.set_filter(auth_scheme_choices, field='Auth scheme'))
+        else:
+            auth_scheme = "irods" if _password_storage_mode == "hashed" else "native"
+
+        irods_config.server_config['zone_auth_scheme'] = auth_scheme
+
+        confirmation_message = (
+            '\n'
+            '-------------------------------------------------------------\n'
+            f'Password storage mode: {_password_storage_mode}\n'
+            f'Authentication scheme: {irods_config.server_config["zone_auth_scheme"]}\n'
+            '-------------------------------------------------------------\n\n'
+            'Please confirm'
+        )
+        if irods.lib.default_prompt(confirmation_message, default=['yes']).lower() in ['', 'y', 'yes']:
+            break
+
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
+
 def setup_tls(irods_config):
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Setting up TLS'))
@@ -575,21 +630,29 @@ def setup_server_config(irods_config):
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 
 def setup_client_environment(irods_config):
+    global _password_storage_mode
+
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Setting up the client environment'))
 
     print('\n', end='')
 
-    irods_config.admin_password = irods.lib.prompt(
+    # Note: This assignment creates an .irodsA file
+    admin_password = irods.lib.prompt(
         'iRODS administrator password',
         input_filter=irods.lib.character_count_filter(minimum=3, maximum=maximum_password_length, field='Admin password'),
         echo=False)
+    irods_config.set_admin_password(
+        admin_password,
+        create_legacy_password_file=(_password_storage_mode != "hashed")
+    )
 
     print('\n', end='')
 
     service_account_dict = {
         'schema_name': 'service_account_environment',
         'schema_version': 'v5',
+        'irods_authentication_scheme': irods_config.server_config['zone_auth_scheme'],
         'irods_host': irods_config.server_config['host'],
         'irods_port': irods_config.server_config['zone_port'],
         'irods_default_resource': irods_config.server_config['default_resource_name'],
@@ -626,7 +689,6 @@ def main():
     args = parse_arguments()
 
     irods_config = IrodsConfig()
-    optional_prompts = []
 
     irods.log.register_file_handler(irods_config.setup_log_path)
     if None != args.verbose and args.verbose > 0:
@@ -645,14 +707,13 @@ def main():
         irods_config.injected_environment['reServerOption'] = args.rule_engine_server_options
     if args.server_reconnect_flag:
         irods_config.injected_environment['irodsReconnect'] = ''
-    if args.prompt_tls:
-        optional_prompts.append("tls")
 
     try:
         setup_server(irods_config,
                      json_configuration_file=args.json_configuration_file,
                      test_mode=args.test_mode,
-                     optional_prompts=optional_prompts)
+                     prompt_tls=args.prompt_tls,
+                     prompt_auth=args.prompt_auth_scheme)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')
