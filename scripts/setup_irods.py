@@ -569,6 +569,7 @@ def setup_client_environment(irods_config):
     service_account_dict = {
         'schema_name': 'service_account_environment',
         'schema_version': 'v5',
+        'irods_authentication_scheme': irods_config.server_config['zone_auth_scheme'],
         'irods_host': irods_config.server_config['host'],
         'irods_port': irods_config.server_config['zone_port'],
         'irods_default_resource': irods_config.server_config['default_resource_name'],
@@ -626,6 +627,11 @@ def main():
         irods_config.injected_environment['irodsReconnect'] = ''
     if args.prompt_tls:
         optional_prompts.append("tls")
+    if args.auth_scheme:
+        irods_config.server_config['zone_auth_scheme'] = args.auth_scheme
+        # Auth schemes which require TLS will automatically prompt for TLS configuration.
+        if not args.prompt_tls and args.auth_scheme in ["irods", "pam_password", "pam"]:
+            optional_prompts.append("tls")
 
     try:
         setup_server(irods_config,

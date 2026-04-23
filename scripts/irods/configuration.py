@@ -191,21 +191,43 @@ class IrodsConfig(object):
 
     @property
     def admin_password(self):
-        if not os.path.exists(os.path.dirname(paths.password_file_path())):
-            return None
-        with open(paths.password_file_path(), 'rt') as f:
-            return decode(f.read())
+        auth_scheme = self.server_config.get("zone_auth_scheme", "native")
+        if "native" == auth_scheme:
+            if not os.path.exists(os.path.dirname(paths.password_file_path())):
+                return None
+            with open(paths.password_file_path(), 'rt') as f:
+                return decode(f.read())
+        return self._admin_password
 
     @admin_password.setter
     def admin_password(self, value):
         l = logging.getLogger(__name__)
-        if not os.path.exists(os.path.dirname(paths.password_file_path())):
-            os.makedirs(os.path.dirname(paths.password_file_path()), mode=0o700)
+        self._admin_password = value
+        auth_scheme = self.server_config.get("zone_auth_scheme", "native")
+        if "native" == auth_scheme:
+            if not os.path.exists(os.path.dirname(paths.password_file_path())):
+                os.makedirs(os.path.dirname(paths.password_file_path()), mode=0o700)
+            mtime = int(time.time())
+            with open(paths.password_file_path(), 'wt') as f:
+                l.debug('Writing password file %s', f.name)
+                print(encode(value, mtime=mtime), end='', file=f)
+            os.utime(paths.password_file_path(), (mtime, mtime))
+
+    @property
+    def admin_session_token(self):
+        return self._session_token
+
+    @admin_session_token.setter
+    def admin_session_token(self, value):
+        l = logging.getLogger(__name__)
+        self._session_token = value
+        if not os.path.exists(os.path.dirname(paths.service_account_session_token_file_path())):
+            os.makedirs(os.path.dirname(paths.service_account_session_token_file_path()), mode=0o600)
         mtime = int(time.time())
-        with open(paths.password_file_path(), 'wt') as f:
-            l.debug('Writing password file %s', f.name)
-            print(encode(value, mtime=mtime), end='', file=f)
-        os.utime(paths.password_file_path(), (mtime, mtime))
+        with open(paths.service_account_session_token_file_path(), 'wt') as f:
+            l.debug('Writing session token to file: [%s]', f.name)
+            print(value, end='', file=f)
+        os.utime(paths.service_account_session_token_file_path(), (mtime, mtime))
 
     def commit(self, config_dict, path, clear_cache=True, make_backup=False):
         l = logging.getLogger(__name__)
@@ -274,6 +296,10 @@ class IrodsConfig(object):
     @property
     def password_file_path(self):
         return paths.password_file_path()
+
+    @property
+    def session_token_file_path(self):
+        return paths.service_account_session_token_file_path()
 
     @property
     def log_directory(self):
