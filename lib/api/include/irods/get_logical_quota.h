@@ -8,6 +8,10 @@
 
 struct RcComm;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// The input type used to fetch a list of logical quotas.
 ///
 /// \since 5.1.0
@@ -156,5 +160,9 @@ void clear_logical_quota_list(void* _logical_quota_list);
 ///
 /// \since 5.1.0
 int rc_get_logical_quota( struct RcComm *_conn, getLogicalQuotaInp_t *_getLogicalQuotaInp, logicalQuotaList_t **_logicalQuotaList );
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif  // IRODS_GET_LOGICAL_QUOTA_H

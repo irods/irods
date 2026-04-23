@@ -1429,7 +1429,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "calculate_logical_usage" ) == 0 ) {
-        generalAdmin( 0, "calc_logical_usage",
+        generalAdmin( 0, cmdToken[0],
                       "", "", "",
                       "", "", "", "", "", "" );
         return 0;
@@ -1445,7 +1445,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             return -2;
         }
 
-        generalAdmin( 0, "set_logical_quota",
+        generalAdmin( 0, cmdToken[0],
                       cmdToken[1], cmdToken[2], cmdToken[3],
                       "", "", "", "", "", "" );
         return 0;

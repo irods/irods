@@ -18,6 +18,7 @@ struct RsComm;
 ///
 /// \parblock
 /// On success, *_logicalQuotaList will be a pointer to a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of "len" LogicalQuota structs. This array must be free()'d by the caller to avoid leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
+/// To avoid free()ing the LogicalQuotaList internals by hand, clear_logical_quota_list() can be used. Note that the struct itself, *_logicalQuotaList, still needs to be free()'d by the caller.
 /// \endparblock
 ///
 /// \return An integer representing an iRODS error code.

@@ -598,6 +598,7 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int;
 /// \brief Trigger logical quota recalculation based on total object size/count.
 ///
 /// \param[in] _comm The communication object.
+/// \param[in] _coll_name A placeholder string parameter. Currently unused.
 ///
 /// \return An integer.
 /// \retval  0 On success.

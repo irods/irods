@@ -16359,8 +16359,8 @@ irods::error db_calc_logical_usage_and_quota_op(
                   "SUM(d_size) AS byte_total, "
                   "COUNT(d_id) AS obj_total "
            "FROM "
-             // Subquery: Rank each data object row by its replication status.
-             // Additionally, zero out the sizes for any replication status not in
+             // Subquery: Rank each data object row by its replica status.
+             // Additionally, zero out the sizes for any replica status not in
              // the set {0, 1, 4}.
              "(SELECT RCM1.coll_id AS bcoll, "
                      "CASE "
@@ -16663,10 +16663,13 @@ irods::error db_check_logical_quota_op(
                    // i.e. one of the returned quotas is positive and violating the limit
                    // then the returned value is 2, which turns the final expression positive, regardless of the other value.
                    // This means returned quotas will be ordered like so:
-                   // 1. Quotas with both limits violated
-                   // 2. Quotas with either limit violated
-                   // 3. Other quotas
-                  "ORDER BY ((SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)-2) + (SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)-2)) DESC",
+                   // 1. Quotas with both limits violated (expression value: 4)
+                   // 2. Quotas with either limit violated (expression value: 2)
+                   // 3. Other quotas (expression value: 0)
+                  "ORDER BY ( "
+                    "(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes) + 1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes) - 2) + "
+                    "(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects) + 1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects) - 2) "
+                  ") DESC",
                     &statementNum, 0, &icss );
     }
     else {
@@ -16696,7 +16699,10 @@ irods::error db_check_logical_quota_op(
                    // 1. Quotas with both limits violated
                    // 2. Quotas with either limit violated
                    // 3. Other quotas
-                  "ORDER BY ((SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes)-2) + (SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)+1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects)-2)) DESC",
+                  "ORDER BY ( "
+                    "(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes) + 1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_bytes) - 2) + "
+                    "(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects) + 1)*(-1)*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects))*(SIGN(R_LOGICAL_QUOTA_MAIN.over_objects) - 2) "
+                  ") DESC",
                     &statementNum, 0, &icss );
     }
 

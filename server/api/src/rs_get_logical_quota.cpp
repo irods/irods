@@ -2,6 +2,7 @@
 
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
 #include "irods/rs_get_grid_configuration_value.hpp"
 
 #include <cstdlib>
@@ -10,7 +11,7 @@
 #include <vector>
 
 namespace {
-    using log_api = irods::experimental::log::server;
+    using log_api = irods::experimental::log::api;
 
     int _rs_get_logical_quota(
         RsComm& _comm,
@@ -51,7 +52,21 @@ rs_get_logical_quota(RsComm *_comm, getLogicalQuotaInp_t *_get_logical_quota_inp
     }
 
     if (LOCAL_HOST == rodsServerHost->localFlag) {
-        status = _rs_get_logical_quota(*_comm, *_get_logical_quota_inp, *_logical_quota_list);
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            log_api::error("{}: get_catalog_service_role failed with ec=[{}] ", __func__, ret.code());
+            return ret.code();
+        }
+
+        if(irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            status = _rs_get_logical_quota(*_comm, *_get_logical_quota_inp, *_logical_quota_list);
+        } else if(irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            log_api::error("{}: role not supported [{}]", __func__, svc_role.c_str());
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rc_get_logical_quota( rodsServerHost->conn, _get_logical_quota_inp,

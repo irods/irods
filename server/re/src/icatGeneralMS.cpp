@@ -114,33 +114,6 @@ msiQuota( ruleExecInfo_t *rei ) {
     return chlCalcUsageAndQuota( rei->rsComm );
 }
 
-/**
- * \fn msi_calc_logical_usage (ruleExecInfo_t *rei)
- *
- * \brief  Calculates storage usage and sets quota values (over/under/how-much).
- *
- * \module core
- *
- * \since 5.1.0
- *
- *
- * \note Causes the iCAT logical quota table to be updated.
- *
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
- * \DolVarModified none
- * \iCatAttrDependence Utilizes ICAT data-object information
- * \iCatAttrModified Updates the logical quota table
- * \sideeffect none
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
 int
 msi_calc_logical_usage( ruleExecInfo_t *_rei ) {
     if (nullptr == _rei || nullptr == _rei->rsComm) {
@@ -154,7 +127,7 @@ msi_calc_logical_usage( ruleExecInfo_t *_rei ) {
     }
 
     generalAdminInp_t generalAdminInp{};
-    generalAdminInp.arg0 = "calc_logical_usage";
+    generalAdminInp.arg0 = "calculate_logical_usage";
 
     generalAdminInp.arg1 = "";
     generalAdminInp.arg2 = "";

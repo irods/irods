@@ -1441,7 +1441,7 @@ namespace irods::re_serialization
         return SUCCESS();
     } // serialize_ticketAdminInp_ptr
 
-    static error serialize_vector_of_tuples_of_std_string_and_four_std_int64_ptr(boost::any _p, serialized_parameter_t& _out)
+    static error serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s(boost::any _p, serialized_parameter_t& _out)
     {
         try {
             using tupletype = std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>;
@@ -1538,7 +1538,7 @@ namespace irods::re_serialization
             {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr},
             {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr},
             {std::type_index(typeid(TicketAdminInput*)), serialize_ticketAdminInp_ptr},
-            {std::type_index(typeid(std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>*)), serialize_vector_of_tuples_of_std_string_and_four_std_int64_ptr}};
+            {std::type_index(typeid(std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>*)), serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s}};
         return the_map;
     } // get_serialization_map
 
