@@ -51,6 +51,7 @@ struct RsComm;
 ///
 ///     // Alternatively, free by hand-- see implementation for details.
 ///     clear_logical_quota_list(out);
+///     free(out);
 ///     clear_get_logical_quota_input(&inp);
 ///
 /// \endcode

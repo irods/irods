@@ -993,6 +993,7 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
     irods::at_scope_exit free_output{[&logicalQuotaList, &getLogicalQuotaInp] {
         clear_logical_quota_list(logicalQuotaList);
         clear_get_logical_quota_input(&getLogicalQuotaInp);
+        std::free(logicalQuotaList);
     }};
 
     const auto status = rc_get_logical_quota(Conn, &getLogicalQuotaInp, &logicalQuotaList);

@@ -55,6 +55,7 @@ namespace irods::logical_quotas {
            }
         }
         clear_logical_quota_list(out);
+        std::free(out);
         return static_cast<int>(violation_flags);
     } // check_logical_quota_violation
 }
