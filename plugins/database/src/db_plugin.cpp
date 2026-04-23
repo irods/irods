@@ -16464,7 +16464,7 @@ irods::error db_set_logical_quota_op(
     int status;
     std::int64_t byte_limit, object_limit;
     char myTime[50];
-    char coll_id[21];
+    std::array<char, 21> coll_id;
     int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
 
     if (!_coll_name) {
@@ -16505,7 +16505,7 @@ irods::error db_set_logical_quota_op(
         return ERROR(status, std::move(msg));
     }
 
-    std::memcpy(coll_id, icss.stmtPtr[statementNum]->resultValue[0], 21);
+    std::memcpy(coll_id.data(), icss.stmtPtr[statementNum]->resultValue[0], 21);
 
     // Negative input parameters represent a no-op: if the value is
     // set, keep the existing value. If it is unset (i.e. it is a new quota)
@@ -16556,7 +16556,7 @@ irods::error db_set_logical_quota_op(
     }
 
     cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = coll_id;
+    cllBindVars[cllBindVarCount++] = coll_id.data();
     status =  cmlExecuteNoAnswerSql(update_strings[query_selection], &icss);
 
     if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -16567,7 +16567,7 @@ irods::error db_set_logical_quota_op(
 
     if(byte_limit <= 0 && object_limit <= 0) {
         // If both byte_limit and object_limit are nonpositive, a delete is all that is possible
-        cllBindVars[cllBindVarCount++] = coll_id;
+        cllBindVars[cllBindVarCount++] = coll_id.data();
         status = cmlExecuteNoAnswerSql(
                  "DELETE "
                  "FROM R_LOGICAL_QUOTA_MAIN "
@@ -16593,7 +16593,7 @@ irods::error db_set_logical_quota_op(
         }
         const auto negated_byte_limit_string = (byte_limit < 0) ? std::string("0") : std::to_string(-byte_limit);
         const auto negated_object_limit_string = (object_limit < 0) ? std::string("0") : std::to_string(-object_limit);
-        cllBindVars[cllBindVarCount++] = coll_id;
+        cllBindVars[cllBindVarCount++] = coll_id.data();
         cllBindVars[cllBindVarCount++] = byte_limit_string.c_str();
         cllBindVars[cllBindVarCount++] = object_limit_string.c_str();
         cllBindVars[cllBindVarCount++] = negated_byte_limit_string.c_str();
