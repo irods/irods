@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import pprint
-import random
+import secrets
 import shutil
 import string
 import sys
@@ -420,7 +420,7 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     auth_scheme = irods_config.server_config.get("zone_auth_scheme", "native")
     if "irods" == auth_scheme:
         # Derive a key from the provided password.
-        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+        salt = ''.join([secrets.choice(string.ascii_letters + string.digits) for _ in range(16)])
         hashing_parameters = {
             "algorithm": "scrypt",
             "parameters": {
@@ -452,7 +452,7 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
                 timestamp,
                 log_params=False)
         # And generate a session token to use later.
-        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+        salt = ''.join([secrets.choice(string.ascii_letters + string.digits) for _ in range(16)])
         irods_config.admin_session_token = str(uuid.uuid4())
         salted_token = salt + irods_config.admin_session_token
         # Hash it and base64-encode it so that it can be represented in the catalog.
