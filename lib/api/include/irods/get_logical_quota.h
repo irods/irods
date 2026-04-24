@@ -110,17 +110,17 @@ void clear_logical_quota_list(void* _logical_quota_list);
 
 /// \brief Fetch configured logical quotas as well as their respective calculated over-values.
 ///
+/// \parblock
+/// On success, *_logicalQuotaList will be a pointer to a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of "len" LogicalQuota structs. This array must be free()'d by the caller to avoid leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
+/// To avoid free()ing the LogicalQuotaList internals by hand, clear_logical_quota_list() can be used. Note that the struct itself, *_logicalQuotaList, still needs to be free()'d by the caller.
+/// \endparblock
+///
 /// \param[in] _comm A pointer to a RcComm.
 /// \param[in] _getLogicalQuotaInp \parblock
 /// A pointer to a GetLogicalQuotaInput. Stores the collection name that will be used to find applicable quotas.
 /// e.g. Passing in "/tempZone/home" will find quotas for "/", "/tempZone", and "/tempZone/home", if any of those quotas exist.
 /// \endparblock
 /// \param[out] _logicalQuotaList A pointer to a LogicalQuotaList pointer that will hold the results of the fetch.
-///
-/// \parblock
-/// On success, *_logicalQuotaList will be a pointer to a heap-allocated LogicalQuotaList. Within *_logicalQuotaList, there will be a pointer to a heap-allocated array of "len" LogicalQuota structs. This array must be free()'d by the caller to avoid leaks. *_logicalQuotaList must also be free()'d to avoid leaks.
-/// To avoid free()ing the LogicalQuotaList internals by hand, clear_logical_quota_list() can be used. Note that the struct itself, *_logicalQuotaList, still needs to be free()'d by the caller.
-/// \endparblock
 ///
 /// \return An integer representing an iRODS error code.
 /// \retval 0 on success.

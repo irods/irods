@@ -55,15 +55,29 @@ namespace irods::logical_quotas {
             }
         }
         else {
-            const auto client_user_type = *ua::server::type(*_comm, ua::user{_comm->clientUser.userName, _comm->clientUser.rodsZone});
-            if (ua::user_type::rodsadmin != client_user_type) {
-                // Allow a privilege escalation to fetch the grid config value.
-                auto local_admin = irods::experimental::fully_qualified_username{_comm->myEnv.rodsUserName, _comm->myEnv.rodsZone};
-                auto conn = irods::experimental::client_connection{rodsServerHost->hostName->name, _comm->myEnv.rodsPort, local_admin};
-                status = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &gcinp, &gcout);
+            try {
+                const auto client_user_type = *ua::server::type(*_comm, ua::user{_comm->clientUser.userName, _comm->clientUser.rodsZone});
+                if (ua::user_type::rodsadmin != client_user_type) {
+                    // Allow a privilege escalation to fetch the grid config value.
+                    auto local_admin = irods::experimental::fully_qualified_username{_comm->myEnv.rodsUserName, _comm->myEnv.rodsZone};
+                    auto conn = irods::experimental::client_connection{rodsServerHost->hostName->name, _comm->myEnv.rodsPort, local_admin};
+                    status = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &gcinp, &gcout);
+                }
+                else {
+                    status = rc_get_grid_configuration_value(rodsServerHost->conn, &gcinp, &gcout);
+                }
             }
-            else {
-                status = rc_get_grid_configuration_value(rodsServerHost->conn, &gcinp, &gcout);
+            catch (const irods::exception& e) {
+                log_server::error("{}: caught iRODS exception with ec=[{}] while connecting to catalog provider. Logical quotas will not be enforced. [{}]", __func__, e.code(), e.client_display_what());
+                return static_cast<int>(violation::none);
+            }
+            catch (const std::exception& e) {
+                log_server::error("{}: caught std::exception while connecting to catalog provider. Logical quotas will not be enforced. [{}]", __func__, e.what());
+                return static_cast<int>(violation::none);
+            }
+            catch (...) {
+                log_server::error("{}: caught unknown error while connecting to catalog provider. Logical quotas will not be enforced.", __func__);
+                return static_cast<int>(violation::none);
             }
         }
 

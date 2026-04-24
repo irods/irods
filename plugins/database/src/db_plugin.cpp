@@ -16464,7 +16464,7 @@ irods::error db_set_logical_quota_op(
     int status;
     std::int64_t byte_limit, object_limit;
     char myTime[50];
-    std::array<char, 21> coll_id;
+    std::array<char, 21> coll_id{};
     int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
 
     if (!_coll_name) {
@@ -16505,7 +16505,7 @@ irods::error db_set_logical_quota_op(
         return ERROR(status, std::move(msg));
     }
 
-    std::memcpy(coll_id.data(), icss.stmtPtr[statementNum]->resultValue[0], 21);
+    std::memcpy(coll_id.data(), icss.stmtPtr[statementNum]->resultValue[0], 20);
 
     // Negative input parameters represent a no-op: if the value is
     // set, keep the existing value. If it is unset (i.e. it is a new quota)
