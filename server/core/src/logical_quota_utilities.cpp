@@ -1,10 +1,19 @@
 #include "irods/logical_quota_utilities.hpp"
 
+#include "irods/client_connection.hpp"
+#include "irods/fully_qualified_username.hpp"
+#include "irods/get_grid_configuration_value.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rodsConnect.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
 #include "irods/rs_get_logical_quota.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/rcMisc.h"
-#include "irods/irods_logger.hpp"
+
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "irods/user_administration.hpp"
 
 #include <cstdlib>
 #include <string>
@@ -13,12 +22,51 @@ namespace irods::logical_quotas {
     int check_logical_quota_violation(RsComm *_comm, const char* _coll_name) {
         using log_server = irods::experimental::log::server;
 
+        namespace ua = irods::experimental::administration;
+
         gridConfigurationInp_t gcinp { {"logical_quotas"}, {"enabled"}, { 0 } };
         gridConfigurationOut_t *gcout{};
 
         const auto free_gcout = irods::at_scope_exit{[&gcout] { std::free(gcout); }};
 
-        int status = rs_get_grid_configuration_value(_comm, &gcinp, &gcout);
+        rodsServerHost_t *rodsServerHost{};
+
+        auto status = getAndConnRcatHost(_comm, PRIMARY_RCAT, _coll_name, &rodsServerHost);
+
+        if ( status < 0 ) {
+            return status;
+        }
+
+        if (LOCAL_HOST == rodsServerHost->localFlag) {
+            std::string svc_role;
+            irods::error ret = get_catalog_service_role(svc_role);
+            if(!ret.ok()) {
+                log_server::error("{}: get_catalog_service_role failed with ec=[{}] ", __func__, ret.code());
+                return ret.code();
+            }
+
+            if(irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+                status = rs_get_grid_configuration_value(_comm, &gcinp, &gcout);
+            } else if(irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+                status = SYS_NO_RCAT_SERVER_ERR;
+            } else {
+                log_server::error("{}: role not supported [{}]", __func__, svc_role.c_str());
+                status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+            }
+        }
+        else {
+            const auto client_user_type = *ua::server::type(*_comm, ua::user{_comm->clientUser.userName, _comm->clientUser.rodsZone});
+            if (ua::user_type::rodsadmin != client_user_type) {
+                // Allow a privilege escalation to fetch the grid config value.
+                auto local_admin = irods::experimental::fully_qualified_username{_comm->myEnv.rodsUserName, _comm->myEnv.rodsZone};
+                auto conn = irods::experimental::client_connection{rodsServerHost->hostName->name, _comm->myEnv.rodsPort, local_admin};
+                status = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &gcinp, &gcout);
+            }
+            else {
+                status = rc_get_grid_configuration_value(rodsServerHost->conn, &gcinp, &gcout);
+            }
+        }
+
         if(status < 0) {
             log_server::warn("{}: Failed to get logical quota enforcement status. (ec=[{}]) Logical quotas will not be enforced.", __func__, status);
             return static_cast<int>(violation::none);

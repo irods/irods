@@ -1,8 +1,11 @@
 #include "irods/rs_get_logical_quota.hpp"
 
-#include "irods/irods_at_scope_exit.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_error.hpp"
 #include "irods/miscServerFunct.hpp"
+#include "irods/rodsConnect.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
 
 #include <cstdlib>

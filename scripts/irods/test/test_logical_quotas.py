@@ -5,6 +5,7 @@ import unittest
 from . import session
 from .. import lib
 from .. import paths
+from .. import test
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -1769,6 +1770,7 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Registers a data object')
     def test_logical_quota_with_register(self):
         dataobj_name = "test_logical_quota_register"
         file_name = "test_logical_quota_register_file"
