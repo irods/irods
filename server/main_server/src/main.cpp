@@ -22,6 +22,7 @@
 #include "irods/rcGlobalExtern.h" // For ProcessType
 #include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
+#include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
 #include "irods/update_replica_access_time.h"
@@ -133,6 +134,7 @@ namespace
     auto print_usage() -> void;
     auto print_version_info() -> void;
 
+    auto set_boot_time_as_environment_variable() -> void;
     auto validate_configuration() -> bool;
     auto daemonize() -> void;
     auto create_pid_file(const std::string& _pid_file) -> int;
@@ -166,7 +168,7 @@ namespace
 
 auto main(int _argc, char* _argv[]) -> int
 {
-    [[maybe_unused]] const auto boot_time = std::chrono::system_clock::now();
+    set_boot_time_as_environment_variable();
 
     bool write_to_stdout = false;
     bool enable_test_mode = false;
@@ -440,6 +442,28 @@ Signals:
         fmt::print(
             "irodsServer v{}.{}.{}-{}\n", IRODS_VERSION_MAJOR, IRODS_VERSION_MINOR, IRODS_VERSION_PATCHLEVEL, commit);
     } // print_version_info
+
+    // This function is meant to be called before the logger is initialized.
+    auto set_boot_time_as_environment_variable() -> void
+    {
+        try {
+            using std::chrono::duration_cast;
+            using std::chrono::seconds;
+            using std::chrono::system_clock;
+
+            const auto now = duration_cast<seconds>(system_clock::now().time_since_epoch());
+            const auto now_string = std::to_string(now.count());
+
+            // Set the boot time as an environment variable so that rsGetMiscSvrInfo can report it
+            // to the client. If there's a failure, notify the administrator and continue the boot process.
+            if (setenv(SERVER_BOOT_TIME, now_string.c_str(), 1) != 0) {
+                fmt::print(stderr, "Warning: Failed to set server boot time as an environment variable.\n");
+            }
+        }
+        catch (const std::exception& e) {
+            fmt::print(stderr, "Error: Caught exception while setting server boot time as an environment variable: {}\n", e.what());
+        }
+    } // set_boot_time_as_environment_variable
 
     auto validate_configuration() -> bool
     {
