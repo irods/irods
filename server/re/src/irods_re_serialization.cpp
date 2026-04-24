@@ -1449,6 +1449,7 @@ namespace irods::re_serialization
             if(inp) {
                 _out["size"] = std::to_string(inp->size());
 
+                // TODO(#8941): Params with one key do not serialize correctly.
                 // Must be here, or fails in the empty case
                 _out["_size"] = std::to_string(inp->size());
 

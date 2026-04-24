@@ -1969,7 +1969,7 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
 
-    def test_logical_quota_with_replicas_bytes_only(self):
+    def test_logical_quotas_enforces_bytes_only_quota_limit(self):
         dataobj_name = "test_logical_quota_replica_bytesonly"
         small_file_name = "test_logical_quota_smallfile_bytesonly"
         small_file_path = os.path.join(
@@ -2594,7 +2594,7 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
 
-    def test_logical_quota_with_replicas_objects_only(self):
+    def test_logical_quotas_enforces_objects_only_quota_limit(self):
         dataobj_name = "test_logical_quota_replica_onlyobjects"
         small_file_name = "test_logical_quota_smallfile_onlyobjects"
         small_file_path = os.path.join(
