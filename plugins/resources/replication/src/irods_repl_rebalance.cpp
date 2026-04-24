@@ -566,6 +566,9 @@ namespace irods {
 
                 rodsLog(LOG_WARNING, "Ignored size: [%i].", repls_to_skip);
 
+                if (data_ids_needing_new_replicas.empty()) {
+                    break;
+                }
                 proc_results_for_rebalance(
                     _ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas, repls_to_skip);
             }
