@@ -463,7 +463,7 @@ def setup_tls(irods_config):
             f'Diffie-Hellman parameters file: {irods_config.server_config["tls_server"].get("dh_params_file")}\n'
             f'CA certificate file:            {irods_config.server_config["tls_client"].get("ca_certificate_file", "")}\n'
             f'CA certificate path:            {irods_config.server_config["tls_client"].get("ca_certificate_path", "")}\n'
-            f'Client verify server level:     {irods_config.server_config["tls_client"].get("verify_server")}\n'
+            f'Certificate verification level: {irods_config.server_config["tls_client"].get("verify_server")}\n'
             '-------------------------------------------------------------\n\n'
             'Please confirm'
         )
