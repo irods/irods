@@ -135,6 +135,8 @@ namespace
     auto print_version_info() -> void;
 
     auto set_boot_time_as_environment_variable() -> void;
+    auto terminate_if_launched_with_root_privileges() -> void;
+    auto warn_if_launched_by_non_owner() -> void;
     auto validate_configuration() -> bool;
     auto daemonize() -> void;
     auto create_pid_file(const std::string& _pid_file) -> int;
@@ -207,6 +209,9 @@ auto main(int _argc, char* _argv[]) -> int
             return 0;
         }
 
+        terminate_if_launched_with_root_privileges();
+        warn_if_launched_by_non_owner();
+
         if (vm.count("validate-config") > 0) {
             return validate_configuration() ? 0 : 1;
         }
@@ -251,6 +256,13 @@ auto main(int _argc, char* _argv[]) -> int
         rodsLogSqlReq(0);
 
         init_logger(getpid(), write_to_stdout, enable_test_mode);
+
+        log_server::info("{}: Server launched by real UID=[{}], real GID=[{}], effective UID=[{}], effective GID=[{}].",
+                         __func__,
+                         getuid(),
+                         getgid(),
+                         geteuid(),
+                         getegid());
 
         // Setting up signal handlers here removes the need for reacting to shutdown signals
         // such as SIGINT and SIGTERM during the startup sequence.
@@ -461,9 +473,47 @@ Signals:
             }
         }
         catch (const std::exception& e) {
-            fmt::print(stderr, "Error: Caught exception while setting server boot time as an environment variable: {}\n", e.what());
+            fmt::print(stderr,
+                       "Error: Caught exception while setting server boot time as an environment variable: {}\n",
+                       e.what());
         }
     } // set_boot_time_as_environment_variable
+
+    // This function is meant to be called before the logger is initialized.
+    auto terminate_if_launched_with_root_privileges() -> void
+    {
+        if (geteuid() == 0) {
+            fmt::print(stderr, "Warning: Launching server with root privileges is not allowed. Exiting.\n");
+            std::exit(1);
+        }
+
+        // Guard against setuid-related security vulnerabilities.
+        if (getuid() != geteuid()) {
+            fmt::print(
+                stderr, "Warning: Real UID [{}] and effective UID [{}] must match. Exiting.\n", getuid(), geteuid());
+            std::exit(1);
+        }
+    } // terminate_if_launched_with_root_privileges
+
+    // This function is meant to be called before the logger is initialized.
+    auto warn_if_launched_by_non_owner() -> void
+    {
+        const auto home_dir = irods::get_irods_home_directory();
+        struct stat stat_info; // NOLINT(cppcoreguidelines-pro-type-member-init)
+        if (stat(home_dir.c_str(), &stat_info) != 0) {
+            fmt::print(stderr, "Error: stat failed: errno=[{}], path=[{}] -- Exiting.\n", errno, home_dir.c_str());
+            return;
+        }
+
+        if (!S_ISDIR(stat_info.st_mode)) {
+            fmt::print(
+                stderr, "Warning: [{}] must be the home directory of the service account user.\n", home_dir.c_str());
+        }
+
+        if (const auto uid = getuid(); uid != stat_info.st_uid) {
+            fmt::print(stderr, "Warning: Server launched by UID [{}]. Expected UID [{}].\n", uid, stat_info.st_uid);
+        }
+    } // warn_if_launched_by_non_owner
 
     auto validate_configuration() -> bool
     {
