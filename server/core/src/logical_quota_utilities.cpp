@@ -68,15 +68,15 @@ namespace irods::logical_quotas {
                 }
             }
             catch (const irods::exception& e) {
-                log_server::error("{}: caught iRODS exception with ec=[{}] while connecting to catalog provider. Logical quotas will not be enforced. [{}]", __func__, e.code(), e.client_display_what());
+                log_server::error("{}: Caught iRODS exception with ec=[{}] while connecting to catalog provider. Logical quotas will not be enforced. Exception: [{}]", __func__, e.code(), e.client_display_what());
                 return static_cast<int>(violation::none);
             }
             catch (const std::exception& e) {
-                log_server::error("{}: caught std::exception while connecting to catalog provider. Logical quotas will not be enforced. [{}]", __func__, e.what());
+                log_server::error("{}: Caught std::exception while connecting to catalog provider. Logical quotas will not be enforced. Exception: [{}]", __func__, e.what());
                 return static_cast<int>(violation::none);
             }
             catch (...) {
-                log_server::error("{}: caught unknown error while connecting to catalog provider. Logical quotas will not be enforced.", __func__);
+                log_server::error("{}: Caught unknown error while connecting to catalog provider. Logical quotas will not be enforced.", __func__);
                 return static_cast<int>(violation::none);
             }
         }
