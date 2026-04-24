@@ -1770,12 +1770,19 @@ class Test_Logical_Quotas(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Registers a data object')
     def test_logical_quota_with_register(self):
         dataobj_name = "test_logical_quota_register"
         file_name = "test_logical_quota_register_file"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
         file_size = 2048
+        resc_name = 'test_logical_quota_register_resc'
+        resc_hostname = None
+        if test.settings.RUN_IN_TOPOLOGY:
+            if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+                resc_hostname = test.settings.HOSTNAME_1
+            else:
+                 resc_hostname = test.settings.ICAT_HOSTNAME
+        lib.create_ufs_resource(self.admin, resc_name, resc_hostname)
         empty_file_name = "test_logical_quota_register_empty"
         empty_file_path = os.path.join(
             self.quota_user.local_session_dir, empty_file_name
@@ -1834,6 +1841,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "ireg",
+                    "-R",
+                    resc_name,
                     file_path,
                     f"{self.admin.session_collection}/{file_name}",
                 ]
@@ -1845,6 +1854,8 @@ class Test_Logical_Quotas(
                 [
                     "ireg",
                     file_path,
+                    "-R",
+                    resc_name,
                     f"{self.admin.session_collection}/{file_name}_1",
                 ]
             )
@@ -1876,6 +1887,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "ireg",
+                    "-R",
+                    resc_name,
                     file_path,
                     f"{self.admin.session_collection}/{file_name}_2",
                 ],
@@ -1888,6 +1901,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "ireg",
+                    "-R",
+                    resc_name,
                     empty_file_path,
                     f"{self.admin.session_collection}/{empty_file_name}",
                 ]
@@ -1898,6 +1913,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "ireg",
+                    "-R",
+                    resc_name,
                     empty_file_path,
                     f"{self.admin.session_collection}/{empty_file_name}_1",
                 ]
@@ -1929,6 +1946,8 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 [
                     "ireg",
+                    "-R",
+                    resc_name,
                     file_path,
                     f"{self.admin.session_collection}/{empty_file_name}_2",
                 ],
