@@ -70,7 +70,7 @@ except:
     print('The pyodbc module is required for setup of catalog service providers.', file=sys.stderr)
 
 
-def setup_server(irods_config, json_configuration_file=None, test_mode=False, optional_prompts=[]):
+def setup_server(irods_config, json_configuration_file=None, test_mode=False, optional_prompts=None):
     l = logging.getLogger(__name__)
 
     optional_setup_funcs = {
@@ -130,7 +130,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False, op
         # default resource
         default_resource_name, default_resource_directory = setup_storage(irods_config)
         # Go through any optional setup prompted by setup script options.
-        for prompt_name in optional_prompts:
+        for prompt_name in optional_prompts or []:
             if (setup_func := optional_setup_funcs.get(prompt_name)) is None:
                 l.warning(f"No setup function found for optional prompt '{prompt_name}'. Skipping.")
                 continue
