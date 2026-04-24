@@ -41,6 +41,7 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/jsonschema/jsonschema.hpp>
 
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -136,6 +137,7 @@ namespace
     auto print_version_info() -> void;
 
     auto set_boot_time_as_environment_variable() -> void;
+    auto terminate_if_launched_by_incorrect_system_user() -> void;
     auto validate_configuration() -> bool;
     auto daemonize() -> void;
     auto create_pid_file(const std::string& _pid_file) -> int;
@@ -170,6 +172,7 @@ namespace
 auto main(int _argc, char* _argv[]) -> int
 {
     set_boot_time_as_environment_variable();
+    terminate_if_launched_by_incorrect_system_user();
 
     bool write_to_stdout = false;
     bool enable_test_mode = false;
@@ -463,6 +466,76 @@ Signals:
                        e.what());
         }
     } // set_boot_time_as_environment_variable
+
+    auto terminate_if_launched_by_incorrect_system_user() -> void
+    {
+        try {
+            const auto service_acct_file_path = irods::get_irods_config_directory() / "service_account.config";
+            std::ifstream in{service_acct_file_path};
+            if (!in) {
+                // A bad input stream signals that the user may not have the proper permissions to open
+                // the file.
+            }
+
+            std::string line;
+            while (in && std::getline(in, line)) {
+                if (line.empty()) {
+                    // TODO Do nothing?
+                }
+
+                constexpr std::string_view key = "IRODS_SERVICE_ACCOUNT_NAME=";
+                if (!line.starts_with(key)) {
+                    continue;
+                }
+
+                // Throws if the starting position is greater than the size of the string.
+                const auto value = line.substr(key.size());
+
+                // Allocate a buffer large enough to hold the strings of the passwd struct.
+                auto buffer_size = sysconf(_SC_GETPW_R_SIZE_MAX);
+                if (buffer_size == -1) {
+                    // Indeterminate value. Set the buffer to a value large enough to hold the strings
+                    // of the passwd struct.
+                    buffer_size = 16384;
+                }
+                auto buffer = std::make_unique<char[]>(buffer_size);
+
+                // Lookup the service account user's information. This information comes form the OS.
+                passwd pwd; // NOLINT(cppcoreguidelines-pro-type-member-init)
+                passwd* result{};
+                const auto ec = getpwnam_r(value.c_str(), &pwd, buffer.get(), buffer_size, &result);
+                if (nullptr == result) {
+                    if (ec == 0) {
+                        fmt::print(stderr, "Warning: Service account user [{}] not found in system.\n", value);
+                    }
+                    else {
+                        errno = ec;
+                        perror("getpwnam_r");
+                    }
+                    std::exit(1);
+                }
+
+                // Compare the effective UID of the server process with the UID of the service account user.
+                // Terminate if they are not identical.
+                if (const auto euid = geteuid(); euid != pwd.pw_uid) {
+                    fmt::print(
+                        stderr,
+                        "Warning: UID [{}] of server process does not match UID [{}] of service account user [{}].\n",
+                        euid,
+                        pwd.pw_uid,
+                        value);
+                    std::exit(1);
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            fmt::print(stderr,
+                       "Warning: An exception was thrown while setting server boot time as an environment variable. "
+                       "Exception: {}\n",
+                       e.what());
+            std::exit(1);
+        }
+    } // terminate_if_launched_by_incorrect_system_user
 
     auto validate_configuration() -> bool
     {
