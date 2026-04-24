@@ -22,6 +22,7 @@
 #include "irods/rcGlobalExtern.h" // For ProcessType
 #include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
+#include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
 #include "irods/update_replica_access_time.h"
@@ -52,6 +53,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <ios> // For std::streamsize
@@ -133,6 +135,7 @@ namespace
     auto print_usage() -> void;
     auto print_version_info() -> void;
 
+    auto set_boot_time_as_environment_variable() -> void;
     auto validate_configuration() -> bool;
     auto daemonize() -> void;
     auto create_pid_file(const std::string& _pid_file) -> int;
@@ -166,7 +169,7 @@ namespace
 
 auto main(int _argc, char* _argv[]) -> int
 {
-    [[maybe_unused]] const auto boot_time = std::chrono::system_clock::now();
+    set_boot_time_as_environment_variable();
 
     bool write_to_stdout = false;
     bool enable_test_mode = false;
@@ -440,6 +443,26 @@ Signals:
         fmt::print(
             "irodsServer v{}.{}.{}-{}\n", IRODS_VERSION_MAJOR, IRODS_VERSION_MINOR, IRODS_VERSION_PATCHLEVEL, commit);
     } // print_version_info
+
+    auto set_boot_time_as_environment_variable() -> void
+    {
+        try {
+            const auto now = std::to_string(std::time(nullptr));
+
+            // Set the boot time as an environment so that rsGetMiscSvrInfo can report it
+            // to the client. If there's a failure, notify the administrator and continue
+            // the boot process.
+            if (setenv(SERVER_BOOT_TIME, now.c_str(), 1) != 0) {
+                fmt::print(stderr, "Warning: Failed to set server boot time as an environment variable.\n");
+            }
+        }
+        catch (const std::exception& e) {
+            fmt::print(stderr,
+                       "Warning: An exception was thrown while setting server boot time as an environment variable. "
+                       "Exception: {}\n",
+                       e.what());
+        }
+    } // set_boot_time_as_environment_variable
 
     auto validate_configuration() -> bool
     {
