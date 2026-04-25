@@ -36,6 +36,7 @@
 #include "irods/irods_re_structs.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/scoped_privileged_client.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
@@ -466,6 +467,55 @@ namespace
 
 int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 {
+    namespace lq = irods::logical_quotas;
+
+    const fs::path dest_path{dataObjRenameInp->destDataObjInp.objPath};
+    const fs::path src_path{dataObjRenameInp->destDataObjInp.objPath};
+    int status = lq::check_logical_quota_violation(rsComm, dest_path.parent_path().c_str());
+
+    if(status < 0) {
+        log_api::error("{}: check_logical_quota_violation failed with error [{}]", __func__, status);
+        return status;
+    }
+
+    // Since status is non-negative, it is a logical_quota::violation value
+    lq::violation violation_flags = static_cast<lq::violation>(status);
+
+    // Since some fs operations may be slightly heavier, guard with
+    // with the violation flags to avoid unnecessary work.
+    bool quota_violated = false;
+    try {
+        if((violation_flags & lq::violation::objects) != lq::violation::none) {
+                // Overwriting an existing data object will not trigger object quota.
+                quota_violated = (quota_violated || fs::server::is_data_object_registered(*rsComm, dest_path));
+        }
+
+        if(!quota_violated && ((violation_flags & lq::violation::bytes) != lq::violation::none)) {
+            // Overwriting a smaller object will not trigger byte quota.
+            quota_violated = quota_violated || (fs::server::data_object_size(*rsComm, src_path) >= fs::server::data_object_size(*rsComm, dest_path));
+        }
+    }
+    // If we can't fetch object properties for some reason,
+    // still enforce the quota if it's in violation, but do not
+    // consider things like size or existence.
+    catch (const irods::exception& e) {
+        log_api::error("{}: Caught iRODS exception with ec=[{}] while processing logical quotas. Logical quotas will be enforced without consideration of source/destination object properties. Exception: [{}]", __func__, e.code(), e.client_display_what());
+        quota_violated = (violation_flags != lq::violation::none);
+    }
+    catch (const std::exception& e) {
+        log_api::error("{}: Caught std::exception while processing logical quotas. Logical quotas will be enforced without consideration of source/destination object properties. Exception: [{}]", __func__, e.what());
+        quota_violated = (violation_flags != lq::violation::none);
+    }
+    catch (...) {
+        log_api::error("{}: Caught unknown error while processing logical quotas. Logical quotas will be enforced without consideration of source/destination object properties.", __func__);
+        quota_violated = (violation_flags != lq::violation::none);
+    }
+
+    if(quota_violated) {
+        log_api::info("{}: Logical quota violation on collection [{}] with source [{}] and destination [{}].", __func__, dest_path.parent_path().string(), src_path.string(), dest_path.string());
+        return LOGICAL_QUOTA_EXCEEDED;
+    }
+
     const auto ec = rsDataObjRename_impl(rsComm, dataObjRenameInp);
 
     // Update the mtime of the parent collections.

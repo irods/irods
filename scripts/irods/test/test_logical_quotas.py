@@ -3205,3 +3205,247 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
+
+    def test_logical_quotas_counters_properly_decrement(self):
+        file_name = "test_logical_quota_decrement_counters"
+        file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        file_size = 4096
+        max_bytes = 10000
+        max_objects = 10
+        lib.make_file(
+            file_path,
+            file_size,
+            contents="arbitrary",
+        )
+
+        try:
+            self.admin.assert_icommand(
+                ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
+            )
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
+                )
+                in out
+            )
+
+            # Repeatedly put data objects until
+            # quota is violated.
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    file_path,
+                    f"{self.quota_user.session_collection}/{file_name}",
+                ]
+            )
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size-max_bytes),
+                        str(1-max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    file_path,
+                    f"{self.quota_user.session_collection}/{file_name}_1",
+                ]
+            )
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(2*file_size-max_bytes),
+                        str(2-max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    file_path,
+                    f"{self.quota_user.session_collection}/{file_name}_2",
+                ]
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(3*file_size-max_bytes),
+                        str(3-max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    file_path,
+                    f"{self.quota_user.session_collection}/{file_name}_3",
+                ],
+                "STDERR_SINGLELINE",
+                "-186000 LOGICAL_QUOTA_EXCEEDED",
+            )
+
+            # Repeatedly delete data objects
+            # and check calculations.
+            self.quota_user.assert_icommand(
+                [
+                    "irm",
+                    "-f",
+                    f"{self.quota_user.session_collection}/{file_name}",
+                ]
+            )
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(2*file_size-max_bytes),
+                        str(2-max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "irm",
+                    "-f",
+                    f"{self.quota_user.session_collection}/{file_name}_1",
+                ]
+            )
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(file_size-max_bytes),
+                        str(1-max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "irm",
+                    "-f",
+                    file_path,
+                    f"{self.quota_user.session_collection}/{file_name}_2",
+                ]
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
+                )
+                in out
+            )
+
+
+        finally:
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+            self.admin.assert_icommand(
+                ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
+            )

@@ -1397,7 +1397,7 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return status;
         }
         if((check_quota_flags & static_cast<lq::violation>(status)) != lq::violation::none) {
-            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and openFlags [{:o}]", __func__, dataObjInp->objPath, status, dataObjInp->openFlags);
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}]. Attempted to open [{}] with openFlags [{:o}]", __func__, path.parent_path().string(), status, dataObjInp->objPath, dataObjInp->openFlags);
             return LOGICAL_QUOTA_EXCEEDED;
         }
     }

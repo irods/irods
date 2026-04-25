@@ -39,7 +39,7 @@ namespace
         const auto byte_count_violation = (((violation_flags & lq::violation::bytes) != lq::violation::none) && _dataObjInfo.dataSize > 0);
 
         if(object_count_violation || byte_count_violation) {
-            log_api::info("{}: Logical quota violation on collection [{}] with status [{}] and data size [{}]", __func__, _dataObjInfo.objPath, status, _dataObjInfo.dataSize);
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}]. Attempted to register [{}] with data size [{}]", __func__, path.parent_path().string(), status, _dataObjInfo.objPath, _dataObjInfo.dataSize);
             return LOGICAL_QUOTA_EXCEEDED;
         }
         return 0;
