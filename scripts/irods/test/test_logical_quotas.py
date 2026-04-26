@@ -3868,3 +3868,260 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
+
+    def test_logical_quota_with_itrim(self):
+        dataobj_name = "test_logical_quota_itrim"
+        small_file_name = "test_logical_quota_smallfile_itrim"
+        small_file_path = os.path.join(
+            self.quota_user.local_session_dir, small_file_name
+        )
+        small_file_size = 2048
+        big_file_name = "test_logical_quota_bigfile_itrim"
+        big_file_path = os.path.join(self.quota_user.local_session_dir, big_file_name)
+        # If modifying, ensure value is >small_file_size
+        big_file_size = 4096
+        resc_name = "ufs0_logical_quota_itrim"
+
+        lib.make_file(
+            small_file_path,
+            small_file_size,
+            contents="arbitrary",
+        )
+        lib.make_file(
+            big_file_path,
+            big_file_size,
+            contents="arbitrary",
+        )
+
+        try:
+            lib.create_ufs_resource(self.admin, resc_name)
+
+            # Enable enforcement.
+            self.admin.assert_icommand(
+                ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "1"]
+            )
+
+            max_bytes = 10000
+            max_objects = 5
+            # Set to 10000 bytes and 5 objects.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
+                )
+                in out
+            )
+
+            # Replica 0 is now large file.
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    big_file_path,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                ]
+            )
+            # Replica 1 is now large file.
+            self.quota_user.assert_icommand(
+                [
+                    "irepl",
+                    "-R",
+                    resc_name,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                ]
+            )
+
+           # Replica 0 is now small file and good.
+           # Replica 1 is stale.
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    "-f",
+                    small_file_path,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                ]
+            )
+            self.assertEqual(
+                str(1),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    self.quota_user.default_resource,
+                ),
+            )
+            self.assertEqual(
+                str(0),
+                lib.get_replica_status_for_resource(
+                    self.quota_user,
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    resc_name,
+                ),
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            # Check: Replica 1 is stale and replica 0 is good,
+            # so logical quotas should calculate using replica 0.
+            # Replica 0 has smaller size, so verify smaller size is counted against
+            # the byte limit. Additionally, verify the data object
+            # counts against the object limit only once.
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(small_file_size - max_bytes),
+                        str(1 - max_objects),
+                    )
+                )
+                in out
+            )
+
+            # Force-good replica 1.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "modrepl",
+                    "logical_path",
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                    "replica_number",
+                    "1",
+                    "DATA_REPL_STATUS",
+                    "1",
+                ]
+            )
+
+            # Trim replica 0 (small file).
+            self.quota_user.assert_icommand(
+                [
+                    "itrim",
+                    "-N",
+                    "1",
+                    "-n",
+                    "0",
+                    f"{self.quota_user.session_collection}/{dataobj_name}",
+                ],
+                "STDOUT_SINGLELINE",
+                "Number of data objects trimmed = 1."
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            # Check: Replica 1 is stale and replica 0 is gone,
+            # so logical quotas should calculate using replica 1.
+            # Replica 1 has larger size, so verify larger size is counted against
+            # the byte limit. Additionally, verify the data object
+            # counts against the object limit only once.
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(big_file_size - max_bytes),
+                        str(1 - max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    big_file_path,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_1",
+                ]
+            )
+
+
+            # New data object: Replica 0 is small file.
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    big_file_path,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_2",
+                ]
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            # Quota should now be in violation.
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"],
+                "STDOUT_SINGLELINE",
+                self.quota_user.session_collection,
+            )
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(3*big_file_size - max_bytes),
+                        str(3 - max_objects),
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    small_file_path,
+                    f"{self.quota_user.session_collection}/{dataobj_name}_3",
+                ],
+                "STDERR_SINGLELINE",
+                "-186000 LOGICAL_QUOTA_EXCEEDED",
+            )
+        finally:
+            # Cleanup.
+            self.quota_user.assert_icommand(
+                ["irm", "-f", f"{self.quota_user.session_collection}/{dataobj_name}"]
+            )
+            self.admin.run_icommand(["iadmin", "rmresc", resc_name])
+
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+            self.admin.assert_icommand(
+                ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
+            )
