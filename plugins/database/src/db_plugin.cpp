@@ -13702,34 +13702,41 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
 
 #ifdef ORA_ICAT
     const std::string query =
-        (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id "
-                       "from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN "
-                       "where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d order by data_id") %
-         not_child_array % child_array % _invocation_timestamp->c_str() % _count)
-            .str();
+        fmt::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id "
+                       "from R_DATA_MAIN where resc_id in ({})) and data_id not in (select data_id from R_DATA_MAIN "
+                       "where resc_id in ({})) and modify_ts <= '{}') where rownum <= {} order by data_id",
+                        not_child_array,
+                        child_array,
+                        _invocation_timestamp->c_str(),
+                        _count);
 #elif MY_ICAT
     /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
-    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN "
-                                             "  where resc_id in (%s) and data_id not in ( "
+    const std::string query = fmt::format("select distinct data_id from R_DATA_MAIN "
+                                             "  where resc_id in ({}) and data_id not in ( "
                                              "    select data_id from R_DATA_MAIN "
-                                             "      where resc_id in (%s) "
-                                             "  ) and modify_ts <= '%s' "
+                                             "      where resc_id in ({}) "
+                                             "  ) and modify_ts <= '{}' "
                                              "order by data_id "
-                                             "limit %d,18446744073709551615") %
-                               not_child_array % child_array % _invocation_timestamp->c_str() % _offset)
-                                  .str();
+                                             "limit {},18446744073709551615",
+                                             not_child_array,
+                                             child_array,
+                                             _invocation_timestamp->c_str(),
+                                             _offset);
 #else
     /* Postgres */
-    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN "
-                                             "  where resc_id in (%s) and modify_ts <= '%s' "
+    const std::string query = boost::format("select distinct data_id from R_DATA_MAIN "
+                                             "  where resc_id in ({}) and modify_ts <= '{}' "
                                              "except "
                                              "  select data_id from R_DATA_MAIN "
-                                             "    where resc_id in (%s) "
+                                             "    where resc_id in ({}) "
                                              "order by data_id "
-                                             "offset %d"
-                                             "limit %d") %
-                               not_child_array % _invocation_timestamp->c_str() % child_array % _offset % _count)
-                                  .str();
+                                             "offset {}"
+                                             "limit {}",
+                                             not_child_array,
+                                             _invocation_timestamp->c_str(),
+                                             child_array,
+                                             _offset,
+                                             _count);
 #endif
 
     _results->reserve(_count);
@@ -13742,7 +13749,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
     }
     if (status_cmlGetFirstRowFromSql != 0) {
         cmlFreeStatement(statement_num, &icss);
-        return ERROR(status_cmlGetFirstRowFromSql, boost::format("failed to get first row from query [%s]") % query);
+        return ERROR(status_cmlGetFirstRowFromSql, fmt::format("failed to get first row from query [{}]", query));
     }
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
     _results->push_back(strtoll(icss.stmtPtr[statement_num]->resultValue[0], nullptr, 0));
@@ -13755,7 +13762,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
         if (status_cmlGetNextRowFromStatement != 0) {
             cmlFreeStatement(statement_num, &icss);
             return ERROR(
-                status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
+                status_cmlGetNextRowFromStatement, fmt::format("failed to get row [{}] from query [{}]", i, query));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
         _results->push_back(strtoll(icss.stmtPtr[statement_num]->resultValue[0], nullptr, 0));
