@@ -774,6 +774,16 @@ extern "C" {
             rstrcpy( rodsEnvArg->rodsCwd, rodsEnvArg->rodsHome, MAX_NAME_LEN );
         }
 
+        // Strip trailing slashes
+        const auto strip_trailing_slash = [](char* path) {
+            size_t len = strlen(path);
+            if (len > 1 && path[len - 1] == '/') {
+                path[len - 1] = '\0';
+            }
+        };
+        strip_trailing_slash(rodsEnvArg->rodsHome);
+        strip_trailing_slash(rodsEnvArg->rodsCwd);
+
         return 0;
     }
 
