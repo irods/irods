@@ -577,7 +577,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 for file in [f"foo{i}" for i in bad_file_indices]:
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
-                
+
                 # =-=-=-=-=-=-=-
                 # assert that all the appropriate repl numbers exist for all the children
                 for file in [f"foo{i}" for i in range(num_children) if i not in bad_file_indices]:
@@ -609,7 +609,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin rmresc pt_b")
             self.admin.assert_icommand("iadmin rmresc repl")
             self.admin.assert_icommand("iadmin rmresc pt")
-            
+
     # =-=-=-=-=-=-=-
     # REBALANCE
     def test_rebalance_for_invalid_data__ticket_3147(self):

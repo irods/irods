@@ -186,7 +186,6 @@ namespace {
         rodsLong_t data_id;
         rodsLong_t replica_number;
         rodsLong_t resource_id;
-        auto operator<=>(const ReplicaAndRescId&) const = default;
     };
 
     // throws irods::exception
@@ -346,7 +345,6 @@ namespace {
                 if (_e.code() != CAT_NO_ROWS_FOUND) {
                     throw;
                 }
-                rodsLog(LOG_WARNING, "Cannot perform rebalance on id [%lld]. Skipping.", data_id_to_replicate);
                 _num_repls_to_skip++;
                 continue;
             }
@@ -475,10 +473,6 @@ namespace irods {
                     if (_e.code() != CAT_NO_ROWS_FOUND) {
                         throw;
                     }
-                    rodsLog(LOG_WARNING,
-                            "Cannot update replica [%lld] for data_id [%lld]. Skipping.",
-                            replica_to_update.replica_number,
-                            replica_to_update.data_id);
                     replicas_to_skip++;
                     continue;
                 }
@@ -568,8 +562,6 @@ namespace irods {
                 if (repls_to_skip > 0) {
                     did_skip_some_repls = true;
                 }
-
-                rodsLog(LOG_WARNING, "Ignored size: [%i].", repls_to_skip);
 
                 if (data_ids_needing_new_replicas.empty()) {
                     break;
