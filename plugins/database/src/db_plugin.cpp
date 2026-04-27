@@ -13703,40 +13703,40 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
 #ifdef ORA_ICAT
     const std::string query =
         fmt::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id "
-                       "from R_DATA_MAIN where resc_id in ({})) and data_id not in (select data_id from R_DATA_MAIN "
-                       "where resc_id in ({})) and modify_ts <= '{}') where rownum <= {} order by data_id",
-                        not_child_array,
-                        child_array,
-                        _invocation_timestamp->c_str(),
-                        _count);
+                    "from R_DATA_MAIN where resc_id in ({})) and data_id not in (select data_id from R_DATA_MAIN "
+                    "where resc_id in ({})) and modify_ts <= '{}') where rownum <= {} order by data_id",
+                    not_child_array,
+                    child_array,
+                    _invocation_timestamp->c_str(),
+                    _count);
 #elif MY_ICAT
     /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
     const std::string query = fmt::format("select distinct data_id from R_DATA_MAIN "
-                                             "  where resc_id in ({}) and data_id not in ( "
-                                             "    select data_id from R_DATA_MAIN "
-                                             "      where resc_id in ({}) "
-                                             "  ) and modify_ts <= '{}' "
-                                             "order by data_id "
-                                             "limit {},18446744073709551615",
-                                             not_child_array,
-                                             child_array,
-                                             _invocation_timestamp->c_str(),
-                                             _offset);
+                                          "  where resc_id in ({}) and data_id not in ( "
+                                          "    select data_id from R_DATA_MAIN "
+                                          "      where resc_id in ({}) "
+                                          "  ) and modify_ts <= '{}' "
+                                          "order by data_id "
+                                          "limit {},18446744073709551615",
+                                          not_child_array,
+                                          child_array,
+                                          _invocation_timestamp->c_str(),
+                                          _offset);
 #else
     /* Postgres */
     const std::string query = boost::format("select distinct data_id from R_DATA_MAIN "
-                                             "  where resc_id in ({}) and modify_ts <= '{}' "
-                                             "except "
-                                             "  select data_id from R_DATA_MAIN "
-                                             "    where resc_id in ({}) "
-                                             "order by data_id "
-                                             "offset {}"
-                                             "limit {}",
-                                             not_child_array,
-                                             _invocation_timestamp->c_str(),
-                                             child_array,
-                                             _offset,
-                                             _count);
+                                            "  where resc_id in ({}) and modify_ts <= '{}' "
+                                            "except "
+                                            "  select data_id from R_DATA_MAIN "
+                                            "    where resc_id in ({}) "
+                                            "order by data_id "
+                                            "offset {}"
+                                            "limit {}",
+                                            not_child_array,
+                                            _invocation_timestamp->c_str(),
+                                            child_array,
+                                            _offset,
+                                            _count);
 #endif
 
     _results->reserve(_count);
