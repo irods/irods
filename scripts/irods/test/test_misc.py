@@ -629,7 +629,8 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
                 f.write(f'IRODS_SERVICE_ACCOUNT_NAME={root_user}\n')
                 f.write('IRODS_SERVICE_ACCOUNT_GROUP_NAME=irods\n')
 
-            # Show the server exits immediately due to the user not existing in the system.
+            # Show the server exits immediately due to there being a mismatch between the
+            # user who launched the server (irods) and the user recorded in service_account.config (root).
             res = subprocess.run(['irodsServer', '-d'], capture_output=True, text=True)
             self.assertNotEqual(res.returncode, 0)
             self.assertIn('Warning: UID [', res.stderr)
@@ -644,7 +645,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
             # account user cannot read the file.
             os.chmod(paths.service_account_file_path(), st_mode & ~(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH))
 
-            # Show the server exits immediately due to the user not existing in the system.
+            # Show the server exits immediately due to its inability to read service_account.config.
             res = subprocess.run(['irodsServer', '-d'], capture_output=True, text=True)
             self.assertNotEqual(res.returncode, 0)
             self.assertIn(f'Error: Failed to open service account file [{paths.service_account_file_path()}]. Cannot determine if user has permission to launch server. Exiting.\n', res.stderr)
