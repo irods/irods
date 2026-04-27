@@ -475,15 +475,15 @@ Signals:
             if (!in) {
                 // A bad input stream signals that the user may not have the proper permissions to open
                 // the file.
+                fmt::print(stderr, "Error: Failed to open service account file [{}]. Cannot determine if user has permission to launch server. Exiting.\n", service_acct_file_path.c_str());
+                std::exit(1);
             }
+
+            // The prefix identifying the service account user.
+            constexpr std::string_view key = "IRODS_SERVICE_ACCOUNT_NAME=";
 
             std::string line;
             while (in && std::getline(in, line)) {
-                if (line.empty()) {
-                    // TODO Do nothing?
-                }
-
-                constexpr std::string_view key = "IRODS_SERVICE_ACCOUNT_NAME=";
                 if (!line.starts_with(key)) {
                     continue;
                 }
@@ -506,11 +506,10 @@ Signals:
                 const auto ec = getpwnam_r(value.c_str(), &pwd, buffer.get(), buffer_size, &result);
                 if (nullptr == result) {
                     if (ec == 0) {
-                        fmt::print(stderr, "Warning: Service account user [{}] not found in system.\n", value);
+                        fmt::print(stderr, "Warning: Service account user [{}] not found in system. Exiting.\n", value);
                     }
                     else {
-                        errno = ec;
-                        perror("getpwnam_r");
+                        fmt::print(stderr, "Error: Could not retrieve information for user [{}] due to a system error: errno=[{}]. Exiting.\n", value, ec);
                     }
                     std::exit(1);
                 }
@@ -520,19 +519,18 @@ Signals:
                 if (const auto euid = geteuid(); euid != pwd.pw_uid) {
                     fmt::print(
                         stderr,
-                        "Warning: UID [{}] of server process does not match UID [{}] of service account user [{}].\n",
+                        "Warning: UID [{}] of server process does not match UID [{}] of service account user [{}]. Exiting.\n",
                         euid,
                         pwd.pw_uid,
                         value);
                     std::exit(1);
                 }
+
+                break;
             }
         }
         catch (const std::exception& e) {
-            fmt::print(stderr,
-                       "Warning: An exception was thrown while setting server boot time as an environment variable. "
-                       "Exception: {}\n",
-                       e.what());
+            fmt::print(stderr, "Error: Caught exception while verifying the user's permission to launch server: {}\n", e.what());
             std::exit(1);
         }
     } // terminate_if_launched_by_incorrect_system_user
