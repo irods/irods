@@ -432,8 +432,8 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
         }
         params = hashing_parameters["parameters"]
         derived_key = hashlib.scrypt(
-            irods_config.admin_password.encode(),
-            salt=salt.encode(),
+            irods_config.admin_password.encode("utf-8"),
+            salt=salt.encode("utf-8"),
             n=params["N"],
             r=params["r"],
             p=params["p"],
@@ -456,7 +456,7 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
         irods_config.admin_session_token = str(uuid.uuid4())
         salted_token = salt + irods_config.admin_session_token
         # Hash it and base64-encode it so that it can be represented in the catalog.
-        hashed_session_token = base64.b64encode(hashlib.sha256(salted_token.encode()).digest()).decode("utf-8")
+        hashed_session_token = base64.b64encode(hashlib.sha256(salted_token.encode("utf-8")).digest()).decode("utf-8")
         execute_sql_statement(cursor,
                 "insert into R_USER_SESSION_KEY (user_id, session_key, auth_scheme, session_expiry_ts, create_ts, modify_ts, salt) values (?, ?, ?, ?, ?, ?, ?);",
                 admin_user_id,
