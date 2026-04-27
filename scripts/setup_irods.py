@@ -157,7 +157,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False, op
 
     # Update core.re to reflect configured TLS. This is done here because unattended installations will not use the TLS
     # setup function.
-    if "CS_NEG_REQUIRE" == irods_config.server_config.get("client_server_policy", "CS_NEG_REFUSE"):
+    if "tls_server" in irods_config.server_config:
         acPreConnect_rule_to_replace = 'acPreConnect(*OUT) { *OUT="CS_NEG_REFUSE"; }'
         acPreConnect_rule_replacement = 'acPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }'
         replace_in_file(core_re_path, acPreConnect_rule_to_replace, acPreConnect_rule_replacement)
