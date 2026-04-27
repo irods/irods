@@ -13724,19 +13724,19 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
                                           _offset);
 #else
     /* Postgres */
-    const std::string query = boost::format("select distinct data_id from R_DATA_MAIN "
-                                            "  where resc_id in ({}) and modify_ts <= '{}' "
-                                            "except "
-                                            "  select data_id from R_DATA_MAIN "
-                                            "    where resc_id in ({}) "
-                                            "order by data_id "
-                                            "offset {}"
-                                            "limit {}",
-                                            not_child_array,
-                                            _invocation_timestamp->c_str(),
-                                            child_array,
-                                            _offset,
-                                            _count);
+    const std::string query = fmt::format("select distinct data_id from R_DATA_MAIN "
+                                          "  where resc_id in ({}) and modify_ts <= '{}' "
+                                          "except "
+                                          "  select data_id from R_DATA_MAIN "
+                                          "    where resc_id in ({}) "
+                                          "order by data_id "
+                                          "offset {}"
+                                          "limit {}",
+                                          not_child_array,
+                                          _invocation_timestamp->c_str(),
+                                          child_array,
+                                          _offset,
+                                          _count);
 #endif
 
     _results->reserve(_count);
