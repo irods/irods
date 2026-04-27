@@ -13769,7 +13769,6 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
     }
     cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
-
 } // db_get_repl_list_for_leaf_bundles_index_op
 
 irods::error db_get_hierarchy_for_resc_op(
