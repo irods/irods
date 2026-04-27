@@ -4583,7 +4583,6 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
         irods::log(PASS(ret));
     }
     return static_cast<int>(ret.code());
-
 } // chlGetReplListForLeafBundlesOffset
 
 auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t _data_id) -> int
