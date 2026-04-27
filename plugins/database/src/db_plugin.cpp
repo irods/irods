@@ -13745,7 +13745,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
         return ERROR(status_cmlGetFirstRowFromSql, boost::format("failed to get first row from query [%s]") % query);
     }
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-    _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
+    _results->push_back(strtoll(icss.stmtPtr[statement_num]->resultValue[0], nullptr, 0));
 
     for (rodsLong_t i = 1; i < _count; ++i) {
         const int status_cmlGetNextRowFromStatement = cmlGetNextRowFromStatement(statement_num, &icss);
@@ -13758,7 +13758,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
                 status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
         }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-        _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
+        _results->push_back(strtoll(icss.stmtPtr[statement_num]->resultValue[0], nullptr, 0));
     }
     cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
