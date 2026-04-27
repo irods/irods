@@ -13666,7 +13666,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
     if (_bundles->empty()) {
         return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
-    if (!_invocation_timestamp) {
+    if (nullptr == _invocation_timestamp) {
         return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "invocation timestamp is NULL");
     }
     if (_invocation_timestamp->empty()) {
@@ -13744,6 +13744,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
         cmlFreeStatement(statement_num, &icss);
         return ERROR(status_cmlGetFirstRowFromSql, boost::format("failed to get first row from query [%s]") % query);
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
     _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
 
     for (rodsLong_t i = 1; i < _count; ++i) {
@@ -13756,6 +13757,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
             return ERROR(
                 status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
         _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
     }
     cmlFreeStatement(statement_num, &icss);
