@@ -1,14 +1,19 @@
 from __future__ import print_function
 
+import base64
+import hashlib
 import itertools
 import json
 import logging
 import os
 import pprint
+import secrets
 import shutil
+import string
 import sys
 import tempfile
 import time
+import uuid
 
 from . import lib
 from . import password_obfuscation
@@ -412,15 +417,66 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             timestamp)
 
     #password
-    scrambled_password = password_obfuscation.scramble(irods_config.admin_password,
-            key=irods_config.server_config.get('environment_variables', {}).get('IRODS_DATABASE_USER_PASSWORD_SALT', None))
-    execute_sql_statement(cursor,
-            "insert into R_USER_PASSWORD values (?,?,'9999-12-31-23.59.00',?,?);",
-            admin_user_id,
-            scrambled_password,
-            timestamp,
-            timestamp,
-            log_params=False)
+    auth_scheme = irods_config.server_config.get("zone_auth_scheme", "native")
+    if "irods" == auth_scheme:
+        # Derive a key from the provided password.
+        salt = ''.join([secrets.choice(string.ascii_letters + string.digits) for _ in range(16)])
+        hashing_parameters = {
+            "algorithm": "scrypt",
+            "parameters": {
+                "N": 16384,
+                "r": 8,
+                "p": 1,
+                "key_length": 64
+            }
+        }
+        params = hashing_parameters["parameters"]
+        derived_key = hashlib.scrypt(
+            irods_config.admin_password.encode("utf-8"),
+            salt=salt.encode("utf-8"),
+            n=params["N"],
+            r=params["r"],
+            p=params["p"],
+            dklen=params["key_length"]
+        )
+        # base64-encode the derived key so that it can be represented in the catalog.
+        hashed_password = base64.b64encode(derived_key).decode("utf-8")
+        execute_sql_statement(cursor,
+                "insert into R_USER_CREDENTIALS (user_id, hashed_password, salt, hashing_algorithm, hashing_parameters, create_time, modify_time) values (?, ?, ?, ?, ?, ?, ?);",
+                admin_user_id,
+                hashed_password,
+                salt,
+                hashing_parameters["algorithm"],
+                json.dumps(hashing_parameters),
+                timestamp,
+                timestamp,
+                log_params=False)
+        # And generate a session token to use later.
+        salt = ''.join([secrets.choice(string.ascii_letters + string.digits) for _ in range(16)])
+        irods_config.admin_session_token = str(uuid.uuid4())
+        salted_token = salt + irods_config.admin_session_token
+        # Hash it and base64-encode it so that it can be represented in the catalog.
+        hashed_session_token = base64.b64encode(hashlib.sha256(salted_token.encode("utf-8")).digest()).decode("utf-8")
+        execute_sql_statement(cursor,
+                "insert into R_USER_SESSION_KEY (user_id, session_key, auth_scheme, session_expiry_ts, create_ts, modify_ts, salt) values (?, ?, ?, ?, ?, ?, ?);",
+                admin_user_id,
+                hashed_session_token,
+                irods_config.server_config["zone_auth_scheme"],
+                '{0:011d}'.format(99999999999),
+                timestamp,
+                timestamp,
+                salt,
+                log_params=False)
+    else:
+        scrambled_password = password_obfuscation.scramble(irods_config.admin_password,
+                key=irods_config.server_config.get('environment_variables', {}).get('IRODS_DATABASE_USER_PASSWORD_SALT', None))
+        execute_sql_statement(cursor,
+                "insert into R_USER_PASSWORD values (?,?,'9999-12-31-23.59.00',?,?);",
+                admin_user_id,
+                scrambled_password,
+                timestamp,
+                timestamp,
+                log_params=False)
 
     #collections
     system_collections = [

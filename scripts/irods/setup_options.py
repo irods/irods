@@ -32,4 +32,13 @@ def add_options(parser):
                         'where a file is put to the default resource. '
                         'Helpful when setting up an iRODS server in a zone '
                         'where no default resource exists.')
+    parser.add_argument('--tls',
+                        dest='prompt_tls', action='store_true',
+                        help='Prompt for TLS configuration. Default configuration is no TLS. '
+                             'This option has no effect with --json_configuration_file.')
+    parser.add_argument('--auth-scheme',
+                        dest='auth_scheme', choices=['native', 'irods'],
+                        help='Prompt for zone authentication scheme. Default scheme used is "native". '
+                             'Using "irods" auth scheme implies --tls. This option has no effect with '
+                             '--json_configuration_file.')
     start_options.add_options(parser)
