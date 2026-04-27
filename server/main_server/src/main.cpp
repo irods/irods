@@ -467,6 +467,7 @@ Signals:
         }
     } // set_boot_time_as_environment_variable
 
+    // This function is meant to be called before the logger is initialized.
     auto terminate_if_launched_by_incorrect_system_user() -> void
     {
         try {
@@ -479,9 +480,20 @@ Signals:
                 std::exit(1);
             }
 
+            // Allocate a buffer large enough to hold the strings of a passwd struct.
+            auto buffer_size = sysconf(_SC_GETPW_R_SIZE_MAX);
+            if (buffer_size == -1) {
+                // Indeterminate value. Set the buffer to a value large enough to hold the strings
+                // of the passwd struct.
+                buffer_size = 16384;
+            }
+            auto buffer = std::make_unique<char[]>(buffer_size);
+
             // The prefix identifying the service account user.
             constexpr std::string_view key = "IRODS_SERVICE_ACCOUNT_NAME=";
 
+            // Read the file line by line until the service account user is found. The file is expected to
+            // contain exactly one line containing the information of interest.
             std::string line;
             while (in && std::getline(in, line)) {
                 if (!line.starts_with(key)) {
@@ -491,16 +503,7 @@ Signals:
                 // Throws if the starting position is greater than the size of the string.
                 const auto value = line.substr(key.size());
 
-                // Allocate a buffer large enough to hold the strings of the passwd struct.
-                auto buffer_size = sysconf(_SC_GETPW_R_SIZE_MAX);
-                if (buffer_size == -1) {
-                    // Indeterminate value. Set the buffer to a value large enough to hold the strings
-                    // of the passwd struct.
-                    buffer_size = 16384;
-                }
-                auto buffer = std::make_unique<char[]>(buffer_size);
-
-                // Lookup the service account user's information. This information comes form the OS.
+                // Lookup the service account user's information. This information comes from the system.
                 passwd pwd; // NOLINT(cppcoreguidelines-pro-type-member-init)
                 passwd* result{};
                 const auto ec = getpwnam_r(value.c_str(), &pwd, buffer.get(), buffer_size, &result);
@@ -526,8 +529,13 @@ Signals:
                     std::exit(1);
                 }
 
-                break;
+                // The user who is attempting to launch the server matches the system user defined in the
+                // file. Return immediately since there's no more work to do.
+                return;
             }
+
+            fmt::print(stderr, "Error: Could not find service account user in file [{}]. User not allowed to launch server. Exiting.\n", service_acct_file_path.c_str());
+            std::exit(1);
         }
         catch (const std::exception& e) {
             fmt::print(stderr, "Error: Caught exception while verifying the user's permission to launch server: {}\n", e.what());
