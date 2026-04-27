@@ -1,4 +1,5 @@
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -600,6 +601,56 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
 
         finally:
             IrodsController().reload_configuration()
+
+    def test_server_exits_immediately_when_launched_by_nonexistent_user__issue_8587(self):
+        with lib.file_backed_up(paths.service_account_file_path()):
+            nonexistent_user = 'notirods'
+
+            # Change the username in /etc/irods/service_account.config to a name that does not
+            # exist in the system/OS. The value assigned to IRODS_SERVICE_ACCOUNT_NAME is what
+            # the server cares about. IRODS_SERVICE_ACCOUNT_GROUP_NAME is ignored.
+            with open(paths.service_account_file_path(), 'wt') as f:
+                f.write(f'IRODS_SERVICE_ACCOUNT_NAME={nonexistent_user}\n')
+                f.write('IRODS_SERVICE_ACCOUNT_GROUP_NAME=irods\n')
+
+            # Show the server exits immediately due to the user not existing in the system.
+            res = subprocess.run(['irodsServer', '-d'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn(f'Warning: Service account user [{nonexistent_user}] not found in system. Exiting.\n', res.stderr)
+
+    def test_server_exits_immediately_when_launched_by_incorrect_user__issue_8587(self):
+        with lib.file_backed_up(paths.service_account_file_path()):
+            root_user = 'root'
+
+            # Change the username in /etc/irods/service_account.config to root. The value
+            # assigned to IRODS_SERVICE_ACCOUNT_NAME is what the server cares about.
+            # IRODS_SERVICE_ACCOUNT_GROUP_NAME is ignored.
+            with open(paths.service_account_file_path(), 'wt') as f:
+                f.write(f'IRODS_SERVICE_ACCOUNT_NAME={root_user}\n')
+                f.write('IRODS_SERVICE_ACCOUNT_GROUP_NAME=irods\n')
+
+            # Show the server exits immediately due to the user not existing in the system.
+            res = subprocess.run(['irodsServer', '-d'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn('Warning: UID [', res.stderr)
+            self.assertIn(f'] of server process does not match UID [0] of service account user [{root_user}]. Exiting.\n', res.stderr)
+
+    def test_server_exits_immediately_when_service_account_config_file_cannot_be_accessed__issue_8587(self):
+        # Remember the current mode of the file. It will be used to restore the permissions.
+        st_mode = os.stat(paths.service_account_file_path()).st_mode
+
+        try:
+            # Remove read permissions on /etc/irods/service_account.config so that the service
+            # account user cannot read the file.
+            os.chmod(paths.service_account_file_path(), st_mode & ~(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH))
+
+            # Show the server exits immediately due to the user not existing in the system.
+            res = subprocess.run(['irodsServer', '-d'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn(f'Error: Failed to open service account file [{paths.service_account_file_path()}]. Cannot determine if user has permission to launch server. Exiting.\n', res.stderr)
+
+        finally:
+            os.chmod(paths.service_account_file_path(), st_mode)
 
 
 class test_server_side_libraries(unittest.TestCase):
