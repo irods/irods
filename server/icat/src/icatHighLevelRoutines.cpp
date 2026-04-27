@@ -4549,7 +4549,7 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
     irods::error ret = irods::database_factory(database_plugin_type, db_obj_ptr);
     if (!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();
+        return static_cast<int>(ret.code());
     }
 
     // =-=-=-=-=-=-=-
@@ -4558,7 +4558,7 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
     ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr);
     if (!ret.ok()) {
         irods::log(PASSMSG("failed to resolve database interface", ret));
-        return ret.code();
+        return static_cast<int>(ret.code());
     }
 
     // =-=-=-=-=-=-=-
@@ -4568,7 +4568,7 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
 
     ret =
         db->call<rodsLong_t, size_t, const std::vector<leaf_bundle_t>*, const std::string*, dist_child_result_t*, int>(
-            0,
+            nullptr,
             irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
             ptr,
             _count,
@@ -4580,7 +4580,7 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
     if (!ret.ok()) {
         irods::log(PASS(ret));
     }
-    return ret.code();
+    return static_cast<int>(ret.code());
 
 } // chlGetReplListForLeafBundlesOffset
 
