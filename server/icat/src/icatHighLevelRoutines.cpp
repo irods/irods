@@ -4563,7 +4563,9 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    // NOLINTNEXTLINE(misc-const-correctness)
     irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
 
     ret =
