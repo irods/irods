@@ -447,23 +447,25 @@ Signals:
             "irodsServer v{}.{}.{}-{}\n", IRODS_VERSION_MAJOR, IRODS_VERSION_MINOR, IRODS_VERSION_PATCHLEVEL, commit);
     } // print_version_info
 
+    // This function is meant to be called before the logger is initialized.
     auto set_boot_time_as_environment_variable() -> void
     {
         try {
-            const auto now = std::to_string(std::time(nullptr));
+            using std::chrono::duration_cast;
+            using std::chrono::seconds;
+            using std::chrono::system_clock;
 
-            // Set the boot time as an environment so that rsGetMiscSvrInfo can report it
-            // to the client. If there's a failure, notify the administrator and continue
-            // the boot process.
-            if (setenv(SERVER_BOOT_TIME, now.c_str(), 1) != 0) {
+            const auto now = duration_cast<seconds>(system_clock::now().time_since_epoch());
+            const auto now_string = std::to_string(now.count());
+
+            // Set the boot time as an environment variable so that rsGetMiscSvrInfo can report it
+            // to the client. If there's a failure, notify the administrator and continue the boot process.
+            if (setenv(SERVER_BOOT_TIME, now_string.c_str(), 1) != 0) {
                 fmt::print(stderr, "Warning: Failed to set server boot time as an environment variable.\n");
             }
         }
         catch (const std::exception& e) {
-            fmt::print(stderr,
-                       "Warning: An exception was thrown while setting server boot time as an environment variable. "
-                       "Exception: {}\n",
-                       e.what());
+            fmt::print(stderr, "Error: Caught exception while setting server boot time as an environment variable: {}\n", e.what());
         }
     } // set_boot_time_as_environment_variable
 
