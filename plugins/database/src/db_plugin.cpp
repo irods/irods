@@ -13645,20 +13645,19 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
 
 } // db_get_repl_list_for_leaf_bundles_op
 
-irods::error db_get_repl_list_for_leaf_bundles_index_op(
-    irods::plugin_context&      _ctx,
-    rodsLong_t                  _count,
-    size_t                      _child_index,
-    const std::vector<leaf_bundle_t>* _bundles,
-    const std::string*          _invocation_timestamp,
-    dist_child_result_t*        _results,
-    int                         _offset ) {
-
+irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _ctx,
+                                                        rodsLong_t _count,
+                                                        size_t _child_index,
+                                                        const std::vector<leaf_bundle_t>* _bundles,
+                                                        const std::string* _invocation_timestamp,
+                                                        dist_child_result_t* _results,
+                                                        int _offset)
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    if (!ret.ok()) {
+        return PASS(ret);
     }
 
     if (_count <= 0) {
@@ -13676,7 +13675,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
 
     // capture list of child resc ids
     std::stringstream child_array_stream;
-    for( auto id : (*_bundles)[_child_index] ) {
+    for (auto id : (*_bundles)[_child_index]) {
         child_array_stream << id << ",";
     }
     std::string child_array = child_array_stream.str();
@@ -13686,11 +13685,11 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
     child_array.pop_back(); // trim last ','
 
     std::stringstream not_child_stream;
-    for( size_t idx = 0; idx < _bundles->size(); ++idx ) {
-        if( idx == _child_index ) {
+    for (size_t idx = 0; idx < _bundles->size(); ++idx) {
+        if (idx == _child_index) {
             continue;
         }
-        for( auto id : (*_bundles)[idx] ) {
+        for (auto id : (*_bundles)[idx]) {
             not_child_stream << id << ",";
         }
     } // for idx
@@ -13702,28 +13701,35 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
     not_child_array.pop_back(); // trim last ','
 
 #ifdef ORA_ICAT
-    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d order by data_id") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
+    const std::string query =
+        (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id "
+                       "from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN "
+                       "where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d order by data_id") %
+         not_child_array % child_array % _invocation_timestamp->c_str() % _count)
+            .str();
 #elif MY_ICAT
     /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
-    const std::string query = (boost::format(
-        "select distinct data_id from R_DATA_MAIN "
-        "  where resc_id in (%s) and data_id not in ( "
-        "    select data_id from R_DATA_MAIN "
-        "      where resc_id in (%s) "
-        "  ) and modify_ts <= '%s' "
-        "order by data_id "
-        "limit %d,18446744073709551615") % not_child_array % child_array % _invocation_timestamp->c_str() % _offset).str();
+    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN "
+                                             "  where resc_id in (%s) and data_id not in ( "
+                                             "    select data_id from R_DATA_MAIN "
+                                             "      where resc_id in (%s) "
+                                             "  ) and modify_ts <= '%s' "
+                                             "order by data_id "
+                                             "limit %d,18446744073709551615") %
+                               not_child_array % child_array % _invocation_timestamp->c_str() % _offset)
+                                  .str();
 #else
     /* Postgres */
-    const std::string query = (boost::format(
-        "select distinct data_id from R_DATA_MAIN "
-        "  where resc_id in (%s) and modify_ts <= '%s' "
-        "except "
-        "  select data_id from R_DATA_MAIN "
-        "    where resc_id in (%s) "
-        "order by data_id "
-        "offset %d"
-        "limit %d") % not_child_array % _invocation_timestamp->c_str() % child_array % _offset % _count).str();
+    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN "
+                                             "  where resc_id in (%s) and modify_ts <= '%s' "
+                                             "except "
+                                             "  select data_id from R_DATA_MAIN "
+                                             "    where resc_id in (%s) "
+                                             "order by data_id "
+                                             "offset %d"
+                                             "limit %d") %
+                               not_child_array % _invocation_timestamp->c_str() % child_array % _offset % _count)
+                                  .str();
 #endif
 
     _results->reserve(_count);
@@ -13740,14 +13746,15 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(
     }
     _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
 
-    for (rodsLong_t i=1; i<_count; ++i) {
+    for (rodsLong_t i = 1; i < _count; ++i) {
         const int status_cmlGetNextRowFromStatement = cmlGetNextRowFromStatement(statement_num, &icss);
         if (status_cmlGetNextRowFromStatement == CAT_NO_ROWS_FOUND) {
             break;
         }
         if (status_cmlGetNextRowFromStatement != 0) {
             cmlFreeStatement(statement_num, &icss);
-            return ERROR(status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
+            return ERROR(
+                status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
         }
         _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
     }
@@ -16745,10 +16752,14 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
         function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
-    pg->add_operation(
-        DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
-        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*,int)>(
-            db_get_repl_list_for_leaf_bundles_index_op));
+    pg->add_operation(DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
+                      function<error(plugin_context&,
+                                     rodsLong_t,
+                                     size_t,
+                                     const std::vector<leaf_bundle_t>*,
+                                     const std::string*,
+                                     dist_child_result_t*,
+                                     int)>(db_get_repl_list_for_leaf_bundles_index_op));
     pg->add_operation(
         DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT,
         function<error(plugin_context&,const rodsLong_t)>(

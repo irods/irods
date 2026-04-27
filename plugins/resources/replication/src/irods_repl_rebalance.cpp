@@ -314,7 +314,7 @@ namespace {
                                     const size_t _bun_idx,
                                     const std::vector<leaf_bundle_t>& _bundles,
                                     const dist_child_result_t& _data_ids_to_replicate,
-                                int& _num_repls_to_skip)
+                                    int& _num_repls_to_skip)
     {
         if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
@@ -344,7 +344,7 @@ namespace {
             }
             catch (const irods::exception& _e) {
                 if (_e.code() != CAT_NO_ROWS_FOUND) {
-                     throw;
+                    throw;
                 }
                 rodsLog(LOG_WARNING, "Cannot perform rebalance on id [%lld]. Skipping.", data_id_to_replicate);
                 _num_repls_to_skip++;
@@ -439,20 +439,16 @@ namespace {
 
 namespace irods {
     // throws irods::exception
-    bool update_out_of_date_replicas(
-        irods::plugin_context& _ctx,
-        const std::vector<leaf_bundle_t>& _leaf_bundles,
-        const int _batch_size,
-        const std::string& _invocation_timestamp,
-        const std::string& _resource_name) {
-      int replicas_to_skip{};
+    bool update_out_of_date_replicas(irods::plugin_context& _ctx,
+                                     const std::vector<leaf_bundle_t>& _leaf_bundles,
+                                     const int _batch_size,
+                                     const std::string& _invocation_timestamp,
+                                     const std::string& _resource_name)
+    {
+        int replicas_to_skip{};
         while (true) {
-            const std::vector<ReplicaAndRescId> replicas_to_update =
-                get_out_of_date_replicas_batch(_ctx.comm(),
-                                               _leaf_bundles,
-                                               _invocation_timestamp,
-                                               _batch_size,
-                                               replicas_to_skip);
+            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(
+                _ctx.comm(), _leaf_bundles, _invocation_timestamp, _batch_size, replicas_to_skip);
 
             if (replicas_to_update.empty()) {
                 break;
@@ -479,7 +475,10 @@ namespace irods {
                     if (_e.code() != CAT_NO_ROWS_FOUND) {
                         throw;
                     }
-                    rodsLog(LOG_WARNING, "Cannot update replica [%lld] for data_id [%lld]. Skipping.", replica_to_update.replica_number, replica_to_update.data_id);
+                    rodsLog(LOG_WARNING,
+                            "Cannot update replica [%lld] for data_id [%lld]. Skipping.",
+                            replica_to_update.replica_number,
+                            replica_to_update.data_id);
                     replicas_to_skip++;
                     continue;
                 }
@@ -539,19 +538,25 @@ namespace irods {
     }
 
     // throws irods::exception
-    bool create_missing_replicas(
-        irods::plugin_context& _ctx,
-        const std::vector<leaf_bundle_t>& _leaf_bundles,
-        const int _batch_size,
-        const std::string& _invocation_timestamp,
-        const std::string& _resource_name) {
+    bool create_missing_replicas(irods::plugin_context& _ctx,
+                                 const std::vector<leaf_bundle_t>& _leaf_bundles,
+                                 const int _batch_size,
+                                 const std::string& _invocation_timestamp,
+                                 const std::string& _resource_name)
+    {
         bool did_skip_some_repls{};
         for (size_t i=0; i<_leaf_bundles.size(); ++i) {
             int repls_to_skip{};
             const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
             while (true) {
                 dist_child_result_t data_ids_needing_new_replicas;
-                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundlesOffset(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas, repls_to_skip);
+                const int status_chlGetReplListForLeafBundles =
+                    chlGetReplListForLeafBundlesOffset(_batch_size,
+                                                       i,
+                                                       &_leaf_bundles,
+                                                       &_invocation_timestamp,
+                                                       &data_ids_needing_new_replicas,
+                                                       repls_to_skip);
                 if (status_chlGetReplListForLeafBundles != 0) {
                     THROW(status_chlGetReplListForLeafBundles,
                           boost::format("failed to get data objects needing new replicas for resource [%s] bundle index [%d] bundles [%s]")
