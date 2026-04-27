@@ -494,7 +494,7 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
             const auto src_size = fs::server::is_data_object_registered(*rsComm, src_path) ? fs::server::data_object_size(*rsComm, src_path) : 0;
             const auto dest_size = fs::server::is_data_object_registered(*rsComm, src_path) ? fs::server::data_object_size(*rsComm, src_path) : 0;
             // Overwriting a smaller object will not trigger byte quota.
-            quota_violated = quota_violated || (src_size >= dest_size);
+            quota_violated = (src_size >= dest_size);
         }
     }
     // If we can't fetch object properties for some reason,

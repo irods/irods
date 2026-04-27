@@ -4033,7 +4033,7 @@ class Test_Logical_Quotas(
 
             self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
 
-            # Check: Replica 1 is stale and replica 0 is gone,
+            # Check: Replica 1 is good and replica 0 is trimmed,
             # so logical quotas should calculate using replica 1.
             # Replica 1 has larger size, so verify larger size is counted against
             # the byte limit. Additionally, verify the data object
@@ -4066,7 +4066,7 @@ class Test_Logical_Quotas(
             )
 
 
-            # New data object: Replica 0 is small file.
+            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
