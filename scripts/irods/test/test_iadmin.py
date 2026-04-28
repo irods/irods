@@ -590,26 +590,26 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             # =-=-=-=-=-=-=-
             # TEARDOWN
             for i in range(num_children):
-                self.admin.assert_icommand("irm -f foo%d" % i)
+                self.admin.run_icommand("irm -f foo%d" % i)
 
             IrodsController().reload_configuration()
 
-            self.admin.assert_icommand("iadmin rmchildfromresc pt_c2 leaf_c")
-            self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
-            self.admin.assert_icommand("iadmin rmchildfromresc pt_b leaf_b")
-            self.admin.assert_icommand("iadmin rmchildfromresc pt_c1 pt_c2")
-            self.admin.assert_icommand("iadmin rmchildfromresc repl pt_c1")
-            self.admin.assert_icommand("iadmin rmchildfromresc repl pt_b")
-            self.admin.assert_icommand("iadmin rmchildfromresc pt repl")
+            self.admin.run_icommand("iadmin rmchildfromresc pt_c2 leaf_c")
+            self.admin.run_icommand("iadmin rmchildfromresc repl leaf_a")
+            self.admin.run_icommand("iadmin rmchildfromresc pt_b leaf_b")
+            self.admin.run_icommand("iadmin rmchildfromresc pt_c1 pt_c2")
+            self.admin.run_icommand("iadmin rmchildfromresc repl pt_c1")
+            self.admin.run_icommand("iadmin rmchildfromresc repl pt_b")
+            self.admin.run_icommand("iadmin rmchildfromresc pt repl")
 
-            self.admin.assert_icommand("iadmin rmresc leaf_c")
-            self.admin.assert_icommand("iadmin rmresc leaf_b")
-            self.admin.assert_icommand("iadmin rmresc leaf_a")
-            self.admin.assert_icommand("iadmin rmresc pt_c2")
-            self.admin.assert_icommand("iadmin rmresc pt_c1")
-            self.admin.assert_icommand("iadmin rmresc pt_b")
-            self.admin.assert_icommand("iadmin rmresc repl")
-            self.admin.assert_icommand("iadmin rmresc pt")
+            self.admin.run_icommand("iadmin rmresc leaf_c")
+            self.admin.run_icommand("iadmin rmresc leaf_b")
+            self.admin.run_icommand("iadmin rmresc leaf_a")
+            self.admin.run_icommand("iadmin rmresc pt_c2")
+            self.admin.run_icommand("iadmin rmresc pt_c1")
+            self.admin.run_icommand("iadmin rmresc pt_b")
+            self.admin.run_icommand("iadmin rmresc repl")
+            self.admin.run_icommand("iadmin rmresc pt")
 
     # =-=-=-=-=-=-=-
     # REBALANCE
