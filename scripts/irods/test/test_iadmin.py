@@ -500,8 +500,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
-        # Don't use the default rebalance limit
-        # use a smaller limit to...
+        # Don't use the default rebalance limit.
+        # Use a rebalance smaller limit to simulate large
+        # collections without creating hundreds of collections.
         pep_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
                 pep_resource_rebalance_pre(*INSTANCE_NAME, *CONTEXT, *OUT) {
