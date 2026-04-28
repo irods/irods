@@ -2788,7 +2788,7 @@ usage( char *subOpt ) {
         " ",
         "A logical quota intends to limit bytes/objects stored under a logical path.",
         " ",
-        "If bytes or objects is specified as the second parameter,",
+        "If 'bytes' or 'objects' is specified as the second parameter,",
         "the final parameter will be the value.",
         " ",
         "If the second and third parameters are numeric,",
@@ -2871,6 +2871,9 @@ usage( char *subOpt ) {
         "option logical_quotas::enabled must be set to 1. An administrator may",
         "run 'iadmin set_grid_configuration logical_quotas enabled 1' to achieve",
         "this end. Logical quotas will not be enforced if any other value is set.",
+        " ",
+        "This command will still calculate logical quota usage totals even if",
+        "logical quotas are not currently being enforced.",
         " ",
         "Also see list_logical_quotas and set_logical_quota.",
         ""};

@@ -4057,6 +4057,7 @@ class Test_Logical_Quotas(
                 in out
             )
 
+            # Repeatedly put new data objects until quota violation.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -4065,8 +4066,6 @@ class Test_Logical_Quotas(
                 ]
             )
 
-
-            # New data object: Replica 0 is big file.
             self.quota_user.assert_icommand(
                 [
                     "iput",
@@ -4108,7 +4107,7 @@ class Test_Logical_Quotas(
             )
         finally:
             # Cleanup.
-            self.quota_user.assert_icommand(
+            self.quota_user.run_icommand(
                 ["irm", "-f", f"{self.quota_user.session_collection}/{dataobj_name}"]
             )
             self.admin.run_icommand(["iadmin", "rmresc", resc_name])
