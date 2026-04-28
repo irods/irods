@@ -515,30 +515,30 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             ''')
         }
 
-        # =-=-=-=-=-=-=-
-        # STANDUP
-        self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT_SINGLELINE', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT_SINGLELINE', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
-        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
-
-        self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
-        self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
-        self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
-                                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
-
-        self.admin.assert_icommand("iadmin addchildtoresc pt repl")
-        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
-        self.admin.assert_icommand("iadmin addchildtoresc repl pt_b")
-        self.admin.assert_icommand("iadmin addchildtoresc repl pt_c1")
-        self.admin.assert_icommand("iadmin addchildtoresc pt_b leaf_b")
-        self.admin.assert_icommand("iadmin addchildtoresc pt_c1 pt_c2")
-        self.admin.assert_icommand("iadmin addchildtoresc pt_c2 leaf_c")
-
         try:
+            # =-=-=-=-=-=-=-
+            # STANDUP
+            self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+
+            self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
+                                    ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+            self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
+                                    ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+            self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
+                                    ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
+
+            self.admin.assert_icommand("iadmin addchildtoresc pt repl")
+            self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
+            self.admin.assert_icommand("iadmin addchildtoresc repl pt_b")
+            self.admin.assert_icommand("iadmin addchildtoresc repl pt_c1")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_b leaf_b")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_c1 pt_c2")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_c2 leaf_c")
+
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
                 IrodsController().reload_configuration()
