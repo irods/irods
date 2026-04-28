@@ -13645,7 +13645,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
 
 } // db_get_repl_list_for_leaf_bundles_op
 
-irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _ctx,
+irods::error db_get_repl_list_for_leaf_bundles_offset_op(irods::plugin_context& _ctx,
                                                         rodsLong_t _count,
                                                         size_t _child_index,
                                                         const std::vector<leaf_bundle_t>* _bundles,
@@ -13769,7 +13769,7 @@ irods::error db_get_repl_list_for_leaf_bundles_index_op(irods::plugin_context& _
     }
     cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
-} // db_get_repl_list_for_leaf_bundles_index_op
+} // db_get_repl_list_for_leaf_bundles_offset_op
 
 irods::error db_get_hierarchy_for_resc_op(
     irods::plugin_context& _ctx,
@@ -16760,14 +16760,14 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
         function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
-    pg->add_operation(DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
+    pg->add_operation(DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_OFFSET,
                       function<error(plugin_context&,
                                      rodsLong_t,
                                      size_t,
                                      const std::vector<leaf_bundle_t>*,
                                      const std::string*,
                                      dist_child_result_t*,
-                                     int)>(db_get_repl_list_for_leaf_bundles_index_op));
+                                     int)>(db_get_repl_list_for_leaf_bundles_offset_op));
     pg->add_operation(
         DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT,
         function<error(plugin_context&,const rodsLong_t)>(

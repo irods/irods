@@ -4571,7 +4571,7 @@ int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
     ret =
         db->call<rodsLong_t, size_t, const std::vector<leaf_bundle_t>*, const std::string*, dist_child_result_t*, int>(
             nullptr,
-            irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_INDEX,
+            irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES_OFFSET,
             ptr,
             _count,
             _child_idx,
