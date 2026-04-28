@@ -34,6 +34,7 @@
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/rodsPath.h"
 
 #include <nlohmann/json.hpp>
 
@@ -773,6 +774,9 @@ extern "C" {
                 strlen( rodsEnvArg->rodsHome ) > 0 ) {
             rstrcpy( rodsEnvArg->rodsCwd, rodsEnvArg->rodsHome, MAX_NAME_LEN );
         }
+
+        remove_trailing_path_separators(rodsEnvArg->rodsHome);
+        remove_trailing_path_separators(rodsEnvArg->rodsCwd);
 
         return 0;
     }
