@@ -34,6 +34,7 @@
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/rodsPath.h"
 
 #include <nlohmann/json.hpp>
 
@@ -774,15 +775,8 @@ extern "C" {
             rstrcpy( rodsEnvArg->rodsCwd, rodsEnvArg->rodsHome, MAX_NAME_LEN );
         }
 
-        // Strip trailing slashes
-        const auto strip_trailing_slash = [](char* path) {
-            size_t len = strlen(path);
-            if (len > 1 && path[len - 1] == '/') {
-                path[len - 1] = '\0';
-            }
-        };
-        strip_trailing_slash(rodsEnvArg->rodsHome);
-        strip_trailing_slash(rodsEnvArg->rodsCwd);
+        remove_trailing_path_separators(rodsEnvArg->rodsHome);
+        remove_trailing_path_separators(rodsEnvArg->rodsCwd);
 
         return 0;
     }

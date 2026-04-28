@@ -172,6 +172,20 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
             finally:
                 self.admin.environment_file_contents = session_env_backup
 
+    def test_ils_with_multiple_trailing_slashes_in_irods_home__issue_8572(self):
+        config = IrodsConfig()
+        with lib.file_backed_up(config.client_environment_path):
+            session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+            try:
+                self.admin.environment_file_contents.update({'irods_home': f'/{self.admin.zone_name}///'})
+                del self.admin.environment_file_contents['irods_cwd']
+                self.admin.run_icommand(['icd'])  # change dir to new home
+                rc, out, _ = self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', f'/{self.admin.zone_name}:')
+                self.assertEqual(0, rc)
+                self.assertNotIn(f'/{self.admin.zone_name}///:', out)
+            finally:
+                self.admin.environment_file_contents = session_env_backup
+
     def test_ils_with_trailing_slash_in_irods_cwd__issue_8572(self):
         config = IrodsConfig()
         with lib.file_backed_up(config.client_environment_path):
