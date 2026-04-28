@@ -120,10 +120,6 @@
 #define MAX_BUNDLE_SIZE_KW                          "maxBunSize" /* max size of a tar bundle in Gbs */
 #define NO_STAGING_KW                               "noStaging"
 
-// =-=-=-=-=-=-=-
-/* max number of files for tar file bundles */ // JMC - backport 4771
-#define MAX_SUB_FILE_KW                             "maxSubFile"
-
 /* OBJ_PATH_KW already defined */
 
 /* OBJ_PATH_KW already defined */
@@ -203,7 +199,7 @@
 #define COLL_MODIFY_KW                              "collModify"
 #define COLL_ACCESS_KW                              "collAccess"
 #define COLL_ACCESS_INX_KW                          "collAccessInx"
-#define COLL_ID_KW                                  "collId"
+/* COLL_ID_KW already defined */
 
 /*
   The following are the keyWord definitions for the keyValPair_t input
@@ -229,8 +225,6 @@
 #define RULE_LOCK_HOST_KW                           "rule_lock_host"
 #define RULE_LOCK_HOST_PID_KW                       "rule_lock_host_pid"
 #define RULE_LOCK_TIME_KW                           "rule_lock_time"
-
-#define EXCLUDE_FILE_KW                             "excludeFile"
 
 // =-=-=-=-=-=-=-
 // irods general keywords definitions
