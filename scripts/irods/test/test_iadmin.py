@@ -524,12 +524,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
             self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
 
-            self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                                    ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
-            self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                                    ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
-            self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
-                                    ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
+            lib.create_ufs_resource(self.admin, 'leaf_a')
+            lib.create_ufs_resource(self.admin, 'leaf_b')
+            lib.create_ufs_resource(self.admin, 'leaf_c')
 
             self.admin.assert_icommand("iadmin addchildtoresc pt repl")
             self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
