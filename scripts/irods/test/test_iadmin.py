@@ -496,7 +496,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin rmgroup %s" % group_name)
 
 
-    def test_rebalance_under_funny_case__isssue_6111(self):
+    def test_rebalance_has_partial_success_with_missing_or_stale_replicas__issue_6111(self):
         output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
