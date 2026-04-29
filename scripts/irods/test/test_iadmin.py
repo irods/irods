@@ -576,17 +576,17 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 self.user0.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
                 # Assert failed replications still exist and no replication performed
-                for file in paths_to_bad_data_objects:
-                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
-                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
+                for file in [os.path.basename(f) for f in paths_to_bad_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '0')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '0')
                     self.assertFalse(lib.replica_exists(self.user0, file, 3))
 
                 # =-=-=-=-=-=-=-
                 # assert that all the appropriate repl numbers exist for all the children
-                for file in paths_to_good_data_objects:
-                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
-                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
-                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
+                for file in [os.path.basename(f) for f in paths_to_good_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 3), '1')
 
         finally:
             # =-=-=-=-=-=-=-
