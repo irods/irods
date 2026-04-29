@@ -1509,6 +1509,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
         if(std::strlen(generalAdminInp->arg1) == 0) {
            log_api::error("{}: set_logical_quota: Empty collection name specified. Received: [{}]", __func__, generalAdminInp->arg1);
+           return SYS_INVALID_INPUT_PARAM;
         }
 
         const char* const local_zone = getLocalZoneName();

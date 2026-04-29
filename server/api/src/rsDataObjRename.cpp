@@ -495,7 +495,13 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
             if(!quota_violated && ((violation_flags & lq::violation::bytes) != lq::violation::none)) {
                 const std::uintmax_t src_size = fs::server::is_data_object_registered(*rsComm, src_path) ? fs::server::data_object_size(*rsComm, src_path) : 0;
+                // In the current block, we know there is no quota violation yet.
+                // If there is an object violation from above, we have already checked the result of
+                // is_data_object_registered, so we have no need to re-check it.
+                // If it was false, we would have never entered this block (quota_violated == true)
+                // Thus, we know it's true, so we don't need to worry about it.
                 const std::uintmax_t dest_size = (((violation_flags & lq::violation::objects) != lq::violation::none) || fs::server::is_data_object_registered(*rsComm, dest_path)) ? fs::server::data_object_size(*rsComm, dest_path) : 0;
+
                 // Overwriting a smaller object will not trigger byte quota.
                 quota_violated = (src_size > dest_size);
             }
@@ -503,6 +509,10 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         // If we can't fetch object properties for some reason,
         // still enforce the quota if it's in violation, but do not
         // consider things like size or existence.
+        catch (const fs::filesystem_error& e) {
+            log_api::error("{}: Caught iRODS filesystem error with ec=[{}] while processing logical quotas. Logical quotas will be enforced without consideration of source/destination object properties. Exception: [{}]", __func__, e.code().value(), e.what());
+            quota_violated = (violation_flags != lq::violation::none);
+        }
         catch (const irods::exception& e) {
             log_api::error("{}: Caught iRODS exception with ec=[{}] while processing logical quotas. Logical quotas will be enforced without consideration of source/destination object properties. Exception: [{}]", __func__, e.code(), e.client_display_what());
             quota_violated = (violation_flags != lq::violation::none);
