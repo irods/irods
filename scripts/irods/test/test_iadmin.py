@@ -541,19 +541,26 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 # place data into the resource
                 test_file = "iput_test_file"
                 lib.make_file(test_file, 10)
+
                 num_children = 10
                 bad_file_indices = (1,3,5)
-                for i in range(num_children):
-                    self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
+
+                # Generate full paths to data objects
+                paths_to_good_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
+                paths_to_bad_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in bad_file_indices]
+                paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
+
+                for file in paths_to_data_objects:
+                    self.admin.assert_icommand(f"iput -R pt {test_file} {file}")
 
                 # Trim so we get more replication going
-                for i in range(num_children):
-                    self.admin.assert_icommand("itrim -N2 -n 0 foo%d" % (i), 'STDOUT_SINGLELINE', 'Total size trimmed')
+                for file in paths_to_data_objects:
+                    self.admin.assert_icommand(f"itrim -N2 -n 0 {file}", 'STDOUT_SINGLELINE', 'Total size trimmed')
 
                 # Invalidate all replicas of "foo{i}"
-                for file in [f"foo{i}" for i in bad_file_indices]:
-                    lib.set_replica_status(self.admin, os.path.join(self.admin.session_collection, file), 1, 0)
-                    lib.set_replica_status(self.admin, os.path.join(self.admin.session_collection, file), 2, 0)
+                for file in paths_to_bad_data_objects:
+                    lib.set_replica_status(self.admin, file, 1, 0)
+                    lib.set_replica_status(self.admin, file, 2, 0)
 
                 # =-=-=-=-=-=-=-
                 # visualize our tree
@@ -568,14 +575,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
                 # Assert failed replications still exist and no replication performed
-                for file in [f"foo{i}" for i in bad_file_indices]:
+                for file in paths_to_bad_data_objects:
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
                     self.assertFalse(lib.replica_exists(self.admin, file, 3))
 
                 # =-=-=-=-=-=-=-
                 # assert that all the appropriate repl numbers exist for all the children
-                for file in [f"foo{i}" for i in range(num_children) if i not in bad_file_indices]:
+                for file in paths_to_good_data_objects:
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
@@ -583,8 +590,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             # =-=-=-=-=-=-=-
             # TEARDOWN
-            for i in range(num_children):
-                self.admin.run_icommand("irm -f foo%d" % i)
+            for file in paths_to_data_objects:
+                self.admin.run_icommand(f"irm -f {path}")
 
             IrodsController().reload_configuration()
 
