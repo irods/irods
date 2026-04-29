@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import json
 import sys
 import os
 
@@ -110,6 +111,51 @@ class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
 
         self.user0.assert_icommand(["itree", relative_path_to_data_object], "STDERR", "does not refer to a collection")
         self.user0.assert_icommand(["itree", absolute_path_to_data_object], "STDERR", "does not refer to a collection")
+
+    def test_lowercase_j_option_produces_valid_json__issue_7943(self):
+        self.user0.assert_icommand(['imkdir', 'subcoll'])
+        self.user0.assert_icommand(['itouch', 'file1.txt'])
+        self.user0.assert_icommand(['itouch', 'subcoll/file2.txt'])
+
+        _, out,_ = self.user0.assert_icommand(['itree', '-j'], 'STDOUT', 'subcoll')
+
+        data = json.loads(out)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)
+
+        tree = data[0]
+        self.assertEqual(tree['type'], 'collection')
+        self.assertIn('contents', tree)
+
+        content_names = [entry['name'] for entry in tree['contents']]
+        self.assertIn('file1.txt', content_names)
+
+        subcoll = next((e for e in tree['contents'] if e['name'] == 'subcoll'), None)
+        self.assertIsNotNone(subcoll)
+        self.assertEqual(subcoll['type'], 'collection')
+        subcoll_names = [e['name'] for e in subcoll['contents']]
+        self.assertIn('file2.txt', subcoll_names)
+
+        report = data[1]
+        self.assertEqual(report['type'], 'report')
+        self.assertEqual(report['collections'], 1)
+        self.assertEqual(report['data_objects'], 2)
+
+    def test_json_option_produces_valid_json__issue_7943(self):
+        self.user0.assert_icommand(['itouch', 'file1.txt'])
+
+        _, out_json,_ = self.user0.assert_icommand(['itree', '--json'], 'STDOUT', 'file1.txt')
+        _, out_J,_ = self.user0.assert_icommand(['itree', '-j'], 'STDOUT', 'file1.txt')
+
+        self.assertEqual(out_json, out_J)
+
+    def test_uppercase_J_is_deprecated_alias_for_lowercase_j__issue_7943(self):
+        self.user0.assert_icommand(['itouch', 'file1.txt'])
+
+        _, out_j,_ = self.user0.assert_icommand(['itree', '-j'], 'STDOUT', 'file1.txt')
+        _, out_J,_ = self.user0.assert_icommand(['itree', '-J'], 'STDOUT', 'file1.txt')
+
+        self.assertEqual(out_j, out_J)
 
     def test_for_error_message_when_used_with_nonexistent_path__issue_6627(self):
         relative_path_to_nonexistent_object = "nonexistent_object_6627"

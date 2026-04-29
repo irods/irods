@@ -55,6 +55,7 @@ int main(int argc, char** argv){
     po::options_description desc{""};
     po::positional_options_description pod;
     pod.add("dir",1);
+    // clang-format off
     desc.add_options()
         ("help,h", "Display help")
         ("dir", po::value<std::string>()->default_value("."), "The initial collection to render (defaults to the current working collection)")
@@ -75,11 +76,13 @@ int main(int argc, char** argv){
         // Currently this does not work because the object_status is not initialized with the necessary information to
         // display this properly.
         //        ("acl,A", po::bool_switch(), "Print the access control information for each object")
-        ("json,J", po::bool_switch(), "Produce json instead of a human readable output")
+        ("json,j", po::bool_switch(), "Produce json instead of a human readable output")
+        ("uppercase_json_deprecated,J", po::bool_switch(), "Alias for -j")
         ("color,C", po::bool_switch(), "Print in color (requires ansi terminal)");
+    // clang-format on
     try{
         po::variables_map vm;
-        po::store(po::command_line_parser(argc,argv).options(desc).positional(pod).run(),vm);
+        po::store(po::command_line_parser(argc, argv).options(desc).positional(pod).run(), vm);
         po::notify(vm);
         if( vm.count("help") ) {
             print_usage();
@@ -127,7 +130,7 @@ int main(int argc, char** argv){
             return 1;
         }
 
-        if (vm["json"].as<bool>()) {
+        if (vm["json"].as<bool>() || vm["uppercase_json_deprecated"].as<bool>()) {
             auto value = get_json(path, vm, conn, vm["depth"].as<int>() );
             json::json top;
             top.push_back(value);
@@ -341,7 +344,7 @@ auto correct_path(const po::variables_map& pm, rodsEnv& env) -> fs::path {
 
 auto print_usage() -> void {
     fmt::print(
-R"_(itree - List contents of collections in a tree-like format.
+        R"_(itree - List contents of collections in a tree-like format.
 
 Usage: itree [OPTION]... COLLECTION
 
@@ -363,7 +366,8 @@ Options:
       --indent=INTEGER
                   The number of spaces used for indenting nested collections.
                   (defaults to 2).
-  -J, --json      Print collection tree as JSON.
+  -j, -J, --json  Print collection tree as JSON. -J is deprecated. Use
+                  -j or --json instead.
   -L, --depth=INTEGER
                   Limit the depth of the listing (defaults to 1000).
   -p, --pattern-regex=PATTERN
