@@ -570,11 +570,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 # visualize our rebalance
                 self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
-                # TODO: Check for the absence of '3'
-                # Maybe assert icommand fail?
+                # Assert failed replications still exist and no replication performed
                 for file in [f"foo{i}" for i in bad_file_indices]:
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
                     self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
+                    self.assertFalse(lib.replica_exists(self.admin, file, 3))
 
                 # =-=-=-=-=-=-=-
                 # assert that all the appropriate repl numbers exist for all the children
