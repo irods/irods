@@ -15,6 +15,7 @@
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_virtual_path.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rodsConnect.h"
@@ -35,6 +36,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include <algorithm>
+#include <charconv>
 #include <cctype>
 #include <iostream>
 #include <optional>
@@ -1487,6 +1489,64 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                               generalAdminInp->arg4 );
 
         return status;
+    }
+
+    if ( strcmp( generalAdminInp->arg0, "calculate_logical_usage" ) == 0 ) {
+        return chl_calc_logical_usage_and_quota(rsComm, generalAdminInp->arg1);
+    }
+
+    if ( strcmp( generalAdminInp->arg0, "set_logical_quota" ) == 0 ) {
+        rodsLong_t nonnegative_checker;
+        // Only allow negative values internally-- error out if encountered here
+        if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg3, generalAdminInp->arg3 + std::strlen(generalAdminInp->arg3), nonnegative_checker); ec != std::errc{}) {
+           log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg3);
+           return SYS_INVALID_INPUT_PARAM;
+        }
+        if(nonnegative_checker < 0) {
+           log_api::error("{}: set_logical_quota: Third argument must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
+           return USER_INPUT_FORMAT_ERR;
+        }
+
+        if(std::strlen(generalAdminInp->arg1) == 0) {
+           log_api::error("{}: set_logical_quota: Empty collection name specified. Received: [{}]", __func__, generalAdminInp->arg1);
+           return SYS_INVALID_INPUT_PARAM;
+        }
+
+        const char* const local_zone = getLocalZoneName();
+        if(local_zone == nullptr) {
+           log_api::error("{}: set_logical_quota: Failed to fetch local zone name.", __func__);
+           return SYS_INTERNAL_ERR;
+        }
+
+        const auto zone_collection = fmt::format("{}{}{}", irods::get_virtual_path_separator(), local_zone, irods::get_virtual_path_separator());
+
+        // If zone collection is longer, compare up to zone collection without trailing slash.
+        // If input collection is longer, compare to zone collection with trailing slash
+        if(std::strncmp(generalAdminInp->arg1, zone_collection.c_str(), std::min(zone_collection.size(), std::max(zone_collection.size() - 1, std::strlen(generalAdminInp->arg1)))) != 0) {
+           log_api::error("{}: set_logical_quota: Cannot set quota on non-local zone or root. Attempted setting quota on [{}], but zone collection is [{}].", __func__, generalAdminInp->arg1, zone_collection);
+            return SYS_NOT_ALLOWED;
+        }
+
+        if(strcmp(generalAdminInp->arg2, "bytes") == 0) {
+            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg3, "-1");
+        }
+
+        if(strcmp(generalAdminInp->arg2, "objects") == 0) {
+            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, "-1", generalAdminInp->arg3);
+        }
+
+        // arg2 should be nonnegative here
+        if (const auto [ptr, ec] = std::from_chars(generalAdminInp->arg2, generalAdminInp->arg2 + std::strlen(generalAdminInp->arg2), nonnegative_checker); ec != std::errc{}) {
+           log_api::error("{}: set_logical_quota: Failed to parse [{}] as integer", __func__, generalAdminInp->arg2);
+           return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if(nonnegative_checker < 0) {
+           log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
+           return USER_INPUT_FORMAT_ERR;
+        }
+
+        return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg2, generalAdminInp->arg3);
     }
 
     if (std::strcmp(generalAdminInp->arg0, "set_delay_server") == 0) {

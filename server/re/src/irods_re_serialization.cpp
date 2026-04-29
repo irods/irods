@@ -1441,6 +1441,43 @@ namespace irods::re_serialization
         return SUCCESS();
     } // serialize_ticketAdminInp_ptr
 
+    static error serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            using tupletype = std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>;
+            const std::vector<tupletype> *inp = boost::any_cast<std::vector<tupletype>*>(_p);
+            if(inp) {
+                _out["size"] = std::to_string(inp->size());
+
+                // TODO(#8941): Params with one key do not serialize correctly.
+                // Must be here, or fails in the empty case
+                _out["_size"] = std::to_string(inp->size());
+
+                for(size_t i = 0; i < inp->size(); i++) {
+                    tupletype tup = inp->at(i);
+                    _out[std::to_string(i) + ":std_string"] = std::get<0>(tup);
+                    _out[std::to_string(i) + ":std_int64_1"] = std::get<1>(tup);
+                    _out[std::to_string(i) + ":std_int64_2"] = std::get<2>(tup);
+                    _out[std::to_string(i) + ":std_int64_3"] = std::get<3>(tup);
+                    _out[std::to_string(i) + ":std_int64_4"] = std::get<4>(tup);
+                }
+            }
+            else {
+                _out["vector_ptr"] = "nullptr";
+            }
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(INVALID_ANY_CAST,
+                         fmt::format("{}: failed to cast pointer to [std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t>>*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(
+                SYS_LIBRARY_ERROR, fmt::format("{}: failed to serialize [std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t>>*]: {}", __func__, e.what()));
+        }
+
+        return SUCCESS();
+}
+
 #if 0
     static error serialize_XXXX_ptr(
             boost::any               _p,
@@ -1501,7 +1538,8 @@ namespace irods::re_serialization
             {std::type_index(typeid(execMyRuleInp_t*)), serialize_execMyRuleInp_ptr},
             {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr},
             {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr},
-            {std::type_index(typeid(TicketAdminInput*)), serialize_ticketAdminInp_ptr}};
+            {std::type_index(typeid(TicketAdminInput*)), serialize_ticketAdminInp_ptr},
+            {std::type_index(typeid(std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>*)), serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s}};
         return the_map;
     } // get_serialization_map
 

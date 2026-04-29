@@ -6,6 +6,7 @@
 #include <irods/irods_configuration_keywords.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_string_tokenize.hpp>
+#include <irods/get_logical_quota.h>
 #include <irods/key_value_proxy.hpp>
 #include <irods/parseCommandLine.h>
 #include <irods/query_builder.hpp>
@@ -983,6 +984,46 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
     return 0;
 } // show_resource_quotas
 
+auto list_logical_quotas(const char* _coll_name = nullptr) -> int
+{
+    getLogicalQuotaInp_t getLogicalQuotaInp{};
+    getLogicalQuotaInp.coll_name = strdup(_coll_name);
+    logicalQuotaList_t* logicalQuotaList = nullptr;
+
+    irods::at_scope_exit free_output{[&logicalQuotaList, &getLogicalQuotaInp] {
+        clear_logical_quota_list(logicalQuotaList);
+        clear_get_logical_quota_input(&getLogicalQuotaInp);
+        std::free(logicalQuotaList);
+    }};
+
+    const auto status = rc_get_logical_quota(Conn, &getLogicalQuotaInp, &logicalQuotaList);
+
+    if(status < 0) {
+        char* sub_error_name{};
+        const char* error_name = rodsErrorName(status, &sub_error_name);
+        fmt::print(stderr, "rc_get_logical_quota failed with error [{}] and suberror [{}] ec=[{}]", error_name, (sub_error_name ? sub_error_name : "N/A"), status);
+        printErrorStack(Conn->rError);
+        std::free(sub_error_name);
+        return 1;
+    }
+
+    for(int i = 0; i < logicalQuotaList->len; i++) {
+        const auto& quotaEntry = logicalQuotaList->list[i];
+        const bool byte_limit_enforced = (0 != quotaEntry.max_bytes);
+        const bool object_limit_enforced = (0 != quotaEntry.max_objects);
+        const std::string max_byte_string = std::to_string(quotaEntry.max_bytes);
+        const std::string max_objects_string = std::to_string(quotaEntry.max_objects);
+        const std::string bytes_over_string = std::to_string(quotaEntry.over_bytes);
+        const std::string objects_over_string = std::to_string(quotaEntry.over_objects);
+        fmt::print("Collection name: {}\nMaximum bytes: {}\nMaximum objects: {}\nBytes over: {}\nObjects over: {}\n", quotaEntry.coll_name, (byte_limit_enforced ? max_byte_string.c_str() : "<unset>"), (object_limit_enforced ? max_objects_string.c_str() : "<unset>"), (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>"), (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>"));
+        if(i != logicalQuotaList->len - 1) {
+            fmt::print("\n");
+        }
+    }
+
+    return 0;
+} // list_logical_quotas
+
 int
 generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
               char *arg4, char *arg5, char *arg6, char *arg7, char* arg8, char* arg9,
@@ -1387,6 +1428,33 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                       "", "", "", "", "" );
         return 0;
     }
+    if ( strcmp( cmdToken[0], "calculate_logical_usage" ) == 0 ) {
+        generalAdmin( 0, cmdToken[0],
+                      "", "", "",
+                      "", "", "", "", "", "" );
+        return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "set_logical_quota" ) == 0 ) {
+        const char* usage_message = "Usage:\n"
+                                    "\tiadmin set_logical_quota <collname> <maxbytes> <maxobjects>\n"
+                                    "\tiadmin set_logical_quota <collname> bytes value\n"
+                                    "\tiadmin set_logical_quota <collname> objects value\n";
+        if(strlen(cmdToken[1]) == 0 || strlen(cmdToken[2]) == 0 || strlen(cmdToken[3]) == 0  ) {
+            fprintf(stderr, "%s", usage_message);
+            return -2;
+        }
+
+        generalAdmin( 0, cmdToken[0],
+                      cmdToken[1], cmdToken[2], cmdToken[3],
+                      "", "", "", "", "", "" );
+        return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "list_logical_quotas" ) == 0 ) {
+        return list_logical_quotas(cmdToken[1]);
+    }
+
     if ( strcmp( cmdToken[0], "lq" ) == 0 ) {
         show_resource_quotas(cmdToken[1]);
         show_global_quotas(cmdToken[1]);
@@ -1991,6 +2059,9 @@ void usageMain() {
         " get_grid_configuration NAMESPACE OPTION_NAME",
         " set_grid_configuration NAMESPACE OPTION_NAME OPTION_VALUE",
         " remove_session_tokens expired|all [user[#zone]]",
+        " set_logical_quota COLLECTION_NAME (bytes | objects | MAX_BYTES) (VALUE | MAX_OBJECTS)",
+        " list_logical_quotas [COLLECTION_NAME]",
+        " calculate_logical_usage",
         " help (or h) [command] (this help, or more details on a command)",
         " ",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
@@ -2618,6 +2689,7 @@ usage( char *subOpt ) {
                                             "authentication   password_reuse_previous",
                                             "authentication   password_storage_mode",
                                             "authentication   token_lifetime_in_seconds",
+                                            "logical_quotas   enabled",
                                             ""};
 
     char* get_grid_configuration_usage[] = {"get_grid_configuration NAMESPACE OPTION_NAME",
@@ -2650,6 +2722,7 @@ usage( char *subOpt ) {
                                             "database         schema_version",
                                             "delay_server     leader",
                                             "delay_server     successor",
+                                            "logical_quotas   enabled",
                                             " ",
                                             ""};
 
@@ -2708,6 +2781,103 @@ usage( char *subOpt ) {
         " $ iadmin remove_session_tokens expired alice",
         ""};
 
+    char* set_logical_quota_usage[] = {
+        "set_logical_quota COLLECTION_NAME (bytes | objects | MAX_BYTES) (VALUE | MAX_OBJECTS)",
+        " ",
+        "Set a logical quota on collection COLLECTION_NAME.",
+        " ",
+        "A logical quota intends to limit bytes/objects stored under a logical path.",
+        " ",
+        "If 'bytes' or 'objects' is specified as the second parameter,",
+        "the final parameter will be the value.",
+        " ",
+        "If the second and third parameters are numeric,",
+        "they will refer to the byte limit and the object limit for the",
+        "quota, respectively.",
+        " ",
+        "To remove a logical quota, set both MAX_BYTES and MAX_OBJECTS to 0.",
+        " ",
+        "In order to ensure current quota calculation totals, administrators",
+        "should run 'iadmin calculate_logical_usage' regularly to ensure that",
+        "the usage totals are current. Additionally, administrators should run",
+        "'iadmin calculate_logical_usage' after adding or modifying a logical quota.",
+        " ",
+        "Note: In order for logical quotas to be enforced, the grid configuration",
+        "option logical_quotas::enabled must be set to 1. An administrator may",
+        "run 'iadmin set_grid_configuration logical_quotas enabled 1' to achieve",
+        "this end. Logical quotas will not be enforced if any other value is set.",
+        " ",
+        "Also see list_logical_quotas and calculate_logical_usage.",
+        " ",
+        "Examples:",
+        "Set a logical quota of 5000 bytes on alice's home collection:",
+        " $ iadmin set_logical_quota /tempZone/home/alice bytes 5000",
+        "Set a logical quota of 50 objects on the zone collection:",
+        " $ iadmin set_logical_quota /tempZone objects 50",
+        "Set a logical quota of 1000000 bytes and 100 objects on the root collection:",
+        " $ iadmin set_logical_quota / 1000000 100",
+        "Remove a quota set on alice's home collection:",
+        " $ iadmin set_logical_quota /tempZone/home/alice 0 0",
+        ""};
+
+    char* list_logical_quotas_usage[] = {
+        "list_logical_quotas [COLLECTION_NAME]",
+        " ",
+        "List logical quotas that apply to COLLECTION_NAME.",
+        "If COLLECTION_NAME is empty, list all logical quotas.",
+        " ",
+        "If COLLECTION_NAME is specified, logical quotas applied to",
+        "COLLECTION_NAME and its ancestors will be listed.",
+        "i.e. Any logical quota whose limits apply to COLLECTION_NAME",
+        "will be listed.",
+        "For example, 'iadmin list_logical_quotas /tempZone/home/alice'",
+        "will list quotas set on '/', '/tempZone', '/tempZone/home' and",
+        "'/tempZone/home/alice', if any exist.",
+        " ",
+        "In order to ensure current quota calculation totals, administrators",
+        "must run 'iadmin calculate_logical_usage' regularly to ensure that",
+        "the usage totals are current. Additionally, administrators should run",
+        "'iadmin calculate_logical_usage' after adding or modifying a logical quota.",
+        " ",
+        "Note: In order for logical quotas to be enforced, the grid configuration",
+        "option logical_quotas::enabled must be set to 1. An administrator may",
+        "run 'iadmin set_grid_configuration logical_quotas enabled 1' to achieve",
+        "this end. Logical quotas will not be enforced if any other value is set.",
+        " ",
+        "Also see set_logical_quota and calculate_logical_usage.",
+        " ",
+        "Examples:",
+        "List all logical quotas that apply to alice's home collection:",
+        " $ iadmin list_logical_quotas /tempZone/home/alice",
+        "List all logical quotas:",
+        " $ iadmin list_logical_quotas",
+        ""};
+
+    char* calculate_logical_usage_usage[] = {
+        "calculate_logical_usage",
+        " ",
+        "Recalculate usage totals for logical quotas.",
+        " ",
+        "For each collection with a logical quota applied,",
+        "a total byte and object count will be calculated.",
+        "This total will account for the entire collection tree",
+        "rooted at the collection set in the logical quota.",
+        " ",
+        "Administrators should run this command regularly to ensure logical quota",
+        "usage totals stay current. Additionally, administrators should run",
+        "this command after adding or modifying a logical quota.",
+        " ",
+        "Note: In order for logical quotas to be enforced, the grid configuration",
+        "option logical_quotas::enabled must be set to 1. An administrator may",
+        "run 'iadmin set_grid_configuration logical_quotas enabled 1' to achieve",
+        "this end. Logical quotas will not be enforced if any other value is set.",
+        " ",
+        "This command will still calculate logical quota usage totals even if",
+        "logical quotas are not currently being enforced.",
+        " ",
+        "Also see list_logical_quotas and set_logical_quota.",
+        ""};
+
     char *helpMsgs[] = {
         " help (or h) [command] (general help, or more details on a command)",
         " If you specify a command, a brief description of that command",
@@ -2761,6 +2931,9 @@ usage( char *subOpt ) {
                        "get_grid_configuration",
                        "set_grid_configuration",
                        "remove_session_tokens",
+                       "set_logical_quota",
+                       "list_logical_quotas",
+                       "calculate_logical_usage",
                        "help",
                        "h"};
 
@@ -2810,6 +2983,9 @@ usage( char *subOpt ) {
                       get_grid_configuration_usage,
                       set_grid_configuration_usage,
                       remove_session_tokens_usage,
+                      set_logical_quota_usage,
+                      list_logical_quotas_usage,
+                      calculate_logical_usage_usage,
                       helpMsgs,
                       helpMsgs};
 

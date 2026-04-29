@@ -1,14 +1,50 @@
 #include "irods/regDataObj.h"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/fileDriver.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsRegDataObj.hpp"
+#include "irods/rs_get_logical_quota.hpp"
 
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/replica_proxy.hpp"
+
+#include "irods/filesystem/path.hpp"
+
+namespace
+{
+    namespace fs = irods::experimental::filesystem;
+    using log_api = irods::experimental::log::api;
+
+    int checkQuotaViolationForReg(RsComm& _rsComm, dataObjInfo_t& _dataObjInfo) {
+        namespace lq = irods::logical_quotas;
+
+        const fs::path path{_dataObjInfo.objPath};
+        int status = lq::check_logical_quota_violation(&_rsComm, path.parent_path().c_str());
+        if(status < 0) {
+            log_api::error("{}: check_logical_quota_violation failed with error [{}]", __func__, status);
+            return status;
+        }
+
+        // Since status is non-negative, it is a logical_quota::violation value
+        lq::violation violation_flags = static_cast<lq::violation>(status);
+
+        // Always fail if over object limit (registration must make a new object).
+        // Fail only when trying to register a nonempty object if byte limit violated.
+        const auto object_count_violation = ((violation_flags & lq::violation::objects) != lq::violation::none);
+        const auto byte_count_violation = (((violation_flags & lq::violation::bytes) != lq::violation::none) && _dataObjInfo.dataSize > 0);
+
+        if(object_count_violation || byte_count_violation) {
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}]. Attempted to register [{}] with data size [{}]", __func__, path.parent_path().string(), status, _dataObjInfo.objPath, _dataObjInfo.dataSize);
+            return LOGICAL_QUOTA_EXCEEDED;
+        }
+        return 0;
+    }
+} // anonymous namespace
 
 /* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj
@@ -20,6 +56,12 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     rodsServerHost_t *rodsServerHost = NULL;
 
     *outDataObjInfo = NULL;
+
+    // Check quota enforcement before register
+    if(const int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
+        log_api::warn("{}: Failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+        return ec;
+    }
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
@@ -123,6 +165,12 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
                  "svrRegDataObj: Reg path %s is in spec coll",
                  dataObjInfo->objPath );
         return SYS_REG_OBJ_IN_SPEC_COLL;
+    }
+
+    // Check quota enforcement before register
+    if(const int ec = checkQuotaViolationForReg(*rsComm, *dataObjInfo); ec < 0) {
+        log_api::warn("{}: Failure due to logical quota violation or error; ec=[{}]", __func__, ec);
+        return ec;
     }
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);

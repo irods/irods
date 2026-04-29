@@ -4852,3 +4852,63 @@ auto chl_remove_password(RsComm* _comm, const char* _json_input) -> int
     const auto ret = db->call(_comm, irods::DATABASE_OP_REMOVE_PASSWORD, ptr, _json_input);
     return static_cast<int>(ret.code());
 } // chl_remove_password
+
+auto chl_calc_logical_usage_and_quota(RsComm* _comm, const char* _coll_name) -> int
+{
+    irods::database_object_ptr db_obj_ptr;
+    if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {
+        irods::log(PASS(ret));
+        return static_cast<int>(ret.code());
+    }
+    irods::plugin_ptr db_plug_ptr;
+    if (const auto ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr); !ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
+        return static_cast<int>(ret.code());
+    }
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
+    const auto ret = db->call(_comm, irods::DATABASE_OP_CALC_LOGICAL_USAGE_AND_QUOTA, ptr, _coll_name);
+    return static_cast<int>(ret.code());
+} // chl_calc_logical_usage_and_quota
+
+auto chl_set_logical_quota(RsComm* _comm, const char* _coll_name, const char* _byte_limit, const char* _object_limit) -> int
+{
+    irods::database_object_ptr db_obj_ptr;
+    if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {
+        irods::log(PASS(ret));
+        return static_cast<int>(ret.code());
+    }
+    irods::plugin_ptr db_plug_ptr;
+    if (const auto ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr); !ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
+        return static_cast<int>(ret.code());
+    }
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
+    const auto ret = db->call(_comm, irods::DATABASE_OP_SET_LOGICAL_QUOTA, ptr, _coll_name, _byte_limit, _object_limit);
+    return static_cast<int>(ret.code());
+} // chl_set_logical_quota
+
+auto chl_check_logical_quota(RsComm* _comm, const char* _coll_name, std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>* _quota_values) -> int
+{
+    irods::database_object_ptr db_obj_ptr;
+    if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {
+        irods::log(PASS(ret));
+        return static_cast<int>(ret.code());
+    }
+    irods::plugin_ptr db_plug_ptr;
+    if (const auto ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr); !ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
+        return static_cast<int>(ret.code());
+    }
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    // NOLINTNEXTLINE(misc-const-correctness)
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
+    const auto ret = db->call(_comm, irods::DATABASE_OP_CHECK_LOGICAL_QUOTA, ptr, _coll_name, _quota_values);
+    return static_cast<int>(ret.code());
+} // chl_check_logical_quota

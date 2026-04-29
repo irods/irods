@@ -24,6 +24,7 @@
 namespace
 {
     using log_re = irods::experimental::log::rule_engine;
+    using log_msi = irods::experimental::log::microservice;
 } // anonymous namespace
 
 /**
@@ -767,3 +768,53 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     /* Done */
     return status;
 }
+
+int msi_set_logical_quota( msParam_t *_coll_name, msParam_t *_bytes_value, msParam_t *_objects_value, ruleExecInfo_t *_rei)
+{
+    // Null checks
+    // Every calling mode requires all arguments filled
+    if (nullptr == _rei || nullptr == _rei->rsComm || nullptr == _coll_name || nullptr == _bytes_value || nullptr == _objects_value) {
+        log_msi::error("{}: Received one or more null pointers as input.", __func__);
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    // Admin check
+    if ( _rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        log_msi::error("{}: User [{}] is not local admin.", __func__, _rei->uoic->userName);
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    }
+
+    char *parsed_coll_name;
+    char *parsed_bytes_value;
+    char *parsed_objects_value;
+    // Parse collection name
+    if ( ( parsed_coll_name = parseMspForStr( _coll_name ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string collection name specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    if ( ( parsed_bytes_value = parseMspForStr( _bytes_value ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string byte value specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    if ( ( parsed_objects_value = parseMspForStr( _objects_value ) ) == nullptr ) {
+        log_msi::error("{}: Null or non-string object value specified.", __func__);
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    generalAdminInp_t generalAdminInp{};
+    generalAdminInp.arg0 = "set_logical_quota";
+    generalAdminInp.arg1 = parsed_coll_name;
+    generalAdminInp.arg2 = parsed_bytes_value;
+    generalAdminInp.arg3 = parsed_objects_value;
+
+    generalAdminInp.arg4 = "";
+    generalAdminInp.arg5 = "";
+    generalAdminInp.arg6 = "";
+    generalAdminInp.arg7 = "";
+    generalAdminInp.arg8 = "";
+    generalAdminInp.arg9 = "";
+
+    return rsGeneralAdmin(_rei->rsComm, &generalAdminInp);
+} // msi_set_logical_quota

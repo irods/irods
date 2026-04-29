@@ -41,6 +41,7 @@
 #include "irods/rsFileCreate.hpp"
 #include "irods/rsFileOpen.hpp"
 #include "irods/rsGetRescQuota.hpp"
+#include "irods/rs_get_logical_quota.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsObjStat.hpp"
@@ -65,6 +66,7 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/replica_access_table.hpp"
 #include "irods/replica_state_table.hpp"
 #include "irods/scoped_privileged_client.hpp"
@@ -1356,6 +1358,7 @@ namespace
 int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     namespace fs = irods::experimental::filesystem;
+    namespace lq = irods::logical_quotas;
 
     if (!dataObjInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1367,6 +1370,36 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     if ((dataObjInp->openFlags & O_ACCMODE) == O_RDONLY && (dataObjInp->openFlags & O_TRUNC)) {
         return USER_INCOMPATIBLE_OPEN_FLAGS;
+    }
+
+    lq::violation check_quota_flags = lq::violation::none;
+
+    // If object is being written to (i.e. not read-only), check for byte limit violations
+    if (const auto access_mode = (dataObjInp->openFlags & O_ACCMODE);
+        access_mode == O_WRONLY || access_mode == O_RDWR)
+    {
+        check_quota_flags |= lq::violation::bytes;
+    }
+
+    // If object could be created (i.e. opened with O_CREAT), check for object limit violations
+    if (dataObjInp->openFlags & O_CREAT) {
+        check_quota_flags |=  lq::violation::objects;
+    }
+
+    // Check quota enforcement before open.
+    // This if statement checks for a read-only open, which does not require
+    // a quota enforcement check.
+    if(lq::violation::none != check_quota_flags) {
+        const fs::path path{dataObjInp->objPath};
+        int status = lq::check_logical_quota_violation(rsComm, path.parent_path().c_str());
+        if(status < 0) {
+            log_api::error("{}: check_logical_quota_violation failed with error [{}]", __func__, status);
+            return status;
+        }
+        if((check_quota_flags & static_cast<lq::violation>(status)) != lq::violation::none) {
+            log_api::info("{}: Logical quota violation on collection [{}] with status [{}]. Attempted to open [{}] with openFlags [{:o}]", __func__, path.parent_path().string(), status, dataObjInp->objPath, dataObjInp->openFlags);
+            return LOGICAL_QUOTA_EXCEEDED;
+        }
     }
 
     const auto data_object_exists = fs::server::exists(*rsComm, dataObjInp->objPath);
