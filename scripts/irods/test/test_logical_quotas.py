@@ -4135,7 +4135,7 @@ class Test_Logical_Quotas(
 
         try:
             # No enforcement needed to test.
-            self.admin.assert_icommand(["iadmin", "mkzone", zone_name, "remote", ""])
+            self.admin.assert_icommand(["iadmin", "mkzone", zone_name, "remote", "localhost:1247"])
 
             # Success, collection in zone.
             self.admin.assert_icommand(
@@ -4143,17 +4143,6 @@ class Test_Logical_Quotas(
                     "iadmin",
                     "set_logical_quota",
                     self.quota_user.session_collection,
-                    str(max_bytes),
-                    str(max_objects),
-                ]
-            )
-
-            # Success, collection in local zone.
-            self.admin.assert_icommand(
-                [
-                    "iadmin",
-                    "set_logical_quota",
-                    self.admin.session_collection,
                     str(max_bytes),
                     str(max_objects),
                 ]
@@ -4215,7 +4204,7 @@ class Test_Logical_Quotas(
                 [
                     "iadmin",
                     "set_logical_quota",
-                    self.admin.session_collection,
+                    self.quota_user.session_collection,
                     "0",
                     "0",
                 ]

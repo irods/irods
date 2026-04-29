@@ -1290,6 +1290,95 @@ class Test_Admin_Commands(unittest.TestCase):
 	def test_iadmin(self):
 		pass
 
+	def test_admin_cannot_set_logical_quota_on_remote_zone(self):
+		max_bytes = 10000
+		max_objects = 5
+		remote_zone = self.config['remote_zone']
+		local_zone = self.config['local_zone']
+		remote_home_collection = self.admin_session.remote_home_collection(remote_zone)
+
+		try:
+			# Success, collection in zone.
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				self.admin_session.home_collection,
+				str(max_bytes),
+				str(max_objects),
+			]
+			)
+
+			# Success, local zone collection.
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				f"/{local_zone}",
+				str(max_bytes),
+				str(max_objects),
+			]
+            )
+			
+            # Fail, remote zone collection.
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				f"/{remote_zone}",
+				str(max_bytes),
+				str(max_objects),
+			],
+			'STDERR_SINGLELINE',
+			'-169000 SYS_NOT_ALLOWED'
+			)
+
+			# Fail, collection in remote zone.
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				remote_home_collection,
+				str(max_bytes),
+				str(max_objects),
+			],
+			'STDERR_SINGLELINE',
+			'-169000 SYS_NOT_ALLOWED'
+			)
+
+			# Fail, root collection.
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				f"/",
+				str(max_bytes),
+				str(max_objects),
+			],
+			'STDERR_SINGLELINE',
+			'-169000 SYS_NOT_ALLOWED'
+			)
+
+		finally:
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				self.admin_session.home_collection,
+				"0",
+				"0",
+			]
+			)
+
+			self.admin_session.assert_icommand(
+			[
+				"iadmin",
+				"set_logical_quota",
+				f"/{local_zone}",
+				"0",
+				"0",
+			]
+			)
 
 class Test_Microservices(SessionsMixin, unittest.TestCase):
 
