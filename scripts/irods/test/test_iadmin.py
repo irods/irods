@@ -517,8 +517,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         bad_file_indices = (1,3,5)
 
         # Generate full paths to data objects
-        paths_to_good_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
-        paths_to_bad_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in bad_file_indices]
+        paths_to_good_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
+        paths_to_bad_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in bad_file_indices]
         paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
 
         try:
@@ -547,11 +547,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 IrodsController().reload_configuration()
 
                 for file in paths_to_data_objects:
-                    self.admin.assert_icommand(f"itouch -R pt {file}")
+                    self.user0.assert_icommand(f"itouch -R pt {file}")
 
                 # Trim so we get more replication going
                 for file in paths_to_data_objects:
-                    self.admin.assert_icommand(f"itrim -N2 -n 0 {file}", 'STDOUT_SINGLELINE', 'Total size trimmed')
+                    self.user0.assert_icommand(f"itrim -N2 -n 0 {file}", 'STDOUT_SINGLELINE', 'Total size trimmed')
 
                 # Invalidate all replicas of "foo{i}"
                 for file in paths_to_bad_data_objects:
@@ -560,7 +560,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
                 # =-=-=-=-=-=-=-
                 # visualize our tree
-                self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+                self.user0.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
                 # =-=-=-=-=-=-=-
                 # call rebalance function - the thing were actually testing... finally.
@@ -568,26 +568,26 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
                 # =-=-=-=-=-=-=-
                 # visualize our rebalance
-                self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+                self.user0.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
                 # Assert failed replications still exist and no replication performed
                 for file in paths_to_bad_data_objects:
-                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
-                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
-                    self.assertFalse(lib.replica_exists(self.admin, file, 3))
+                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", " X", f" {file}"])
+                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", " X", f" {file}"])
+                    self.assertFalse(lib.replica_exists(self.user0, file, 3))
 
                 # =-=-=-=-=-=-=-
                 # assert that all the appropriate repl numbers exist for all the children
                 for file in paths_to_good_data_objects:
-                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
-                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
-                    self.admin.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
+                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 1 ", f" {file}"])
+                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 2 ", f" {file}"])
+                    self.user0.assert_icommand(f"ils -AL {file}", 'STDOUT_SINGLELINE', [" 3 ", f" {file}"])
 
         finally:
             # =-=-=-=-=-=-=-
             # TEARDOWN
             for file in paths_to_data_objects:
-                self.admin.run_icommand(f"irm -f {path}")
+                self.user0.run_icommand(f"irm -f {file}")
 
             IrodsController().reload_configuration()
 
