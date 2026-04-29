@@ -15,6 +15,7 @@
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_virtual_path.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rodsConnect.h"
@@ -1503,7 +1504,26 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
         }
         if(nonnegative_checker < 0) {
            log_api::error("{}: set_logical_quota: Third argument must be nonnegative. Received: [{}]", __func__, nonnegative_checker);
-            return USER_INPUT_FORMAT_ERR;
+           return USER_INPUT_FORMAT_ERR;
+        }
+
+        if(std::strlen(generalAdminInp->arg1) == 0) {
+           log_api::error("{}: set_logical_quota: Empty collection name specified. Received: [{}]", __func__, generalAdminInp->arg1);
+        }
+
+        const char* const local_zone = getLocalZoneName();
+        if(local_zone == nullptr) {
+           log_api::error("{}: set_logical_quota: Failed to fetch local zone name.", __func__);
+           return SYS_INTERNAL_ERR;
+        }
+
+        const auto zone_collection = fmt::format("{}{}{}", irods::get_virtual_path_separator(), local_zone, irods::get_virtual_path_separator());
+
+        // If zone collection is longer, compare up to zone collection without trailing slash.
+        // If input collection is longer, compare to zone collection with trailing slash
+        if(std::strncmp(generalAdminInp->arg1, zone_collection.c_str(), std::min(zone_collection.size(), std::max(zone_collection.size() - 1, std::strlen(generalAdminInp->arg1)))) != 0) {
+           log_api::error("{}: set_logical_quota: Cannot set quota on non-local zone or root. Attempted setting quota on [{}], but zone collection is [{}].", __func__, generalAdminInp->arg1, zone_collection);
+            return SYS_NOT_ALLOWED;
         }
 
         if(strcmp(generalAdminInp->arg2, "bytes") == 0) {
@@ -1522,7 +1542,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
         if(nonnegative_checker < 0) {
            log_api::error("{}: set_logical_quota: Second argument must be nonnegative when integer-valued. Received: [{}]", __func__, nonnegative_checker);
-            return USER_INPUT_FORMAT_ERR;
+           return USER_INPUT_FORMAT_ERR;
         }
 
         return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg2, generalAdminInp->arg3);
