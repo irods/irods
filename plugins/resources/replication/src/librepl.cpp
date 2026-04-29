@@ -1535,8 +1535,13 @@ irods::error repl_file_rebalance(
     try {
         const int batch_size = get_rebalance_batch_size(_ctx);
         const std::vector<leaf_bundle_t> leaf_bundles = resc_mgr.gather_leaf_bundles_for_resc(resource_name);
-        irods::update_out_of_date_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
-        irods::create_missing_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
+        auto has_bad_repl =
+            irods::update_out_of_date_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
+        auto has_missing_repls =
+            irods::create_missing_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
+        if (has_bad_repl || has_missing_repls) {
+            return ERROR(REBALANCE_NOT_COMPLETE, "Missing or stale replica(s) still exist.");
+        }
     } catch (const irods::exception& e) {
         return irods::error(e);
     }

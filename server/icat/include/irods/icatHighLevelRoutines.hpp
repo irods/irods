@@ -229,6 +229,13 @@ int chlGetReplListForLeafBundles(
     const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results );
 
+int chlGetReplListForLeafBundlesOffset(rodsLong_t _count,
+                                       size_t _child_idx,
+                                       const std::vector<leaf_bundle_t>* _bundles,
+                                       const std::string* _invocation_timestamp,
+                                       dist_child_result_t* _results,
+                                       int _offset);
+
 /// \brief High-level wrapper for database operation which calls cmlCheckDataObjId
 ///
 /// \parblock

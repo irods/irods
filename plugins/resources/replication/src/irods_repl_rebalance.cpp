@@ -1,4 +1,5 @@
 #include "irods/private/irods_repl_rebalance.hpp"
+#include "irods/irods_exception.hpp"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
@@ -8,6 +9,8 @@
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/dataObjRepl.h"
 #include "irods/genQuery.h"
+#include "irods/rodsLog.h"
+#include "irods/rodsType.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rodsError.h"
 
@@ -186,11 +189,12 @@ namespace {
     };
 
     // throws irods::exception
-    std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(
-        rsComm_t* _comm,
-        const std::vector<leaf_bundle_t>& _bundles,
-        const std::string& _invocation_timestamp,
-        const int _batch_size) {
+    std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(rsComm_t* _comm,
+                                                                 const std::vector<leaf_bundle_t>& _bundles,
+                                                                 const std::string& _invocation_timestamp,
+                                                                 const int _batch_size,
+                                                                 const int _offset)
+    {
         if (!_comm) {
             THROW(SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm");
         }
@@ -206,6 +210,7 @@ namespace {
 
         irods::GenQueryInpWrapper genquery_inp_wrapped;
         genquery_inp_wrapped.get().maxRows = _batch_size;
+        genquery_inp_wrapped.get().rowOffset = _offset;
 
         const std::string cond_str = leaf_bundles_to_genquery_in_syntax(_bundles);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
@@ -302,13 +307,14 @@ namespace {
     }
 
     // throws irods::exception
-    void proc_results_for_rebalance(
-        irods::plugin_context&            _ctx,
-        const std::string&                _parent_resc_name,
-        const std::string&                _child_resc_name,
-        const size_t                      _bun_idx,
-        const std::vector<leaf_bundle_t>& _bundles,
-        const dist_child_result_t&        _data_ids_to_replicate) {
+    void proc_results_for_rebalance(irods::plugin_context& _ctx,
+                                    const std::string& _parent_resc_name,
+                                    const std::string& _child_resc_name,
+                                    const size_t _bun_idx,
+                                    const std::vector<leaf_bundle_t>& _bundles,
+                                    const dist_child_result_t& _data_ids_to_replicate,
+                                    int& _num_repls_to_skip)
+    {
         if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
                   boost::format("null comm pointer. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %
@@ -331,7 +337,17 @@ namespace {
 
         irods::error first_rebalance_error = SUCCESS();
         for (auto data_id_to_replicate : _data_ids_to_replicate) {
-            const ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
+            ReplicationSourceInfo source_info;
+            try {
+                source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
+            }
+            catch (const irods::exception& _e) {
+                if (_e.code() != CAT_NO_ROWS_FOUND) {
+                    throw;
+                }
+                _num_repls_to_skip++;
+                continue;
+            }
 
             // create a file object so we can resolve a valid hierarchy to which to replicate
             irods::file_object_ptr f_ptr(new irods::file_object(_ctx.comm(), source_info.object_path, "", "", 0, source_info.data_mode, 0));
@@ -421,15 +437,17 @@ namespace {
 
 namespace irods {
     // throws irods::exception
-    void update_out_of_date_replicas(
-        irods::plugin_context& _ctx,
-        const std::vector<leaf_bundle_t>& _leaf_bundles,
-        const int _batch_size,
-        const std::string& _invocation_timestamp,
-        const std::string& _resource_name) {
-
+    bool update_out_of_date_replicas(irods::plugin_context& _ctx,
+                                     const std::vector<leaf_bundle_t>& _leaf_bundles,
+                                     const int _batch_size,
+                                     const std::string& _invocation_timestamp,
+                                     const std::string& _resource_name)
+    {
+        int replicas_to_skip{};
         while (true) {
-            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_ctx.comm(), _leaf_bundles, _invocation_timestamp, _batch_size);
+            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(
+                _ctx.comm(), _leaf_bundles, _invocation_timestamp, _batch_size, replicas_to_skip);
+
             if (replicas_to_update.empty()) {
                 break;
             }
@@ -446,7 +464,19 @@ namespace irods {
                           replica_to_update.resource_id);
                 }
 
-                ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
+                ReplicationSourceInfo source_info;
+                try {
+                    source_info =
+                        get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
+                }
+                catch (const irods::exception& _e) {
+                    if (_e.code() != CAT_NO_ROWS_FOUND) {
+                        throw;
+                    }
+                    replicas_to_skip++;
+                    continue;
+                }
+
                 hierarchy_parser hierarchy_parser;
                 const error err_parser = hierarchy_parser.set_string(source_info.resource_hierarchy);
                 if (!err_parser.ok()) {
@@ -498,20 +528,29 @@ namespace irods {
                 THROW(first_error.code(), first_error.result());
             }
         }
+        return static_cast<bool>(replicas_to_skip);
     }
 
     // throws irods::exception
-    void create_missing_replicas(
-        irods::plugin_context& _ctx,
-        const std::vector<leaf_bundle_t>& _leaf_bundles,
-        const int _batch_size,
-        const std::string& _invocation_timestamp,
-        const std::string& _resource_name) {
+    bool create_missing_replicas(irods::plugin_context& _ctx,
+                                 const std::vector<leaf_bundle_t>& _leaf_bundles,
+                                 const int _batch_size,
+                                 const std::string& _invocation_timestamp,
+                                 const std::string& _resource_name)
+    {
+        bool did_skip_some_repls{};
         for (size_t i=0; i<_leaf_bundles.size(); ++i) {
+            int repls_to_skip{};
             const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
             while (true) {
                 dist_child_result_t data_ids_needing_new_replicas;
-                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundles(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas);
+                const int status_chlGetReplListForLeafBundles =
+                    chlGetReplListForLeafBundlesOffset(_batch_size,
+                                                       i,
+                                                       &_leaf_bundles,
+                                                       &_invocation_timestamp,
+                                                       &data_ids_needing_new_replicas,
+                                                       repls_to_skip);
                 if (status_chlGetReplListForLeafBundles != 0) {
                     THROW(status_chlGetReplListForLeafBundles,
                           boost::format("failed to get data objects needing new replicas for resource [%s] bundle index [%d] bundles [%s]")
@@ -519,12 +558,18 @@ namespace irods {
                           % i
                           % leaf_bundles_to_string(_leaf_bundles));
                 }
+
+                if (repls_to_skip > 0) {
+                    did_skip_some_repls = true;
+                }
+
                 if (data_ids_needing_new_replicas.empty()) {
                     break;
                 }
-
-                proc_results_for_rebalance(_ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas);
+                proc_results_for_rebalance(
+                    _ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas, repls_to_skip);
             }
         }
+        return did_skip_some_repls;
     }
 } // namespace irods

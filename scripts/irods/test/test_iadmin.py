@@ -509,6 +509,124 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin rmuser %s" % user_name)
             self.admin.assert_icommand("iadmin rmgroup %s" % group_name)
 
+
+    def test_rebalance_has_partial_success_with_missing_or_stale_replicas__issue_6111(self):
+        # Don't use the default rebalance limit.
+        # Use a rebalance smaller limit to simulate large
+        # collections without creating hundreds of collections.
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_rebalance_pre(*INSTANCE_NAME, *CONTEXT, *OUT) {
+                    *OUT="replication_rebalance_limit=1";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_rebalance_pre(rule_args, callback, rei):
+                    rule_args[0] = 'replication_rebalance_limit=1'
+            ''')
+        }
+
+        # Define number of data objects and data objects will be stale
+        num_children = 10
+        bad_file_indices = (1,3,5)
+
+        # Generate full paths to data objects
+        paths_to_good_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
+        paths_to_bad_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in bad_file_indices]
+        paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
+
+        try:
+            # =-=-=-=-=-=-=-
+            # STANDUP
+            self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+
+            lib.create_ufs_resource(self.admin, 'leaf_a')
+            lib.create_ufs_resource(self.admin, 'leaf_b')
+            lib.create_ufs_resource(self.admin, 'leaf_c')
+
+            self.admin.assert_icommand("iadmin addchildtoresc pt repl")
+            self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
+            self.admin.assert_icommand("iadmin addchildtoresc repl pt_b")
+            self.admin.assert_icommand("iadmin addchildtoresc repl pt_c1")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_b leaf_b")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_c1 pt_c2")
+            self.admin.assert_icommand("iadmin addchildtoresc pt_c2 leaf_c")
+
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                # =-=-=-=-=-=-=-
+                # place data into the resource
+                test_file = "iput_test_file"
+                lib.make_file(test_file, 10)
+
+                for file in paths_to_data_objects:
+                    self.user0.assert_icommand(f"iput -R pt {test_file} {file}")
+
+                # Trim so we get more replication going
+                for file in paths_to_data_objects:
+                    self.user0.assert_icommand(f"itrim -N2 -n 0 {file}", 'STDOUT_SINGLELINE', 'Total size trimmed')
+
+                # Invalidate all replicas of "foo{i}"
+                for file in paths_to_bad_data_objects:
+                    lib.set_replica_status(self.admin, file, 1, 0)
+                    lib.set_replica_status(self.admin, file, 2, 0)
+
+                # =-=-=-=-=-=-=-
+                # visualize our tree
+                self.user0.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+                # =-=-=-=-=-=-=-
+                # call rebalance function - the thing were actually testing... finally.
+                self.admin.assert_icommand("iadmin modresc pt rebalance", "STDERR", "-1834000 REBALANCE_NOT_COMPLETE", desired_rc=4)
+
+                # =-=-=-=-=-=-=-
+                # visualize our rebalance
+                self.user0.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+                # Assert failed replications still exist and no replication performed
+                for file in [os.path.basename(f) for f in paths_to_bad_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '0')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '0')
+                    self.assertFalse(lib.replica_exists(self.user0, file, 3))
+
+                # =-=-=-=-=-=-=-
+                # assert that all the appropriate repl numbers exist for all the children
+                for file in [os.path.basename(f) for f in paths_to_good_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 3), '1')
+
+        finally:
+            # =-=-=-=-=-=-=-
+            # TEARDOWN
+            for file in paths_to_data_objects:
+                self.user0.run_icommand(f"irm -f {file}")
+
+            IrodsController().reload_configuration()
+
+            self.admin.run_icommand("iadmin rmchildfromresc pt_c2 leaf_c")
+            self.admin.run_icommand("iadmin rmchildfromresc repl leaf_a")
+            self.admin.run_icommand("iadmin rmchildfromresc pt_b leaf_b")
+            self.admin.run_icommand("iadmin rmchildfromresc pt_c1 pt_c2")
+            self.admin.run_icommand("iadmin rmchildfromresc repl pt_c1")
+            self.admin.run_icommand("iadmin rmchildfromresc repl pt_b")
+            self.admin.run_icommand("iadmin rmchildfromresc pt repl")
+
+            self.admin.run_icommand("iadmin rmresc leaf_c")
+            self.admin.run_icommand("iadmin rmresc leaf_b")
+            self.admin.run_icommand("iadmin rmresc leaf_a")
+            self.admin.run_icommand("iadmin rmresc pt_c2")
+            self.admin.run_icommand("iadmin rmresc pt_c1")
+            self.admin.run_icommand("iadmin rmresc pt_b")
+            self.admin.run_icommand("iadmin rmresc repl")
+            self.admin.run_icommand("iadmin rmresc pt")
+
     # =-=-=-=-=-=-=-
     # REBALANCE
     def test_rebalance_for_invalid_data__ticket_3147(self):
