@@ -546,13 +546,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 core.add_rule(pep_map[self.plugin_name])
                 IrodsController().reload_configuration()
 
-                # =-=-=-=-=-=-=-
-                # place data into the resource
-                test_file = "iput_test_file"
-                lib.make_file(test_file, 10)
-
                 for file in paths_to_data_objects:
-                    self.admin.assert_icommand(f"iput -R pt {test_file} {file}")
+                    self.admin.assert_icommand(f"itouch -R pt {file}")
 
                 # Trim so we get more replication going
                 for file in paths_to_data_objects:
