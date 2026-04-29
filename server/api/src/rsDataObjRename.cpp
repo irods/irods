@@ -481,10 +481,7 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     // Since status is non-negative, it is a logical_quota::violation value
     lq::violation violation_flags = static_cast<lq::violation>(status);
 
-    const fs::path dest_path_parent = dest_path.parent_path();
-    const fs::path src_path_parent = src_path.parent_path();
-
-    if(const auto [a, b] = std::mismatch(src_path_parent.begin(), src_path_parent.end(), dest_path_parent.begin(), dest_path_parent.end()); violation_flags != lq::violation::none && a != src_path_parent.end()) {
+    if(violation_flags != lq::violation::none && src_path.parent_path() != dest_path.parent_path()) {
         log_api::info("{}: Logical quota violation on collection [{}] with source [{}] and destination [{}].", __func__, dest_path.parent_path().string(), src_path.string(), dest_path.string());
         return LOGICAL_QUOTA_EXCEEDED;
     }
