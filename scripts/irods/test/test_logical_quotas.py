@@ -3553,7 +3553,11 @@ class Test_Logical_Quotas(
                 ["itouch", f"{self.quota_user.session_collection}/dummy_obj"]
             )
 
-            # Ensure trash collection exists, for quota set later.
+            # It is not valid to set a quota on a nonexistent collection.
+            # Therefore, we ensure the trash collection for the session collection
+            # exists before setting a quota on it.
+            # This object will be removed later when another object enters the trash
+            # so as to not mess up object counts.
             self.quota_user.assert_icommand(
                 ["irm", f"{self.quota_user.session_collection}/dummy_obj"]
             )
@@ -3696,7 +3700,6 @@ class Test_Logical_Quotas(
 
             # Now that trash is non-empty, delete the dummy object
             # to not mess up object counts.
-
             self.quota_user.assert_icommand(
                 [
                     "irm",

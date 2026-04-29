@@ -470,7 +470,7 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     namespace lq = irods::logical_quotas;
 
     const fs::path dest_path{dataObjRenameInp->destDataObjInp.objPath};
-    const fs::path src_path{dataObjRenameInp->destDataObjInp.objPath};
+    const fs::path src_path{dataObjRenameInp->srcDataObjInp.objPath};
     int status = lq::check_logical_quota_violation(rsComm, dest_path.parent_path().c_str());
 
     if(status < 0) {
@@ -491,10 +491,10 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         }
 
         if(!quota_violated && ((violation_flags & lq::violation::bytes) != lq::violation::none)) {
-            const auto src_size = fs::server::is_data_object_registered(*rsComm, src_path) ? fs::server::data_object_size(*rsComm, src_path) : 0;
-            const auto dest_size = (((violation_flags & lq::violation::objects) != lq::violation::none) || fs::server::is_data_object_registered(*rsComm, src_path)) ? fs::server::data_object_size(*rsComm, src_path) : 0;
+            const std::uintmax_t src_size = fs::server::is_data_object_registered(*rsComm, src_path) ? fs::server::data_object_size(*rsComm, src_path) : 0;
+            const std::uintmax_t dest_size = (((violation_flags & lq::violation::objects) != lq::violation::none) || fs::server::is_data_object_registered(*rsComm, dest_path)) ? fs::server::data_object_size(*rsComm, dest_path) : 0;
             // Overwriting a smaller object will not trigger byte quota.
-            quota_violated = (src_size >= dest_size);
+            quota_violated = (src_size > dest_size);
         }
     }
     // If we can't fetch object properties for some reason,
