@@ -512,6 +512,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             ''')
         }
 
+        # Define number of data objects and data objects will be stale
+        num_children = 10
+        bad_file_indices = (1,3,5)
+
+        # Generate full paths to data objects
+        paths_to_good_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
+        paths_to_bad_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in bad_file_indices]
+        paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
+
         try:
             # =-=-=-=-=-=-=-
             # STANDUP
@@ -541,14 +550,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 # place data into the resource
                 test_file = "iput_test_file"
                 lib.make_file(test_file, 10)
-
-                num_children = 10
-                bad_file_indices = (1,3,5)
-
-                # Generate full paths to data objects
-                paths_to_good_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
-                paths_to_bad_data_objects = [os.path.join(self.admin.session_collection, f"foo{i}") for i in bad_file_indices]
-                paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
 
                 for file in paths_to_data_objects:
                     self.admin.assert_icommand(f"iput -R pt {test_file} {file}")
