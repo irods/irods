@@ -497,9 +497,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
 
     def test_rebalance_has_partial_success_with_missing_or_stale_replicas__issue_6111(self):
-        output = subprocess.getstatusoutput("hostname")
-        hostname = output[1]
-
         # Don't use the default rebalance limit.
         # Use a rebalance smaller limit to simulate large
         # collections without creating hundreds of collections.
@@ -555,8 +552,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
                 # Invalidate all replicas of "foo{i}"
                 for file in [f"foo{i}" for i in bad_file_indices]:
-                    self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
-                    self.admin.assert_icommand(["iadmin", "modrepl", "logical_path", os.path.join(self.admin.session_collection, file), 'replica_number', '2', 'DATA_REPL_STATUS', '0'])
+                    lib.set_replica_status(self.admin, os.path.join(self.admin.session_collection, file), 1, 0)
+                    lib.set_replica_status(self.admin, os.path.join(self.admin.session_collection, file), 2, 0)
 
                 # =-=-=-=-=-=-=-
                 # visualize our tree
