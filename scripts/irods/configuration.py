@@ -199,13 +199,45 @@ class IrodsConfig(object):
     @admin_password.setter
     def admin_password(self, value):
         l = logging.getLogger(__name__)
+        self._admin_password = value
         if not os.path.exists(os.path.dirname(paths.password_file_path())):
             os.makedirs(os.path.dirname(paths.password_file_path()), mode=0o700)
         mtime = int(time.time())
-        with open(paths.password_file_path(), 'wt') as f:
+        with open(paths.password_file_path(), 'wt', opener=lib.read_write_owner_opener) as f:
             l.debug('Writing password file %s', f.name)
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(paths.password_file_path(), (mtime, mtime))
+
+    def get_admin_password(self, check_legacy_password_file=False):
+        """Get the admin password with the option of just using the cached value."""
+        l = logging.getLogger(__name__)
+        if check_legacy_password_file:
+            return self.admin_password
+        return self._admin_password
+
+    def set_admin_password(self, value, create_legacy_password_file=False):
+        """Set the admin password with the option of only updating the cached value."""
+        l = logging.getLogger(__name__)
+        if create_legacy_password_file:
+            self.admin_password = value # use the property setter
+        else:
+            self._admin_password = value # just update cached value
+
+    @property
+    def admin_session_token(self):
+        return self._session_token
+
+    @admin_session_token.setter
+    def admin_session_token(self, value):
+        l = logging.getLogger(__name__)
+        self._session_token = value
+        if not os.path.exists(os.path.dirname(paths.service_account_session_token_file_path())):
+            os.makedirs(os.path.dirname(paths.service_account_session_token_file_path()), mode=0o600)
+        mtime = int(time.time())
+        with open(paths.service_account_session_token_file_path(), 'wt', opener=lib.read_write_owner_opener) as f:
+            l.debug('Writing session token to file: [%s]', f.name)
+            print(value, end='', file=f)
+        os.utime(paths.service_account_session_token_file_path(), (mtime, mtime))
 
     def commit(self, config_dict, path, clear_cache=True, make_backup=False):
         l = logging.getLogger(__name__)
@@ -274,6 +306,10 @@ class IrodsConfig(object):
     @property
     def password_file_path(self):
         return paths.password_file_path()
+
+    @property
+    def session_token_file_path(self):
+        return paths.service_account_session_token_file_path()
 
     @property
     def log_directory(self):

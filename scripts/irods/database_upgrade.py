@@ -287,8 +287,17 @@ def run_update(irods_config, cursor, is_upgrade):
                         ");"
                 )
 
-        # password storage mode setting
-        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('authentication', 'password_storage_mode', 'legacy');")
+        # If the setup script inserted a value for password_storage_mode, do not insert a new value.
+        password_storage_mode_query = (
+            "select option_value from R_GRID_CONFIGURATION "
+            "where "
+            "namespace = 'authentication' "
+            "and "
+            "option_name = 'password_storage_mode';"
+        )
+        if len(database_connect.execute_sql_statement(cursor, password_storage_mode_query).fetchall()) == 0:
+            password_storage_mode = "hashed" if "irods" == irods_config.server_config.get("zone_auth_scheme", "native") else "legacy"
+            database_connect.execute_sql_statement(cursor, f"insert into R_GRID_CONFIGURATION values ('authentication', 'password_storage_mode', '{password_storage_mode}');")
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
