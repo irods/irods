@@ -4127,3 +4127,108 @@ class Test_Logical_Quotas(
             self.admin.assert_icommand(
                 ["iadmin", "set_grid_configuration", "logical_quotas", "enabled", "0"]
             )
+
+    def test_logical_quotas_set_on_remote_zones(self):
+        zone_name = "logical_quota_remote_zone"
+        max_bytes = 10000
+        max_objects = 5
+
+        try:
+            # No enforcement needed to test.
+            self.admin.assert_icommand(["iadmin", "mkzone", zone_name, "remote", ""])
+
+            # Success, collection in zone.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+
+            # Success, collection in local zone.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.admin.session_collection,
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+
+            # Success, local zone collection.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    f"/{self.admin.zone_name}",
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+
+            # Fail, remote zone collection.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    f"/{zone_name}",
+                    str(max_bytes),
+                    str(max_objects),
+                ],
+                'STDERR_SINGLELINE',
+                '-169000 SYS_NOT_ALLOWED'
+            )
+
+            # Fail, collection in remote zone.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    f"/{zone_name}/home",
+                    str(max_bytes),
+                    str(max_objects),
+                ],
+                'STDERR_SINGLELINE',
+                '-169000 SYS_NOT_ALLOWED'
+            )
+
+            # Fail, root collection.
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    f"/",
+                    str(max_bytes),
+                    str(max_objects),
+                ],
+                'STDERR_SINGLELINE',
+                '-169000 SYS_NOT_ALLOWED'
+            )
+
+
+        finally:
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.admin.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    f"/{self.admin.zone_name}",
+                    "0",
+                    "0",
+                ]
+            )
+
+            self.admin.assert_icommand(["iadmin", "rmzone", zone_name])
