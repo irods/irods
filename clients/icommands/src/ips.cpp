@@ -64,6 +64,8 @@ main( int argc, char **argv ) {
         return 2;
     }
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = utils::authenticate_client(conn, myEnv);
         if ( status != 0 ) {

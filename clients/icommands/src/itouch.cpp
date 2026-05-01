@@ -73,6 +73,8 @@ int main(int _argc, char* _argv[])
         irods::experimental::client_connection comm;
         RcComm& comm_ref = comm;
 
+        utils::warn_if_connected_to_potentially_incompatible_server(comm_ref);
+
         if (const auto ec = rc_touch(&comm_ref, json_input.data()); ec < 0) {
             printErrorStack(comm_ref.rError);
             return 1;

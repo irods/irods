@@ -386,6 +386,8 @@ main( int argc, char **argv ) {
 
     const auto disconnect = irods::at_scope_exit{[conn] { rcDisconnect(conn); }};
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+
     status = utils::authenticate_client(conn, myEnv);
     if ( status != 0 ) {
         print_error_stack_to_file(conn->rError, stderr);

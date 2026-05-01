@@ -75,6 +75,8 @@ main( int argc, char **argv ) {
         return 2;
     }
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+
     status = utils::authenticate_client(conn, myEnv);
     if ( status != 0 ) {
         // Failed to authenticate as the configured user

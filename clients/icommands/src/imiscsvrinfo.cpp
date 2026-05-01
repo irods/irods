@@ -1,3 +1,5 @@
+#include "utility.hpp"
+
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/packStruct.h>
@@ -56,6 +58,8 @@ main( int argc, char **argv ) {
     if ( Conn == NULL ) {
         exit( 2 );
     }
+
+    utils::warn_if_connected_to_potentially_incompatible_server(*Conn);
 
     if (const auto vers = irods::to_version(Conn->svrVersion->relVersion); vers && *vers < irods::version{4, 3, 4}) {
         // iRODS 4.3.3 and earlier do not support the certinfo member variable. This if-branch

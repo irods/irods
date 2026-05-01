@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
 
         irods::experimental::client_connection conn;
 
+        utils::warn_if_connected_to_potentially_incompatible_server(static_cast<RcComm&>(conn));
+
         irods::at_scope_exit print_errors_on_exit{[&conn] {
             printErrorStack(static_cast<rcComm_t*>(conn)->rError);
         }};
