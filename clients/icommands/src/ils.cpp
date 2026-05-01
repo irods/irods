@@ -70,6 +70,9 @@ main( int argc, char **argv ) {
     if ( conn == NULL ) {
         exit( 2 );
     }
+
+    utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();

@@ -93,6 +93,8 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*Conn);
+
     // If --no-scramble was specified, make sure the UserAdmin API of the connected server actually supports the
     // feature. If not, exit with an error. The password will not be usable if it is set with this option and the
     // server does not support this feature.

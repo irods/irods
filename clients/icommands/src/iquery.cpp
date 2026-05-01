@@ -1,3 +1,5 @@
+#include "utility.hpp"
+
 #include <irods/client_connection.hpp>
 #include <irods/genquery2.h>
 #include <irods/irods_at_scope_exit.hpp>
@@ -93,6 +95,9 @@ int main(int _argc, char* _argv[]) // NOLINT(modernize-use-trailing-return-type)
         }};
 
         auto* conn_ptr = static_cast<RcComm*>(conn);
+
+        utils::warn_if_connected_to_potentially_incompatible_server(*conn_ptr);
+
         const auto ec = rc_genquery2(conn_ptr, &input, &output);
         if (ec < 0) {
             fmt::print(stderr, "error: {}\n", ec);

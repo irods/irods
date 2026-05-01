@@ -1,3 +1,5 @@
+#include "utility.hpp"
+
 #include <irods/rodsClient.h>
 #include <irods/client_connection.hpp>
 #include <irods/irods_client_api_table.hpp>
@@ -124,6 +126,8 @@ int main(int argc, char** argv){
         auto path = correct_path(vm, env);
         load_client_api_plugins();
         irods::experimental::client_connection conn;
+
+        utils::warn_if_connected_to_potentially_incompatible_server(static_cast<RcComm&>(conn));
 
         if (!fs::client::is_collection(conn, path)) {
             std::cerr << "Error: The specified path does not refer to a collection.\n";

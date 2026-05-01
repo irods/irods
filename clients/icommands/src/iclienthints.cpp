@@ -75,6 +75,8 @@ main( int _argc, char** argv ) {
         exit( 2 );
     }
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
     irods::pack_entry_table& pk_tbl = irods::get_pack_table();

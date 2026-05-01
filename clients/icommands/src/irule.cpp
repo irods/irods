@@ -180,6 +180,10 @@ main( int argc, char **argv ) {
 
     load_client_api_plugins();
 
+    // Keeps warn_if_connected_to_potentially_incompatible_server from being invoked
+    // more than once.
+    bool print_incompatibility_warning = true;
+
     /* Don't need to parse parameters if just listing available rule_engine_instances */
     if ( argsMap.count( "available" ) ) {
         /* add key val for listing available rule engine instances */
@@ -206,7 +210,7 @@ main( int argc, char **argv ) {
                 exit( 10 );
             }
 
-            /* if the input file name starts with "i:", the get the file from iRODS server */
+            // If the input file name starts with "i:", get the file from the iRODS server.
             if ( !strncmp( fileName, "i:", 2 ) ) {
                 status = getRodsEnv( &myEnv );
 
@@ -221,6 +225,9 @@ main( int argc, char **argv ) {
                 if ( conn == NULL ) {
                     exit( 2 );
                 }
+
+                utils::warn_if_connected_to_potentially_incompatible_server(*conn);
+                print_incompatibility_warning = false;
 
                 status = utils::authenticate_client(conn, myEnv);
                 if ( status != 0 ) {
@@ -450,6 +457,12 @@ main( int argc, char **argv ) {
             rodsLogError( LOG_ERROR, errMsg.status, "rcConnect failure %s",
                           errMsg.msg );
             exit( 2 );
+        }
+
+        if (print_incompatibility_warning) {
+            // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
+            print_incompatibility_warning = false;
+            utils::warn_if_connected_to_potentially_incompatible_server(*conn);
         }
 
         status = utils::authenticate_client(conn, myEnv);

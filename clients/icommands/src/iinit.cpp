@@ -384,6 +384,8 @@ int main( int argc, char **argv )
         return 2;
     }
 
+    utils::warn_if_connected_to_potentially_incompatible_server(*Conn);
+
     auto ctx = nlohmann::json{{irods::AUTH_TTL_KEY, std::to_string(ttl)},
                               {ia::record_auth_file, true},
                               {ia::force_password_prompt, true},
