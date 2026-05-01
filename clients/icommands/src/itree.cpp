@@ -26,7 +26,6 @@
 namespace po   = boost::program_options;
 namespace fs   = irods::experimental::filesystem;
 namespace ix   = irods::experimental;
-namespace json = nlohmann;
 
 using pattern_matcher = std::variant<int,               // no option specified
                                      std::string,       // glob-style pattern specified
@@ -39,7 +38,7 @@ auto print_dir(const fs::path&,
 
 auto correct_path(const po::variables_map&, rodsEnv&) -> fs::path;
 auto print_usage() -> void;
-auto get_json(const fs::path&, const po::variables_map&, ix::client_connection&, unsigned int depth) -> json::json;
+auto get_json(const fs::path&, const po::variables_map&, ix::client_connection&, unsigned int depth) -> nlohmann::json;
 auto contains_pattern(const pattern_matcher& pm) -> bool;
 
 // ANSI escape numbers. For setting the colors.
@@ -136,9 +135,9 @@ int main(int argc, char** argv){
 
         if (vm["json"].as<bool>() || vm["uppercase_json_deprecated"].as<bool>()) {
             auto value = get_json(path, vm, conn, vm["depth"].as<int>() );
-            json::json top;
+            nlohmann::json top;
             top.push_back(value);
-            json::json report = {{"type","report"}, {"collections",collections},{"data_objects",objects}};
+            nlohmann::json report = {{"type", "report"}, {"collections", collections}, {"data_objects", objects}};
 
             if (vm["size"].as<bool>()) {
                 report["size"] = total_size;
@@ -347,8 +346,9 @@ auto correct_path(const po::variables_map& pm, rodsEnv& env) -> fs::path {
 }
 
 auto print_usage() -> void {
+    // clang-format off
     fmt::print(
-        R"_(itree - List contents of collections in a tree-like format.
+R"_(itree - List contents of collections in a tree-like format.
 
 Usage: itree [OPTION]... COLLECTION
 
@@ -382,11 +382,13 @@ Options:
   -x, --regex-extended-syntax
                   Enable extended syntax for regular expressions.
 )_");
+    // clang-format on
 
     printReleaseInfo("itree");
 }
 
-auto contents_size(const json::json& value) -> std::uintmax_t {
+auto contents_size(const nlohmann::json& value) -> std::uintmax_t
+{
     std::uintmax_t total = 0;
     for(const auto& child : value["contents"]) {
         total += child["size"].get<std::uintmax_t>();
@@ -394,22 +396,24 @@ auto contents_size(const json::json& value) -> std::uintmax_t {
     return total;
 }
 
-auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_connection& conn, unsigned int depth ) -> json::json  {
+auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_connection& conn, unsigned int depth)
+    -> nlohmann::json
+{
     auto fsiter = fs::client::collection_iterator(conn, path);
-    json::json value;
+    nlohmann::json value;
     value["type"] = "collection";
     if( vm["fullpath"].as<bool>() || path.object_name().string().empty() ) {
         value["name"] = path;
     } else {
         value["name"] = path.object_name();
     }
-    value["contents"] = json::json::value_t::array;
+    value["contents"] = nlohmann::json::value_t::array;
     if( depth == 0 ) {
         return value;
     }
     for(const auto& object: fsiter) {
         if( object.is_collection() ) {
-            json::json sub_coll;
+            nlohmann::json sub_coll;
             sub_coll = get_json(object.path(), vm, conn, depth - 1);
             value["contents"].emplace_back(std::move(sub_coll));
             collections++;
@@ -417,7 +421,7 @@ auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_conn
             if(  vm["collections-only"].as<bool>() || !object_matches(object) ) {
                 continue;
             }
-            json::json data_object;
+            nlohmann::json data_object;
             if( vm["fullpath"].as<bool>() ){
                 data_object["name"] = object.path();
             } else {
@@ -429,9 +433,9 @@ auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_conn
                 data_object["size"] = object.data_size();
             }
             if( vm.count("acl") ) {
-                json::json permissions;
+                nlohmann::json permissions;
                 for ( auto& perm : object.status().permissions() ) {
-                    json::json permission;
+                    nlohmann::json permission;
                     permission["bearer_name"] = perm.name;
                     permission["zone"] = perm.zone;
                     permission["access_level"] = permission_type_string(perm.prms);
