@@ -17,7 +17,7 @@
 /* REMOTE or LOCAL refers to the Zone */
 /* priv or not indicates whether the user is iRODS Admin: privileged */
 #define NO_USER_AUTH            0       /* not authenticated yet */
-#define PUBLIC_USER_AUTH        1       /* not authenticated yet */
+#define PUBLIC_USER_AUTH        1       /* not authenticated yet. Deprecated in 5.1.0. */
 #define REMOTE_USER_AUTH        2       /* authenticated as remote user */
 #define LOCAL_USER_AUTH         3       /* authenticated as local user */
 // Authenticated as a privileged remote user. This authentication level is reserved for iRODS
