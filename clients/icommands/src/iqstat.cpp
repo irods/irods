@@ -174,6 +174,9 @@ main( int argc, char **argv ) {
 
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
+    if (nullptr == Conn) {
+        return 2;
+    }
 
     utils::warn_if_connected_to_potentially_incompatible_server(*Conn);
 
