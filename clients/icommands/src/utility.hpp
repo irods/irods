@@ -22,7 +22,7 @@ namespace utils
         // Setting this environment variable is required so that "ips" can display
         // the command name alongside the connection information.
         if (setenv(SP_OPTION, _display_name.data(), /* overwrite */ 1)) {
-            std::cout << "Warning: Could not set environment variable [spOption] for ips.";
+            std::cout << "Warning: Could not set environment variable [spOption] for ips.\n";
         }
     }
 

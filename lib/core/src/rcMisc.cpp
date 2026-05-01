@@ -4930,7 +4930,7 @@ void set_ips_display_name(const char* _display_name)
     // Setting this environment variable is required so that "ips" can display
     // the command name alongside the connection information.
     if (setenv(SP_OPTION, _display_name, /* overwrite */ 1)) {
-        std::cout << "Warning: Could not set environment variable [spOption] for ips.";
+        std::cout << "Warning: Could not set environment variable [spOption] for ips.\n";
     }
 } // set_ips_display_name
 
