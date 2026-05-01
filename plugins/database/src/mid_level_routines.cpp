@@ -1129,7 +1129,7 @@ int cmlCheckUserInGroup( const char *userName, const char *userZone,
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
                  sVal, MAX_NAME_LEN, bindVars, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        return CAT_INVALID_USER;
+        return CAT_INVALID_USER; // Internal use, okay to return CAT_INVALID_USER.
     }
     if ( status ) {
         return status;

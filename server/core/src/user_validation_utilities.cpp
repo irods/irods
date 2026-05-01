@@ -26,6 +26,7 @@ namespace irods::user
         irods::experimental::query_builder qb;
         auto q = qb.build<RsComm>(_comm, qstr);
         if (q.empty()) {
+            // This is only called via admin functions so CAT_INVALID_USER is okay to return.
             THROW(CAT_INVALID_USER, "user does not exist");
         }
 
