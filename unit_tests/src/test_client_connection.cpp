@@ -343,7 +343,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
             ix::client_connection{env.rodsHost, env.rodsPort, {"invalid", env.rodsZone}};
         }
         catch (const irods::exception& e) {
-            CHECK(e.code() == CAT_INVALID_USER);
+            CHECK(e.code() == CAT_INVALID_AUTHENTICATION);
             CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Client login error"));
         }
     }
@@ -354,7 +354,7 @@ TEST_CASE("#7155: report underlying error info from server on failed connection"
             ix::client_connection{env.rodsHost, env.rodsPort, {env.rodsUserName, "invalid"}};
         }
         catch (const irods::exception& e) {
-            CHECK(e.code() == CAT_INVALID_USER);
+            CHECK(e.code() == CAT_INVALID_AUTHENTICATION);
             CHECK_THAT(e.client_display_what(), Catch::Matchers::ContainsSubstring("Client login error"));
         }
     }

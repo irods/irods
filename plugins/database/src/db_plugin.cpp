@@ -1148,7 +1148,8 @@ int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
+            // Do not hint that the user does not exist.
+            status = CAT_INVALID_AUTHENTICATION;
         }
         else {
             _rollback( "decodePw" );
@@ -1378,7 +1379,7 @@ rodsLong_t checkAndGetObjectId(
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return CAT_INVALID_USER;
+                return CAT_INVALID_USER; // Internal processing, CAT_INVALID_USER should be ok.
             }
             _rollback( "checkAndGetObjectId" );
             return status;
@@ -1840,7 +1841,7 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, const char *userName
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return CAT_INVALID_USER;
+            return CAT_INVALID_USER; // User should be authenticated so returning CAT_INVALID_USER is okay.
         }
         return status;
     }
@@ -4443,7 +4444,7 @@ irods::error db_del_user_re_op(
     if ( strncmp( _ctx.comm()->clientUser.userName, userName2, sizeof( userName2 ) ) == 0 &&
             strncmp( _ctx.comm()->clientUser.rodsZone, zoneToUse, sizeof( zoneToUse ) ) == 0 ) {
         addRErrorMsg( &_ctx.comm()->rError, 0, "Cannot remove your own admin account, probably unintended" );
-        return ERROR( CAT_INVALID_USER, "invalid user" );
+        return ERROR(CAT_INVALID_USER, "invalid user"); // Admin function, okay to return CAT_INVALID_USER.
     }
 
 
@@ -4461,7 +4462,7 @@ irods::error db_del_user_re_op(
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
             status == CAT_NO_ROWS_FOUND ) {
         addRErrorMsg( &_ctx.comm()->rError, 0, "Invalid user" );
-        return ERROR( CAT_INVALID_USER, "invalid user" );
+        return ERROR(CAT_INVALID_USER, "invalid user"); // Admin function, okay to return CAT_INVALID_USER.
     }
     if ( status != 0 ) {
         _rollback( "chlDelUserRE" );
@@ -4477,7 +4478,7 @@ irods::error db_del_user_re_op(
                  "delete from R_USER_MAIN where user_name=? and zone_name=?",
                  &icss );
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        return ERROR( CAT_INVALID_USER, "invalid user" );
+        return ERROR(CAT_INVALID_USER, "invalid user"); // Admin function, okay to return CAT_INVALID_USER.
     }
     if ( status != 0 ) {
         _rollback( "chlDelUserRE" );
@@ -6191,10 +6192,26 @@ irods::error db_check_auth_op(
 
     if ( status < 4 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
+            // Do not hint that the user does not exist.
+            status = CAT_INVALID_AUTHENTICATION;
             if ( strncmp( ANONYMOUS_USER, userName2, NAME_LEN ) == 0 ) {
                 /* anonymous user, skip the pw check but do the rest */
                 goto checkLevel;
+            }
+
+            // The user does not exist. Perform a dummy hash for time equalization using the
+            // server's configured algorithm and parameters so that the response time is
+            // indistinguishable from a valid user with a wrong password.
+            {
+                std::array<char, CHALLENGE_LEN + MAX_PASSWORD_LEN + 2> dummy_md5Buf{};
+                std::strncpy(dummy_md5Buf.data(), _challenge, CHALLENGE_LEN);
+                std::strncpy(dummy_md5Buf.data() + CHALLENGE_LEN, "dummy_password", MAX_PASSWORD_LEN);
+                std::array<char, RESPONSE_LEN + 2> dummy_digest{};
+                obfMakeOneWayHash(hashType,
+                                  reinterpret_cast<unsigned char*>(dummy_md5Buf.data()),
+                                  dummy_md5Buf.size() - 2,
+                                  reinterpret_cast<unsigned char*>(dummy_digest.data()));
+                dummy_md5Buf.fill(0);
             }
         }
         return ERROR( status, "select rcat_password failed" );
@@ -6442,7 +6459,7 @@ checkLevel:
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
+            status = CAT_INVALID_AUTHENTICATION; // Do not hint that the user does not exist.
         }
         else {
             _rollback( "chlCheckAuth" );
@@ -6598,7 +6615,7 @@ irods::error db_make_temp_pw_op(
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
+            status = CAT_INVALID_USER; // Admin function, okay to return CAT_INVALID_USER.
         }
         else {
             _rollback( "chlMakeTempPw" );
@@ -6751,7 +6768,7 @@ irods::error db_make_limited_pw_op(
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
+            status = CAT_INVALID_USER; // Admin function, okay to return CAT_INVALID_USER.
         }
         else {
             _rollback( "chlMakeLimitedPw" );
@@ -6964,7 +6981,7 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
                      selUserId, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status == CAT_NO_ROWS_FOUND ) {
-        return  ERROR( CAT_INVALID_USER, "invalid user" );
+        return ERROR(CAT_INVALID_AUTHENTICATION, "invalid user");
     }
     if ( status ) {
         return ERROR( status, "failed to get user id" );
@@ -7565,7 +7582,7 @@ irods::error db_mod_user_op(
                 "select user_id from R_USER_MAIN where user_name=? and zone_name=?", &iVal, bindVars, &icss);
             if (select_err < 0) {
                 log_db::error("chlModUser invalid user {} zone {}", userName2, zoneName);
-                return ERROR(CAT_INVALID_USER, "invalid user");
+                return ERROR(CAT_INVALID_USER, "invalid user"); // Admin function, okay to return CAT_INVALID_USER.
             }
         }
         log_db::error("Failed to update password for user [{}#{}]: [{}]", userName2, zoneName, status);
@@ -7598,7 +7615,7 @@ irods::error db_mod_user_op(
                 addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
 
                 log_db::info("chlModUser invalid user_type");
-                return ERROR( CAT_INVALID_USER_TYPE, "invalid user type" );
+                return ERROR(CAT_INVALID_USER_TYPE, "invalid user type");
             }
         }
         if ( opType == 4 ) { /* trying to insert password or auth-name */
@@ -7618,7 +7635,7 @@ irods::error db_mod_user_op(
             }
             if ( status2 != 0 ) {
                 log_db::info("chlModUser invalid user {} zone {}", userName2, zoneName);
-                return ERROR( CAT_INVALID_USER, "invalid user" );
+                return ERROR(CAT_INVALID_USER, "invalid user"); // Admin function, okay to return CAT_INVALID_USER.
             }
         }
         log_db::info("chlModUser cmlExecuteNoAnswerSql failure {}", status);
@@ -7753,7 +7770,7 @@ irods::error db_mod_group_op(
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return ERROR( CAT_INVALID_USER, "user not found" );
+            return ERROR(CAT_INVALID_USER, "user not found"); // Admin function, okay to return CAT_INVALID_USER.
         }
         _rollback( "chlModGroup" );
         return ERROR( status, "failed to get user" );
@@ -9133,7 +9150,9 @@ irods::error db_add_avu_metadata_op(
         if ( status != 0 ) {
             _rollback( "chlAddAVUMetadata" );
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return ERROR( CAT_INVALID_USER, "invalid user" );
+                // If we get here we should be okay to return CAT_INVALID_USER as the user is
+                // a privileged user.
+                return ERROR(CAT_INVALID_USER, "invalid user");
             }
             return ERROR( status, "select user_id failed" );
         }
@@ -9527,7 +9546,8 @@ irods::error db_del_avu_metadata_op(
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return ERROR( CAT_INVALID_USER, "invalid user" );
+                // If we get here we should be okay to return CAT_INVALID_USER.
+                return ERROR(CAT_INVALID_USER, "invalid user");
             }
             if ( _nocommit != 1 ) {
                 _rollback( "chlDeleteAVUMetadata" );
@@ -9873,7 +9893,8 @@ irods::error db_mod_access_control_resc_op(
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return ERROR( CAT_INVALID_USER, "invalid user" );
+            // User must be authenticated to get here so it is okay to return CAT_INVALID_USER.
+            return ERROR(CAT_INVALID_USER, "invalid user");
         }
         return ERROR( status, "select user_id failure" );
     }
@@ -10180,7 +10201,9 @@ irods::error db_mod_access_control_op(
                          &userId, bindVars, &icss );
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return ERROR( CAT_INVALID_USER, "invalid user" );
+                // User must be authenticated to get here so it's okay to
+                // return CAT_INVALID_USER.
+                return ERROR(CAT_INVALID_USER, "invalid user");
             }
             return ERROR( status, "select user_id failure" );
         }
@@ -12133,7 +12156,8 @@ irods::error db_set_quota_op(
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return ERROR( CAT_INVALID_USER, userName );
+                // User must be authenticated so it is okay to return CAT_INVALID_USER.
+                return ERROR(CAT_INVALID_USER, userName);
             }
             _rollback( "chlSetQuota" );
             return ERROR( status, "select user_id failed" );
@@ -14649,7 +14673,8 @@ irods::error db_mod_ticket_op(
                          &userId, bindVars, &icss );
         }
         if ( status != 0 ) {
-            return ERROR( CAT_INVALID_USER, "select user_id failed" );
+            // User must be authenticated so it is okay to return CAT_INVALID_USER.
+            return ERROR(CAT_INVALID_USER, "select user_id failed");
         }
 
         seqNum = cmlGetNextSeqVal( &icss );
@@ -14715,7 +14740,8 @@ irods::error db_mod_ticket_op(
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO || status == CAT_NO_ROWS_FOUND ) {
         if ( !addRErrorMsg( &_ctx.comm()->rError, 0, "Invalid user" ) ) {
         }
-        return ERROR( CAT_INVALID_USER, _ctx.comm()->clientUser.userName );
+        // User must be authenticated so it is okay to return CAT_INVALID_USER.
+        return ERROR(CAT_INVALID_USER, _ctx.comm()->clientUser.userName);
     }
     if ( status < 0 ) {
         return ERROR( status, "failed to select user_id" );
@@ -16092,8 +16118,26 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
         };
 
         std::vector<credential> credentials;
+        std::string default_algorithm;
+        nlohmann::json default_hash_params;
         try {
             auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+            // Get the server's configured hashing parameters. These are used for doing a dummy password
+            // hash in case the user does not exist for time equalization purposes.
+            {
+                if (auto params_result = nanodbc::execute(
+                        db_conn,
+                        "select option_value from R_GRID_CONFIGURATION "
+                        "where namespace = 'authentication' and option_name = 'password_hashing_parameters'");
+                    params_result.next())
+                {
+                    const auto params_json = nlohmann::json::parse(params_result.get<std::string>(0));
+                    default_algorithm = params_json.at("algorithm").get<std::string>();
+                    default_hash_params = params_json.at("parameters");
+                }
+            }
+
             nanodbc::statement stmt{db_conn};
             nanodbc::prepare(stmt,
                              "select R_USER_CREDENTIALS.hashed_password, R_USER_CREDENTIALS.salt, "
@@ -16120,8 +16164,17 @@ auto db_check_password_op(irods::plugin_context& _ctx, const char* _json_input, 
         }
 
         if (credentials.empty()) {
-            // The user does not have any stored keys. This operation does not care whether this is an invalid user or
-            // there are no keys stored for the user.
+            // The user does not exist. Perform a dummy hash for time equalization using the
+            // server's configured algorithm and parameters so that the response time is
+            // indistinguishable from a valid user with a wrong password.
+            if (!default_algorithm.empty() && !default_hash_params.is_null()) {
+                try {
+                    irods::hash_password(password, "dummy_salt", default_algorithm, default_hash_params);
+                }
+                catch (...) {
+                    // Do nothing - hash_password() is just for timing.
+                }
+            }
             return SUCCESS();
         }
 
@@ -16457,7 +16510,7 @@ auto db_remove_password_op(irods::plugin_context& _ctx, const char* _json_input)
                                                        &icss);
             if (0 != select_err) {
                 if (CAT_NO_ROWS_FOUND == select_err) {
-                    select_err = CAT_INVALID_USER;
+                    select_err = CAT_INVALID_USER; // Admin function, okay to return CAT_INVALID_USER.
                 }
                 return ERROR(
                     select_err, fmt::format("Failed to get user_id with user input: [{}#{}]", user_name, zone_name));

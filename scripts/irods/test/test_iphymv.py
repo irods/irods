@@ -497,7 +497,7 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
             try:
                 self.admin.environment_file_contents.update({'irods_user_name': 'test_exit_code_for_authentication_failure'})
 
-                rc, _, _ = self.admin.assert_icommand(['iphymv', 'whatever'], 'STDERR', 'CAT_INVALID_USER')
+                rc, _, _ = self.admin.assert_icommand(['iphymv', 'whatever'], 'STDERR', 'CAT_INVALID_AUTHENTICATION')
                 self.assertEqual(3, rc)
 
             finally:
