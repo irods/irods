@@ -110,7 +110,7 @@
 #define IRODS_TO_IRODS          "IRODS_TO_IRODS"
 #define IRODS_TO_COLLECTION     "IRODS_TO_COLLECTION"
 
-/* definition for public user */
+/* definition for public user. Deprecated in 5.1.0. */
 #define PUBLIC_USER_NAME        "public"
 
 /* definition for anonymous user */
