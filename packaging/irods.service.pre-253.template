@@ -12,6 +12,7 @@ User=irods
 Group=irods
 WorkingDirectory=/var/lib/irods
 LimitNOFILE=1048576
+RuntimeDirectory=irods
 
 [Install]
 WantedBy=multi-user.target
