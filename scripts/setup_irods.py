@@ -4,6 +4,7 @@ import argparse
 import os
 import pathlib
 import sys
+import textwrap
 
 import irods.setup_options, irods.tls
 
@@ -187,21 +188,49 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False, op
     if not args.skip_post_install_test:
         test_put(irods_config)
 
+    l.info(irods.lib.get_header('Stopping iRODS...'))
+    controller.stop()
+
+    l.info(irods.lib.get_header('iRODS is configured and ready to be started'))
+
     # extract the "irods_version" property from the version.json.dist file.
     # this guarantees that setup always uses the correct version information.
     with open('.'.join([irods_config.version_path, 'dist'])) as f:
         irods_version_string = json.load(f)['irods_version']
 
-    l.info(irods.lib.get_header('Log Configuration Notes'))
-    l.info(('iRODS uses syslog for logging. If your OS has a running syslog service, messages\n'
-            'will appear in the system log file (normally located at /var/log/syslog).\n\n'
-            'See the following for more information about configuring an iRODS-specific log file:\n\n'
-            f'  https://docs.irods.org/{irods_version_string}/system_overview/troubleshooting/'))
+    l.info(irods.lib.get_header('Post Setup Notes'))
+    l.info(textwrap.dedent(
+        f'''\
+        Logging
+        -------
+        iRODS uses syslog for logging. If your OS has a running syslog service, messages
+        will appear in the system log file (normally located at /var/log/syslog).
 
-    l.info(irods.lib.get_header('Stopping iRODS...'))
-    controller.stop()
+        See the following for information about configuring an iRODS-specific log file:
 
-    l.info(irods.lib.get_header('iRODS is configured and ready to be started'))
+            https://docs.irods.org/{irods_version_string}/system_overview/server_log/
+
+        Service Manager
+        ---------------
+        iRODS supports integration with service managers such as systemd. This
+        functionality is not enabled by default.
+
+        See the following for information about managing iRODS via a service manager:
+
+            https://docs.irods.org/{irods_version_string}/getting_started/running/#managing-irods-via-the-service-manager
+
+        PID File Management
+        -------------------
+        On an OS where /run (or /var/run) is mounted as tmpfs, the iRODS PID file
+        directory may not persist across reboots. This can prevent iRODS from starting
+        successfully on installations using an install prefix of "/".
+
+        See the following for information about PID file management:
+
+            https://docs.irods.org/{irods_version_string}/getting_started/running/#server-pid-file
+        '''
+    ))
+
 
 def replace_in_file(filepath, original, replacement, flags=0):
     with open(filepath, "r+") as f:
