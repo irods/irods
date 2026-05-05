@@ -380,6 +380,9 @@ namespace irods::authentication
             {
                 THROW(connect_err, fmt::format("Failed to connect to catalog service provider: [{}]", connect_err));
             }
+
+            const auto& user_name = _request.at(user_name_kw).get_ref<const std::string&>();
+
             // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
             // What follows in this operation requires access to database operations, so continue on the catalog
             // provider.
@@ -393,13 +396,24 @@ namespace irods::authentication
                     throw_if_secure_communications_required();
                     log_warning_for_insecure_mode();
                 }
+
+                // Indicate to the operation executed in the catalog provider that the RsComm privileges should not be
+                // adjusted after authenticating the user with the session token.
+                auto req = _request;
+                req["set_comm_privileges"] = false;
+
+                // Execute the operation in the catalog provider.
+                auto ret = irods_auth::request(*host->conn, req);
+
+                // Set the RsComm privileges for this connection on success.
+                irods_auth::set_privileges_in_rs_comm(_comm, user_name, zone_name);
+
                 // Note: We should not disconnect this server-to-server connection because the connection is not owned
                 // by this context. A set of server-to-server connections is maintained by the server agent and reused
                 // by various APIs and operations as needed.
-                return irods_auth::request(*host->conn, _request);
-            }
 
-            const auto& user_name = _request.at(user_name_kw).get_ref<const std::string&>();
+                return ret;
+            }
 
             // Authenticate using the session token...
             const auto& session_token = _request.at(session_token_kw).get_ref<const std::string&>();
@@ -424,7 +438,11 @@ namespace irods::authentication
 
             // Success! Now set user privilege information in the RsComm. This could be its own operation, but then we
             // would require the client to call the operation, so, just make it automatic as part of this operation.
-            irods_auth::set_privileges_in_rs_comm(_comm, user_name, zone_name);
+            // If the request explicitly specifies to not set RsComm privileges, do not do it.
+            const auto set_comm_privileges = _request.find("set_comm_privileges");
+            if (_request.end() == set_comm_privileges || set_comm_privileges->get<bool>()) {
+                irods_auth::set_privileges_in_rs_comm(_comm, user_name, zone_name);
+            }
 
             // Remove the session token from the response payload so that it is not communicated across the network
             // unnecessarily. The session token was included with the request, so the client should already have it.
