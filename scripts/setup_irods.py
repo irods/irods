@@ -69,8 +69,13 @@ except:
     print('WARNING: pyodbc module could not be imported.', file=sys.stderr)
     print('The pyodbc module is required for setup of catalog service providers.', file=sys.stderr)
 
-def setup_server(irods_config, json_configuration_file=None, test_mode=False):
+
+def setup_server(irods_config, json_configuration_file=None, test_mode=False, optional_prompts=None):
     l = logging.getLogger(__name__)
+
+    optional_setup_funcs = {
+        "tls": setup_tls
+    }
 
     if json_configuration_file is not None:
         with open(json_configuration_file) as f:
@@ -124,6 +129,12 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
             database_interface.setup_database_config(irods_config)
         # default resource
         default_resource_name, default_resource_directory = setup_storage(irods_config)
+        # Go through any optional setup prompted by setup script options.
+        for prompt_name in optional_prompts or []:
+            if (setup_func := optional_setup_funcs.get(prompt_name)) is None:
+                l.warning(f"No setup function found for optional prompt '{prompt_name}'. Skipping.")
+                continue
+            setup_func(irods_config)
         # server config
         setup_server_config(irods_config)
         # client environment and password
@@ -142,6 +153,15 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         if not os.path.exists(path):
             shutil.copyfile(irods.paths.get_template_filepath(path), path)
 
+    core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
+
+    # Update core.re to reflect configured TLS. This is done here because unattended installations will not use the TLS
+    # setup function.
+    if "tls_server" in irods_config.server_config:
+        acPreConnect_rule_to_replace = 'acPreConnect(*OUT) { *OUT="CS_NEG_REFUSE"; }'
+        acPreConnect_rule_replacement = 'acPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }'
+        replace_in_file(core_re_path, acPreConnect_rule_to_replace, acPreConnect_rule_replacement)
+
     l.info(irods.lib.get_header('Starting iRODS...'))
     controller = IrodsController(irods_config)
     controller.start()
@@ -154,7 +174,6 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         irods.lib.execute_command(['iadmin', 'mkresc', default_resource_name, 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     # update core.re with default resource
-    core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
     replace_in_file(core_re_path, 'demoResc', default_resource_name)
 
     # Restart the server in case core.re changed.
@@ -380,6 +399,83 @@ def setup_storage(irods_config):
 
     return (resource_name, resource_vault_path)
 
+
+def setup_tls(irods_config):
+    l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Setting up TLS'))
+
+    while True:
+        # TLS configuration for incoming connections.
+        if "tls_server" not in irods_config.server_config:
+            irods_config.server_config["tls_server"] = {}
+
+        default_certificate_chain_file = irods_config.server_config["tls_server"].get("certificate_chain_file")
+        irods_config.server_config["tls_server"]['certificate_chain_file'] = irods.lib.default_prompt(
+            "Path to server's certificate chain file",
+            default=[default_certificate_chain_file] if default_certificate_chain_file else None,
+            input_filter=irods.lib.character_count_filter(minimum=1, field='Certificate chain file'))
+
+        default_certificate_key_file = irods_config.server_config["tls_server"].get("certificate_key_file")
+        irods_config.server_config["tls_server"]['certificate_key_file'] = irods.lib.default_prompt(
+            "Path to server's certificate key file",
+            default=[default_certificate_key_file] if default_certificate_key_file else None,
+            input_filter=irods.lib.character_count_filter(minimum=1, field='Certificate key file'))
+
+        default_dh_params_file = irods_config.server_config["tls_server"].get("dh_params_file")
+        irods_config.server_config["tls_server"]['dh_params_file'] = irods.lib.default_prompt(
+            "Path to Diffie-Hellman parameter file",
+            default=[default_dh_params_file] if default_dh_params_file else None,
+            input_filter=irods.lib.character_count_filter(minimum=1, field='Diffie-Hellman params file'))
+
+        # TLS configuration for outgoing connections (server-to-server).
+        if "tls_client" not in irods_config.server_config:
+            irods_config.server_config["tls_client"] = {}
+
+        default_ca_certificate_file = irods_config.server_config["tls_client"].get('ca_certificate_file')
+        client_ca_certificate_file = irods.lib.default_prompt(
+            "Path to CA certificate file",
+            default=[default_ca_certificate_file] if default_ca_certificate_file else None)
+
+        default_ca_certificate_path = irods_config.server_config["tls_client"].get('ca_certificate_path')
+        client_ca_certificate_path = irods.lib.default_prompt(
+            "Path to CA certificates directory",
+            default=[default_ca_certificate_path] if default_ca_certificate_path else None)
+
+        default_verify_server = irods_config.server_config["tls_client"].get('verify_server') or "cert"
+        verify_server_levels = ["hostname", "cert", "none"]
+        client_verify_server = irods.lib.default_prompt(
+            "Certificate verification level",
+            default=verify_server_levels,
+            previous=verify_server_levels.index(default_verify_server) + 1,
+            input_filter=irods.lib.set_filter(verify_server_levels, field='Verify server'))
+
+        if client_ca_certificate_file:
+            irods_config.server_config["tls_client"]['ca_certificate_file'] = client_ca_certificate_file
+        if client_ca_certificate_path:
+            irods_config.server_config["tls_client"]['ca_certificate_path'] = client_ca_certificate_path
+        irods_config.server_config["tls_client"]['verify_server'] = client_verify_server
+
+        confirmation_message = (
+            '\n'
+            '-------------------------------------------------------------\n'
+            f'Certificate chain file:         {irods_config.server_config["tls_server"].get("certificate_chain_file")}\n'
+            f'Certificate key file:           {irods_config.server_config["tls_server"].get("certificate_key_file")}\n'
+            f'Diffie-Hellman parameters file: {irods_config.server_config["tls_server"].get("dh_params_file")}\n'
+            f'CA certificate file:            {irods_config.server_config["tls_client"].get("ca_certificate_file", "")}\n'
+            f'CA certificate path:            {irods_config.server_config["tls_client"].get("ca_certificate_path", "")}\n'
+            f'Certificate verification level: {irods_config.server_config["tls_client"].get("verify_server")}\n'
+            '-------------------------------------------------------------\n\n'
+            'Please confirm'
+        )
+
+        if irods.lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
+            break
+
+    irods_config.server_config["client_server_policy"] = "CS_NEG_REQUIRE"
+
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
+
 def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Configuring the server options'))
@@ -473,6 +569,7 @@ def setup_client_environment(irods_config):
     service_account_dict = {
         'schema_name': 'service_account_environment',
         'schema_version': 'v5',
+        'irods_authentication_scheme': irods_config.server_config['zone_auth_scheme'],
         'irods_host': irods_config.server_config['host'],
         'irods_port': irods_config.server_config['zone_port'],
         'irods_default_resource': irods_config.server_config['default_resource_name'],
@@ -492,6 +589,10 @@ def setup_client_environment(irods_config):
         'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
         'irods_connection_pool_refresh_time_in_seconds': irods_config.server_config['connection_pool_refresh_time_in_seconds']
     }
+    if tls_client_config := irods_config.server_config.get("tls_client"):
+        service_account_dict["irods_ssl_ca_certificate_file"] = tls_client_config["ca_certificate_file"]
+        service_account_dict["irods_ssl_verify_server"] = tls_client_config["verify_server"]
+
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
     irods_config.commit(service_account_dict, irods_config.client_environment_path, clear_cache=False)
@@ -505,6 +606,7 @@ def main():
     args = parse_arguments()
 
     irods_config = IrodsConfig()
+    optional_prompts = []
 
     irods.log.register_file_handler(irods_config.setup_log_path)
     if None != args.verbose and args.verbose > 0:
@@ -523,11 +625,19 @@ def main():
         irods_config.injected_environment['reServerOption'] = args.rule_engine_server_options
     if args.server_reconnect_flag:
         irods_config.injected_environment['irodsReconnect'] = ''
+    if args.prompt_tls:
+        optional_prompts.append("tls")
+    if args.auth_scheme:
+        irods_config.server_config['zone_auth_scheme'] = args.auth_scheme
+        # Auth schemes which require TLS will automatically prompt for TLS configuration.
+        if not args.prompt_tls and args.auth_scheme in ["irods", "pam_password", "pam"]:
+            optional_prompts.append("tls")
 
     try:
         setup_server(irods_config,
                      json_configuration_file=args.json_configuration_file,
-                     test_mode=args.test_mode)
+                     test_mode=args.test_mode,
+                     optional_prompts=optional_prompts)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')
