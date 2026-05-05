@@ -2,9 +2,10 @@
 
 import argparse
 import os
+import pathlib
 import sys
 
-import irods.setup_options
+import irods.database_interface, irods.setup_options, irods.tls
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -69,7 +70,15 @@ except:
     print('WARNING: pyodbc module could not be imported.', file=sys.stderr)
     print('The pyodbc module is required for setup of catalog service providers.', file=sys.stderr)
 
-def setup_server(irods_config, json_configuration_file=None, test_mode=False):
+
+# Tracks the selected password storage mode. Historically, there has only been what is now referred to as "legacy", so
+# that is the default value.
+_password_storage_mode = "legacy"
+
+
+def setup_server(irods_config, json_configuration_file=None, test_mode=False, prompt_tls=None, prompt_auth=None):
+    global _password_storage_mode
+
     l = logging.getLogger(__name__)
 
     if json_configuration_file is not None:
@@ -113,34 +122,54 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
             os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
         irods_config.commit(json_configuration_dict['service_account_environment'], irods_config.client_environment_path)
         # password
-        irods_config.admin_password = json_configuration_dict['admin_password']
+        _password_storage_mode = json_configuration_dict.get("password_storage_mode", _password_storage_mode)
+        irods_config.set_admin_password(
+            json_configuration_dict['admin_password'],
+            create_legacy_password_file=(_password_storage_mode != "hashed")
+        )
     else:
         # role
         determine_server_role(irods_config)
         # database
         if irods_config.is_provider:
-            from irods import database_interface
             l.info(irods.lib.get_header('Configuring the database communications'))
-            database_interface.setup_database_config(irods_config)
+            irods.database_interface.setup_database_config(irods_config)
         # default resource
         default_resource_name, default_resource_directory = setup_storage(irods_config)
+        if prompt_auth:
+            setup_auth(irods_config)
+        if prompt_tls or irods_config.server_config["zone_auth_scheme"] != "native":
+            setup_tls(irods_config)
         # server config
         setup_server_config(irods_config)
         # client environment and password
         setup_client_environment(irods_config)
 
     if irods_config.is_provider:
-        from irods import database_interface
         l.info(irods.lib.get_header('Setting up the database'))
-        database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
+        irods.database_interface.setup_catalog(
+            irods_config,
+            default_resource_directory=default_resource_directory,
+            default_resource_name=default_resource_name,
+            password_storage_mode=_password_storage_mode
+        )
         l.info(irods.lib.get_header('Applying updates to database'))
-        database_interface.run_catalog_update(irods_config, is_upgrade=False)
+        irods.database_interface.run_catalog_update(irods_config, is_upgrade=False)
 
     # Copy iRODS Rule Language (NREP) files into correct directory if this is a new install.
     for f in ['core.re', 'core.dvm', 'core.fnm']:
         path = os.path.join(irods_config.config_directory, f)
         if not os.path.exists(path):
             shutil.copyfile(irods.paths.get_template_filepath(path), path)
+
+    core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
+
+    # Update core.re to reflect configured TLS. This is done here because unattended installations will not use the TLS
+    # setup function.
+    if "tls_server" in irods_config.server_config:
+        acPreConnect_rule_to_replace = 'acPreConnect(*OUT) { *OUT="CS_NEG_REFUSE"; }'
+        acPreConnect_rule_replacement = 'acPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }'
+        replace_in_file(core_re_path, acPreConnect_rule_to_replace, acPreConnect_rule_replacement)
 
     l.info(irods.lib.get_header('Starting iRODS...'))
     controller = IrodsController(irods_config)
@@ -154,7 +183,6 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         irods.lib.execute_command(['iadmin', 'mkresc', default_resource_name, 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     # update core.re with default resource
-    core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
     replace_in_file(core_re_path, 'demoResc', default_resource_name)
 
     # Restart the server in case core.re changed.
@@ -380,6 +408,150 @@ def setup_storage(irods_config):
 
     return (resource_name, resource_vault_path)
 
+
+def setup_auth(irods_config):
+    global _password_storage_mode
+
+    l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Setting up auth'))
+
+    while True:
+        # Prompt user for which password storage mode to use in this zone.
+        default_password_storage_mode = "both"
+        password_storage_modes = ["legacy", "hashed", "both"]
+        _password_storage_mode = irods.lib.default_prompt(
+            "Password storage mode",
+            default=password_storage_modes,
+            previous=password_storage_modes.index(default_password_storage_mode) + 1,
+            input_filter=irods.lib.set_filter(password_storage_modes, field='Password storage mode'))
+
+        # "legacy" password storage mode implies "native" authentication scheme.
+        # "hashed" password storage mode implies "irods" authentication scheme.
+        # "both" password storage mode requires another prompt to find which authentication scheme to use in this zone
+        # since either "native" or "irods" can be used.
+        if _password_storage_mode == "both":
+            default_auth_scheme = "native"
+            auth_scheme_choices = ["irods", "native"]
+            auth_scheme = irods.lib.default_prompt(
+                "Zone authentication scheme",
+                default=auth_scheme_choices,
+                previous=auth_scheme_choices.index(default_auth_scheme) + 1,
+                input_filter=irods.lib.set_filter(auth_scheme_choices, field='Auth scheme'))
+        else:
+            auth_scheme = "irods" if _password_storage_mode == "hashed" else "native"
+
+        irods_config.server_config['zone_auth_scheme'] = auth_scheme
+
+        confirmation_message = (
+            '\n'
+            '-------------------------------------------------------------\n'
+            f'Password storage mode: {_password_storage_mode}\n'
+            f'Authentication scheme: {irods_config.server_config["zone_auth_scheme"]}\n'
+            '-------------------------------------------------------------\n\n'
+            'Please confirm'
+        )
+        if irods.lib.default_prompt(confirmation_message, default=['yes']).lower() in ['', 'y', 'yes']:
+            break
+
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
+
+def setup_tls(irods_config):
+    l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Setting up TLS'))
+
+    while True:
+        if "tls_server" not in irods_config.server_config:
+            irods_config.server_config["tls_server"] = {}
+
+        if "tls_client" not in irods_config.server_config:
+            irods_config.server_config["tls_client"] = {}
+
+        generate_cert = irods.lib.default_prompt('Generate and use self-signed certificate now?', default=['yes'])
+        if generate_cert.lower() in ('y','yes'):
+            key, key_file = irods.tls.generate_tls_certificate_key(directory=irods.paths.config_directory())
+            print(f"Generated TLS certificate key file at [{key_file}]")
+            cert_file = irods.tls.generate_tls_self_signed_certificate(key, directory=irods.paths.config_directory())
+            print(f"Generated self-signed certificate file at [{cert_file}]")
+            dh_params_file = irods.tls.generate_tls_dh_params(directory=irods.paths.config_directory())
+            print(f"Generated Diffie-Hellman parameters file at [{dh_params_file}]")
+
+            chain_file = pathlib.Path(irods.paths.config_directory()) / 'chain.pem'
+            shutil.copyfile(cert_file, chain_file)
+            print(f"Created certificate chain file at [{chain_file}]")
+
+            irods_config.server_config["tls_server"]['certificate_chain_file'] = str(chain_file)
+            irods_config.server_config["tls_server"]['certificate_key_file'] = str(key_file)
+            irods_config.server_config["tls_server"]['dh_params_file'] = str(dh_params_file)
+            irods_config.server_config["tls_client"]['ca_certificate_file'] = str(cert_file)
+            irods_config.server_config["tls_client"]['verify_server'] = "cert"
+
+        else:
+            # TLS configuration for incoming connections.
+            default_certificate_chain_file = irods_config.server_config["tls_server"].get("certificate_chain_file")
+            irods_config.server_config["tls_server"]['certificate_chain_file'] = irods.lib.default_prompt(
+                "Path to server's certificate chain file",
+                default=[default_certificate_chain_file] if default_certificate_chain_file else None,
+                input_filter=irods.lib.character_count_filter(minimum=1, field='Certificate chain file'))
+
+            default_certificate_key_file = irods_config.server_config["tls_server"].get("certificate_key_file")
+            irods_config.server_config["tls_server"]['certificate_key_file'] = irods.lib.default_prompt(
+                "Path to server's certificate key file",
+                default=[default_certificate_key_file] if default_certificate_key_file else None,
+                input_filter=irods.lib.character_count_filter(minimum=1, field='Certificate key file'))
+
+            default_dh_params_file = irods_config.server_config["tls_server"].get("dh_params_file")
+            irods_config.server_config["tls_server"]['dh_params_file'] = irods.lib.default_prompt(
+                "Path to Diffie-Hellman parameter file",
+                default=[default_dh_params_file] if default_dh_params_file else None,
+                input_filter=irods.lib.character_count_filter(minimum=1, field='Diffie-Hellman params file'))
+
+            # TLS configuration for outgoing connections (server-to-server).
+            default_ca_certificate_file = irods_config.server_config["tls_client"].get('ca_certificate_file')
+            client_ca_certificate_file = irods.lib.default_prompt(
+                "Path to CA certificate file",
+                default=[default_ca_certificate_file] if default_ca_certificate_file else None)
+
+            default_ca_certificate_path = irods_config.server_config["tls_client"].get('ca_certificate_path')
+            client_ca_certificate_path = irods.lib.default_prompt(
+                "Path to CA certificates directory",
+                default=[default_ca_certificate_path] if default_ca_certificate_path else None)
+
+            default_verify_server = irods_config.server_config["tls_client"].get('verify_server') or "cert"
+            verify_server_levels = ["hostname", "cert", "none"]
+            client_verify_server = irods.lib.default_prompt(
+                "Certificate verification level",
+                default=verify_server_levels,
+                previous=verify_server_levels.index(default_verify_server) + 1,
+                input_filter=irods.lib.set_filter(verify_server_levels, field='Verify server'))
+
+            if client_ca_certificate_file:
+                irods_config.server_config["tls_client"]['ca_certificate_file'] = client_ca_certificate_file
+            if client_ca_certificate_path:
+                irods_config.server_config["tls_client"]['ca_certificate_path'] = client_ca_certificate_path
+            irods_config.server_config["tls_client"]['verify_server'] = client_verify_server
+
+        confirmation_message = (
+            '\n'
+            '-------------------------------------------------------------\n'
+            f'Certificate chain file:         {irods_config.server_config["tls_server"].get("certificate_chain_file")}\n'
+            f'Certificate key file:           {irods_config.server_config["tls_server"].get("certificate_key_file")}\n'
+            f'Diffie-Hellman parameters file: {irods_config.server_config["tls_server"].get("dh_params_file")}\n'
+            f'CA certificate file:            {irods_config.server_config["tls_client"].get("ca_certificate_file", "")}\n'
+            f'CA certificate path:            {irods_config.server_config["tls_client"].get("ca_certificate_path", "")}\n'
+            f'Certificate verification level: {irods_config.server_config["tls_client"].get("verify_server")}\n'
+            '-------------------------------------------------------------\n\n'
+            'Please confirm'
+        )
+
+        if irods.lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
+            break
+
+    irods_config.server_config["client_server_policy"] = "CS_NEG_REQUIRE"
+
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
+
 def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Configuring the server options'))
@@ -458,21 +630,29 @@ def setup_server_config(irods_config):
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 
 def setup_client_environment(irods_config):
+    global _password_storage_mode
+
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Setting up the client environment'))
 
     print('\n', end='')
 
-    irods_config.admin_password = irods.lib.prompt(
+    # Note: This assignment creates an .irodsA file
+    admin_password = irods.lib.prompt(
         'iRODS administrator password',
         input_filter=irods.lib.character_count_filter(minimum=3, maximum=maximum_password_length, field='Admin password'),
         echo=False)
+    irods_config.set_admin_password(
+        admin_password,
+        create_legacy_password_file=(_password_storage_mode != "hashed")
+    )
 
     print('\n', end='')
 
     service_account_dict = {
         'schema_name': 'service_account_environment',
         'schema_version': 'v5',
+        'irods_authentication_scheme': irods_config.server_config['zone_auth_scheme'],
         'irods_host': irods_config.server_config['host'],
         'irods_port': irods_config.server_config['zone_port'],
         'irods_default_resource': irods_config.server_config['default_resource_name'],
@@ -492,6 +672,10 @@ def setup_client_environment(irods_config):
         'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
         'irods_connection_pool_refresh_time_in_seconds': irods_config.server_config['connection_pool_refresh_time_in_seconds']
     }
+    if tls_client_config := irods_config.server_config.get("tls_client"):
+        service_account_dict["irods_ssl_ca_certificate_file"] = tls_client_config["ca_certificate_file"]
+        service_account_dict["irods_ssl_verify_server"] = tls_client_config["verify_server"]
+
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
     irods_config.commit(service_account_dict, irods_config.client_environment_path, clear_cache=False)
@@ -527,7 +711,9 @@ def main():
     try:
         setup_server(irods_config,
                      json_configuration_file=args.json_configuration_file,
-                     test_mode=args.test_mode)
+                     test_mode=args.test_mode,
+                     prompt_tls=args.prompt_tls,
+                     prompt_auth=args.prompt_auth_scheme)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')
