@@ -12,7 +12,8 @@ from .. import test
 from ..controller import IrodsController
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_session_token_lifetime_configuration(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
@@ -101,7 +102,8 @@ class test_session_token_lifetime_configuration(unittest.TestCase):
 			IrodsController().reload_configuration()
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_password_authentication_returning_session_tokens(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
@@ -272,7 +274,8 @@ class test_password_authentication_returning_session_tokens(unittest.TestCase):
 		self.do_test_non_rodsadmin_try_to_get_nonexpiring_session_token_returns_no_token(self.test_groupadmin)
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_remove_session_tokens(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):

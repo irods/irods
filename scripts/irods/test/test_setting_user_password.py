@@ -45,7 +45,8 @@ def authenticate_with_scheme(user_session, scheme_name, password, should_fail=Fa
 	user_session.assert_icommand(["iexit", "--remove-session-token-file", "-f"], "STDOUT")
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_modifying_user_password(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
@@ -343,7 +344,8 @@ class test_modifying_user_password(unittest.TestCase):
 			IrodsController().reload_configuration()
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_igroupadmin_mkuser(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
@@ -566,6 +568,8 @@ class test_invalid_configurations_and_options(unittest.TestCase):
 			self.assertFalse(lib.user_exists(admin_session, user_name))
 
 
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class ipasswd_test_base(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
@@ -629,349 +633,328 @@ class ipasswd_test_base(unittest.TestCase):
 		self.test_user.environment_file_contents = client_env
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
 class test_ipasswd_with_both_passwords_set(ipasswd_test_base):
 
 	password_storage_mode = "both"
 
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 1
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only native password updated. Old irods password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that only native password updated. Old irods password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 2
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only native password updated. Old irods password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that only native password updated. Old irods password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 3
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only irods password updated. Old native password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that only irods password updated. Old native password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 4
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only irods password updated. Old native password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that only irods password updated. Old native password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 5
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that both passwords updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that both passwords updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 6
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that both passwords updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that both passwords updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
 class test_ipasswd_with_only_native_password_set(ipasswd_test_base):
 
 	password_storage_mode = "legacy"
 
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 7
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only native password updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that only native password updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 8
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with native scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with native scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 9
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only irods password updated. Old native password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that only irods password updated. Old native password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 10
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with native scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with native scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 11
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("native")
 
-			# Change password using native credentials to authenticate.
-			self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using native credentials to authenticate.
+		self.test_user.assert_icommand(["ipasswd"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that both passwords updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that both passwords updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 12
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with native scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with native scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
 class test_ipasswd_with_only_irods_password_set(ipasswd_test_base):
 
 	password_storage_mode = "hashed"
 
 	def test_password_storage_mode_legacy_and_auth_scheme_native(self):
 		# Case 13
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_legacy_and_auth_scheme_irods(self):
 		# Case 14
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only native password updated. Old irods password should still work.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that only native password updated. Old irods password should still work.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_native(self):
 		# Case 15
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_and_auth_scheme_irods(self):
 		# Case 16
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that only irods password updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that only irods password updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_and_auth_scheme_native(self):
 		# Case 17
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Can only authenticate with irods scheme using old password.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_and_auth_scheme_irods(self):
 		# Case 18
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
-			# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
-			# --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Note: --no-scramble option is required in
+		# order to use irods auth scheme. Other tests cover using ipasswd with irods auth scheme and no
+		# --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", input=self.ipasswd_input, desired_rc=0)
 
-			# Confirm that both passwords updated.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
+		# Confirm that both passwords updated.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=False)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=False)
 
 	def test_ipasswd_with_session_token_forcibly_prompts_for_current_user_password(self):
 		# This test ensures that ipasswd prompts the user for the current password when using the irods authentication
 		# scheme rather than authenticating with a session token.
 		irods_auth_password_prompt = "Enter your iRODS password:"
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Authenticate the user so that we have a session token.
-			self.test_user.assert_icommand(
-				"iinit", "STDOUT", irods_auth_password_prompt, input=f"{self.old_password}\n")
-			# Expecting to see the home collection because the consequence of not setting a user's password when the
-			# session is created is that the session will not create a session collection to manage for that user.
-			self.test_user.assert_icommand("ils", "STDOUT", self.test_user.home_collection)
+		# Authenticate the user so that we have a session token.
+		self.test_user.assert_icommand(
+			"iinit", "STDOUT", irods_auth_password_prompt, input=f"{self.old_password}\n")
+		# Expecting to see the home collection because the consequence of not setting a user's password when the
+		# session is created is that the session will not create a session collection to manage for that user.
+		self.test_user.assert_icommand("ils", "STDOUT", self.test_user.home_collection)
 
-			# Change password using irods credentials to authenticate. Ensure that the prompt for the user's current
-			# password is shown and that it does not try to use the session token to authenticate. There are so many
-			# other tests that confirm authenticating with the new password, so we just make sure no error occurs here.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"], "STDOUT", irods_auth_password_prompt, input=self.ipasswd_input, desired_rc=0)
+		# Change password using irods credentials to authenticate. Ensure that the prompt for the user's current
+		# password is shown and that it does not try to use the session token to authenticate. There are so many
+		# other tests that confirm authenticating with the new password, so we just make sure no error occurs here.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"], "STDOUT", irods_auth_password_prompt, input=self.ipasswd_input, desired_rc=0)
 
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Must configure catalog provider for these tests.")
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and not test.settings.USE_SSL,
+                 "Must configure catalog provider for these tests when TLS is disabled.")
 class test_ipasswd_with_no_password_set(unittest.TestCase):
 	@classmethod
 	def setUpClass(self):
@@ -1025,105 +1008,99 @@ class test_ipasswd_with_no_password_set(unittest.TestCase):
 
 	def test_password_storage_mode_legacy_auth_scheme_native(self):
 		# Case 19
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_legacy_auth_scheme_irods(self):
 		# Case 20
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "legacy")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "legacy")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_auth_scheme_native(self):
 		# Case 21
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_hashed_auth_scheme_irods(self):
 		# Case 22
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "hashed")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "hashed")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_auth_scheme_native(self):
 		# Case 23
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("native")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("native")
 
-			# Attempt changing password using native credentials and fail to authenticate. No native password is set.
-			self.test_user.assert_icommand(
-				["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using native credentials and fail to authenticate. No native password is set.
+		self.test_user.assert_icommand(
+			["ipasswd"], "STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
 
 	def test_password_storage_mode_both_auth_scheme_irods(self):
 		# Case 24
-		with lib.file_backed_up(paths.server_config_path()):
-			configure_password_storage_mode(self.admin, "both")
-			self.configure_user_session_auth_scheme("irods")
+		configure_password_storage_mode(self.admin, "both")
+		self.configure_user_session_auth_scheme("irods")
 
-			# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
-			# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
-			# with irods auth scheme and no --no-scramble option.
-			self.test_user.assert_icommand(
-				["ipasswd", "--no-scramble"],
-				"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
+		# Attempt changing password using irods credentials and fail to authenticate. No irods password is set.
+		# Note: --no-scramble option is required in order to use irods auth scheme. Other tests cover using ipasswd
+		# with irods auth scheme and no --no-scramble option.
+		self.test_user.assert_icommand(
+			["ipasswd", "--no-scramble"],
+			"STDERR", "Error occurred while authenticating user", input=self.ipasswd_input)
 
-			# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
-			authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
-			authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
+		# Confirm that nothing changed. Cannot authenticate as this user because no password is set.
+		authenticate_with_scheme(self.test_user, "irods", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "irods", self.new_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.old_password, should_fail=True)
+		authenticate_with_scheme(self.test_user, "native", self.new_password, should_fail=True)
