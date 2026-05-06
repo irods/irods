@@ -2235,9 +2235,11 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
             # TODO(#8935): Remove this line when the default for "escape_single_quotes" changes in iRODS 6.
             with self.subTest('iput fails when path contains single quotes and escape_single_quotes not enabled'):
-                self.user0.assert_icommand(['iput', file_path], 'STDERR', ['-550000 UNIV_MSS_SYNCTOARCH_ERR'])
+                self.user0.assert_icommand(['iput', '-R', 'demoResc', file_path], 'STDERR', [r'-550\d{3} UNIV_MSS_SYNCTOARCH_ERR'], use_regex=True)
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '0')
-                self.user0.assert_icommand(['irm', '-f', filename], 'STDERR', ['-552000 UNIV_MSS_UNLINK_ERR'])
+                # We check the first three digits of the error code because the last three digits can change
+                # due to the inclusion of errno.
+                self.user0.assert_icommand(['irm', '-f', filename], 'STDERR', [r'-552\d{3} UNIV_MSS_UNLINK_ERR'], use_regex=True)
 
             # TODO(#8935): Remove this line when the default for "escape_single_quotes" changes in iRODS 6.
             self.admin.assert_icommand(['iadmin', 'modresc', 'archiveResc', 'context', 'script=univMSSInterface.sh;escape_single_quotes=1;'])
@@ -2249,7 +2251,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
             with self.subTest('Sync-to-Archive - iput'):
                 # Create a new data object. The bug normally produces an error here. This should succeed
                 # now that single quotes are escaped.
-                self.user0.assert_icommand(['iput', file_path])
+                self.user0.assert_icommand(['iput', '-R', 'demoResc', file_path])
 
                 # Verify that all replicas are good.
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
@@ -2258,21 +2260,37 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
                 # Remove the data object for the next subtest.
                 self.user0.assert_icommand(['irm', '-f', filename])
 
-            with self.subTest('Sync-to-Archive - itouch'):
-                self.user0.assert_icommand(['itouch', filename])
+            # Skip this itouch case when running in a topology from a catalog consumer.
+            #
+            # itouch does not support targeting the root of a resource hierarchy containing one or
+            # more child resources. It can only be used to target leaf resources.
+            #
+            # This subtest must be run from a catalog provider for the following reasons:
+            # - The default resource of the catalog provider is demoResc (i.e the compound resource)
+            # - Running itouch without specifying a leaf resource results in the connected server using its default resource
+            if not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+                with self.subTest('Sync-to-Archive - itouch + default resource for provider'):
+                    self.user0.assert_icommand(['itouch', filename])
+                    self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
+                    self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
+                    self.user0.assert_icommand(['irm', '-f', filename])
+
+            with self.subTest('Sync-to-Archive - itouch + rebalance'):
+                self.user0.assert_icommand(['itouch', '-R', 'cacheResc', filename])
+                self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
                 self.user0.assert_icommand(['irm', '-f', filename])
 
             with self.subTest('Sync-to-Archive - istream write'):
-                self.user0.assert_icommand(['istream', 'write', filename], input='data')
+                self.user0.assert_icommand(['istream', 'write', '-R', 'demoResc', filename], input='data')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
                 self.user0.assert_icommand(['irm', '-f', filename])
 
             # These subtests verify the stage-to-cache functionality behaves as expected.
             with self.subTest('Stage-to-Cache - iget'):
-                self.user0.assert_icommand(['itouch', filename])
+                self.user0.assert_icommand(['iput', '-R', 'demoResc', file_path])
                 self.user0.assert_icommand(['itrim', '-N1', '-n0', filename], 'STDOUT', ['data objects trimmed = 1.'])
                 self.user0.assert_icommand(['iget', filename, '-'], 'STDOUT')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
@@ -2288,16 +2306,16 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
                 self.user0.assert_icommand(['itrim', '-N1', '-n2', filename], 'STDOUT', ['data objects trimmed = 1.'])
 
                 # Show that we must use the force flag to overwrite the data object.
-                self.user0.assert_icommand(['iput', file_path], 'STDERR', ['-312000 OVERWRITE_WITHOUT_FORCE_FLAG'])
+                self.user0.assert_icommand(['iput', '-R', 'demoResc', file_path], 'STDERR', ['-312000 OVERWRITE_WITHOUT_FORCE_FLAG'])
 
-                self.user0.assert_icommand(['iput', '-f', file_path], 'STDOUT')
+                self.user0.assert_icommand(['iput', '-f', '-R', 'demoResc', file_path], 'STDOUT')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
 
             # This subtest is specifically about renaming data objects.
             with self.subTest('Rename'):
                 self.user0.assert_icommand(['irm', '-f', filename])
-                self.user0.assert_icommand(['itouch', filename])
+                self.user0.assert_icommand(['iput', '-R', 'demoResc', file_path])
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'cacheResc'), '1')
                 self.assertEqual(lib.get_replica_status_for_resource(self.user0, logical_path, 'archiveResc'), '1')
 
