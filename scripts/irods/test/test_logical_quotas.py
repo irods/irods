@@ -1,8 +1,10 @@
 import os
 import sys
 import unittest
+import contextlib
 
 from . import session
+from .. import database_connect
 from .. import lib
 from .. import paths
 from .. import test
@@ -1138,44 +1140,28 @@ class Test_Logical_Quotas(
                 "-186000 LOGICAL_QUOTA_EXCEEDED",
             )
 
-            # No enforcement when value is completely missing.
-            self.admin.assert_icommand(
-                [
-                    "iadmin",
-                    "asq",
-                    "DELETE FROM R_GRID_CONFIGURATION WHERE namespace='logical_quotas' AND option_name='enabled'",
-                    "rmlqgridopt",
-                ]
-            )
-            self.admin.assert_icommand(
-                ["iquest", "--sql", "rmlqgridopt"],
-                "STDOUT_SINGLELINE",
-                "CAT_NO_ROWS_FOUND",
-            )
+            # Do not run DB-modifications as topology consumer
+            if not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+                with contextlib.closing(database_connect.get_database_connection(IrodsConfig())) as connection:
+                    connection.autocommit = True
+                    with contextlib.closing(connection.cursor()) as cursor:
+                        database_connect.execute_sql_statement(cursor, "DELETE FROM R_GRID_CONFIGURATION WHERE namespace='logical_quotas' AND option_name='enabled'")
 
-            # No failure, because no enforcement.
-            self.quota_user.assert_icommand(
-                [
-                    "iput",
-                    file_path,
-                    f"{self.quota_user.session_collection}/{file_name}_4",
-                ]
-            )
+                # No failure, because no enforcement.
+                self.quota_user.assert_icommand(
+                    [
+                        "iput",
+                        file_path,
+                        f"{self.quota_user.session_collection}/{file_name}_4",
+                    ]
+                )
 
         finally:
-            # Run and don't assert these-- if failure happens midway
-            # we can't guarantee what state the catalog is in.
-            self.admin.run_icommand(
-                [
-                    "iadmin",
-                    "asq",
-                    "INSERT INTO R_GRID_CONFIGURATION VALUES('logical_quotas','enabled','0')",
-                    "addlqgridopt",
-                ]
-            )
-            self.admin.run_icommand(["iquest", "--sql", "addlqgridopt"])
-            self.admin.run_icommand(["iadmin", "rsq", "rmlqgridopt"])
-            self.admin.run_icommand(["iadmin", "rsq", "addlqgridopt"])
+            if not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+                with contextlib.closing(database_connect.get_database_connection(IrodsConfig())) as connection:
+                    connection.autocommit = True
+                    with contextlib.closing(connection.cursor()) as cursor:
+                        database_connect.execute_sql_statement(cursor, "INSERT INTO R_GRID_CONFIGURATION(namespace, option_name, option_value) VALUES('logical_quotas','enabled','0')")
 
             self.admin.assert_icommand(
                 [

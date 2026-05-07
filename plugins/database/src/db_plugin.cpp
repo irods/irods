@@ -16379,7 +16379,7 @@ irods::error db_calc_logical_usage_and_quota_op(irods::plugin_context& _ctx, [[m
                      // then stale. Remaining replicas are lowest priority.
                      // Order by data size as secondary key (to select largest
                      // stale replica).
-                     "ROW_NUMBER() OVER(PARTITION BY R_DATA_MAIN.data_id "
+                     "ROW_NUMBER() OVER(PARTITION BY R_DATA_MAIN.data_id, RCM1.coll_id "
                                  "ORDER BY (CASE "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 1 THEN 4 "
                                                "WHEN R_DATA_MAIN.data_is_dirty = 4 THEN 3 "
