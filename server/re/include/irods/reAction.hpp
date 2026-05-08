@@ -158,6 +158,7 @@ int msiTakeThreeArgumentsAndDoNothing(msParam_t *arg1, msParam_t *arg2, msParam_
 namespace irods
 {
     // clang-format off
+    // NOLINTBEGIN(cppcoreguidelines-owning-memory)
 
     // =-=-=-=-=-=-=-
     // implementation of the microservice table class, which initializes the table during the ctor
@@ -258,6 +259,8 @@ namespace irods
         table_[ "msiExecCmd" ] = new irods::ms_table_entry( "msiExecCmd", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExecCmd ) );
         table_[ "msiSetGraftPathScheme" ] = new irods::ms_table_entry( "msiSetGraftPathScheme", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetGraftPathScheme ) );
         table_[ "msiSetRandomScheme" ] = new irods::ms_table_entry( "msiSetRandomScheme", 0, std::function<int(ruleExecInfo_t*)>( msiSetRandomScheme ) );
+        table_[ "msi_set_random_scheme_style" ] = new irods::ms_table_entry("msi_set_random_scheme_style", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_set_random_scheme_style));
+        table_[ "msi_set_random_scheme_suffix_length" ] = new irods::ms_table_entry("msi_set_random_scheme_suffix_length", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_set_random_scheme_suffix_length));
         table_[ "msiCheckHostAccessControl" ] = new irods::ms_table_entry( "msiCheckHostAccessControl", 0, std::function<int(ruleExecInfo_t*)>( msiCheckHostAccessControl ) );
         table_[ "msiGetIcatTime" ] = new irods::ms_table_entry( "msiGetIcatTime", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetIcatTime ) );
         table_[ "msiGetTaggedValueFromString" ] = new irods::ms_table_entry( "msiGetTaggedValueFromString", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetTaggedValueFromString ) );
@@ -289,6 +292,7 @@ namespace irods
         table_["msi_genquery2_free"] = new irods::ms_table_entry("msi_genquery2_free", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_genquery2_free));
     }; // ms_table::ms_table
 
+    // NOLINTEND(cppcoreguidelines-owning-memory)
     // clang-format on
 
     // =-=-=-=-=-=-=-

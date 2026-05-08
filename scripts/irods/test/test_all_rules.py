@@ -1,4 +1,3 @@
-from __future__ import print_function
 import getpass
 import json
 import os
@@ -1809,6 +1808,138 @@ OUTPUT ruleExecOut
 
         finally:
             IrodsController().reload_configuration()
+
+    def test_vault_path_random_scheme_customization_options__issue_8917(self):
+        # This function assumes acSetVaultPathPolicy()'s entire definition is on one line.
+        # The test will fail if that assumption is broken.
+        def replace_acSetVaultPathPolicyPEP(filepath, replacement_string):
+            with open(filepath) as f:
+                lines = f.readlines()
+
+            new_content = []
+            for line in lines:
+                if line.startswith('acSetVaultPathPolicy'):
+                    new_content.append(replacement_string)
+                else:
+                    new_content.append(line)
+
+            with open(filepath, 'w') as f:
+                f.writelines(new_content)
+
+        def do_test(style, expected_output, suffix_length=None, expect_error=False):
+            if isinstance(suffix_length, int):
+                pep_map = {
+                    'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''\
+                        acSetVaultPathPolicy()
+                        {{
+                            msiSetRandomScheme();
+                            msi_set_random_scheme_style({style});
+                            msi_set_random_scheme_suffix_length({suffix_length});
+                        }}
+                        '''),
+                    'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
+                        def acSetVaultPathPolicy(rule_args, callback, rei):
+                            callback.msiSetRandomScheme()
+                            callback.msi_set_random_scheme_style({style})
+                            callback.msi_set_random_scheme_suffix_length({suffix_length});
+                        ''')
+                }
+            else:
+                pep_map = {
+                    'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''\
+                        acSetVaultPathPolicy()
+                        {{
+                            msiSetRandomScheme();
+                            msi_set_random_scheme_style({style});
+                        }}
+                        '''),
+                    'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
+                        def acSetVaultPathPolicy(rule_args, callback, rei):
+                            callback.msiSetRandomScheme()
+                            callback.msi_set_random_scheme_style({style})
+                        ''')
+                }
+
+            try:
+                with temporary_core_file() as core:
+                    replace_acSetVaultPathPolicyPEP(core.filepath, pep_map[plugin_name])
+                    IrodsController().reload_configuration()
+
+                    data_object = f'{self.user0.session_collection}/issue_8917-{style}'
+                    if expect_error:
+                        with tempfile.NamedTemporaryFile(suffix='.issue_8917.txt', delete=True) as tf:
+                            self.user0.assert_icommand(['iput', tf.name, data_object], 'STDERR', expected_output)
+                        self.assertFalse(lib.replica_exists(self.user0, data_object, 0))
+                    else:
+                        try:
+                            self.user0.assert_icommand(['itouch', data_object])
+                            self.user0.assert_icommand(['ils', '-L', data_object], 'STDOUT', expected_output, use_regex=True)
+
+                        finally:
+                            self.user0.assert_icommand(['irm', '-f', data_object])
+
+            finally:
+                IrodsController().reload_configuration()
+
+        # Make sure we don't change existing behavior. This is the backward compatibility case.
+        do_test(0, [r'.+/\d+/\d+/.+\..{10,}$'])
+
+        # Appends 5 random bytes between ascii '0' and 'z' inclusive. This also verifies
+        # the default suffix length is 5.
+        do_test(1, [r'.+/\d+/\d+/.+[.].{10,}[.].{5}$'])
+
+        # Show that the suffix length can be any value as long as it's within the range [1, 32].
+        for suffix_length in [1, 3, 12, 32]:
+            with self.subTest(f'good suffix length: [{suffix_length}]'):
+                do_test(1, [fr'.+/\d+/\d+/.+[.].{{10,}}[.].{{{suffix_length}}}$'], suffix_length)
+
+        # Show that an invalid style results in an error.
+        for style in [-1, 2]:
+            with self.subTest(f'invalid style: [{style}]'):
+                do_test(style, ['-130000 SYS_INVALID_INPUT_PARAM'], expect_error=True)
+
+        # Show that an invalid suffix length results in an error.
+        for suffix_length in [-7, 0, 33]:
+            with self.subTest(f'invalid suffix length: [{suffix_length}]'):
+                do_test(1, ['-130000 SYS_INVALID_INPUT_PARAM'], suffix_length, expect_error=True)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Only applicable to the NREP')
+    def test_irule_cannot_modify_the_random_scheme_via_acSetVaultPathPolicy__issue_8917(self):
+        data_object = f'{self.user0.session_collection}/issue_8917_irule.txt'
+        rule_file_path = f'{self.user0.local_session_dir}/issue_8917_irule.r'
+
+        # The following policy should not have any effect on the physical path generated
+        # via the call to msi_touch().
+        #
+        # NOTE: The first rule is treated as the main rule. Other rules can be provided and
+        # invoked from the first rule.
+        with open(rule_file_path, 'w') as f:
+            f.write(textwrap.dedent(f'''\
+                do_test
+                {{
+                    msi_touch('{{"logical_path": "{data_object}"}}');
+                }}
+
+                acSetVaultPathPolicy()
+                {{
+                    msiSetRandomScheme();
+                    msi_set_random_scheme_style(1);
+                    msi_set_random_scheme_suffix_length(10);
+                }}
+
+                INPUT null
+                OUTPUT ruleExecOut
+            '''))
+
+        # This should result in the creation of a new data object.
+        plugin_instance = plugin_name + '-instance'
+        self.user0.assert_icommand(['irule', '-r', plugin_instance, '-F', rule_file_path])
+        self.assertTrue(lib.replica_exists(self.user0, data_object, 0))
+
+        # Show the physical path of the data object matches what we'd expect when the
+        # random scheme isn't enabled.
+        data_path = lib.get_replica_full_row(self.user0, data_object, 0)['DATA_PATH']
+        self.assertEqual(data_path, f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name

@@ -156,7 +156,9 @@
   - #msiSetDataObjPreferredResc - Specifies the preferred copy to use, if the data has multiple copies
   - #msiSetDataObjAvoidResc - Specifies the copy to avoid
   - #msiSetGraftPathScheme - Sets the scheme for composing the physical path in the vault to GRAFT_PATH
-  - #msiSetRandomScheme - Sets the the scheme for composing the physical path in the vault to RANDOM
+  - #msiSetRandomScheme - Sets the scheme for composing the physical path in the vault to RANDOM
+  - #msi_set_random_scheme_style - Sets the style used when composing a randomly-generated physical path in the vault
+  - #msi_set_random_scheme_suffix_length - Sets the length of the suffix style used when composing a randomly-generated physical path in the vault
   - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer
   - #msiNoChkFilePathPerm - Does not check file path permission when registering a file
   - #msiSetChkFilePathPerm - Sets the check type for file path permission check when registering a file
