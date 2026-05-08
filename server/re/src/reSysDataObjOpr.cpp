@@ -1,21 +1,36 @@
 /// \file
 
-#include "irods/rcMisc.h"
 #include "irods/reSysDataObjOpr.hpp"
+
+#include "irods/apiNumber.h"
+#include "irods/dataObjOpr.hpp"
 #include "irods/genQuery.h"
 #include "irods/getRescQuota.h"
-#include "irods/dataObjOpr.hpp"
-#include "irods/resource.hpp"
-#include "irods/physPath.hpp"
-#include "irods/rsGenQuery.hpp"
-#include "irods/rsModDataObjMeta.hpp"
-#include "irods/rsDataObjRepl.hpp"
-#include "irods/apiNumber.h"
 #include "irods/irodsDelayServer.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_server_properties.hpp"
-#include "irods/irods_logger.hpp"
+#include "irods/msParam.h"
+#include "irods/msi_preconditions.hpp"
+#include "irods/physPath.hpp"
+#include "irods/rcMisc.h"
+#include "irods/resource.hpp"
+#include "irods/rodsDef.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsDataObjRepl.hpp"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/vault_path_policy.hpp"
+
+#include <algorithm>
+#include <cstring>
+#include <initializer_list>
+
+namespace
+{
+    using log_msi = irods::experimental::log::microservice;
+} // anonymous namespace
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -1111,6 +1126,106 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
     }
     return 0;
 }
+
+auto msi_set_random_scheme_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
+{
+    _rei->status = 0;
+
+    if (!_style) {
+        log_msi::error("Invalid argument: Expected valid pointer for [_style] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    if (!_style->type) {
+        log_msi::error("Invalid argument: Expected valid pointer for [_style->type] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    if (std::strncmp(_style->type, INT_MS_T, std::strlen(INT_MS_T)) != 0) {
+        log_msi::error("Invalid argument: Expected integer for [_style->type] parameter. Received [{}].", _style->type);
+        _rei->status = SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (!_style->inOutStruct) {
+        log_msi::error(
+            "Invalid argument: Expected valid pointer for [_style->inOutStruct] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    const auto new_style = *static_cast<int*>(_style->inOutStruct);
+    if (new_style < 0 || new_style > 1) {
+        log_msi::error("{}: Invalid style [{}] for vault path scheme. Expected 0 or 1.", __func__, new_style);
+        _rei->status = SYS_INVALID_INPUT_PARAM;
+        return _rei->status;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    auto* style = static_cast<int*>(std::malloc(sizeof(int)));
+    *style = new_style;
+    addMsParam(&_rei->inOutMsParamArray,
+               irods::vault_path_policy::random_scheme_style,
+               INT_MS_T,
+               static_cast<void*>(style),
+               nullptr);
+
+    return 0;
+} // msi_set_random_scheme_style
+
+auto msi_set_random_scheme_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei) -> int
+{
+    _rei->status = 0;
+
+    if (!_suffix_length) {
+        log_msi::error("Invalid argument: Expected valid pointer for [_suffix_length] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    if (!_suffix_length->type) {
+        log_msi::error(
+            "Invalid argument: Expected valid pointer for [_suffix_length->type] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    if (std::strncmp(_suffix_length->type, INT_MS_T, std::strlen(INT_MS_T)) != 0) {
+        log_msi::error("Invalid argument: Expected integer for [_suffix_length->type] parameter. Received [{}].",
+                       _suffix_length->type);
+        _rei->status = SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (!_suffix_length->inOutStruct) {
+        log_msi::error(
+            "Invalid argument: Expected valid pointer for [_suffix_length->inOutStruct] parameter. Received nullptr.");
+        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    const auto new_length = *static_cast<int*>(_suffix_length->inOutStruct);
+    if (new_length < 1 || new_length > 32) {
+        log_msi::error("{}: Invalid suffix length [{}] for vault path scheme. Length must satisfy the range [1, 32].",
+                       __func__,
+                       new_length);
+        _rei->status = SYS_INVALID_INPUT_PARAM;
+        return _rei->status;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    auto* length = static_cast<int*>(std::malloc(sizeof(int)));
+    *length = new_length;
+    addMsParam(&_rei->inOutMsParamArray,
+               irods::vault_path_policy::random_scheme_suffix_length,
+               INT_MS_T,
+               static_cast<void*>(length),
+               nullptr);
+
+    return 0;
+} // msi_set_random_scheme_suffix_length
 
 /**
  * \fn msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)

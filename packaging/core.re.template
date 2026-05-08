@@ -292,11 +292,43 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #      The advantage with the RANDOM scheme is renaming operations (imv, irm)
 #      are much faster because there is no need to rename the
 #      corresponding physical path.
+#
+#    msi_set_random_scheme_style(style) - Set the random scheme style.
+#      This microservice allows administrators to change how physical paths are
+#      generated. The effects of this microservice are not applied unless the
+#      vault path policy is set to the random scheme.
+#
+#      This microservice has no effect if invoked outside of acSetVaultPathPolicy()
+#      or an error occurs.
+#
+#      Styles:
+#        - 0: Default style, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>
+#        - 1: Append random characters, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>.<random_characters>
+#
+#      A style of 1 results in 5 randomly generated alphanumeric characters
+#      being appended to the physical path. Attempting to set the value to anything
+#      other than 0 or 1 will result in an error.
+#
+#      See msi_set_random_scheme_suffix_length() for information about changing
+#      the length of the generated suffix string.
+#
+#    msi_set_random_scheme_suffix_length(length) - Set the random scheme suffix
+#      length.
+#
+#      The effects of this microservice are not applied unless the random scheme
+#      style is set to 1.
+#
+#      This microservice has no effect if invoked outside of acSetVaultPathPolicy()
+#      or an error occurs.
+#
+#      The length must satisfy the range [1, 32]. Failing to satisfy this requirement
+#      will result in an error.
+#
 # This default is GRAFT_PATH scheme with addUserName == yes and trimDirCnt == 1.
 # Note : if trimDirCnt is greater than 1, the home or trash entry will be
 # taken out.
-# acSetVaultPathPolicy {msiSetRandomScheme; }
-acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
+# acSetVaultPathPolicy { msiSetRandomScheme; msi_set_random_scheme_style(0); msi_set_random_scheme_suffix_length(5); }
+acSetVaultPathPolicy { msiSetGraftPathScheme("no","1"); }
 #
 # 18) acPreProcForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically

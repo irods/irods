@@ -1,17 +1,28 @@
+#include "irods/physPath.hpp"
+
 #include "irods/collCreate.h"
 #include "irods/collection.hpp"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/fileChksum.h"
 #include "irods/genQuery.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_stacktrace.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/objMetaOpr.hpp"
-#include "irods/physPath.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
+#include "irods/reSysDataObjOpr.hpp"
+#include "irods/replica_proxy.hpp"
 #include "irods/resource.hpp"
 #include "irods/rodsConnect.h"
-#include "irods/rodsDef.h"
 #include "irods/rodsDef.h"
 #include "irods/rodsPath.h"
 #include "irods/rsCollCreate.hpp"
@@ -23,22 +34,53 @@
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsObjStat.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_get_full_path_for_config_file.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_log.hpp"
-#include "irods/irods_random.hpp"
-#include "irods/irods_resource_backport.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/replica_proxy.hpp"
+#include "irods/vault_path_policy.hpp"
 
 #include <fmt/format.h>
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
 
+#include <cstdint>
 #include <cstring>
+#include <ctime>
+
+namespace
+{
+    namespace ir = irods::experimental::replica;
+    namespace ivpp = irods::vault_path_policy;
+
+    using log_agent = irods::experimental::log::agent;
+
+    namespace detail
+    {
+        // The following variables support extensions to the random scheme vault path policy.
+        // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+        int random_scheme_style = ivpp::random_scheme_config_default_style;
+        int random_scheme_suffix_length = ivpp::random_scheme_config_default_suffix_length;
+        // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+
+        // Returns the random scheme style if set in the REI. Otherwise, the default is returned.
+        auto get_random_scheme_style(RuleExecInfo& _rei) -> int
+        {
+            auto* msp = getMsParamByLabel(&_rei.inOutMsParamArray, ivpp::random_scheme_style);
+            if (!msp) {
+                return ivpp::random_scheme_config_default_style;
+            }
+            return *static_cast<int*>(msp->inOutStruct);
+        } // get_random_scheme_style
+
+        // Returns the random scheme suffix length if set in the REI. Otherwise, the default is returned.
+        auto get_random_scheme_suffix_length(RuleExecInfo& _rei) -> int
+        {
+            auto* msp = getMsParamByLabel(&_rei.inOutMsParamArray, ivpp::random_scheme_suffix_length);
+            if (!msp) {
+                return ivpp::random_scheme_config_default_suffix_length;
+            }
+            return *static_cast<int*>(msp->inOutStruct);
+        } // get_random_scheme_suffix_length
+    } // namespace detail
+} // anonymous namespace
 
 int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
 
@@ -49,11 +91,6 @@ int chkAndHandleOrphanFile(
     char *filePath,
     const char *_resc_name,
     int replStatus);
-
-namespace
-{
-    namespace ir = irods::experimental::replica;
-} // anonymous namespace
 
 namespace irods
 {
@@ -259,7 +296,6 @@ int
 getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     vaultPathPolicy_t *outVaultPathPolicy ) {
     ruleExecInfo_t rei;
-    msParam_t *msParam;
     int status;
 
     if ( outVaultPathPolicy == NULL || dataObjInfo == NULL || rsComm == NULL ) {
@@ -285,8 +321,15 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return status;
     }
 
-    if ( ( msParam = getMsParamByLabel( &rei.inOutMsParamArray,
-                                        VAULT_PATH_POLICY ) ) == NULL ) {
+    // This is horrible, but it must be done here to avoid giving non-rodsadmin users
+    // the ability to modify server-side configuration options for the random scheme.
+    //
+    // This limits modification of the random scheme configuration options to acSetVaultPathPolicy().
+    detail::random_scheme_style = detail::get_random_scheme_style(rei);
+    detail::random_scheme_suffix_length = detail::get_random_scheme_suffix_length(rei);
+
+    auto* msParam = getMsParamByLabel(&rei.inOutMsParamArray, VAULT_PATH_POLICY);
+    if (nullptr == msParam) {
         /* use the default */
         outVaultPathPolicy->scheme = DEF_VAULT_PATH_SCHEME;
         outVaultPathPolicy->addUserName = DEF_ADD_USER_FLAG;
@@ -326,9 +369,37 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
         return status;
     }
 
-    snprintf( outPath, MAX_NAME_LEN,
-              "%s/%s/%d/%d/%s.%d", vaultPath, userName, dir1, dir2,
-              logicalFileName, ( uint ) time( NULL ) );
+    log_agent::debug("{}: Random scheme: style=[{}], suffix length=[{}]",
+                     __func__,
+                     detail::random_scheme_style,
+                     detail::random_scheme_suffix_length);
+
+    if (detail::random_scheme_style == 1) {
+        const auto rnd_str =
+            irods::generate_random_alphanumeric_string(static_cast<std::int16_t>(detail::random_scheme_suffix_length));
+        std::snprintf(outPath,
+                      MAX_NAME_LEN,
+                      "%s/%s/%d/%d/%s.%d.%s",
+                      vaultPath,
+                      userName,
+                      dir1,
+                      dir2,
+                      logicalFileName,
+                      static_cast<unsigned int>(std::time(nullptr)),
+                      rnd_str.c_str());
+    }
+    else {
+        std::snprintf(outPath,
+                      MAX_NAME_LEN,
+                      "%s/%s/%d/%d/%s.%d",
+                      vaultPath,
+                      userName,
+                      dir1,
+                      dir2,
+                      logicalFileName,
+                      static_cast<unsigned int>(std::time(nullptr)));
+    }
+
     return 0;
 }
 

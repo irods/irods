@@ -137,6 +137,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/server_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/specColl.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user_validation_utilities.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/vault_path_policy.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/voting.hpp"
 )
 

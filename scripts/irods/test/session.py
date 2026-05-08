@@ -292,6 +292,9 @@ class IrodsSession(object):
                             self.username,
                             self._session_id)
 
+    def get_session_id(self):
+        return self._session_id
+
 # Two-way mapping of the new (json) and old iRODS environment setting names
 json_env_map = {'irods_host': 'irodsHost',
         'irods_port': 'irodsPort',
