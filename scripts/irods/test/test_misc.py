@@ -1,8 +1,11 @@
 import os
+import psutil
+import signal
 import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 
 from datetime import datetime, timedelta
@@ -600,6 +603,112 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
 
         finally:
             IrodsController().reload_configuration()
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Only requires a single server')
+    def test_server_rejects_relative_paths_to_pid_file__issue_8980(self):
+        pid_file_paths = [
+            'irods_issue_8980.pid',
+            './irods_issue_8980.pid',
+            'log/irods_issue_8980.pid',
+            '',
+        ]
+
+        for pid_path in pid_file_paths:
+            res = subprocess.run(['irodsServer', '-p', pid_path, '-t'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn(f'Error: PID file path must be absolute: [{pid_path}]\n', res.stderr)
+
+        for pid_path in pid_file_paths:
+            res = subprocess.run(['irodsServer', '-p', pid_path, '--stdout', '-t'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn(f'Error: PID file path must be absolute: [{pid_path}]\n', res.stderr)
+
+        for pid_path in pid_file_paths:
+            res = subprocess.run(['irodsServer', '-p', pid_path, '-t', '-d'], capture_output=True, text=True)
+            self.assertNotEqual(res.returncode, 0)
+            self.assertIn(f'Error: PID file path must be absolute: [{pid_path}]\n', res.stderr)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Only requires a single server')
+    def test_server_can_be_launched_with_different_pid_file__issue_8980(self):
+        controller = IrodsController()
+
+        def pid_file_exists(file, max_attempts=30):
+            for _ in range(max_attempts):
+                if os.path.exists(file):
+                    return True
+                time.sleep(1)
+            return False
+
+        # This function relies on the "controller" variable.
+        def wait_for_server_to_start(max_attempts=30):
+            for _ in range(max_attempts):
+                if controller.is_server_listening_for_client_requests():
+                    return True
+                time.sleep(1)
+            return False
+
+        try:
+            # Stop the server so that the test can launch it with a different PID file.
+            # This avoids address-in-use issues, etc.
+            controller.stop()
+
+            # Test launching the server in the foreground with a custom PID file.
+            #
+            # "start_new_session" is used to make sure the server is launched under a different
+            # process group/session. Not doing this results in signals like SIGUSR1 (used by the server)
+            # being sent to this test, causing it to be interrupted and exiting.
+            pid_file_path = f'{paths.irods_directory()}/irods_server_foreground_issue_8980.pid'
+            proc = subprocess.Popen(['irodsServer', '-p', pid_file_path, '-t'], start_new_session=True)
+            try:
+                # Wait for the server to open the listening socket. This guarantees that the
+                # server has completed initialization of signal handlers. This MUST be done before
+                # sending signals to the the server process.
+                self.assertTrue(wait_for_server_to_start())
+                self.assertTrue(pid_file_exists(pid_file_path))
+
+            finally:
+                proc.terminate()
+                self.assertEqual(proc.wait(), 0)
+
+            # Test launching the server as a daemon with a custom PID file.
+            pid_file_path = f'{paths.irods_directory()}/irods_server_daemon_issue_8980.pid'
+            proc = subprocess.Popen(['irodsServer', '-p', pid_file_path, '-t', '-d'], start_new_session=True)
+            try:
+                self.assertEqual(proc.wait(), 0) # Wait for the server to daemonize.
+                self.assertTrue(wait_for_server_to_start())
+                self.assertTrue(pid_file_exists(pid_file_path))
+
+            finally:
+                # Terminate the server.
+                with open(pid_file_path) as f:
+                    pid_number = int(f.readline().strip())
+                self.assertGreater(pid_number, 0)
+                os.kill(pid_number, signal.SIGTERM)
+
+                # Make sure the server is shut down. We only know this if os.kill() raises an exception
+                # or the process is identified as a zombie.
+                server_is_shutdown = False
+                try:
+                    proc = psutil.Process(pid_number)
+                    for _ in range(30):
+                        os.kill(pid_number, 0) # We want this to raise an exception.
+                        time.sleep(1)
+
+                        # If the process is a zombie, that means this test is probably running in an
+                        # environment without an init-like process. This is perfectly acceptable for test
+                        # purposes as it indicates the process has exited.
+                        if proc.status() == psutil.STATUS_ZOMBIE:
+                            server_is_shutdown = True
+                            break
+
+                except (ProcessLookupError, PermissionError, psutil.NoSuchProcess):
+                    # This exception block will be triggered if the OS cannot find a PID matching
+                    # the target PID or the user does not have permission to send the target PID signals.
+                    server_is_shutdown = True
+                self.assertTrue(server_is_shutdown)
+
+        finally:
+            controller.start(test_mode=True);
 
 
 class test_server_side_libraries(unittest.TestCase):
