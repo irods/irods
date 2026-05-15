@@ -1,14 +1,8 @@
-from __future__ import print_function
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
 import json
 import os
 import textwrap
 import time
+import unittest
 
 from . import resource_suite
 from . import session
@@ -20,6 +14,7 @@ from ..controller import IrodsController
 
 class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
+    default_plugin_instance = plugin_name + '-instance'
     class_name = 'Test_Delay_Queue'
 
     def setUp(self):
@@ -103,7 +98,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 # Bounce server to apply setting
                 irodsctl.restart(test_mode=True)
 
-                self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+                self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
 
                 lib.delayAssert(
                     lambda: lib.metadata_attr_with_value_exists(
@@ -199,7 +194,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 irodsctl.restart(test_mode=True)
 
                 # Fire off rule and ensure the delay queue is correctly populated
-                self.admin.assert_icommand(['irule', '-F', rule_file])
+                self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file])
 
                 start = time.time()
 
@@ -328,7 +323,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             irodsctl.restart(test_mode=True)
 
             # Fire off rule and ensure the delay queue is correctly populated
-            self.admin.assert_icommand(['irule', '-F', rule_file])
+            self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file])
 
             # Wait for messages to get written out and ensure that all the messages were written to serverLog
             for i in range(parameters['expected_count']):
@@ -391,7 +386,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             irodsctl.reload_configuration()
 
             # Fire off rule and wait for message to get written out to serverLog
-            self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+            self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
             lib.delayAssert(
                 lambda: lib.metadata_attr_with_value_exists(
                     self.admin,
@@ -468,7 +463,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                     irodsctl.reload_configuration()
 
                     # Fire off rule and ensure the delay queue is correctly populated
-                    self.admin.assert_icommand(['irule', '-F', rule_file])
+                    self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file])
 
                     iquest = 'select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\''
 
@@ -737,6 +732,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
 class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
+    default_plugin_instance = plugin_name + '-instance'
     class_name = 'Test_Execution_Frequency'
 
     def setUp(self):
@@ -804,7 +800,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
 
                 string = 'writeLine: inString = {}'.format(repeat_string)
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['irule', '-F', rule_file])
+                self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file])
 
                 for i in range(repeat_n):
                     self.assert_repeat_in_log(string, initial_size_of_server_log, i + 1)
@@ -858,7 +854,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
 
                 string = 'writeLine: inString = {}'.format(repeat_string)
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['irule', '-F', rule_file])
+                self.admin.assert_icommand(['irule', '-r', self.default_plugin_instance, '-F', rule_file])
                 for i in range(repeat_n):
                     self.assert_repeat_in_log(string, initial_size_of_server_log, i + 1)
 
