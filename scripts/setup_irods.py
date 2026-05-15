@@ -658,13 +658,11 @@ def main():
     optional_prompts = []
 
     irods.log.register_file_handler(irods_config.setup_log_path)
+    llevel = logging.INFO
     if None != args.verbose and args.verbose > 0:
-        llevel = logging.NOTSET
         if args.verbose == 1:
-            llevel = logging.INFO
-        elif args.verbose == 2:
             llevel = logging.DEBUG
-        irods.log.register_tty_handler(sys.stdout, llevel, logging.WARNING)
+    irods.log.register_tty_handler(sys.stdout, llevel, logging.WARNING)
 
     if args.server_log_level != None:
         irods_config.injected_environment['spLogLevel'] = str(args.server_log_level)
