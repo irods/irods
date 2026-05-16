@@ -116,10 +116,12 @@ Mandatory arguments to long options are mandatory for short options too.
 
 Options:
   -c, --no-create  Do not create a data object.
-  -n, --replica    The replica number of the replica to update.  This
+  -n, --replica=REPLICA_NUMBER
+                   The replica number of the replica to update. This
                    option applies to data objects only. Cannot be used
                    with -R.
-  -R, --resource   The leaf resource that contains the replica to update.
+  -R, --resource=RESOURCE_NAME
+                   The leaf resource that contains the replica to update.
                    This option applies to data objects only. If the data
                    object does not exist and this option is used, the
                    replica will be created on the resource specified.

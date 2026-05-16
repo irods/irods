@@ -118,45 +118,56 @@ int main(int argc, char* argv[])
 
 auto usage() -> void
 {
-    std::cout << "Usage: istream read [-R RESC_NAME] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
-                 "Usage: istream read [-n REPLICA_NUMBER] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
-                 "Usage: istream write [-R RESC_NAME] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
-                 "Usage: istream write [-n REPLICA_NUMBER] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
-                 "\n"
-                 "Streams bytes to/from iRODS via stdin/stdout.\n"
-                 "Reads bytes from the target data object and prints them to stdout.\n"
-                 "Writes bytes from stdin to the target data object.\n"
-                 "\n"
-                 "Writing to a non-existent data object will create it by default.\n"
-                 "Writing to an existing data object always truncates it.  Truncation can be\n"
-                 "disabled by passing --no-trunc.  However, using --no-trunc disables creation\n"
-                 "of data objects.\n"
-                 "\n"
-                 "If the client-side of the connection is interrupted before the data object\n"
-                 "is closed, then the catalog will not be updated and the data object will have\n"
-                 "a replica status of intermediate or stale.  Information such as data object\n"
-                 "size and checksum will not be available.\n"
-                 "\n"
-                 "If the target data object does not reside on the connected server, istream\n"
-                 "will not attempt to redirect to the server hosting the replica.  Traffic will\n"
-                 "always flow through the connected server.\n"
-                 "\n"
-                 "Options:\n"
-                 "-R, --resource  The root resource to read from or write to.  Cannot be used\n"
-                 "                with --replica.\n"
-                 "-n, --replica   The replica number of the replica to read from or write to.\n"
-                 "                Replica numbers cannot be used to create new data objects.\n"
-                 "                Cannot be used with --resource.\n"
-                 "-o, --offset    The number of bytes to skip within the data object before\n"
-                 "                reading/writing.  Value must be positive.  Defaults to zero.\n"
-                 "-c, --count     The number of bytes to read/write.  Value must be positive.\n"
-                 "                Defaults to all bytes.\n"
-                 "-a, --append    Appends bytes read from stdin to the data object.  Implies\n"
-                 "                --no-trunc.\n"
-                 "    --no-trunc  Does not truncate the data object.  Disables creation of data\n"
-                 "                objects.  Ignored by write operations when --append is set.\n"
-                 "-k, --checksum  Compute checksum.\n"
-                 "-h, --help      Prints this message\n";
+    std::cout << R"__(istream - Read from or write to a data object
+
+Usage: istream read [-R RESOURCE_NAME] [-o INTEGER] [-c INTEGER] LOGICAL_PATH
+Usage: istream read [-n REPLICA_NUMBER] [-o INTEGER] [-c INTEGER] LOGICAL_PATH
+Usage: istream write [-R RESOURCE_NAME] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH
+Usage: istream write [-n REPLICA_NUMBER] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH
+
+Streams bytes to/from iRODS via stdin/stdout.
+Reads bytes from the target data object and prints them to stdout.
+Writes bytes from stdin to the target data object.
+
+Writing to a non-existent data object will create it by default.
+Writing to an existing data object always truncates it. Truncation can be
+disabled by passing --no-trunc. However, using --no-trunc disables creation
+of data objects.
+
+If the client-side of the connection is interrupted before the data object
+is closed, then the catalog will not be updated and the data object will have
+a replica status of intermediate or stale. Information such as data object
+size and checksum will not be available.
+
+If the target data object does not reside on the connected server, istream
+will not attempt to redirect to the server hosting the replica. Traffic will
+always flow through the connected server.
+
+Mandatory arguments to long options are mandatory for short options too.
+
+Options:
+ -R, --resource=RESOURCE_NAME
+               The root resource to read from or write to. Cannot be used
+               with --replica.
+ -n, --replica=REPLICA_NUMBER
+               The replica number of the replica to read from or write to.
+               Replica numbers cannot be used to create new data objects.
+               Cannot be used with --resource.
+ -o, --offset=INTEGER
+               The number of bytes to skip within the data object before
+               reading/writing. Value must be positive. Defaults to zero.
+ -c, --count=INTEGER
+               The number of bytes to read/write. Value must be positive.
+               Defaults to all bytes.
+ -a, --append  Appends bytes read from stdin to the data object. Implies
+               --no-trunc.
+     --no-trunc
+               Does not truncate the data object. Disables creation of data
+               objects. Ignored by write operations when --append is set.
+ -k, --checksum
+               Compute checksum.
+ -h, --help    Prints this message
+)__";
 
     printReleaseInfo("istream");
 }
