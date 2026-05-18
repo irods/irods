@@ -220,6 +220,15 @@ auto main(int _argc, char* _argv[]) -> int
             return 1;
         }
 
+        auto pid_file = irods::get_irods_runstate_directory() / "irods/irods-server.pid";
+        if (const auto iter = vm.find("pid-file"); std::end(vm) != iter) {
+            pid_file = iter->second.as<std::string>();
+            if (pid_file.is_relative()) {
+                fmt::print(stderr, "Error: PID file path must be absolute: [{}]\n", pid_file.c_str());
+                return 1;
+            }
+        }
+
         if (vm.count("daemonize") > 0) {
             if (write_to_stdout) {
                 fmt::print(stderr, "Error: --daemonize and --stdout are incompatible.\n");
@@ -229,12 +238,7 @@ auto main(int _argc, char* _argv[]) -> int
             daemonize();
         }
 
-        std::string pid_file = (irods::get_irods_runstate_directory() / "irods/irods-server.pid").string();
-        if (const auto iter = vm.find("pid-file"); std::end(vm) != iter) {
-            pid_file = std::move(iter->second.as<std::string>());
-        }
-
-        if (create_pid_file(pid_file) != 0) {
+        if (create_pid_file(pid_file.c_str()) != 0) {
             return 1;
         }
     }
