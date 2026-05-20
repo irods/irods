@@ -608,6 +608,129 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.run_icommand(f"iadmin rmresc repl{resource_id}")
             self.admin.run_icommand(f"iadmin rmresc pt{resource_id}")
 
+    def test_rebalance_has_partial_success_with_write_locked_replicas__issue_8566(self):
+        resource_id = '_issue_8566_' + uuid.uuid4().hex
+
+        # Don't use the default rebalance limit.
+        # Use a smaller rebalance limit to simulate large
+        # collections without creating hundreds of collections.
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_rebalance_pre(*INSTANCE_NAME, *CONTEXT, *OUT) {
+                    *OUT="replication_rebalance_limit=1";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_rebalance_pre(rule_args, callback, rei):
+                    rule_args[0] = 'replication_rebalance_limit=1'
+            ''')
+        }
+
+        # Define number of data objects and the index
+        # of the data objects that will be marked write-locked
+        num_children = 10
+        bad_file_indices = (1, 3, 5)
+
+        # Generate full paths to data objects
+        paths_to_good_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in range(num_children) if i not in bad_file_indices]
+        paths_to_bad_data_objects = [os.path.join(self.user0.session_collection, f"foo{i}") for i in bad_file_indices]
+        paths_to_data_objects = [*paths_to_good_data_objects, *paths_to_bad_data_objects]
+
+        try:
+            self.admin.assert_icommand(f"iadmin mkresc pt{resource_id} passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand(f"iadmin mkresc pt_b{resource_id} passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand(f"iadmin mkresc pt_c1{resource_id} passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand(f"iadmin mkresc pt_c2{resource_id} passthru", 'STDOUT_SINGLELINE', "Creating")
+            self.admin.assert_icommand(f"iadmin mkresc repl{resource_id} replication", 'STDOUT_SINGLELINE', "Creating")
+
+            lib.create_ufs_resource(self.admin, f'leaf_a{resource_id}')
+            lib.create_ufs_resource(self.admin, f'leaf_b{resource_id}')
+            lib.create_ufs_resource(self.admin, f'leaf_c{resource_id}')
+
+            self.admin.assert_icommand(f"iadmin addchildtoresc pt{resource_id} repl{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc repl{resource_id} leaf_a{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc repl{resource_id} pt_b{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc repl{resource_id} pt_c1{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc pt_b{resource_id} leaf_b{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc pt_c1{resource_id} pt_c2{resource_id}")
+            self.admin.assert_icommand(f"iadmin addchildtoresc pt_c2{resource_id} leaf_c{resource_id}")
+
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                for file in paths_to_data_objects:
+                    self.user0.assert_icommand(f"itouch -R leaf_a{resource_id} {file}")
+
+                # Trim replica 0 so all data objects require replication
+                for file in paths_to_data_objects:
+                    self.user0.assert_icommand(f"itrim -N2 -n0 {file}", 'STDOUT_SINGLELINE', 'Total size trimmed')
+
+                # Make all replicas of "foo{i}" write-locked
+                for file in paths_to_bad_data_objects:
+                    lib.set_replica_status(self.admin, file, 1, 4)
+                    lib.set_replica_status(self.admin, file, 2, 4)
+
+                # Assert write-locked replicas exist
+                for file in [os.path.basename(f) for f in paths_to_bad_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '4')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '4')
+
+                # Assert data objects marked good exist and replica 0 is trimmed
+                for file in [os.path.basename(f) for f in paths_to_good_data_objects]:
+                    self.assertFalse(lib.replica_exists(self.user0, file, 0))
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '1')
+
+                # visualize our tree
+                self.user0.assert_icommand("ils -AL", 'STDOUT')
+
+                # call rebalance function
+                rc, _, _ = self.admin.assert_icommand(f"iadmin modresc pt{resource_id} rebalance", "STDERR", "-1834000 REBALANCE_NOT_COMPLETE")
+                self.assertNotEqual(rc, 0)
+
+                # visualize our rebalance
+                self.user0.assert_icommand("ils -AL", 'STDOUT')
+
+                # Assert write-locked replicas still exist and no replication performed
+                for file in [os.path.basename(f) for f in paths_to_bad_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '4')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '4')
+                    self.assertFalse(lib.replica_exists(self.user0, file, 3))
+
+                # Assert all replications exist for data objects marked good
+                for file in [os.path.basename(f) for f in paths_to_good_data_objects]:
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 1), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 2), '1')
+                    self.assertEqual(lib.get_replica_status(self.user0, file, 3), '1')
+
+        finally:
+            # Make all replicas of "foo{i}" good for deletion
+            for file in paths_to_bad_data_objects:
+                lib.set_replica_status(self.admin, file, 1, 0)
+                lib.set_replica_status(self.admin, file, 2, 0)
+            for file in paths_to_data_objects:
+                self.user0.run_icommand(f"irm -f {file}")
+
+            IrodsController().reload_configuration()
+
+            self.admin.run_icommand(f"iadmin rmchildfromresc pt_c2{resource_id} leaf_c{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc repl{resource_id} leaf_a{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc pt_b{resource_id} leaf_b{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc pt_c1{resource_id} pt_c2{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc repl{resource_id} pt_c1{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc repl{resource_id} pt_b{resource_id}")
+            self.admin.run_icommand(f"iadmin rmchildfromresc pt{resource_id} repl{resource_id}")
+
+            self.admin.run_icommand(f"iadmin rmresc leaf_c{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc leaf_b{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc leaf_a{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc pt_c2{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc pt_c1{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc pt_b{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc repl{resource_id}")
+            self.admin.run_icommand(f"iadmin rmresc pt{resource_id}")
+
     def test_rebalance_has_partial_success_with_missing_or_stale_replicas__issue_6111(self):
         resource_id = '_issue_6111_' + uuid.uuid4().hex
 
