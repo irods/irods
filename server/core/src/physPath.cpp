@@ -277,6 +277,7 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     status = applyRule( "acSetVaultPathPolicy", NULL, &rei, NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
+    rei.condInputData = nullptr;
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "getVaultPathPolicy: rule acSetVaultPathPolicy error, status = %d",
