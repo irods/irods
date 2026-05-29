@@ -99,11 +99,14 @@
 
 /// Defined if the development library supports #rc_genquery2.
 ///
+/// - 202604L: Expose timestamp columns describing when metadata is attached
+/// - 202603L: Permissions are only expanded when permission columns are included
+/// - 202603L: Report parser error information via rError stack
 /// - 202503L: User is granted control over the DISTINCT keyword
 /// - 202404L: Initial implementation
 ///
 /// \since 4.3.2
-#define IRODS_LIBRARY_FEATURE_GENQUERY2                                   202503L
+#define IRODS_LIBRARY_FEATURE_GENQUERY2                                   202604L
 
 /// Defined if the development library supports the delay rule locking API.
 ///
@@ -151,6 +154,17 @@
 ///
 /// \since 5.1.0
 #define IRODS_LIBRARY_FEATURE_RESOURCES_READ_CHECKSUM_FROM_STORAGE_DEVICE 202511L
+
+/// Defined if the development library grants control over hasher digest output format.
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_HASHER_DIGEST_OUTPUT_FORMAT                 202604L
+
+/// Defined if the development library provides native support for Logical Quotas
+/// and related APIs.
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_LOGICAL_QUOTAS                              202605L
 
 // NOLINTEND
 
