@@ -39,7 +39,8 @@ auto check_input_arguments(const po::variables_map& vm) -> std::tuple<bool, int>
 
 auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::string>;
 
-auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int;
+template <typename InputStream, typename OutputStream>
+auto stream_bytes(InputStream& in, OutputStream& out, int_type count) -> int;
 
 auto read_data_object(rodsEnv& env,
                       const po::variables_map& vm,
@@ -216,7 +217,8 @@ auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::stri
     return p;
 }
 
-auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
+template <typename InputStream, typename OutputStream>
+auto stream_bytes(InputStream& in, OutputStream& out, int_type count) -> int
 {
     if (count < 0) {
         std::cerr << "Error: Invalid byte count.\n";
@@ -232,12 +234,23 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
         }
 
         if (!in.eof()) {
-            std::cerr << "Error: Failed to read all bytes.\n";
+            if constexpr (std::is_same_v<InputStream, io::idstream>) {
+                std::cerr << "Error: Failed to read all bytes [error code=" << in.last_error() << "].\n";
+            }
+            else {
+                std::cerr << "Error: Failed to read all bytes.\n";
+            }
             return 1;
         }
 
         if (!out) {
-            std::cerr << "Error: Failed to write all bytes to data object.\n";
+            if constexpr (std::is_same_v<OutputStream, io::odstream>) {
+                std::cerr << "Error: Failed to write all bytes to data object [error code=" << out.last_error()
+                          << "].\n";
+            }
+            else {
+                std::cerr << "Error: Failed to write all bytes to data object.\n";
+            }
             return 1;
         }
 
@@ -266,7 +279,13 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
     }
 
     if (!out) {
-        std::cerr << "Error: Failed to write requested number of bytes to data object.\n";
+        if constexpr (std::is_same_v<OutputStream, io::odstream>) {
+            std::cerr << "Error: Failed to write requested number of bytes to data object [error code="
+                      << out.last_error() << "].\n";
+        }
+        else {
+            std::cerr << "Error: Failed to write requested number of bytes to data object.\n";
+        }
         return 1;
     }
 
@@ -316,13 +335,13 @@ auto read_data_object(rodsEnv& env,
     }
 
     if (!in) {
-        std::cerr << "Error: Cannot open data object.\n";
+        std::cerr << "Error: Cannot open data object [error code=" << in.last_error() << "].\n";
         return 1;
     }
 
     if (const auto offset = vm["offset"].as<int_type>(); offset >= 0) {
         if (!in.seekg(offset)) {
-            std::cerr << "Error: Could not seek to offset.\n";
+            std::cerr << "Error: Could not seek to offset [error code=" << in.last_error() << "].\n";
             return 1;
         }
     }
@@ -383,13 +402,13 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     }
 
     if (!out) {
-        std::cerr << "Error: Cannot open data object.\n";
+        std::cerr << "Error: Cannot open data object [error code=" << out.last_error() << "].\n";
         return 1;
     }
 
     if (const auto offset = vm["offset"].as<int_type>(); offset >= 0) {
         if (!out.seekp(offset)) {
-            std::cerr << "Error: Could not seek to offset.\n";
+            std::cerr << "Error: Could not seek to offset [error code=" << out.last_error() << "].\n";
             return 1;
         }
     }
@@ -410,4 +429,3 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
 
     return 0;
 }
-
