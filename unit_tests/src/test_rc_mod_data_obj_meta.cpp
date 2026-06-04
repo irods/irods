@@ -1,12 +1,15 @@
 #include <catch2/catch_all.hpp>
 
+#include "irods_error_enum_matcher.hpp"
+#include "unit_test_utils.hpp"
+
 #include "irods/client_connection.hpp"
 #include "irods/dataObjInpOut.h"
 #include "irods/dstream.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods_error_enum_matcher.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_query.hpp"
 #include "irods/objInfo.h"
 #include "irods/rcMisc.h"
 #include "irods/replica.hpp"
@@ -14,7 +17,6 @@
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/transport/default_transport.hpp"
-#include "unit_test_utils.hpp"
 
 #include <fmt/format.h>
 
@@ -148,3 +150,55 @@ TEST_CASE("using ADMIN_KW with rcModDataObjMeta")
         }
     }
 } // rc_data_obj_repl
+
+TEST_CASE("#8999: rsModDataObjMeta formats string as timestamp for DATA_CREATE_KW")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    irods::experimental::client_connection conn;
+
+    const auto sandbox = fs::path{env.rodsHome} / "issue_8999";
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    const auto data_object = sandbox / "data_object";
+
+    const irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
+
+    // Create a new data object.
+    {
+        irods::experimental::io::client::native_transport tp{conn};
+        irods::experimental::io::odstream{tp, data_object};
+    }
+
+    // Configure the input structures to pass invalid arguments to the server.
+    DataObjInfo info{};
+    std::strncpy(info.objPath, data_object.c_str(), sizeof(DataObjInfo::objPath) - 1);
+
+    // The strings MUST be less than 11 bytes in length for the API to convert
+    // and format them as timestamps.
+    KeyValPair reg_param{};
+    addKeyVal(&reg_param, DATA_CREATE_KW, "bad_ts_0");
+    addKeyVal(&reg_param, DATA_MODIFY_KW, "bad_ts_1");
+    addKeyVal(&reg_param, DATA_ACCESS_TIME_KW, "bad_ts_2");
+
+    ModDataObjMetaInp input{&info, &reg_param};
+    REQUIRE(rcModDataObjMeta(static_cast<RcComm*>(conn), &input) == 0);
+
+    // Show that the server handles create time just like the other time fields.
+    const auto query_str = fmt::format(
+        "select DATA_CREATE_TIME, DATA_MODIFY_TIME, DATA_ACCESS_TIME where COLL_NAME = '{}' and DATA_NAME = '{}'",
+        sandbox.c_str(),
+        data_object.object_name().c_str());
+    constexpr const char* expected_ts = "00000000000";
+    for (auto&& row : irods::query{static_cast<RcComm*>(conn), query_str}) {
+        CHECK(expected_ts == row[0]);
+        CHECK(expected_ts == row[1]);
+        CHECK(expected_ts == row[2]);
+    }
+}
