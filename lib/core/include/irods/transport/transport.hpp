@@ -232,6 +232,14 @@ namespace irods::experimental::io
         /// Replica tokens only apply to write operations. Replica opened only for reads do
         /// not produce replica tokens.
         virtual const replica_token& replica_token() const = 0;
+
+        /// Returns the error code of the last operation.
+        ///
+        /// \since 5.1.0
+        [[nodiscard]] virtual int last_error() const noexcept
+        {
+            return 0;
+        }
     }; // class transport
 } // irods::experimental::io
 

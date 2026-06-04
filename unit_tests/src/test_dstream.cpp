@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 
+#include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
 #include "irods/dstream.hpp"
 #include "irods/filesystem.hpp"
@@ -7,12 +8,15 @@
 #include "irods/irods_query.hpp"
 #include "irods/replica.hpp"
 #include "irods/rodsClient.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/system_error.hpp"
 #include "irods/transport/default_transport.hpp"
 
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
 
 #include <chrono>
+#include <ios>
 #include <string_view>
 
 #include <unistd.h>
@@ -302,6 +306,52 @@ TEST_CASE("dstream", "[iostreams]")
         char buf[2]{};
         ds.read(buf, 2);
         REQUIRE(std::string_view(buf, 2) == "cd");
+    }
+}
+
+TEST_CASE("#8459: dstream tracks last error code")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    irods::experimental::client_connection conn;
+
+    const auto sandbox = fs::path{env.rodsHome} / "issue_8459_sandbox";
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    const irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+
+    io::client::native_transport tp{conn};
+
+    SECTION("opening a nonexistent data object")
+    {
+        io::idstream in{tp, sandbox / "does_not_exist"};
+        CHECK_FALSE(in);
+        const auto errc = irods::experimental::make_error_code(in.last_error());
+        CHECK(irods::experimental::get_irods_error_code(errc) == OBJ_PATH_DOES_NOT_EXIST);
+    }
+
+    SECTION("passing an invalid offset to seek")
+    {
+        const auto data_object = sandbox / "data_object.txt";
+
+        io::odstream out{tp, data_object};
+        CHECK(out);
+        CHECK_FALSE(out.seekp(-1, std::ios::beg));
+        auto errc = irods::experimental::make_error_code(out.last_error());
+        CHECK(irods::experimental::get_irods_error_code(errc) == UNIX_FILE_LSEEK_ERR);
+        out.close();
+
+        io::idstream in{tp, data_object};
+        CHECK(in);
+        CHECK_FALSE(in.seekg(-1, std::ios::beg));
+        errc = irods::experimental::make_error_code(in.last_error());
+        CHECK(irods::experimental::get_irods_error_code(errc) == UNIX_FILE_LSEEK_ERR);
     }
 }
 

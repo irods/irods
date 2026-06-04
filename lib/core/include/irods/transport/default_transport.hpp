@@ -186,7 +186,8 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
             const auto json_string = json_input.dump();
 
-            if (const auto ec = rx_replica_close(comm_, json_string.c_str()); ec != 0) {
+            last_error_ = rx_replica_close(comm_, json_string.c_str());
+            if (0 != last_error_) {
                 return false;
             }
 
@@ -205,7 +206,9 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             output.len = input.len;
             output.buf = _buffer;
 
-            return rxDataObjRead(comm_, &input, &output);
+            last_error_ = rxDataObjRead(comm_, &input, &output);
+
+            return last_error_;
         }
 
         std::streamsize send(const char_type* _buffer, std::streamsize _buffer_size) override
@@ -218,7 +221,9 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             input_buffer.len = input.len;
             input_buffer.buf = const_cast<char_type*>(_buffer);
 
-            return rxDataObjWrite(comm_, &input, &input_buffer);
+            last_error_ = rxDataObjWrite(comm_, &input, &input_buffer);
+
+            return last_error_;
         }
 
         pos_type seekpos(off_type _offset, std::ios_base::seekdir _dir) override
@@ -252,7 +257,8 @@ namespace irods::experimental::io::NAMESPACE_IMPL
                 }
             }};
 
-            if (const auto ec = rxDataObjLseek(comm_, &input, &output); ec < 0) {
+            last_error_ = rxDataObjLseek(comm_, &input, &output);
+            if (last_error_ < 0) {
                 return seek_error;
             }
 
@@ -287,6 +293,11 @@ namespace irods::experimental::io::NAMESPACE_IMPL
         const replica_token& replica_token() const override
         {
             return replica_token_;
+        }
+
+        [[nodiscard]] int last_error() const noexcept override
+        {
+            return last_error_;
         }
 
     private:
@@ -358,13 +369,13 @@ namespace irods::experimental::io::NAMESPACE_IMPL
                 }
             }};
 
-            const auto fd = rx_replica_open(comm_, &input, &json_output);
+            last_error_ = rx_replica_open(comm_, &input, &json_output);
 
-            if (fd < minimum_valid_file_descriptor) {
+            if (last_error_ < minimum_valid_file_descriptor) {
                 return false;
             }
 
-            fd_ = fd;
+            fd_ = last_error_;
 
             try {
                 const auto fd_info = nlohmann::json::parse(json_output);
@@ -396,6 +407,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
         struct leaf_resource_name leaf_resc_name_;
         struct replica_number replica_number_;
         struct replica_token replica_token_;
+        int last_error_ = 0;
     }; // basic_transport
 
     // clang-format off
