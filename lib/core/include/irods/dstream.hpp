@@ -233,6 +233,11 @@ namespace irods::experimental::io
             return transport_->replica_token();
         }
 
+        [[nodiscard]] int last_error() const noexcept
+        {
+            return transport_->last_error();
+        }
+
     protected:
         int_type underflow() override
         {
@@ -678,6 +683,11 @@ namespace irods::experimental::io
         const replica_token& replica_token() const
         {
             return buf_.replica_token();
+        }
+
+        [[nodiscard]] int last_error() const noexcept
+        {
+            return buf_.last_error();
         }
 
     private:
