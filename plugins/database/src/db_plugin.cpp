@@ -2390,6 +2390,19 @@ irods::error db_mod_data_obj_meta_op(
                 }
             }
 
+            if (regParamNames[i] == DATA_CREATE_KW) {
+                /* if create_ts, also make sure it's in the standard time-stamp format: "%011d" */
+                if (colNames[i] == "create_ts") { /* double check*/
+                    if (strlen(theVal) < 11) {
+                        static char theVal5[20];
+                        time_t myTimeValue;
+                        myTimeValue = atoll(theVal);
+                        snprintf(theVal5, sizeof theVal5, "%011d", (int) myTimeValue);
+                        updateVals[j] = theVal5;
+                    }
+                }
+            }
+
             if(regParamNames[i] == DATA_SIZE_KW) {
                 doingDataSize = 1; /* flag to check size */
                 snprintf( dataSizeString, sizeof( dataSizeString ), "%s", theVal );
