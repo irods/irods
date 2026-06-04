@@ -17,6 +17,7 @@
 
 #include <chrono>
 #include <ios>
+#include <limits>
 #include <string_view>
 
 #include <unistd.h>
@@ -352,6 +353,50 @@ TEST_CASE("#8459: dstream tracks last error code")
         CHECK_FALSE(in.seekg(-1, std::ios::beg));
         errc = irods::experimental::make_error_code(in.last_error());
         CHECK(irods::experimental::get_irods_error_code(errc) == UNIX_FILE_LSEEK_ERR);
+    }
+}
+
+TEST_CASE("#9002: dstream detects precision errors on reads and writes")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    irods::experimental::client_connection conn;
+
+    const auto sandbox = fs::path{env.rodsHome} / "issue_9002_sandbox";
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    const irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+
+    const auto data_object = sandbox / "data_object.txt";
+
+    io::client::native_transport tp{conn};
+
+    // Create a data object.
+    {
+        io::odstream{tp, data_object} << "some data";
+    }
+
+    io::dstream stream{tp, data_object};
+    REQUIRE(stream);
+
+    char buf{};
+
+    SECTION("read")
+    {
+        CHECK_FALSE(stream.read(&buf, std::numeric_limits<std::streamsize>::max()));
+        CHECK(stream.last_error() == PRECISION_LOST_ERROR);
+    }
+
+    SECTION("write")
+    {
+        CHECK_FALSE(stream.write(&buf, std::numeric_limits<std::streamsize>::max()));
+        CHECK(stream.last_error() == PRECISION_LOST_ERROR);
     }
 }
 

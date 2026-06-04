@@ -198,9 +198,13 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
         std::streamsize receive(char_type* _buffer, std::streamsize _buffer_size) override
         {
+            if (!std::in_range<int>(_buffer_size)) {
+                return (last_error_ = PRECISION_LOST_ERROR);
+            }
+
             openedDataObjInp_t input{};
             input.l1descInx = fd_;
-            input.len = _buffer_size;
+            input.len = static_cast<int>(_buffer_size);
 
             bytesBuf_t output{};
             output.len = input.len;
@@ -213,9 +217,13 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
         std::streamsize send(const char_type* _buffer, std::streamsize _buffer_size) override
         {
+            if (!std::in_range<int>(_buffer_size)) {
+                return (last_error_ = PRECISION_LOST_ERROR);
+            }
+
             openedDataObjInp_t input{};
             input.l1descInx = fd_;
-            input.len = _buffer_size;
+            input.len = static_cast<int>(_buffer_size);
 
             bytesBuf_t input_buffer{};
             input_buffer.len = input.len;
