@@ -2508,7 +2508,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
         dumb_int = 16
         cols = {
             #"COLL_ID" : dumb_int,
-            "DATA_CREATE_TIME" : dumb_string,
+            "DATA_CREATE_TIME" : '00000000038',
             "DATA_CHECKSUM" : dumb_string,
             "DATA_EXPIRY" : '00000000016',
             #"DATA_ID" : dumb_string,
