@@ -1,3 +1,4 @@
+#include "irods/rodsErrorTable.h"
 #undef IRODS_IO_DEFAULT_TRANSPORT_HPP_INCLUDE_HEADER
 
 #if defined(IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API)
@@ -199,7 +200,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
         std::streamsize receive(char_type* _buffer, std::streamsize _buffer_size) override
         {
             if (!std::in_range<int>(_buffer_size)) {
-                return (last_error_ = PRECISION_LOST_ERROR);
+                return (last_error_ = NARROWING_CONVERSION_ERROR);
             }
 
             openedDataObjInp_t input{};
@@ -218,7 +219,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
         std::streamsize send(const char_type* _buffer, std::streamsize _buffer_size) override
         {
             if (!std::in_range<int>(_buffer_size)) {
-                return (last_error_ = PRECISION_LOST_ERROR);
+                return (last_error_ = NARROWING_CONVERSION_ERROR);
             }
 
             openedDataObjInp_t input{};
