@@ -112,7 +112,8 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                                          "RESC_LOC, RESC_VAULT_PATH, RESC_STATUS, "
                                          "RESC_CONTEXT, RESC_COMMENT, RESC_INFO, "
                                          "RESC_FREE_SPACE, RESC_FREE_SPACE_TIME, "
-                                         "RESC_PARENT, RESC_CREATE_TIME, RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS "
+                                         "RESC_PARENT, RESC_CREATE_TIME, RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS, "
+                                         "RESC_PARENT_CONTEXT "
                                          "where RESC_NAME = '{}'",
                                          _name);
 
@@ -128,6 +129,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 info.vault_path_ = row[4];
                 info.status_ = to_resource_status(row[5]);
                 info.context_string_ = row[6];
+                info.parent_context_string_ = row[15];
                 info.comments_ = row[7];
                 info.info_ = row[8];
                 info.free_space_ = row[9];
