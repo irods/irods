@@ -166,6 +166,13 @@
 /// \since 5.1.0
 #define IRODS_LIBRARY_FEATURE_LOGICAL_QUOTAS                              202605L
 
+/// Defined if the development library supports various dstream extensions.
+///
+/// - 202606L: Track and expose iRODS error codes
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_DSTREAM                                     202606L
+
 // NOLINTEND
 
 #endif // IRODS_LIBRARY_FEATURES_H
