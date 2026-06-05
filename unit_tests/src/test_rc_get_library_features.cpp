@@ -57,6 +57,7 @@ TEST_CASE("rc_get_library_features")
 
         CHECK(202604 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_HASHER_DIGEST_OUTPUT_FORMAT)).get<int>());
         CHECK(202605 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_LOGICAL_QUOTAS)).get<int>());
+        CHECK(202606 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_DSTREAM)).get<int>());
         // clang-format on
     }
 
