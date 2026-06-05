@@ -173,6 +173,13 @@
 /// \since 5.1.0
 #define IRODS_LIBRARY_FEATURE_DSTREAM                                     202606L
 
+/// Defined if the development library supports various resource administration extensions.
+///
+/// - 202606L: Expose resource parent context
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_RESOURCE_ADMINISTRATION                     202606L
+
 // NOLINTEND
 
 #endif // IRODS_LIBRARY_FEATURES_H

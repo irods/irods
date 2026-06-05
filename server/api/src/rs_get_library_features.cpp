@@ -52,6 +52,7 @@ auto rs_get_library_features(RsComm* _comm, char** _features) -> int
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_HASHER_DIGEST_OUTPUT_FORMAT)
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_LOGICAL_QUOTAS)
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_DSTREAM)
+        IRODS_FEATURE(IRODS_LIBRARY_FEATURE_RESOURCE_ADMINISTRATION)
     }.dump().c_str());
     // clang-format on
 
