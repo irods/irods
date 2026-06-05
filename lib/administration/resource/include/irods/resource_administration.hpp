@@ -95,6 +95,7 @@ namespace irods::experimental::administration
         [[nodiscard]] auto vault_path() const noexcept -> const std::string&                  { return vault_path_; }
         [[nodiscard]] auto status() const noexcept -> resource_status                         { return status_; }
         [[nodiscard]] auto context_string() const noexcept -> const std::string&              { return context_string_; }
+        [[nodiscard]] auto parent_context_string() const noexcept -> const std::string&       { return parent_context_string_; }
         [[nodiscard]] auto comments() const noexcept -> const std::string&                    { return comments_; }
         [[nodiscard]] auto information() const noexcept -> const std::string&                 { return info_; }
         [[nodiscard]] auto free_space() const noexcept -> const std::string&                  { return free_space_; }
@@ -119,6 +120,7 @@ namespace irods::experimental::administration
         std::string vault_path_;
         resource_status status_ = resource_status::unknown;
         std::string context_string_;
+        std::string parent_context_string_;
         std::string comments_;
         std::string info_;
         std::string free_space_;

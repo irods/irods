@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 
+#include <array>
 #include <functional>
 #include <string_view>
 #include <tuple>
@@ -243,6 +244,65 @@ TEST_CASE("resource administration")
         auto info = adm::client::resource_info(conn, "does_not_exist");
         REQUIRE_FALSE(info);
     }
+}
+
+TEST_CASE("#9004: resource administration library exposes parent context")
+{
+    namespace adm = irods::experimental::administration;
+
+    adm::resource_registration_info repl_info;
+    repl_info.resource_name = "issue_9004_repl";
+    repl_info.resource_type = adm::resource_type::replication;
+
+    std::array<char, HOST_NAME_MAX + 1> hostname{};
+    REQUIRE(gethostname(hostname.data(), hostname.size()) == 0);
+
+    adm::resource_registration_info pt_info;
+    pt_info.resource_name = "issue_9004_pt";
+    pt_info.resource_type = adm::resource_type::passthrough;
+
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn;
+
+    irods::at_scope_exit remove_resources{[&conn, &repl_info, &pt_info] {
+        CHECK_NOTHROW(adm::client::remove_resource(conn, repl_info.resource_name));
+        CHECK_NOTHROW(adm::client::remove_resource(conn, pt_info.resource_name));
+    }};
+
+    REQUIRE_NOTHROW(adm::client::add_resource(conn, repl_info));
+    REQUIRE_NOTHROW(adm::client::add_resource(conn, pt_info));
+
+    // Reconnect to the iRODS server so that the resources are visible.
+    conn.disconnect();
+    conn.connect();
+    CHECK_NOTHROW(adm::client::add_child_resource(conn, repl_info.resource_name, pt_info.resource_name));
+
+    // Show the parent context string is available, but empty.
+    auto info = adm::client::resource_info(conn, pt_info.resource_name);
+    CHECK(info);
+    CHECK(info->parent_context_string().empty());
+
+    // Reconnect so that the agent sees the parent-child relationship.
+    conn.disconnect();
+    conn.connect();
+    CHECK_NOTHROW(adm::client::remove_child_resource(conn, repl_info.resource_name, pt_info.resource_name));
+
+    // Reconnect to the iRODS server so that the resources are visible.
+    conn.disconnect();
+    conn.connect();
+    const std::string_view ctx_str = "<context_data>";
+    CHECK_NOTHROW(adm::client::add_child_resource(conn, repl_info.resource_name, pt_info.resource_name, ctx_str));
+
+    // Show the parent context string matches the string we expect.
+    info = adm::client::resource_info(conn, pt_info.resource_name);
+    CHECK(info);
+    CHECK(info->parent_context_string() == ctx_str);
+
+    // Reconnect so that the agent sees the parent-child relationship.
+    conn.disconnect();
+    conn.connect();
+    CHECK_NOTHROW(adm::client::remove_child_resource(conn, repl_info.resource_name, pt_info.resource_name));
 }
 
 auto make_deferred_mtime_changed_assertion(irods::experimental::client_connection& _conn,
