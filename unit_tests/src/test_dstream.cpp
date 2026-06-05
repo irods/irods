@@ -356,7 +356,7 @@ TEST_CASE("#8459: dstream tracks last error code")
     }
 }
 
-TEST_CASE("#9002: dstream detects precision errors on reads and writes")
+TEST_CASE("#9002: dstream detects narrowing conversion errors on reads and writes")
 {
     load_client_api_plugins();
 
@@ -390,13 +390,13 @@ TEST_CASE("#9002: dstream detects precision errors on reads and writes")
     SECTION("read")
     {
         CHECK_FALSE(stream.read(&buf, std::numeric_limits<std::streamsize>::max()));
-        CHECK(stream.last_error() == PRECISION_LOST_ERROR);
+        CHECK(stream.last_error() == NARROWING_CONVERSION_ERROR);
     }
 
     SECTION("write")
     {
         CHECK_FALSE(stream.write(&buf, std::numeric_limits<std::streamsize>::max()));
-        CHECK(stream.last_error() == PRECISION_LOST_ERROR);
+        CHECK(stream.last_error() == NARROWING_CONVERSION_ERROR);
     }
 }
 
