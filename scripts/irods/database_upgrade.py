@@ -299,7 +299,7 @@ def run_update(irods_config, cursor, is_upgrade):
         bigint_type = bigint_for_db.get(irods_config.catalog_database_type, "bigint")
 
         # Add table for logical quotas
-        database_connect.execute_sql_statement(cursor, f"create table R_LOGICAL_QUOTA_MAIN (coll_id {bigint_type}, max_bytes {bigint_type}, max_objects {bigint_type}, over_bytes {bigint_type}, over_objects {bigint_type}, modify_ts varchar(32));")
+        database_connect.execute_sql_statement(cursor, f"create table R_LOGICAL_QUOTA_MAIN (coll_id {bigint_type} primary key, max_bytes {bigint_type}, max_objects {bigint_type}, over_bytes {bigint_type}, over_objects {bigint_type}, modify_ts varchar(32));")
 
         # Add grid configuration setting for toggling logical quota enforcement
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('logical_quotas', 'enabled', '0');")
