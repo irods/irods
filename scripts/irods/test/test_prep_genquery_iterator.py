@@ -172,6 +172,83 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
         self.assertEqual(output.strip(), "[1,3]")
 
+    def test_q(self):
+        pass
+
+    def test_query_params__issue_258__irods__irods_rule_engine_plugin_python(self):
+
+        table_columns = ["case_sensitive_",
+                         "offset_",
+                         "limit_",
+                         "expected_result_rows",
+                         "expected_total_rows"]
+
+        ## The output columns (those with names not ending in "_") in the table below can be regenerated via the formula:
+        #      expected_total_rows = n_base_names * (1 if case_sensitive_ else 2)
+        #      expected_result_rows = min(
+        #          max(0, expected_total_rows - offset_),
+        #          limit_ if limit_ is not None else expected_total_rows)
+        ## where n_base_names is 10, the number of iterations in the test-collection creation loop below.
+
+        table_of_test_vectors = (
+            [ False,  0, None,  20,  20 ],
+            [ False,  0,  4  ,  4 ,  20 ],
+            [ False,  0,  14 ,  14,  20 ],
+            [ False,  3, None,  17,  20 ],
+            [ False,  3,  4  ,  4 ,  20 ],
+            [ False,  3,  14 ,  14,  20 ],
+            [ False, 23, None,  0 ,  20 ],
+            [ False, 23,  4  ,  0 ,  20 ],
+            [ False, 23,  14 ,  0 ,  20 ],
+            [ True,   0, None,  10,  10 ],
+            [ True,   0,  4  ,  4 ,  10 ],
+            [ True,   0,  14 ,  10,  10 ],
+            [ True,   3, None,  7 ,  10 ],
+            [ True,   3,  4  ,  4 ,  10 ],
+            [ True,   3,  14 ,  7 ,  10 ],
+            [ True,  23, None,  0 ,  10 ],
+            [ True,  23,  4  ,  0 ,  10 ],
+            [ True,  23,  14 ,  0 ,  10 ],
+        )
+
+        # Test collection creation
+        for n in range(10):
+            self.admin.assert_icommand(
+            f"""imkdir -p {self.admin.session_collection}/issue_{n}_258"""
+            f"""          {self.admin.session_collection}/Issue_{n}_258""")
+
+        for test_vector in table_of_test_vectors:
+            output_table_columns = [col_name for col_name in table_columns if not col_name.endswith('_')]
+            parameters_for_test = dict(zip(table_columns, test_vector))
+            ns = {'output_table_columns': output_table_columns, 'self':self}
+            ns.update(parameters_for_test)
+
+            with open('rule.r','w') as f:
+                f.write(dedent('''\
+                import ast
+                from genquery import Query
+                def main(rule_args, callback, rei):
+                    query = Query(
+                        callback,
+                        ["COLL_NAME"],
+                        """COLL_NAME like '%/issue%' and COLL_PARENT_NAME = '{self.admin.session_collection}'"""
+                        , case_sensitive={case_sensitive_}
+                        , offset={offset_}
+                        , limit={limit_}
+                    )
+                    expected_result_rows = len(results_list := list(query))
+                    expected_total_rows = query.total_rows()
+                    callback.writeLine('stdout',repr([locals()[key] for key in {output_table_columns}]))
+
+                INPUT null
+                OUTPUT ruleExecOut
+                ''').format(**ns))
+
+            with self.subTest(msg='Test failed for parameter combination:',  **parameters_for_test):
+                output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F rule.r")
+                self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
+                self.assertEqual([_ for _ in ast.literal_eval(output)], [parameters_for_test[key] for key in output_table_columns])
+
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_query_objects(self):
         if not self.full_test : return
@@ -335,6 +412,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 populated_rule_text = rule_text.format(**locals())
                 print(populated_rule_text) # For debugging.
                 print(populated_rule_text, file=f, end='')
+                #dwm
             output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F " + rule_file)
             self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
             assertResult=assertion()
@@ -1109,3 +1187,4 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             IrodsController().reload_configuration()
+#
