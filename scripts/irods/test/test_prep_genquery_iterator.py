@@ -187,6 +187,8 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         #          limit_ if limit_ is not None else expected_total_rows)
         ## where n_base_names is 10, the number of iterations in the test-collection creation loop below.
 
+        output_table_columns = [col_name for col_name in table_columns if not col_name.endswith('_')]
+
         table_of_test_vectors = (
             [ False,  0, None,  20,  20 ],
             [ False,  0,  4  ,  4 ,  20 ],
@@ -215,7 +217,6 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             f"""          {self.admin.session_collection}/Issue_{n}_258""")
 
         for test_vector in table_of_test_vectors:
-            output_table_columns = [col_name for col_name in table_columns if not col_name.endswith('_')]
             parameters_for_test = dict(zip(table_columns, test_vector))
             ns = {'output_table_columns': output_table_columns, 'self':self}
             ns.update(parameters_for_test)
@@ -233,7 +234,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         , offset={offset_}
                         , limit={limit_}
                     )
-                    expected_result_rows = len(results_list := list(query))
+                    expected_result_rows = len(list(query))
                     expected_total_rows = query.total_rows()
                     callback.writeLine('stdout',repr([locals()[key] for key in {output_table_columns}]))
 
@@ -243,7 +244,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
             with self.subTest(msg='Test failed for parameter combination:',  **parameters_for_test):
                 output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F rule.r")
-                self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
+                self.assertEqual(rc, 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
                 self.assertEqual([_ for _ in ast.literal_eval(output)], [parameters_for_test[key] for key in output_table_columns])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
@@ -1183,4 +1184,3 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             IrodsController().reload_configuration()
-#
