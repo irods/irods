@@ -172,9 +172,6 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
         self.assertEqual(output.strip(), "[1,3]")
 
-    def test_q(self):
-        pass
-
     def test_query_params__issue_258__irods__irods_rule_engine_plugin_python(self):
 
         table_columns = ["case_sensitive_",
@@ -412,7 +409,6 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 populated_rule_text = rule_text.format(**locals())
                 print(populated_rule_text) # For debugging.
                 print(populated_rule_text, file=f, end='')
-                #dwm
             output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F " + rule_file)
             self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
             assertResult=assertion()
