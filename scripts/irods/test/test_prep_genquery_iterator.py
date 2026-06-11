@@ -177,14 +177,14 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         table_columns = ["case_sensitive_",
                          "offset_",
                          "limit_",
-                         "expected_result_rows",
-                         "expected_total_rows"]
+                         "result_rows",
+                         "total_rows"]
 
         ## The output columns (those with names not ending in "_") in the table below can be regenerated via the formula:
-        #      expected_total_rows = n_base_names * (1 if case_sensitive_ else 2)
-        #      expected_result_rows = min(
-        #          max(0, expected_total_rows - offset_),
-        #          limit_ if limit_ is not None else expected_total_rows)
+        #      total_rows = n_base_names * (1 if case_sensitive_ else 2)
+        #      result_rows = min(
+        #          max(0, total_rows - offset_),
+        #          limit_ if limit_ is not None else total_rows)
         ## where n_base_names is 10, the number of iterations in the test-collection creation loop below.
 
         output_table_columns = [col_name for col_name in table_columns if not col_name.endswith('_')]
@@ -234,18 +234,21 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         , offset={offset_}
                         , limit={limit_}
                     )
-                    expected_result_rows = len(list(query))
-                    expected_total_rows = query.total_rows()
+                    result_rows = len(list(query))
+                    total_rows = query.total_rows()
                     callback.writeLine('stdout',repr([locals()[key] for key in {output_table_columns}]))
 
                 INPUT null
                 OUTPUT ruleExecOut
                 ''').format(**ns))
 
-            with self.subTest(msg='Test failed for parameter combination:',  **parameters_for_test):
+            with self.subTest(msg='Testing parameter combination:',  **parameters_for_test):
                 output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F rule.r")
                 self.assertEqual(rc, 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
-                self.assertEqual([_ for _ in ast.literal_eval(output)], [parameters_for_test[key] for key in output_table_columns])
+
+                # Assert that the arrived-at query outputs (ie. result_rows and total_rows) are as expected from the table.
+                self.assertEqual([_ for _ in ast.literal_eval(output)], 
+                                 [parameters_for_test[key] for key in output_table_columns])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_query_objects(self):
