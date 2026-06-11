@@ -234,9 +234,13 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         , offset={offset_}
                         , limit={limit_}
                     )
+                    # Assign qualitative outputs of test to variable names corresponding to table's column headings.
                     result_rows = len(list(query))
                     total_rows = query.total_rows()
-                    callback.writeLine('stdout',repr([locals()[key] for key in {output_table_columns}]))
+
+                    # Print the resulting columns to stdout.
+                    output_columns_for_comparison = [locals()[key] for key in {output_table_columns}]
+                    callback.writeLine('stdout',repr(output_columns_for_comparison))
 
                 INPUT null
                 OUTPUT ruleExecOut
