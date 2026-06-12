@@ -234,7 +234,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         , offset={offset_}
                         , limit={limit_}
                     )
-                    # Assign qualitative outputs of test to variable names corresponding to table's column headings.
+                    # Assign quantitative outputs of test to variable names corresponding to table's column headings.
                     result_rows = len(list(query))
                     total_rows = query.total_rows()
 
