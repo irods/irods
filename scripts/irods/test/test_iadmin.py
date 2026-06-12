@@ -439,6 +439,40 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modrescdatapaths demoResc /var/lib/irods/NEWVAULT/ /var/lib/irods/Vault/", 'STDOUT_SINGLELINE', 'Warning', input='yes\n')
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "Vault")
 
+    def test_modify_resource_changing_parent_context_string__issue__4022(self):
+        resc_name = "parent_context_string_4022"
+        pt_resc_name = "parent_context_string_pt_4022"
+
+        lib.create_ufs_resource(self.admin, resc_name)
+        self.admin.assert_icommand(["iadmin",  "mkresc", pt_resc_name, "passthru"], 'STDOUT_SINGLELINE', "Creating")
+
+        try:
+            self.admin.assert_icommand(["iadmin", "addchildtoresc", pt_resc_name, resc_name, "potatocontext"])
+
+            # Verify the context is added for addchildtoresc
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: potatocontext\n')
+
+            self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext"])
+
+            # Verify the context is modified as expected
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+            self.admin.assert_icommand(["ilsresc", "-l", resc_name], 'STDOUT', 'parent context: tomatocontext\n')
+
+            # Ensure the invalid chars stay out of parent_context strings
+            # Check after each to ensure the strings stay unchanged
+            self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext{"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+
+            self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext}"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+
+            self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext;"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+        finally:
+            self.admin.run_icommand(["iadmin", "rmchildfromresc", pt_resc_name, resc_name])
+            self.admin.run_icommand(["iadmin", "rmresc", pt_resc_name])
+            self.admin.run_icommand(["iadmin", "rmresc", resc_name])
+
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
         # should not be listed

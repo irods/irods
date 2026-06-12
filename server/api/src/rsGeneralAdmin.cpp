@@ -59,6 +59,12 @@ namespace
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
 
+    auto find_first_invalid_char(const std::string& _input, const std::string& _invalid) -> unsigned char
+    {
+        const auto pos = _input.find_first_of(_invalid);
+        return pos == std::string::npos ? '\0' : _input[pos];
+    }
+
     auto user_is_service_account_rodsadmin(RsComm& rsComm, const std::string_view _user_name) -> bool
     {
         BytesBuf* bbuf = nullptr;
@@ -1217,6 +1223,16 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
                 new_resc_name = boost::algorithm::trim_copy(std::string{generalAdminInp->arg4});
                 args[2] = new_resc_name.c_str();
+            }
+            else if (std::strcmp(generalAdminInp->arg3, "parent_context") == 0) {
+                if (const auto ch = find_first_invalid_char(generalAdminInp->arg4, ";{}"); ch != '\0') {
+                    log_api::error(
+                        "The character [{}] is not allowed in parent context strings [{}] for resource [{}].",
+                        ch,
+                        generalAdminInp->arg4,
+                        generalAdminInp->arg2);
+                    return SYS_INVALID_INPUT_PARAM;
+                }
             }
             else {
                 args[2] = generalAdminInp->arg4; // new value
