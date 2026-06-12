@@ -450,17 +450,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(["iadmin", "addchildtoresc", pt_resc_name, resc_name, "potatocontext"])
 
             # Verify the context is added for addchildtoresc
-            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT_SINGLELINE', 'resc_parent_context: potatocontext')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: potatocontext\n')
 
             self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext"])
 
             # Verify the context is modified as expected
-            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT_SINGLELINE', 'resc_parent_context: tomatocontext')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
 
             # Ensure the invalid chars stay out of parent_context strings
+            # Check after each to ensure the strings stay unchanged
             self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext{"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+
             self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext}"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+
             self.admin.assert_icommand(["iadmin", "modresc", resc_name, "parent_context", "tomatocontext;"], 'STDERR_SINGLELINE', '-130000 SYS_INVALID_INPUT_PARAM')
+            self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
         finally:
             self.admin.run_icommand(["iadmin", "rmchildfromresc", pt_resc_name, resc_name])
             self.admin.run_icommand(["iadmin", "rmresc", pt_resc_name])
