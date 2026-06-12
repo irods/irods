@@ -456,6 +456,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
             # Verify the context is modified as expected
             self.admin.assert_icommand(["iadmin", "lr", resc_name], 'STDOUT', 'resc_parent_context: tomatocontext\n')
+            self.admin.assert_icommand(["ilsresc", "-l", resc_name], 'STDOUT', 'parent context: tomatocontext\n')
 
             # Ensure the invalid chars stay out of parent_context strings
             # Check after each to ensure the strings stay unchanged
