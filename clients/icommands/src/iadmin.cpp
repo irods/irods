@@ -2035,7 +2035,7 @@ void usageMain() {
         " rpp Name  (remove PAM-derived Password for user Name)",
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, host, path, status, comment, info, free_space, context, rebalance] Value (mod Resc)",
+        " modresc Name [name, type, host, path, status, comment, info, free_space, context, parent_context, rebalance] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
@@ -2286,7 +2286,7 @@ usage( char *subOpt ) {
     };
 
     char *modrescMsgs[] = {
-        " modresc Name [name, type, host, path, status, comment, info, free_space, context, rebalance] Value",
+        " modresc Name [name, type, host, path, status, comment, info, free_space, context, parent_context, rebalance] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
@@ -2302,6 +2302,9 @@ usage( char *subOpt ) {
         " ",
         "'context' is any contextual information relevant to this resource.",
         "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
+        " ",
+        "'parent_context' is any contextual information a parent resource may need",
+        " to manage this (child) resource.",
         " ",
         "'rebalance' will trigger the rebalancing operation on a coordinating resource node.",
         " ",

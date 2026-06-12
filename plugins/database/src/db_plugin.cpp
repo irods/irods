@@ -7996,6 +7996,20 @@ irods::error db_mod_resc_op(
         }
         OK = 1;
     }
+    else if (strcmp(_option, "parent_context") == 0) {
+        cllBindVars[cllBindVarCount++] = _option_value;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
+        cllBindVars[cllBindVarCount++] = rescId;
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_parent_context=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
+        if (status != 0) {
+            log_db::info("chlModResc cmlExecuteNoAnswerSql update failure for resc parent context {}", status);
+            _rollback("chlModResc");
+            return ERROR(status, "failed to set parent context");
+        }
+        OK = 1;
+    }
     else if ( *_option_value == '\0' ) {
         return ERROR(
                    CAT_INVALID_ARGUMENT,
