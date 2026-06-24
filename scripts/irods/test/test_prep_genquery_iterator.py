@@ -172,6 +172,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
         self.assertEqual(output.strip(), "[1,3]")
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_query_params__issue_258__irods__irods_rule_engine_plugin_python(self):
 
         table_columns = ["case_sensitive_",
