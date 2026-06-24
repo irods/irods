@@ -238,8 +238,10 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                     result_rows = len(list(query))
                     total_rows = query.total_rows()
 
+                    local_variables = locals()
+
                     # Print the resulting columns to stdout.
-                    output_columns_for_comparison = [locals()[key] for key in {output_table_columns}]
+                    output_columns_for_comparison = [local_variables[key] for key in {output_table_columns}]
                     callback.writeLine('stdout',repr(output_columns_for_comparison))
 
                 INPUT null
