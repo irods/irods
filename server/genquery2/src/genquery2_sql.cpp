@@ -565,7 +565,11 @@ namespace
             condition_clause_prefix = "where";
         }
         else {
-            sql += fmt::format(" where {}", _conditions);
+            // Wrap the client conditions in parentheses to maintain the intent of the GenQuery2 string.
+            // The parentheses guarantee that SQL precedence rules for logical operators (e.g. SQL-AND)
+            // do not change the meaning of the GenQuery2 string. This primarily applies to situations
+            // where the parser decides to insert additional conditions to enforce permissions.
+            sql += fmt::format(" where ({})", _conditions);
             condition_clause_prefix = "and";
         }
 
