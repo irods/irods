@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import unittest
 
@@ -994,3 +995,55 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
 
             finally:
                 self.admin.assert_icommand(['imeta', 'rm', '-u', self.user.username, attr_n, attr_v, attr_u])
+
+    def test_genquery2_maintains_intent_of_query__issue_9016(self):
+        group = 'issue_9016_group'
+        other_rodsuser = 'issue_9016_bob'
+
+        group_home_collection = f'/{self.user.zone_name}/home/{group}'
+        data_object_1 = f'{group_home_collection}/file1.txt'
+        data_object_2 = f'{group_home_collection}/file2.txt'
+
+        try:
+            # Create a rodsuser.
+            self.admin.assert_icommand(['iadmin', 'mkuser', other_rodsuser, 'rodsuser'])
+
+            # Create a group and add three users to it.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.admin.username])
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.user.username])
+            self.admin.assert_icommand(['iadmin', 'atg', group, other_rodsuser])
+
+            # Create a data object and grant one of the rodsusers "own" permissions.
+            self.admin.assert_icommand(['itouch', data_object_1])
+            self.admin.assert_icommand(['ichmod', 'own', self.user.username, data_object_1])
+
+            # Create a second data object and grant the other rodsusers "own" permissions.
+            self.admin.assert_icommand(['itouch', data_object_2])
+            self.admin.assert_icommand(['ichmod', 'own', other_rodsuser, data_object_2])
+
+            # Verify the permissions are in place. This set of assertions are mainly for debugging purposes.
+            group_perm = f'ACL - g:{group}#{self.user.zone_name}:own'
+            self.admin.assert_icommand(['ils', '-Ad', group_home_collection], 'STDOUT', [group_perm])
+
+            admin_perm = f'{self.admin.qualified_username}:own'
+            user_perm = f'{self.user.qualified_username}:own'
+            self.admin.assert_icommand(['ils', '-A', data_object_1], 'STDOUT', [admin_perm, user_perm])
+
+            user_perm = f'{self.user.qualified_username}:own'
+            self.admin.assert_icommand(['ils', '-A', data_object_2], 'STDOUT', [admin_perm, f'{other_rodsuser}#{self.user.zone_name}:own'])
+
+            self.user.assert_icommand(['ils', '-Ad', group_home_collection], 'STDOUT', [group_perm])
+            self.admin.assert_icommand(['ils', '-A', data_object_1], 'STDOUT', [admin_perm, user_perm])
+
+            # Show GenQuery2 returns only the data objects which the invoking user is allowed to access.
+            _, out, err = self.user.assert_icommand(
+                ['iquery', f"select distinct COLL_NAME, DATA_NAME where COLL_NAME = '{group_home_collection}' or COLL_NAME like '{group_home_collection}/%'"], 'STDOUT')
+            self.assertEqual(out.strip(), json.dumps([[group_home_collection, os.path.basename(data_object_1)]], separators=(',', ':')))
+            self.assertEqual(len(err), 0)
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object_1])
+            self.admin.run_icommand(['irm', '-f', data_object_2])
+            self.admin.run_icommand(['iadmin', 'rmgroup', group])
+            self.admin.run_icommand(['iadmin', 'rmuser', other_rodsuser])
