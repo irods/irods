@@ -179,7 +179,7 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
                 printf("Resource does not exist.\n");
             }
 
-            return 0;
+            return status;
         }
 
         if (status < 0) {
