@@ -13,7 +13,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-
+#include <boost/system/detail/error_code.hpp>
 
 namespace irods {
     error get_json_environment_file(
@@ -86,8 +86,12 @@ namespace irods {
             return;
         }
 
-        if (!boost::filesystem::exists(json_file)) {
-            rodsLog(LOG_ERROR, "environment_properties::capture: missing environment file. should be at [%s]", json_file.c_str());
+        boost::system::error_code ec{};
+        if (!boost::filesystem::exists(json_file, ec)) {
+            rodsLog(LOG_ERROR,
+                    "environment_properties::capture: %s. Expected file at [%s].",
+                    ec.message().c_str(),
+                    json_file.c_str());
             return;
         }
 

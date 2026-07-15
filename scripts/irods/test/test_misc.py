@@ -363,9 +363,8 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
             self.assertIn('Enter your current iRODS password', stdout)
 
             # Check expected error exists
-            error_string = ' ERROR: environment_properties::capture: missing environment file. should be at [{}/.irods/irods_environment.json]\n'.format(
-                temp_home)
-            self.assertEqual(stderr, error_string)
+            error_string = 'Expected file at [{}/.irods/irods_environment.json].'.format(temp_home)
+            self.assertIn(error_string, stderr)
 
 
     def test_tcp_keepalive_time__issue_2533_3824(self):
