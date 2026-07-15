@@ -146,7 +146,8 @@ logPsgError( HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         }
-        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}", __func__, sqlstate, sqlcode, psgErrorMsg);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        log_sql::info("{}: SQLState: {}; SQLCODE: {}; SQL Error message: {}", __func__, sqlstate, sqlcode, reinterpret_cast<char*>(psgErrorMsg));
     }
     return errorVal;
 }
