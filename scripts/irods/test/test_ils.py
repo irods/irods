@@ -1,5 +1,7 @@
 import copy
 import os
+import pathlib
+import stat
 import unittest
 
 from . import session
@@ -32,6 +34,18 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ils', '-l', rods_filename_1, rods_filename_2], 'STDOUT_MULTILINE', filename_1, filename_2)
         os.system('rm -f ' + filename_1)
         os.system('rm -f ' + filename_2)
+
+    def test_ils_does_not_core_dump_on_bad_file_permissions__issue_8933(self):
+        # Save original permissions
+        parent_dir = str(pathlib.Path(self.user0._environment_file_path).parent)
+
+        dir_stats = os.stat(parent_dir)
+        try:
+            os.chmod(parent_dir, 0o007)
+            self.user0.assert_icommand(['ils'], 'STDERR_SINGLELINE', 'environment_properties::capture: Permission denied.')
+        finally:
+            # Restore file permissions
+            os.chmod(parent_dir, stat.S_IMODE(dir_stats.st_mode))
 
     def test_genquery_fallback_for_collection_permissions__issue_4636(self):
         # Remove the specific query. This will cause the fallback to be used.
