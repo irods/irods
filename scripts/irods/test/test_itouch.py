@@ -1,14 +1,7 @@
-from __future__ import print_function
-import os
-import sys
-import socket
-
 from time import sleep
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import os
+import socket
+import unittest
 
 from . import session
 from .. import test
