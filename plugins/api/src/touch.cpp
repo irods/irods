@@ -313,7 +313,10 @@ namespace
                 }
 
                 io::server::default_transport tp{_comm};
-                io::odstream{tp, _path, io::leaf_resource_name{resc_name}};
+                if (const io::odstream out{tp, _path, io::leaf_resource_name{resc_name}}; !out) {
+                    THROW(out.last_error(),
+                          fmt::format("Error creating data object [{}] on resource [{}].", _path.c_str(), resc_name));
+                }
 
                 return false;
             }
@@ -325,7 +328,10 @@ namespace
         //    https://docs.irods.org/main/system_overview/configuration/#default-resource-configuration
         //
         io::server::default_transport tp{_comm};
-        io::odstream{tp, _path};
+        if (const io::odstream out{tp, _path}; !out) {
+            THROW(out.last_error(),
+                  fmt::format("Error creating data object [{}] on server-defined default resource.", _path.c_str()));
+        }
 
         return false;
     } // create_data_object_if_necessary
