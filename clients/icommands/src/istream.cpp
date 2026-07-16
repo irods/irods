@@ -51,7 +51,7 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
 
 int main(int argc, char* argv[])
 {
-    utils::set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
+    utils::set_ips_display_name("istream");
 
     po::options_description desc{""};
     desc.add_options()
@@ -212,7 +212,7 @@ auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::stri
 
     auto* escaped_path = escape_path(input.outPath);
     std::optional<std::string> p = escaped_path;
-    std::free(escaped_path);
+    std::free(escaped_path); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
 
     return p;
 }
@@ -225,7 +225,7 @@ auto stream_bytes(InputStream& in, OutputStream& out, int_type count) -> int
         return 1;
     }
 
-    std::array<char, buffer_size> buf;
+    std::array<char, buffer_size> buf{};
 
     if (all_bytes == count) {
         while (in && out) {
@@ -350,8 +350,8 @@ auto read_data_object(rodsEnv& env,
         return 1;
     }
 
-    const auto count = std::min<int_type>(ir::replica_size<RcComm>(conn, path, in.replica_number().value),
-                                          vm["count"].as<int_type>());
+    const auto replica_size = ir::replica_size<RcComm>(conn, path, in.replica_number().value);
+    const auto count = std::min<int_type>(static_cast<int_type>(replica_size), vm["count"].as<int_type>());
 
     if (const auto ec = stream_bytes(in, std::cout, count); ec) {
         return ec;
