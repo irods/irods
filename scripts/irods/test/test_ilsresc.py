@@ -1,10 +1,5 @@
-from __future__ import print_function
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 
@@ -36,7 +31,7 @@ class Test_Ilsresc(session.make_sessions_mixin(admins, users), unittest.TestCase
 
             # Show that iquest does not print an error when the total number of resources
             # is a multiple of the GenQuery page size.
-            _, _, ec = self.admin.run_icommand(['ilsresc', '-l'])
+            _, err, ec = self.admin.run_icommand(['ilsresc', '-l'])
             self.assertEqual(ec, 0)
             self.assertNotIn('rcGenQuery failed with error -808000 CAT_NO_ROWS_FOUND', err)
 
@@ -49,5 +44,5 @@ class Test_Ilsresc(session.make_sessions_mixin(admins, users), unittest.TestCase
         self.admin.assert_icommand(['ilsresc', '-z', 'unknown_zone_issue_6022'], 'STDERR', ['-26000 SYS_INVALID_ZONE_NAME'])
 
     def test_ilsresc_returns_nonzero_on_nonexistent_resource__issue_9012(self):
-        _, err, ec = self.admin.run_icommand(['ilsresc', '-l', 'nonexistent_resc'])
+        _, _, ec = self.admin.run_icommand(['ilsresc', '-l', 'nonexistent_resc'])
         self.assertNotEqual(ec, 0)
