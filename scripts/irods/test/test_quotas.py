@@ -3,11 +3,7 @@ import re
 import sys
 import textwrap
 import time
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import resource_suite
 from . import session
@@ -73,7 +69,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                         cmd = 'iput -R {0} {1}'.format(self.testresc, filename_2) # should fail
                         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
                         cmd = 'istream -R {0} write nopes'.format(self.testresc)
-                        self.admin.assert_icommand(cmd.split(), 'STDERR', 'Error: Cannot open data object.', input='some data')
+                        self.admin.assert_icommand(cmd.split(), 'STDERR', 'Error: Cannot open data object [error code=-110000].', input='some data')
                         cmd = 'iadmin {0} {1} {2} 0'.format(quotatype[0], quotatype[1], quotaresc) # remove quota
                         self.admin.assert_icommand(cmd.split())
                         cmd = 'iadmin cu' # update db

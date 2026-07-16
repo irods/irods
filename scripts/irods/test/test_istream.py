@@ -45,8 +45,9 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
 
         # Show that attempts to write to a non-existent data object using replica numbers does
         # not result in creation of the data object.
-        self.admin.assert_icommand(['istream', 'write', '-n0', data_object], 'STDERR', ['Error: Cannot open data object'], input='some data')
-        self.admin.assert_icommand(['istream', 'write', '-n4', data_object], 'STDERR', ['Error: Cannot open data object'], input='some data')
+        expected_output = ['Error: Cannot open data object [error code=-164000].']
+        self.admin.assert_icommand(['istream', 'write', '-n0', data_object], 'STDERR', expected_output, input='some data')
+        self.admin.assert_icommand(['istream', 'write', '-n4', data_object], 'STDERR', expected_output, input='some data')
 
         # Show that the targeted data object was not created.
         self.admin.assert_icommand(['ils', '-l', data_object], 'STDERR', ['does not exist or user lacks access permission'])
@@ -89,7 +90,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         self.admin.assert_icommand(['istream', 'read', '-n0', data_object], 'STDOUT', [contents])
 
         # Attempt to write to a non-existent replica.
-        self.admin.assert_icommand(['istream', 'write', '-n1', data_object], 'STDERR', ['Error: Cannot open data object'], input='nope')
+        self.admin.assert_icommand(['istream', 'write', '-n1', data_object], 'STDERR', ['Error: Cannot open data object [error code=-164000].'], input='nope')
 
     def test_invalid_integer_arguments_are_handled_appropriately__issue_5112(self):
         data_object = 'data_object.test'
@@ -178,7 +179,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         log_offset = lib.get_file_size_by_path(paths.server_log_path())
 
         # The following causes a stacktrace to be logged in iRODS v4.2.8 because the data object does not exist.
-        self.admin.assert_icommand(['istream', 'read', 'does_not_exist'], 'STDERR', ['Error: Cannot open data object.'])
+        self.admin.assert_icommand(['istream', 'read', 'does_not_exist'], 'STDERR', ['Error: Cannot open data object [error code=-358000].'])
 
         # Show that the log file does not contain a stacktrace.
         self.assertTrue(lib.log_message_occurrences_equals_count(msg='Dumping stack trace', count=0, start_index=log_offset))
@@ -591,15 +592,15 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
 
             # Target resource which does not exist - failure.
             self.user.assert_icommand(
-                ["istream", "read", "-R", "nope", logical_path], "STDERR", "Error: Cannot open data object.")
+                ["istream", "read", "-R", "nope", logical_path], "STDERR", "Error: Cannot open data object [error code=-78000].")
 
             # Target leaf resource in a hierarchy - failure.
             self.user.assert_icommand(
-                ["istream", "read", "-R", resource_1, logical_path], "STDERR", "Error: Cannot open data object.")
+                ["istream", "read", "-R", resource_1, logical_path], "STDERR", "Error: Cannot open data object [error code=-1816000].")
 
             # Target resource which does not host any replicas - failure.
             self.user.assert_icommand(
-                ["istream", "read", "-R", resource_2, logical_path], "STDERR", "Error: Cannot open data object.")
+                ["istream", "read", "-R", resource_2, logical_path], "STDERR", "Error: Cannot open data object [error code=-168000].")
 
             # Target the resource on which the replica actually resides - success.
             self.user.assert_icommand(["istream", "read", "-R", root_resource, logical_path], "STDOUT", contents)
@@ -632,13 +633,13 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             # Target resource which does not exist - failure. Specify --append to avoid create.
             self.user.assert_icommand(
                 ["istream", "write", "--append", "-R", "nope", logical_path],
-                "STDERR", "Error: Cannot open data object.", input=contents)
+                "STDERR", "Error: Cannot open data object [error code=-78000].", input=contents)
             self.user.assert_icommand(["istream", "read", logical_path], "STDOUT", contents)
 
             # Target leaf resource in a hierarchy - failure. Specify --append to avoid create.
             self.user.assert_icommand(
                 ["istream", "write", "--append", "-R", resource_1, logical_path],
-                "STDERR", "Error: Cannot open data object.", input=contents)
+                "STDERR", "Error: Cannot open data object [error code=-1816000].", input=contents)
             self.user.assert_icommand(["istream", "read", logical_path], "STDOUT", contents)
 
             # Target the resource on which the replica actually resides - success. Specify --append to avoid create.

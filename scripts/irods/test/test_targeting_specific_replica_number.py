@@ -1,12 +1,7 @@
-from __future__ import print_function
 import os
 import sys
 import textwrap
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 from .. import lib
@@ -302,7 +297,7 @@ class test_targeting_specific_replica_number__issue_6896(
 
     def test_istream_n_returns_error_when_requested_replica_votes_0(self):
         content = 'test_istream_n_returns_error_when_requested_replica_votes_0'
-        stream_error_msg = 'Error: Cannot open data object.'
+        stream_error_msg = 'Error: Cannot open data object [error code=-168000].'
 
         try:
             # Set write weight to 0.0 on passthru with replica 1
