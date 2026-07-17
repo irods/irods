@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout Repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v7
               with:
                   # Get all history for the repository (branches, tags, etc).
                   # This is required in order for clang-format to work correctly.
