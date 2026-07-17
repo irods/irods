@@ -12,6 +12,9 @@ jobs:
       matrix:
         container: ['almalinux:10','rockylinux/rockylinux:10']
 
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7

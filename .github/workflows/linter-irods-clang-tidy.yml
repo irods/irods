@@ -6,6 +6,10 @@ defaults:
 jobs:
     clang-tidy:
         runs-on: ubuntu-24.04
+
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v7
@@ -114,4 +118,3 @@ jobs:
                   fi
 
                   echo "Source code is tidy :-)"
-

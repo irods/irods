@@ -12,6 +12,9 @@ jobs:
       matrix:
         container: ['debian:12', 'debian:13']
 
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
