@@ -97,3 +97,21 @@ class Test_Irule(ResourceBase, unittest.TestCase):
         _, err, rc = self.admin.run_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msiStrToBytesBuf("potato",*Buf); writeBytesBuf("/bad/path", *Buf);', 'null', 'null'])
         self.assertIn('-310000 USER_FILE_DOES_NOT_EXIST', err)
         self.assertNotEqual(rc, 0)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_does_not_crash_agent_on_bad_input__issue_7074(self):
+        bad_rule = '''
+test_irule_does_not_crash_agent_on_bad_input__issue_7074 {
+    *access = 0;
+    msiCheckAccess("*logical_path", "read_object", *access);
+}
+INPUT *logical_path="/tempZone/home/alan/foo"
+OUTPUT ruleExecOut
+        '''
+        path_to_file = os.path.join(self.user0.local_session_dir, 'issue_7074.r')
+
+        with open(path_to_file, 'w') as f:
+            f.write(bad_rule)
+
+        rc, _, _ = self.user0.assert_icommand(['irule', '-F', path_to_file, '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', os.path.join(self.user0.home_collection, 'thing')], 'STDERR', '-1201000 RE_PARSER_ERROR')
+        self.assertNotEqual(rc, 0)
