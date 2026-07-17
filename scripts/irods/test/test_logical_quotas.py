@@ -415,7 +415,7 @@ class Test_Logical_Quotas(
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{subcoll_path}/{file_name}_4"],
                 "STDERR",
-                ["Error: Cannot open data object"],
+                ["Error: Cannot open data object [error code=-186000]."],
                 input="some data",
             )
 
@@ -488,7 +488,7 @@ class Test_Logical_Quotas(
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{subcoll_path}/{file_name}_4"],
                 "STDERR",
-                ["Error: Cannot open data object"],
+                ["Error: Cannot open data object [error code=-186000]."],
                 input="some data",
             )
 
@@ -634,7 +634,7 @@ class Test_Logical_Quotas(
             self.quota_user.assert_icommand(
                 ["istream", "write", f"{subcoll_path}/{file_name}_6"],
                 "STDERR",
-                ["Error: Cannot open data object"],
+                ["Error: Cannot open data object [error code=-186000]."],
                 input="some data",
             )
 
