@@ -255,8 +255,16 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
                 }
             }
             else if ( pathLiteral && ch == '/' ) { /* path */
-                nextStringBase( e, token->text,MAX_TOKEN_TEXT_LEN, "),; \t\r\n", 0, '\\', 0, token->vars ); /* path can be used in a foreach loop or assignment, or as a function argument */
-                token->type = TK_PATH;
+                // Handle no string found case
+                // path can be used in a foreach loop or assignment, or as a function argument
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                if (-1 == nextStringBase(e, token->text, MAX_TOKEN_TEXT_LEN, "),; \t\r\n", 0, '\\', 0, token->vars)) {
+                    token->type = N_ERROR;
+                }
+                // String has been found, set the appropriate type
+                else {
+                    token->type = TK_PATH;
+                }
                 break;
             }
 
