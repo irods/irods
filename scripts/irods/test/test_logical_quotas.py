@@ -409,7 +409,7 @@ class Test_Logical_Quotas(
             ec, _, _ = self.quota_user.assert_icommand(
                 ["itouch", f"{subcoll_path}/{file_name}_4"],
                 "STDOUT_SINGLELINE",
-                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
+                f"LOGICAL_QUOTA_EXCEEDED: Error creating data object [{subcoll_path}/{file_name}_4] on server-defined default resource.",
             )
             self.assertNotEqual(ec, 0)
             self.quota_user.assert_icommand(
@@ -481,7 +481,7 @@ class Test_Logical_Quotas(
             ec, _, _ = self.quota_user.assert_icommand(
                 ["itouch", f"{subcoll_path}/{file_name}_4"],
                 "STDOUT_SINGLELINE",
-                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
+                f"LOGICAL_QUOTA_EXCEEDED: Error creating data object [{subcoll_path}/{file_name}_4] on server-defined default resource.",
             )
             self.assertNotEqual(ec, 0)
 
@@ -628,7 +628,7 @@ class Test_Logical_Quotas(
             ec, _, _ = self.quota_user.assert_icommand(
                 ["itouch", f"{subcoll_path}/{file_name}_6"],
                 "STDOUT_SINGLELINE",
-                "CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION",
+                f"LOGICAL_QUOTA_EXCEEDED: Error creating data object [{subcoll_path}/{file_name}_6] on server-defined default resource.",
             )
             self.assertNotEqual(ec, 0)
             self.quota_user.assert_icommand(
