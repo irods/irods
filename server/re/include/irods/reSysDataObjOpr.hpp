@@ -55,7 +55,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei );
 /// \param[in] _style \parblock The new style of the randomly-generated string. A value of 1 results
 ///                   in 5 randomly generated alphanumeric characters being appended to the physical
 ///                   path. Attempting to set the value to anything other than 0 or 1 will result in
-///                   an error. See #msi_set_random_scheme_suffix_length for information about changing
+///                   an error. See #msi_random_scheme_set_suffix_length for information about changing
 ///                   the length of the generated suffix string.
 ///                   \endparblock
 /// \param[in] _rei   A pointer to a #RuleExecInfo object. The execution information. Hidden within
@@ -66,12 +66,12 @@ msiSetRandomScheme( ruleExecInfo_t *rei );
 /// \retval <0 On failure.
 ///
 /// \since 5.1.0
-int msi_set_random_scheme_style(MsParam* _style, ruleExecInfo_t* _rei);
+int msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei);
 
 /// Sets the random scheme suffix length.
 ///
 /// The effects of this microservice are not applied unless the random scheme style is set to 1.
-/// See #msi_set_random_scheme_style for more information.
+/// See #msi_random_scheme_set_style for more information.
 ///
 /// This microservice has no effect if invoked outside of acSetVaultPathPolicy() or an error occurs.
 ///
@@ -86,7 +86,7 @@ int msi_set_random_scheme_style(MsParam* _style, ruleExecInfo_t* _rei);
 /// \retval <0 On failure.
 ///
 /// \since 5.1.0
-int msi_set_random_scheme_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei);
+int msi_random_scheme_set_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei);
 
 int
 msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei );

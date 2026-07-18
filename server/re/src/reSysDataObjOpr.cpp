@@ -1127,7 +1127,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
     return 0;
 }
 
-auto msi_set_random_scheme_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
+auto msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
 
@@ -1173,9 +1173,9 @@ auto msi_set_random_scheme_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
                nullptr);
 
     return 0;
-} // msi_set_random_scheme_style
+} // msi_random_scheme_set_style
 
-auto msi_set_random_scheme_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei) -> int
+auto msi_random_scheme_set_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
 
@@ -1225,7 +1225,7 @@ auto msi_set_random_scheme_suffix_length(MsParam* _suffix_length, ruleExecInfo_t
                nullptr);
 
     return 0;
-} // msi_set_random_scheme_suffix_length
+} // msi_random_scheme_set_suffix_length
 
 /**
  * \fn msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
