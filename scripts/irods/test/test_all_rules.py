@@ -1833,15 +1833,15 @@ OUTPUT ruleExecOut
                         acSetVaultPathPolicy()
                         {{
                             msiSetRandomScheme();
-                            msi_set_random_scheme_style({style});
-                            msi_set_random_scheme_suffix_length({suffix_length});
+                            msi_random_scheme_set_style({style});
+                            msi_random_scheme_set_suffix_length({suffix_length});
                         }}
                         '''),
                     'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
                         def acSetVaultPathPolicy(rule_args, callback, rei):
                             callback.msiSetRandomScheme()
-                            callback.msi_set_random_scheme_style({style})
-                            callback.msi_set_random_scheme_suffix_length({suffix_length});
+                            callback.msi_random_scheme_set_style({style})
+                            callback.msi_random_scheme_set_suffix_length({suffix_length});
                         ''')
                 }
             else:
@@ -1850,13 +1850,13 @@ OUTPUT ruleExecOut
                         acSetVaultPathPolicy()
                         {{
                             msiSetRandomScheme();
-                            msi_set_random_scheme_style({style});
+                            msi_random_scheme_set_style({style});
                         }}
                         '''),
                     'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
                         def acSetVaultPathPolicy(rule_args, callback, rei):
                             callback.msiSetRandomScheme()
-                            callback.msi_set_random_scheme_style({style})
+                            callback.msi_random_scheme_set_style({style})
                         ''')
                 }
 
@@ -1923,8 +1923,8 @@ OUTPUT ruleExecOut
                 acSetVaultPathPolicy()
                 {{
                     msiSetRandomScheme();
-                    msi_set_random_scheme_style(1);
-                    msi_set_random_scheme_suffix_length(10);
+                    msi_random_scheme_set_style(1);
+                    msi_random_scheme_set_suffix_length(10);
                 }}
 
                 INPUT null

@@ -293,7 +293,7 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #      are much faster because there is no need to rename the
 #      corresponding physical path.
 #
-#    msi_set_random_scheme_style(style) - Set the random scheme style.
+#    msi_random_scheme_set_style(style) - Set the random scheme style.
 #      This microservice allows administrators to change how physical paths are
 #      generated. The effects of this microservice are not applied unless the
 #      vault path policy is set to the random scheme.
@@ -312,7 +312,7 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #      See msi_set_random_scheme_suffix_length() for information about changing
 #      the length of the generated suffix string.
 #
-#    msi_set_random_scheme_suffix_length(length) - Set the random scheme suffix
+#    msi_random_scheme_set_suffix_length(length) - Set the random scheme suffix
 #      length.
 #
 #      The effects of this microservice are not applied unless the random scheme
@@ -327,7 +327,7 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 # This default is GRAFT_PATH scheme with addUserName == yes and trimDirCnt == 1.
 # Note : if trimDirCnt is greater than 1, the home or trash entry will be
 # taken out.
-# acSetVaultPathPolicy { msiSetRandomScheme; msi_set_random_scheme_style(0); msi_set_random_scheme_suffix_length(5); }
+# acSetVaultPathPolicy { msiSetRandomScheme; msi_random_scheme_set_style(0); msi_random_scheme_suffix_set_length(5); }
 acSetVaultPathPolicy { msiSetGraftPathScheme("no","1"); }
 #
 # 18) acPreProcForCollCreate - This is the PreProcessing rule for creating

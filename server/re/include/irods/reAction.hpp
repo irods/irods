@@ -259,8 +259,8 @@ namespace irods
         table_[ "msiExecCmd" ] = new irods::ms_table_entry( "msiExecCmd", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExecCmd ) );
         table_[ "msiSetGraftPathScheme" ] = new irods::ms_table_entry( "msiSetGraftPathScheme", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetGraftPathScheme ) );
         table_[ "msiSetRandomScheme" ] = new irods::ms_table_entry( "msiSetRandomScheme", 0, std::function<int(ruleExecInfo_t*)>( msiSetRandomScheme ) );
-        table_[ "msi_set_random_scheme_style" ] = new irods::ms_table_entry("msi_set_random_scheme_style", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_set_random_scheme_style));
-        table_[ "msi_set_random_scheme_suffix_length" ] = new irods::ms_table_entry("msi_set_random_scheme_suffix_length", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_set_random_scheme_suffix_length));
+        table_[ "msi_random_scheme_set_style" ] = new irods::ms_table_entry("msi_random_scheme_set_style", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_random_scheme_set_style));
+        table_[ "msi_random_scheme_set_suffix_length" ] = new irods::ms_table_entry("msi_random_scheme_set_suffix_length", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_random_scheme_set_suffix_length));
         table_[ "msiCheckHostAccessControl" ] = new irods::ms_table_entry( "msiCheckHostAccessControl", 0, std::function<int(ruleExecInfo_t*)>( msiCheckHostAccessControl ) );
         table_[ "msiGetIcatTime" ] = new irods::ms_table_entry( "msiGetIcatTime", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetIcatTime ) );
         table_[ "msiGetTaggedValueFromString" ] = new irods::ms_table_entry( "msiGetTaggedValueFromString", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetTaggedValueFromString ) );
