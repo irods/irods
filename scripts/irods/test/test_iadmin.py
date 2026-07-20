@@ -2242,6 +2242,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin', 'rmzone', good_zone_name])
 
+    def test_iadmin_prints_error_message_on_argument_overflow__issue_8975(self):
+        # 20 arguments is the limit
+        ec, _, _ = self.admin.assert_icommand(['iadmin', *['potato'] * 21], 'STDERR', 'Too many command line arguments.')
+        self.assertNotEqual(ec, 0)
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):

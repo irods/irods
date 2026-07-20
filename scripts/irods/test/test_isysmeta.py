@@ -72,3 +72,8 @@ class Test_isysmeta(session.make_sessions_mixin([('otherrods', 'rods')], [('alic
         self.admin.assert_icommand("isysmeta mod testfile.txt +1h", "EMPTY")
         check_relative_expiry(seconds_ahead)
 
+    def test_isysmeta_prints_error_message_on_argument_overflow__issue_8975(self):
+        # 20 arguments is the limit
+        ec, _, _ = self.admin.assert_icommand(['isysmeta', *['potato'] * 21], 'STDERR', 'Too many command line arguments.')
+        self.assertNotEqual(ec, 0)
+
