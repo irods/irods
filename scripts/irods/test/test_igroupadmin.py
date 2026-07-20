@@ -50,6 +50,11 @@ class Test_Igroupadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally :
             self.admin.assert_icommand(['iadmin', 'moduser', self.user_sessions[0].username, 'type', 'rodsuser'])
 
+    def test_igroupadmin_prints_error_message_on_argument_overflow__issue_8975(self):
+        # 20 arguments is the limit
+        ec, _, _ = self.admin.assert_icommand(['igroupadmin', *['potato'] * 21], 'STDERR', 'Too many command line arguments.')
+        self.assertNotEqual(ec, 0)
+
 
 class test_making_groups(unittest.TestCase):
     """Test making a group."""

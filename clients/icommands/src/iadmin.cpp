@@ -1140,6 +1140,10 @@ getInput( char *cmdToken[], int maxTokens ) {
     nTokens = 0;
     tokenFlag = 0;
     for ( i = 0; i < lenstr; i++ ) {
+        if (nTokens >= maxTokens) {
+            fprintf(stderr, "Too many command line arguments.\n");
+            return 0;
+        }
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
             cmdToken[nTokens++] = cpTokenStart;
@@ -1837,6 +1841,12 @@ main( int argc, char **argv ) {
     int i;
     const int maxCmdTokens = 20;
     char *cmdToken[maxCmdTokens];
+
+    if (argc - argOffset > maxCmdTokens) {
+        fprintf(stderr, "Too many command line arguments.\n");
+        return 1;
+    }
+
     for ( i = 0; i < maxCmdTokens; i++ ) {
         cmdToken[i] = "";
     }

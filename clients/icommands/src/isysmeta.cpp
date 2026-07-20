@@ -337,6 +337,11 @@ main( int argc, char **argv ) {
 
     argOffset = myRodsArgs.optind;
 
+    if (argc - argOffset > maxCmdTokens) {
+        fprintf(stderr, "Too many command line arguments.\n");
+        return 1;
+    }
+
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",

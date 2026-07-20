@@ -144,6 +144,10 @@ getInput( char *cmdToken[], int maxTokens ) {
     nTokens = 0;
     tokenFlag = 0;
     for ( i = 0; i < lenstr; i++ ) {
+        if (nTokens >= maxTokens) {
+            fprintf(stderr, "Too many command line arguments.\n");
+            return;
+        }
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
             cmdToken[nTokens++] = cpTokenStart;
@@ -370,6 +374,11 @@ main( int argc, char **argv ) {
     }
 
     argOffset = myRodsArgs.optind;
+
+    if (argc - argOffset > maxCmdTokens) {
+        fprintf(stderr, "Too many command line arguments.\n");
+        exit(1);
+    }
 
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {

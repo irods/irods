@@ -1243,6 +1243,12 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         finally:
             self.user.run_icommand(['iticket', 'delete', ticket_string])
 
+    def test_iticket_prints_error_message_on_argument_overflow__issue_8975(self):
+        # 20 arguments is the limit
+        ec, _, _ = self.admin.assert_icommand(['iticket', *['potato'] * 21], 'STDERR', 'Too many command line arguments.')
+        self.assertNotEqual(ec, 0)
+
+
 def get_modification_and_creation_time(cls, ticket_string):
     out, err, ec = cls.admin.run_icommand(['iquest', '%s...%s', "select TICKET_MODIFY_TIME, TICKET_CREATE_TIME where TICKET_STRING = '{}'".format(ticket_string)])
     cls.assertEqual(ec, 0)
