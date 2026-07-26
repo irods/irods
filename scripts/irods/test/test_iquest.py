@@ -1,13 +1,9 @@
 import os
-import sys
+import re
 import shutil
 import socket
-import re
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import sys
+import unittest
 
 from . import session
 from .. import lib
@@ -74,7 +70,8 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
     def test_iquest_resc_hier_with_like__3714(self):
         # Create a hierarchy to test
         LEAF_COUNT = 10
-        directory = IrodsConfig().irods_directory
+        directory = '/tmp/issue_3714'
+        os.makedirs(directory)
         create_large_hierarchy(self, LEAF_COUNT, socket.gethostname(), directory)
         filename = 'test_iquest_resc_hier_with_like__3714'
         lib.make_file(filename, 1)

@@ -970,7 +970,8 @@ TEST_CASE("UnregDataObj / PhyPathReg / RegDataObj ")
     REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_resc));
 
     // Create a local file to register.
-    std::ofstream{filename} << "content!";
+    const std::filesystem::path local_file_path = std::filesystem::temp_directory_path() / filename;
+    std::ofstream{local_file_path} << "content!";
 
     // Open source object to lock it.
     DataObjInp open_inp{};
@@ -1020,7 +1021,7 @@ TEST_CASE("UnregDataObj / PhyPathReg / RegDataObj ")
 
         DataObjInp reg_inp{};
         const auto free_condInput = irods::at_scope_exit{[&reg_inp] { clearKeyVal(&reg_inp.condInput); }};
-        addKeyVal(&reg_inp.condInput, FILE_PATH_KW, std::filesystem::absolute(std::filesystem::path{filename}).c_str());
+        addKeyVal(&reg_inp.condInput, FILE_PATH_KW, local_file_path.c_str());
         std::strncpy(static_cast<char*>(reg_inp.objPath), target_object.c_str(), sizeof(reg_inp.objPath) - 1);
 
         SECTION("no replica target, no REG_REPL_KW")
@@ -1132,6 +1133,9 @@ TEST_CASE("UnregDataObj / PhyPathReg / RegDataObj ")
         DataObjInfo reg_inp{};
         std::strncpy(static_cast<char*>(reg_inp.objPath), target_object.c_str(), sizeof(reg_inp.objPath) - 1);
         std::strncpy(static_cast<char*>(reg_inp.dataType), GENERIC_DT_STR, sizeof(reg_inp.dataType) - 1);
+
+        // Set the physical path to a nonempty string so that the RegDataObj API doesn't fail during path validation.
+        std::strncpy(static_cast<char*>(reg_inp.filePath), "/nonempty_physical_path", sizeof(reg_inp.filePath) - 1);
 
         DataObjInfo* reg_out{};
         const auto free_RegDataObj_output = irods::at_scope_exit{[&reg_out] { freeAllDataObjInfo(reg_out); }};

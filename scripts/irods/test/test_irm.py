@@ -116,7 +116,7 @@ class test_no_accidental_data_loss_on_unlink__issue_8441(unittest.TestCase):
         self.user = session.mkuser_and_return_session('rodsuser', "alice", "apass", lib.get_hostname())
 
         self.resource = "leaky_resc"
-        self.vault_path = os.path.join(paths.home_directory(), f"{self.resource}_vault")
+        self.vault_path = f"/tmp/{self.resource}_vault"
         self.admin.assert_icommand(
             ["iadmin", "mkresc", self.resource, "unixfilesystem",
              ":".join([test.settings.HOSTNAME_1, self.vault_path])], "STDOUT")

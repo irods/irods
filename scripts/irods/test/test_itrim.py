@@ -1,13 +1,7 @@
-from __future__ import print_function
-
 import os
-import sys
 import shutil
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import sys
+import unittest
 
 from . import session
 from .. import test
@@ -380,8 +374,8 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
     def test_itrim_all_permission_combinations__issue_8450(self):
         trim_resource = "trim_resc"
         keep_resource = "keep_resc"
-        trim_vault_path = os.path.join(paths.home_directory(), f"{trim_resource}_vault")
-        keep_vault_path = os.path.join(paths.home_directory(), f"{keep_resource}_vault")
+        trim_vault_path = f"/tmp/{trim_resource}_vault"
+        keep_vault_path = f"/tmp/{keep_resource}_vault"
 
         user = session.mkuser_and_return_session('rodsuser', "alice", "apass", lib.get_hostname())
         user_collection = "/".join([user.session_collection, self.id() + "-coll"])

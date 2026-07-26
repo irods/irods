@@ -13,11 +13,14 @@
 #include "irods/filesystem.hpp"
 #include "irods/get_file_descriptor_info.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_default_paths.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/key_value_proxy.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/objInfo.h"
+#include "irods/phyPathReg.h"
 #include "irods/rcMisc.h"
+#include "irods/regDataObj.h"
 #include "irods/register_physical_path.h"
 #include "irods/replica.hpp"
 #include "irods/replica_proxy.hpp"
@@ -1549,5 +1552,100 @@ TEST_CASE("#7338")
     SECTION("rc_touch")
     {
         CHECK(rc_touch(static_cast<RcComm*>(conn), "") == SYS_NO_API_PRIV);
+    }
+}
+
+TEST_CASE("registration APIs reject invalid physical paths")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn;
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto sandbox = fs::path{env.rodsHome} / "test_registration_api_path_validation";
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    const std::string test_resc = "test_registration_path_validation_resc";
+    const std::string vault_name = "test_registration_path_validation_vault";
+
+    if (adm::client::resource_exists(conn, test_resc)) {
+        REQUIRE_NOTHROW(adm::client::remove_resource(conn, test_resc));
+    }
+
+    REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(conn, test_resc, vault_name));
+
+    conn.disconnect();
+    conn.connect();
+    auto* comm = static_cast<RcComm*>(conn);
+
+    irods::at_scope_exit remove_sandbox_and_resource{[&sandbox, &test_resc] {
+        irods::experimental::client_connection cleanup_conn;
+        RcComm& cleanup_comm = static_cast<RcComm&>(cleanup_conn);
+
+        REQUIRE_NOTHROW(fs::client::remove_all(cleanup_comm, sandbox, fs::remove_options::no_trash));
+        REQUIRE_NOTHROW(adm::client::remove_resource(cleanup_comm, test_resc));
+    }};
+
+    const auto target_object = sandbox / "target_object";
+    const auto protected_config_file = fs::path{irods::get_irods_config_directory().string()} / "server_config.json";
+    const auto protected_version_file = fs::path{irods::get_irods_home_directory().string()} / "version.json";
+
+    SECTION("rcPhyPathReg")
+    {
+        DataObjInp input{};
+        const auto clear_cond_input = irods::at_scope_exit{[&input] { clearKeyVal(&input.condInput); }};
+
+        std::strncpy(input.objPath, target_object.c_str(), sizeof(input.objPath) - 1);
+        addKeyVal(&input.condInput, RESC_HIER_STR_KW, test_resc.c_str());
+
+        addKeyVal(&input.condInput, FILE_PATH_KW, "../version.json");
+        REQUIRE(SYS_INVALID_FILE_PATH == rcPhyPathReg(comm, &input));
+
+        addKeyVal(&input.condInput, FILE_PATH_KW, "/tmp/./version.json");
+        REQUIRE(SYS_INVALID_FILE_PATH == rcPhyPathReg(comm, &input));
+
+        addKeyVal(&input.condInput, FILE_PATH_KW, protected_config_file.c_str());
+        REQUIRE(SYS_INVALID_FILE_PATH == rcPhyPathReg(comm, &input));
+
+        addKeyVal(&input.condInput, FILE_PATH_KW, protected_version_file.c_str());
+        REQUIRE(SYS_INVALID_FILE_PATH == rcPhyPathReg(comm, &input));
+    }
+
+    SECTION("rcRegDataObj")
+    {
+        DataObjInfo input{};
+        std::strncpy(input.objPath, target_object.c_str(), sizeof(input.objPath) - 1);
+        std::strncpy(input.dataType, GENERIC_DT_STR, sizeof(input.dataType) - 1);
+        std::strncpy(input.rescHier, test_resc.c_str(), sizeof(input.rescHier) - 1);
+
+        DataObjInfo* output{};
+        const auto free_output = irods::at_scope_exit{[&output] { freeAllDataObjInfo(output); }};
+
+        std::strncpy(input.filePath, "../version.json", sizeof(input.filePath) - 1);
+        REQUIRE(SYS_INVALID_FILE_PATH == rcRegDataObj(comm, &input, &output));
+        CHECK(0 == freeAllDataObjInfo(output));
+        output = nullptr;
+
+        std::memset(input.filePath, 0, sizeof(input.filePath));
+        std::strncpy(input.filePath, "/tmp/./version.json", sizeof(input.filePath) - 1);
+        REQUIRE(SYS_INVALID_FILE_PATH == rcRegDataObj(comm, &input, &output));
+        CHECK(0 == freeAllDataObjInfo(output));
+        output = nullptr;
+
+        std::memset(input.filePath, 0, sizeof(input.filePath));
+        std::strncpy(input.filePath, protected_config_file.c_str(), sizeof(input.filePath) - 1);
+        REQUIRE(SYS_INVALID_FILE_PATH == rcRegDataObj(comm, &input, &output));
+        CHECK(0 == freeAllDataObjInfo(output));
+        output = nullptr;
+
+        std::memset(input.filePath, 0, sizeof(input.filePath));
+        std::strncpy(input.filePath, protected_version_file.c_str(), sizeof(input.filePath) - 1);
+        REQUIRE(SYS_INVALID_FILE_PATH == rcRegDataObj(comm, &input, &output));
+        CHECK(0 == freeAllDataObjInfo(output));
+        output = nullptr;
     }
 }

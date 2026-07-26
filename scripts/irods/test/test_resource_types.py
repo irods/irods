@@ -41,13 +41,9 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc rrResc random", 'STDOUT_SINGLELINE', 'random')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":" +
-                                          irods_config.irods_directory + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":/tmp/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc rrResc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
@@ -68,10 +64,9 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
             admin_session.assert_icommand("iadmin rmresc rrResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unixB2Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unixB1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixB2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixB1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixAVault", ignore_errors=True)
 
     def test_ichksum_no_file_modified_under_replication__4099(self):
         filename = 'test_ichksum_no_file_modified_under_replication__4099'
@@ -428,8 +423,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         hostname = lib.get_hostname()
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-            admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":" +
-                                          IrodsConfig().irods_directory + "/demoRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":/tmp/demoRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         super(Test_Resource_Unixfilesystem, self).setUp()
 
     def tearDown(self):
@@ -437,7 +431,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        shutil.rmtree(IrodsConfig().irods_directory + "/demoRescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/demoRescVault", ignore_errors=True)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_unix_filesystem_free_space_on_root__3928(self):
@@ -1187,8 +1181,7 @@ class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT_SINGLELINE', 'passthru')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          IrodsConfig().irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
         super(Test_Resource_Passthru, self).setUp()
 
@@ -1199,7 +1192,7 @@ class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        shutil.rmtree(IrodsConfig().irods_directory + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -1223,11 +1216,8 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + hostname + ":" +
-                                          irods_config.irods_directory + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":" +
-                                          irods_config.irods_directory + "/unixBVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + hostname + ":/tmp/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":/tmp/unixBVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin mkresc w_pt passthru '' 'write=1.0;read=1.0'", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc w_pt")
@@ -1245,9 +1235,8 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin rmresc w_pt")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unixBVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixBVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixAVault", ignore_errors=True)
 
     def test_weighted_passthru(self):
         filename = "some_local_file.txt"
@@ -1257,7 +1246,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "local")
 
         # repave a copy in the vault to differentiate
-        vaultpath = os.path.join(IrodsConfig().irods_directory, "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        vaultpath = os.path.join("/tmp/unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
         subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
 
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
@@ -1284,7 +1273,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
 
         # repave a copy in the vault to differentiate
-        vaultpath = os.path.join(IrodsConfig().irods_directory, "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        vaultpath = os.path.join("/tmp/unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
         subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
 
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
@@ -1309,7 +1298,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
 
         # repave a copy in the vault to differentiate
-        vaultpath = os.path.join(IrodsConfig().irods_directory, "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        vaultpath = os.path.join("/tmp/unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
         subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
 
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
@@ -1335,8 +1324,7 @@ class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc deferred", 'STDOUT_SINGLELINE', 'deferred')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          IrodsConfig().irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
         super(Test_Resource_Deferred, self).setUp()
 
@@ -1347,7 +1335,7 @@ class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        shutil.rmtree(IrodsConfig().irods_directory + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -1370,13 +1358,9 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc random", 'STDOUT_SINGLELINE', 'random')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":" +
-                                          irods_config.irods_directory + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":/tmp/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
@@ -1393,10 +1377,9 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix2RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix3RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -1444,8 +1427,7 @@ class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase)
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-            admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + test.settings.HOSTNAME_1 + ":" +
-                                          IrodsConfig().irods_directory + "/nbVault", 'STDOUT_SINGLELINE', 'nonblocking')
+            admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + test.settings.HOSTNAME_1 + ":/tmp/nbVault", 'STDOUT_SINGLELINE', 'nonblocking')
         super(Test_Resource_NonBlocking, self).setUp()
 
     def tearDown(self):
@@ -1471,11 +1453,8 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'mockarchive')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + test.settings.HOSTNAME_1 + ":/tmp/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'mockarchive')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_CompoundWithMockarchive, self).setUp()
@@ -1489,9 +1468,8 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
             admin_session.assert_icommand("iadmin rmresc cacheResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveRescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheRescVault", ignore_errors=True)
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'
@@ -1807,11 +1785,8 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'univmss')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + test.settings.HOSTNAME_1 + ":/tmp/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'univmss')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_CompoundWithUnivmss, self).setUp()
@@ -1825,9 +1800,8 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
             admin_session.assert_icommand("iadmin rmresc cacheResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveRescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheRescVault", ignore_errors=True)
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'
@@ -2351,11 +2325,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/cacheResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/archiveResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             self.cache_resc = 'cacheResc'
             self.archive_resc = 'archiveResc'
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
@@ -2371,9 +2342,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc cacheResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(os.path.join(irods_config.irods_directory, self.archive_resc + '_vault'), ignore_errors=True)
-        shutil.rmtree(os.path.join(irods_config.irods_directory, self.cache_resc + '_vault'), ignore_errors=True)
+        shutil.rmtree(os.path.join('/tmp', self.archive_resc + '_vault'), ignore_errors=True)
+        shutil.rmtree(os.path.join('/tmp', self.cache_resc + '_vault'), ignore_errors=True)
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'
@@ -2580,7 +2550,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         }
 
         filename = "test_test_msiDataObjUnlink__2983.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = f"/tmp/{filename}"
+        Path(filepath).touch()
         logical_path = os.path.join( self.admin.session_collection, filename )
 
         self.admin.assert_icommand("ireg " + filepath + " " + logical_path)
@@ -3326,7 +3297,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         logical_path = os.path.join(self.user0.session_collection, filename)
         local_file = os.path.join(self.user0.local_session_dir, filename)
         file_size_in_bytes = 10
-        archive_vault_path = os.path.join(IrodsConfig().irods_directory, self.archive_resc + '_vault')
+        archive_vault_path = os.path.join('/tmp', self.archive_resc + '_vault')
 
         try:
             lib.make_file(local_file, file_size_in_bytes)
@@ -3379,7 +3350,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         logical_path = os.path.join(self.user0.session_collection, filename)
         local_file = os.path.join(self.user0.local_session_dir, filename)
         file_size_in_bytes = 10
-        archive_vault_path = os.path.join(IrodsConfig().irods_directory, self.archive_resc + '_vault')
+        archive_vault_path = os.path.join('/tmp', self.archive_resc + '_vault')
 
         try:
             lib.make_file(local_file, file_size_in_bytes)
@@ -3422,13 +3393,9 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc replResc replication", 'STDOUT_SINGLELINE', 'replication')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":" +
-                                          irods_config.irods_directory + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":/tmp/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc replResc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc replResc unixB1")
@@ -3448,10 +3415,9 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
             admin_session.assert_icommand("iadmin rmresc replResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unixB2Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unixB1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixB2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixB1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unixAVault", ignore_errors=True)
 
     @unittest.skip("no support for non-compound resources")
     def test_iget_with_purgec(self):
@@ -3750,15 +3716,10 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT_SINGLELINE', 'compound')
             admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT_SINGLELINE', 'compound')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
@@ -3784,11 +3745,10 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
             admin_session.assert_icommand("iadmin rmresc compResc1")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/archiveResc1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheResc1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/archiveResc2Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheResc2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveResc1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheResc1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveResc2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheResc2Vault", ignore_errors=True)
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'
@@ -4315,15 +4275,10 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT_SINGLELINE', 'compound')
             admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT_SINGLELINE', 'compound')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
@@ -4349,11 +4304,10 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
             admin_session.assert_icommand("iadmin rmresc compResc1")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/archiveResc1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheResc1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/archiveResc2Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/cacheResc2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveResc1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheResc1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/archiveResc2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/cacheResc2Vault", ignore_errors=True)
 
         # restore the original core.re
         core = CoreFile()
@@ -4768,13 +4722,9 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
-            irods_config = IrodsConfig()
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":" +
-                                          irods_config.irods_directory + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":/tmp/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
@@ -4792,10 +4742,9 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix2RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix3RescVault", ignore_errors=True)
 
     def test_checksums_are_erased_or_replaced_on_overwrite__issue_5496(self):
         def get_checksum(data_object):
@@ -5116,7 +5065,7 @@ OUTPUT ruleExecOut
             if success == True:
                 break
         # cleanup
-        oldvault = IrodsConfig().irods_directory + "/unix2RescVault"
+        oldvault = "/tmp/unix2RescVault"
         self.admin.assert_icommand("iadmin modresc unix2Resc path " + oldvault, "STDOUT_SINGLELINE", "Previous resource path")
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
@@ -5538,17 +5487,13 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
 
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
-            irods_config = IrodsConfig()
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin mkresc pass2Resc passthru", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin mkresc rrResc random", 'STDOUT_SINGLELINE', 'random')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":" +
-                                          irods_config.irods_directory + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + test.settings.HOSTNAME_3 + ":/tmp/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc pass2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc pass2Resc rrResc")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
@@ -5571,10 +5516,9 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
             admin_session.assert_icommand("iadmin rmresc pass2Resc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix2RescVault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix3RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -5596,21 +5540,16 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
 class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
-            irods_config = IrodsConfig()
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc random", 'STDOUT_SINGLELINE', 'random')
             admin_session.assert_icommand("iadmin mkresc random0 random", 'STDOUT_SINGLELINE', 'random')
             admin_session.assert_icommand("iadmin mkresc random1 random", 'STDOUT_SINGLELINE', 'random')
             admin_session.assert_icommand("iadmin mkresc random2 random", 'STDOUT_SINGLELINE', 'random')
             admin_session.assert_icommand("iadmin mkresc random3 random", 'STDOUT_SINGLELINE', 'random')
-            admin_session.assert_icommand("iadmin mkresc unix0 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/unix0Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                          irods_config.irods_directory + "/unix3Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix0 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":/tmp/unix0Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":/tmp/unix3Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc random0")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc random1")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc random2")
@@ -5642,11 +5581,10 @@ class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.Te
             admin_session.assert_icommand("iadmin rmresc random0")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/unix0Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix1Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix2Vault", ignore_errors=True)
-        shutil.rmtree(irods_config.irods_directory + "/unix3Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix0Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix1Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix2Vault", ignore_errors=True)
+        shutil.rmtree("/tmp/unix3Vault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):

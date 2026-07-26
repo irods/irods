@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* fileOpr.c - File type operation. Will call low level file drivers
- */
-
 #include "irods/fileOpr.hpp"
 #include "irods/fileStat.h"
 #include "irods/rsGlobalExtern.hpp"
@@ -12,14 +6,89 @@
 #include "irods/rsChkNVPathPerm.hpp"
 #include "irods/rsFileStat.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_collection_object.hpp"
-#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_default_paths.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_resource_plugin.hpp"
+#include "irods/filesystem/path.hpp"
+
+#include <boost/filesystem.hpp>
+
+#include <algorithm>
+#include <array>
+#include <cstdlib>
+#include <cstring>
+
+namespace
+{
+    namespace fs = boost::filesystem;
+
+    using log_api = irods::experimental::log::api;
+
+    auto path_is_at_or_beneath(const fs::path& _path, const fs::path& _base_path) -> bool
+    {
+        const auto normalized_path = _path.lexically_normal();
+        const auto normalized_base_path = _base_path.lexically_normal();
+
+        auto path_iter = normalized_path.begin();
+        auto base_path_iter = normalized_base_path.begin();
+
+        for (; base_path_iter != normalized_base_path.end(); ++path_iter, ++base_path_iter) {
+            if (path_iter == normalized_path.end() || *path_iter != *base_path_iter) {
+                return false;
+            }
+        }
+
+        return true;
+    } // path_is_at_or_beneath
+
+    auto is_protected_irods_server_path(const fs::path& _path) -> bool
+    {
+        // TODO(#9083): Remove environment variable check in iRODS 6.
+        constexpr const auto* env_var = "IRODS_ALLOW_UNSAFE_PHYSICAL_PATH_REGISTRATION";
+        const auto* const option = std::getenv(env_var);
+        if (option && std::strncmp(option, "1", 1) == 0) {
+            log_api::warn("{}: [{}=1] disables validation of physical paths for registration!", __func__, env_var);
+            return false;
+        }
+
+        if (path_is_at_or_beneath(_path, irods::get_irods_home_directory() / "Vault")) {
+            return false;
+        }
+
+        // clang-format off
+        const auto blocked_directories = std::array{
+            irods::get_irods_config_directory(),
+            irods::get_irods_default_plugin_directory(),
+            irods::get_irods_home_directory(),
+            irods::get_irods_runstate_directory() / "irods"
+        };
+        // clang-format on
+
+        for (const auto& base_path : blocked_directories) {
+            if (path_is_at_or_beneath(_path, base_path)) {
+                return true;
+            }
+        }
+
+        // clang-format off
+        const auto blocked_files = std::array{
+            irods::get_irods_sbin_directory() / "irodsAgent",
+            irods::get_irods_sbin_directory() / "irodsDelayServer",
+            irods::get_irods_sbin_directory() / "irodsPamAuthCheck",
+            irods::get_irods_sbin_directory() / "irodsServer"
+        };
+        // clang-format on
+
+        return std::any_of(std::begin(blocked_files), std::end(blocked_files), [&_path](auto&& _p) {
+            return _path.lexically_normal() == _p.lexically_normal();
+        });
+    } // is_protected_irods_server_path
+} // anonymous namespace
 
 int
 initFileDesc() {
@@ -444,12 +513,44 @@ isValidFilePath( const std::string& path ) {
     if ( path.find( "/../" ) != std::string::npos ||
             path.compare( path.size() - 3, path.size(), "/.." ) == 0 ) {
         /* "/../" or end with "/.."  */
-        rodsLog( LOG_ERROR, "isValidFilePath: inp fileName %s contains /../ or ends with /..", path.c_str() );
+        log_api::error("{}: [{}] contains [/../] or ends with [/..]", __func__, path);
         return SYS_INVALID_FILE_PATH;
     }
 
     return 0;
 }
+
+int isValidPhysicalPathForRegistration(const std::string_view path)
+{
+    if (path.empty()) {
+        log_api::error("{}: empty physical path.", __func__);
+        return SYS_INVALID_FILE_PATH;
+    }
+
+    const fs::path physical_path{path};
+
+    if (!physical_path.is_absolute()) {
+        log_api::error("{}: [{}] is not absolute.", __func__, path);
+        return SYS_INVALID_FILE_PATH;
+    }
+
+    const fs::path dot{"."};
+    const fs::path dot_dot{".."};
+
+    for (const auto& element : physical_path) {
+        if (element == dot || element == dot_dot) {
+            log_api::error("{}: [{}] contains [.] or [..] path elements.", __func__, path);
+            return SYS_INVALID_FILE_PATH;
+        }
+    }
+
+    if (is_protected_irods_server_path(physical_path)) {
+        log_api::error("{}: [{}] is a protected iRODS server path.", __func__, path);
+        return SYS_INVALID_FILE_PATH;
+    }
+
+    return 0;
+} // isValidPhysicalPathForRegistration
 
 /* matchCliVaultPath - if the input path is inside
  * $(vaultPath)/home/userName, return 1.

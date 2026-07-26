@@ -4,7 +4,6 @@ import unittest
 
 from . import session
 from .. import lib
-from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -124,7 +123,7 @@ class test_renaming_collections_with_special_characters__issue_6239(unittest.Tes
         local_resource = "issue_6239_resource"
         self.admin.assert_icommand(
             ["iadmin", "mkresc", local_resource, "unixfilesystem",
-             lib.get_hostname() + ":" + paths.irods_directory() + f"/{local_resource}"], "STDOUT", local_resource)
+             lib.get_hostname() + ":" + f"/tmp/{local_resource}"], "STDOUT", local_resource)
 
         subcollection_basename = "XXXX_vX.X.X_analysis1-2021-10-27-12-19-57.5/index"
         source_subcollection_suffix = f" Ss  /{subcollection_basename}"

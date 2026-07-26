@@ -763,8 +763,8 @@ class ResourceSuite(ResourceBase):
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Registers local file")
     def test_ireg_as_rodsadmin(self):
         # local setup
-        filename = "newfile.txt"
-        filepath = os.path.abspath(filename)
+        filename = "test_ireg_as_rodsadmin.txt"
+        filepath = f"/tmp/{filename}"
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
@@ -781,8 +781,8 @@ class ResourceSuite(ResourceBase):
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Registers local file")
     def test_ireg_as_rodsuser(self):
         # local setup
-        filename = "newfile.txt"
-        filepath = os.path.abspath(filename)
+        filename = "test_ireg_as_rodsuser.txt"
+        filepath = f"/tmp/{filename}"
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
@@ -823,8 +823,8 @@ class ResourceSuite(ResourceBase):
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ireg_repl_to_coordinating_resource__issue_3844(self):
         # local setup
-        filename = "newfile.txt"
-        filepath = os.path.abspath(filename)
+        filename = "newfile_issue_3844.txt"
+        filepath = f"/tmp/{filename}"
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 

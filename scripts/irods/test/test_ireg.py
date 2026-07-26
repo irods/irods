@@ -71,30 +71,29 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('irm ' + self.admin.session_collection + '/file3')
 
     def test_ireg_new_replica__2847(self):
-        filename = 'regfile.txt'
+        filename = '/tmp/regfile.txt'
+        filename_basename = os.path.basename(filename)
         filename2 = filename+'2'
         os.system('rm -f {0} {1}'.format(filename, filename2))
         lib.make_file(filename, 234)
         os.system('cp {0} {1}'.format(filename, filename2))
-        self.admin.assert_icommand('ireg -Kk -R {0} {1} {2}'.format(self.testresc, os.path.abspath(filename), self.admin.session_collection+'/'+filename))
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
-        self.admin.assert_icommand('ireg -Kk --repl -R {0} {1} {2}'.format(self.anotherresc, os.path.abspath(filename2), self.admin.session_collection+'/'+filename))
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '& '+filename])
+        self.admin.assert_icommand('ireg -Kk -R {0} {1} {2}'.format(self.testresc, filename, self.admin.session_collection+'/'+filename_basename))
+        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename_basename])
+        self.admin.assert_icommand('ireg -Kk --repl -R {0} {1} {2}'.format(self.anotherresc, filename2, self.admin.session_collection+'/'+filename_basename))
+        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '& '+filename_basename])
         os.system('rm -f {0} {1}'.format(filename, filename2))
 
     def test_ireg_inconsistent_replica__3829(self):
-        filename = 'regfile.txt'
+        filename = '/tmp/regfile.txt'
         filename2 = filename+'2'
         try:
             lib.make_file(filename, 234)
             lib.make_file(filename2, 468)
-            self.admin.assert_icommand(['ireg', '-K', '-k', '-R', self.testresc,
-                os.path.abspath(filename), os.path.join(self.admin.session_collection, filename)])
-            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
-            self.admin.assert_icommand(['ireg', '-K', '-k', '--repl', '-R', self.anotherresc,
-                os.path.abspath(filename2), os.path.join(self.admin.session_collection, filename)])
-            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '234', 'X '+filename])
-            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '468', '& '+filename])
+            self.admin.assert_icommand(['ireg', '-K', '-k', '-R', self.testresc, filename, os.path.join(self.admin.session_collection, os.path.basename(filename))])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+ os.path.basename(filename)])
+            self.admin.assert_icommand(['ireg', '-K', '-k', '--repl', '-R', self.anotherresc, filename2, os.path.join(self.admin.session_collection, os.path.basename(filename))])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '234', 'X '+ os.path.basename(filename)])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '468', '& '+ os.path.basename(filename)])
         finally:
             if os.path.exists(filename):
                 os.unlink(filename)
@@ -149,20 +148,21 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         pass
 
     def test_ireg_recursively_with_checksums__issue_3662(self):
-        thedirname = 'ingestme'
+        thedirname = '/tmp/ingestme'
+        thedirname_basename = os.path.basename(thedirname)
         lib.create_directory_of_small_files(thedirname,3)
         # lowercase k
-        self.admin.assert_icommand('ireg -k -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
-        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:XAs0B9+Xrk+wuByjAyCOXIyS7QzhM0KpZHwIJeWVOpw=', os.path.abspath(thedirname)])
-        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
+        self.admin.assert_icommand('ireg -k -r {0} {1}'.format(thedirname, self.admin.session_collection+'/'+thedirname_basename))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname_basename), 'STDOUT_SINGLELINE', ['sha2:XAs0B9+Xrk+wuByjAyCOXIyS7QzhM0KpZHwIJeWVOpw=', thedirname])
+        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname_basename))
         # uppercase K
-        self.admin.assert_icommand('ireg -K -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
-        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:IMw+oWsNyQSCaoHslbpnvHCTWE1w3/1Vryz7kcStzKY=', os.path.abspath(thedirname)])
-        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
+        self.admin.assert_icommand('ireg -K -r {0} {1}'.format(thedirname, self.admin.session_collection+'/'+thedirname_basename))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname_basename), 'STDOUT_SINGLELINE', ['sha2:IMw+oWsNyQSCaoHslbpnvHCTWE1w3/1Vryz7kcStzKY=', thedirname])
+        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname_basename))
         # both
-        self.admin.assert_icommand('ireg -Kk -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
-        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:k67r3aPVgq6JNOaM8nf/zMi0lBeVjb7g7Ei7cmtM10U=', os.path.abspath(thedirname)])
-        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
+        self.admin.assert_icommand('ireg -Kk -r {0} {1}'.format(thedirname, self.admin.session_collection+'/'+thedirname_basename))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname_basename), 'STDOUT_SINGLELINE', ['sha2:k67r3aPVgq6JNOaM8nf/zMi0lBeVjb7g7Ei7cmtM10U=', thedirname])
+        self.admin.assert_icommand('iunreg -r {0}'.format(thedirname_basename))
         # cleanup
         os.system('rm -rf {0}'.format(thedirname))
 
@@ -171,13 +171,13 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(cmd, 'STDERR', 'status = -814000 CAT_UNKNOWN_COLLECTION')
 
     def test_ireg_double_slashes__issue_3658(self):
-        dirname = 'dir_3658'
+        dirname = '/tmp/dir_3658'
         lib.create_directory_of_small_files(dirname,2)
         # This introduces the trailing slash to the end of the physical directory path name
-        self.admin.assert_icommand('ireg -R {0} -r {1} {2}'.format(self.testresc, os.path.abspath(dirname)+"/", self.admin.session_collection+"/"+dirname))
+        self.admin.assert_icommand('ireg -R {0} -r {1} {2}'.format(self.testresc, dirname+"/", self.admin.session_collection+"/"+os.path.basename(dirname)))
         # And this shows the problem (or not, if the bug is fixed)
-        self.admin.assert_icommand('iscan {0}'.format(os.path.abspath(dirname)))
-        shutil.rmtree(os.path.abspath(dirname), ignore_errors=True)
+        self.admin.assert_icommand('iscan {0}'.format(dirname))
+        shutil.rmtree(dirname, ignore_errors=True)
 
     def test_ireg_silent_failure_on_invalid_perms__issue_3795(self):
         # Create a directory to hold the test files.

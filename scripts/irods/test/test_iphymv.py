@@ -1,13 +1,9 @@
 import copy
+import json
 import os
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-import json
 import time
+import unittest
 
 from . import replica_status_test
 from . import session
@@ -55,19 +51,13 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand("iadmin mkresc randResc random", 'STDOUT_SINGLELINE', 'random')
 
+        vault = ':'.join([test.settings.HOSTNAME_1, '/tmp/unix1RescVault'])
         self.admin.assert_icommand(
-            ['iadmin', 'mkresc', self.resource_1, 'unixfilesystem',
-                ':'.join([
-                    test.settings.HOSTNAME_1, os.path.join(irods_config.irods_directory, 'unix1RescVault')
-                ])
-            ], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', 'mkresc', self.resource_1, 'unixfilesystem', vault], 'STDOUT_SINGLELINE', 'unixfilesystem')
 
+        vault = ':'.join([test.settings.HOSTNAME_2, '/tmp/unix2RescVault'])
         self.admin.assert_icommand(
-            ['iadmin', 'mkresc', self.resource_2, 'unixfilesystem',
-                ':'.join([
-                    test.settings.HOSTNAME_2, os.path.join(irods_config.irods_directory, 'unix2RescVault')
-                ])
-            ], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', 'mkresc', self.resource_2, 'unixfilesystem', vault], 'STDOUT_SINGLELINE', 'unixfilesystem')
 
         self.admin.assert_icommand("iadmin addchildtoresc randResc unix1Resc")
         self.admin.assert_icommand("iadmin addchildtoresc randResc unix2Resc")
