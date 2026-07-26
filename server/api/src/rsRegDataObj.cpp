@@ -1,8 +1,12 @@
 #include "irods/regDataObj.h"
+#include "irods/fileOpr.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_resource_backport.hpp"
 #include "irods/fileDriver.hpp"
 #include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
+#include "irods/physPath.hpp"
 #include "irods/rsRegDataObj.hpp"
 #include "irods/rs_get_logical_quota.hpp"
 
@@ -121,6 +125,11 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         irods::error ret;
+
+        if (const int ec = isValidPhysicalPathForRegistration(dataObjInfo->filePath); ec < 0) {
+            return ec;
+        }
+
         status = chlRegDataObj( rsComm, dataObjInfo );
         if ( status < 0 ) {
             char* sys_error = NULL;

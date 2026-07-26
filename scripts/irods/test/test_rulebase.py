@@ -1,27 +1,23 @@
-from __future__ import print_function
-import sys
-if sys.version_info >= (2, 7):
-    import unittest
-else:
-    import unittest2 as unittest
 import copy
 import json
 import os
 import socket
-import tempfile
-import time
 import subprocess
+import sys
+import tempfile
 import textwrap
+import time
+import unittest
 
+from . import session
+from . import settings
 from .. import lib
 from .. import paths
 from .. import test
-from . import session
-from . import settings
-from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file
+from .resource_suite import ResourceBase
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -797,8 +793,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
     def test_acSetChkFilePathPerm(self):
         # regular user will try to register a system file
-        # e.g: /var/lib/irods/version.json
-        path_to_register = paths.version_path()
+        path_to_register = '/file/does/not/need/to/exist'
         commands = [('ireg {path_to_register} {{target_obj}}'.format(**locals()), 'STDERR_SINGLELINE', 'PATH_REG_NOT_ALLOWED')]
         self.pep_test_helper(commands=commands, target_name=os.path.basename(path_to_register))
 

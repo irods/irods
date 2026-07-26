@@ -18,6 +18,7 @@
 #include "irods/apiHeaderAll.h"
 #include "irods/collection.hpp"
 #include "irods/dataObjOpr.hpp"
+#include "irods/fileOpr.hpp"
 #include "irods/fileStat.h"
 #include "irods/icatDefines.h"
 #include "irods/irods_at_scope_exit.hpp"
@@ -1147,6 +1148,10 @@ namespace
         // Copy into a new buffer because the FILE_PATH_KW will be overwritten later
         char file_path[MAX_NAME_LEN]{};
         rstrcpy(file_path, cond_input.at(FILE_PATH_KW).value().data(), MAX_NAME_LEN);
+
+        if (const int ec = isValidPhysicalPathForRegistration(file_path); ec < 0) {
+            return ec;
+        }
 
         DataObjInfo info{};
         rstrcpy(info.objPath, _inp->objPath, MAX_NAME_LEN );

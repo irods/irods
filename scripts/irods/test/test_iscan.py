@@ -1,12 +1,8 @@
 import os
 import re
-import sys
 import shutil
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import sys
+import unittest
 
 from .. import test
 from .resource_suite import ResourceBase
@@ -17,18 +13,20 @@ class Test_iScan(ResourceBase, unittest.TestCase):
 
     def setUp(self):
         super(Test_iScan, self).setUp()
-        self.dirname1 = 'dir_3681-1'
-        self.dirname2 = 'dir_3681-2'
+        self.dirname1 = '/tmp/dir_3681-1'
+        self.dirname1_basename = os.path.basename(self.dirname1)
+        self.dirname2 = '/tmp/dir_3681-2'
+        self.dirname2_basename = os.path.basename(self.dirname2)
         self.dirname3 = 'iscan_4029'
-        lib.create_directory_of_small_files(self.dirname1,2)
-        lib.create_directory_of_small_files(self.dirname2,2)
+        lib.create_directory_of_small_files(self.dirname1, 2)
+        lib.create_directory_of_small_files(self.dirname2, 2)
         self.admin.assert_icommand(['iadmin', 'mkresc', 'pt', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
         self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt', self.testresc])
 
     def tearDown(self):
         shutil.rmtree(os.path.abspath(self.dirname1), ignore_errors=True)
         shutil.rmtree(os.path.abspath(self.dirname2), ignore_errors=True)
-        shutil.rmtree(os.path.abspath(self.dirname3), ignore_errors=True)
+        shutil.rmtree(f'/tmp/{self.dirname3}', ignore_errors=True)
         self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'pt', self.testresc])
         self.admin.assert_icommand(['iadmin', 'rmresc', 'pt'])
         super(Test_iScan, self).tearDown()
@@ -56,7 +54,7 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         FILES_IN_DIR = 800
         DELETE_AT_ONCE = 20
         max_iter = FILES_IN_DIR // DELETE_AT_ONCE + 1
-        test_dir_path = os.path.abspath(self.dirname3)
+        test_dir_path = f'/tmp/{self.dirname3}'
         test_coll_path = "/" + self.admin.zone_name + "/home/" + self.admin.username + "/" + os.path.split(test_dir_path)[-1]
         if not os.path.isdir(test_dir_path):
           lib.create_directory_of_small_files(test_dir_path,FILES_IN_DIR)
@@ -163,10 +161,10 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         lib.execute_command(['truncate', '-s', '0', os.path.abspath(self.dirname2)+"/0"])
         self.admin.assert_icommand('ireg -R {0} -r {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname1),
                                                                 self.admin.session_collection,
-                                                                self.dirname1))
+                                                                self.dirname1_basename))
         self.admin.assert_icommand('ireg -R {0} -r {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname2),
                                                                 self.admin.session_collection,
-                                                                self.dirname2))
+                                                                self.dirname2_basename))
 
         # At this point, we have 2 files in each dir, one called "0",
         # which is 0 length, and the other called "1", which is not 0 length.
@@ -174,16 +172,16 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         # First verify correct behavior with no missing files on the filesystem:
         self._util_simple_icmd_assert('iscan -r {0}'.format(os.path.abspath(self.dirname1)))
         self._util_simple_icmd_assert('iscan -r {0}'.format(os.path.abspath(self.dirname2)))
-        self._util_simple_icmd_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection, self.dirname1))
-        self._util_simple_icmd_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection, self.dirname2))
+        self._util_simple_icmd_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection, self.dirname1_basename))
+        self._util_simple_icmd_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection, self.dirname2_basename))
         self._util_simple_icmd_assert('iscan {0}/0'.format(os.path.abspath(self.dirname1)))
         self._util_simple_icmd_assert('iscan {0}/1'.format(os.path.abspath(self.dirname1)))
         self._util_simple_icmd_assert('iscan {0}/0'.format(os.path.abspath(self.dirname2)))
         self._util_simple_icmd_assert('iscan {0}/1'.format(os.path.abspath(self.dirname2)))
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname1))
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname1))
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname2))
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname2))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname1_basename))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname1_basename))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname2_basename))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname2_basename))
 
         # All the way down to here, no icommand failures should be found.
         # From this point, we will be dealing with manually induced errors.
@@ -207,11 +205,11 @@ class Test_iScan(ResourceBase, unittest.TestCase):
 
         # This should fail on the missing 0-length file ("0")
         self._util_simple_icmd_fail_stdout_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection,
-                                                               self.dirname1),
+                                                               self.dirname1_basename),
                                                                " is missing, corresponding to iRODS object ")
         # This should fail on the missing non-0-length file ("1")
         self._util_simple_icmd_fail_stdout_assert('iscan -rd {0}/{1}'.format(self.admin.session_collection,
-                                                               self.dirname2),
+                                                               self.dirname2_basename),
                                                                " is missing, corresponding to iRODS object ")
 
         # Checking the four physical files: the missing files are errors, the existing ones are not.
@@ -220,14 +218,14 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         self._util_simple_icmd_assert('iscan {0}/0'.format(os.path.abspath(self.dirname2)))
         self._util_simple_icmd_fail_stderr_assert('iscan {0}/1'.format(os.path.abspath(self.dirname2)), "1 does not exist")
 
-        self._util_simple_icmd_fail_stdout_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname1),
+        self._util_simple_icmd_fail_stdout_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname1_basename),
                                                                       " is missing, corresponding to iRODS object /")
 
         # These two files exist - no error
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname1))
-        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname2))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname1_basename))
+        self._util_simple_icmd_assert('iscan -d {0}/{1}/0'.format(self.admin.session_collection, self.dirname2_basename))
 
-        self._util_simple_icmd_fail_stdout_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname2),
+        self._util_simple_icmd_fail_stdout_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname2_basename),
                                                                       " is missing, corresponding to iRODS object /")
 
     def test_iscan_does_not_core_dump_on_insufficient_permissions__issue_4613(self):

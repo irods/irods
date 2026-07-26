@@ -1,17 +1,14 @@
-from __future__ import print_function
-import sys
-if sys.version_info >= (2, 7):
-    import unittest
-else:
-    import unittest2 as unittest
-import os
 import json
-from .. import lib
+import os
+import sys
+import unittest
+
 from . import session
-from ..test.command import assert_command
-from ..configuration import IrodsConfig
-from .. import test
+from .. import lib
 from .. import paths
+from .. import test
+from ..configuration import IrodsConfig
+from ..test.command import assert_command
 
 class Test_Izonereport(unittest.TestCase):
 

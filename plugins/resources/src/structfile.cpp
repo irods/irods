@@ -8,6 +8,7 @@
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/apiHeaderAll.h"
+#include "irods/rodsErrorTable.h"
 #include "irods/rsFileOpen.hpp"
 #include "irods/rsFileStat.hpp"
 #include "irods/rsFileRead.hpp"
@@ -24,6 +25,7 @@
 #include "irods/rsFileReaddir.hpp"
 #include "irods/rsFileRename.hpp"
 #include "irods/rsFileTruncate.hpp"
+#include "irods/irods_logger.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -38,6 +40,8 @@
 // boost includes
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+
+#include <fmt/format.h>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -91,6 +95,11 @@ tarSubFileDesc_t PluginTarSubFileDesc[ NUM_TAR_SUB_FILE_DESC ];
 // =-=-=-=-=-=-=-=-
 // manager of resource plugins which are resolved and cached
 extern irods::resource_manager resc_mgr;
+
+namespace
+{
+    using log_api = irods::experimental::log::api;
+} // anonymous
 
 
 // =-=-=-=-=-=-=-
@@ -339,6 +348,9 @@ irods::error extract_file( int _index ) {
     // =-=-=-=-=-=-=-
     // select which attributes we want to restore
     int flags = ARCHIVE_EXTRACT_TIME;
+    //flags |= ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
+    flags |= ARCHIVE_EXTRACT_SECURE_NODOTDOT;
+    flags |= ARCHIVE_EXTRACT_SECURE_SYMLINKS;
     //flags |= ARCHIVE_EXTRACT_PERM;
     //flags |= ARCHIVE_EXTRACT_ACL;
     //flags |= ARCHIVE_EXTRACT_FFLAGS;
@@ -346,8 +358,28 @@ irods::error extract_file( int _index ) {
     // =-=-=-=-=-=-=-
     // initialize archive struct and set flags for format etc
     struct archive* arch = archive_read_new();
-    archive_read_support_filter_all( arch );
-    archive_read_support_format_all( arch );
+    if (nullptr == arch) {
+        log_api::error("{}: Failed to initialize archive struct.", __func__);
+        return ERROR(SYS_LIBRARY_ERROR, "archive_read_new");
+    }
+
+    auto ec = archive_read_support_filter_all(arch);
+    if (ec != ARCHIVE_OK) {
+        log_api::error("{}: archive_read_support_filter_all error [code={}, message={}]",
+                       __func__,
+                       ec,
+                       archive_error_string(arch));
+        return ERROR(SYS_LIBRARY_ERROR, "archive_read_support_filter_all ");
+    }
+
+    ec = archive_read_support_format_all(arch);
+    if (ec != ARCHIVE_OK) {
+        log_api::error("{}: archive_read_support_format_all error [code={}, message={}]",
+                       __func__,
+                       ec,
+                       archive_error_string(arch));
+        return ERROR(SYS_LIBRARY_ERROR, "archive_read_support_format_all  ");
+    }
 
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
@@ -363,12 +395,9 @@ irods::error extract_file( int _index ) {
 
     // =-=-=-=-=-=-=-
     // open the archive and and prepare to read
-    if ( archive_read_open(
-                arch,
-                &cb_ctx,
-                irods_file_open_for_read,
-                irods_file_read,
-                irods_file_close ) != ARCHIVE_OK ) {
+    ec = archive_read_open(arch, &cb_ctx, irods_file_open_for_read, irods_file_read, irods_file_close);
+    if (ec != ARCHIVE_OK) {
+        log_api::error("{}: archive_read_open error [code={}, message={}]", __func__, ec, archive_error_string(arch));
         std::stringstream msg;
         msg << "extract_file - failed to open archive [";
         msg << spec_coll->phyPath;
@@ -383,25 +412,75 @@ irods::error extract_file( int _index ) {
         cache_dir += "/";
     }
 
+    irods::error result = SUCCESS();
+
     // =-=-=-=-=-=-=-
     // iterate over entries in the archive and write them to a resource
     struct archive_entry* entry;
-    while ( ARCHIVE_OK == archive_read_next_header( arch, &entry ) ) {
+    while (true) {
+        ec = archive_read_next_header(arch, &entry);
+        if (ARCHIVE_OK != ec) {
+            const char* msg = archive_error_string(arch);
+            log_api::debug("{}: archive_read_next_header error [code={}, message={}]", __func__, ec, (msg ? msg : ""));
+            break;
+        }
+
+        const char* entry_pathname = archive_entry_pathname(entry);
+        if (!entry_pathname || '\0' == *entry_pathname) {
+            result = ERROR(SYS_STRUCT_FILE_PATH_ERR, "extract_file - archive entry has an empty path");
+            break;
+        }
+
+        ec = archive_entry_filetype(entry);
+        if (AE_IFLNK == ec) {
+            const char* msg = archive_error_string(arch);
+            log_api::error("{}: archive_entry_filetype error [code={}, message={}]", __func__, ec, (msg ? msg : ""));
+            result = ERROR(SYS_STRUCT_FILE_PATH_ERR,
+                           fmt::format("extract_file - archive entry path [{}] is a symlink", entry_pathname));
+            break;
+        }
+
+        if (const char* hardlink_path = archive_entry_hardlink(entry); hardlink_path && '\0' != *hardlink_path) {
+            result = ERROR(
+                SYS_STRUCT_FILE_PATH_ERR,
+                fmt::format(
+                    "extract_file - archive entry path [{}] is a hardlink to [{}]", entry_pathname, hardlink_path));
+            break;
+        }
+
+        boost::filesystem::path relative_entry_path{entry_pathname};
+        relative_entry_path = relative_entry_path.lexically_normal();
+
+        if (relative_entry_path.is_absolute() || relative_entry_path.has_root_name()) {
+            result = ERROR(SYS_STRUCT_FILE_PATH_ERR,
+                           fmt::format("extract_file - archive entry path [{}] is absolute", entry_pathname));
+            break;
+        }
+
+        if (!relative_entry_path.empty()) {
+            const auto& first_component = *relative_entry_path.begin();
+            if (".." == first_component.string()) {
+                result = ERROR(
+                    SYS_STRUCT_FILE_PATH_ERR,
+                    fmt::format("extract_file - archive entry path [{}] escapes the cache directory", entry_pathname));
+                break;
+            }
+        }
+
         // =-=-=-=-=-=-=-
         // redirect the path to the cache directory
-        std::string path = cache_dir + std::string( archive_entry_pathname( entry ) );
+        const auto path = boost::filesystem::path{cache_dir} / relative_entry_path;
         archive_entry_set_pathname( entry, path.c_str() );
 
         // =-=-=-=-=-=-=-
         // read data from entry and write it to a resource
-        if ( ARCHIVE_OK != archive_read_extract( arch, entry, flags ) ) {
-            std::stringstream msg;
-            msg << "extract_file - failed to write [";
-            msg << path;
-            msg << "]";
-            rodsLog( LOG_NOTICE, "%s", msg.str().c_str() );
+        ec = archive_read_extract(arch, entry, flags);
+        if (ARCHIVE_OK != ec) {
+            const char* msg = archive_error_string(arch);
+            log_api::error(
+                "{}: archive_read_extract error [code={}, message={}]", __func__, ec, (msg ? msg : "no info"));
+            log_api::info("{}: extract_file - failed to write [{}]", __func__, path.c_str());
         }
-
     } // while
 
     // =-=-=-=-=-=-=-
@@ -412,6 +491,10 @@ irods::error extract_file( int _index ) {
     // release the last read buffer
     if ( cb_ctx.read_buf.buf ) {
         free( cb_ctx.read_buf.buf );
+    }
+
+    if (!result.ok()) {
+        return result;
     }
 
     return SUCCESS();
@@ -737,6 +820,98 @@ irods::error tar_struct_file_open(
 
 // =-=-=-=-=-=-=-
 // create the phy path to the cache dir
+irods::error reject_linked_cache_paths(const boost::filesystem::path& _cache_dir,
+                                       const boost::filesystem::path& _relative_sub_path,
+                                       const char* _sub_file_path)
+{
+    namespace fs = boost::filesystem;
+
+    boost::system::error_code ec;
+    const auto cache_dir_status = fs::symlink_status(_cache_dir, ec);
+    if (ec) {
+        std::stringstream msg;
+        msg << "reject_linked_cache_paths - failed to stat cache dir [";
+        msg << _cache_dir.string();
+        msg << "] for sub file path [";
+        msg << _sub_file_path;
+        msg << "]";
+        return ERROR(UNIX_FILE_STAT_ERR - ec.value(), msg.str());
+    }
+
+    if (fs::is_symlink(cache_dir_status)) {
+        std::stringstream msg;
+        msg << "reject_linked_cache_paths - cache dir [";
+        msg << _cache_dir.string();
+        msg << "] for sub file path [";
+        msg << _sub_file_path;
+        msg << "] is a symlink";
+        return ERROR(SYS_STRUCT_FILE_PATH_ERR, msg.str());
+    }
+
+    auto current_path = _cache_dir;
+    const auto end = _relative_sub_path.end();
+    for (auto itr = _relative_sub_path.begin(); itr != end; ++itr) {
+        current_path /= *itr;
+
+        ec.clear();
+        const auto current_status = fs::symlink_status(current_path, ec);
+
+        if (current_status.type() == fs::file_type::file_not_found) {
+            log_api::debug("{}: Relative subpath [{}] does not exist.", __func__, current_path.c_str());
+            break;
+        }
+
+        if (ec) {
+            std::stringstream msg;
+            msg << "reject_linked_cache_paths - failed to stat path [";
+            msg << current_path.string();
+            msg << "] for sub file path [";
+            msg << _sub_file_path;
+            msg << "]";
+            return ERROR(UNIX_FILE_STAT_ERR - ec.value(), msg.str());
+        }
+
+        if (fs::is_symlink(current_status)) {
+            std::stringstream msg;
+            msg << "reject_linked_cache_paths - path [";
+            msg << current_path.string();
+            msg << "] for sub file path [";
+            msg << _sub_file_path;
+            msg << "] is a symlink";
+            return ERROR(SYS_STRUCT_FILE_PATH_ERR, msg.str());
+        }
+
+        auto next_itr = itr;
+        ++next_itr;
+        if (next_itr == end && fs::is_regular_file(current_status)) {
+            ec.clear();
+            const auto link_count = fs::hard_link_count(current_path, ec);
+            if (ec) {
+                std::stringstream msg;
+                msg << "reject_linked_cache_paths - failed to inspect hard links for path [";
+                msg << current_path.string();
+                msg << "] for sub file path [";
+                msg << _sub_file_path;
+                msg << "]";
+                return ERROR(UNIX_FILE_STAT_ERR - ec.value(), msg.str());
+            }
+
+            if (link_count > 1) {
+                std::stringstream msg;
+                msg << "reject_linked_cache_paths - path [";
+                msg << current_path.string();
+                msg << "] for sub file path [";
+                msg << _sub_file_path;
+                msg << "] is hard linked";
+                return ERROR(SYS_STRUCT_FILE_PATH_ERR, msg.str());
+            }
+        }
+    }
+
+    return SUCCESS();
+
+} // reject_linked_cache_paths
+
 irods::error compose_cache_dir_physical_path( char*       _phy_path,
         specColl_t* _spec_coll,
         const char* _sub_file_path ) {
@@ -755,9 +930,43 @@ irods::error compose_cache_dir_physical_path( char*       _phy_path,
         return ERROR( SYS_STRUCT_FILE_PATH_ERR, msg.str() );
     }
 
+    const char* sub_path_suffix = _sub_file_path + len;
+    if ('\0' != *sub_path_suffix && '/' != *sub_path_suffix) {
+        std::stringstream msg;
+        msg << "compose_cache_dir_physical_path - collection [";
+        msg << _spec_coll->collection;
+        msg << "] sub file path [";
+        msg << _sub_file_path;
+        msg << "] is not contained within the collection";
+        return ERROR(SYS_STRUCT_FILE_PATH_ERR, msg.str());
+    }
+
+    boost::filesystem::path relative_sub_path{'/' == *sub_path_suffix ? sub_path_suffix + 1 : sub_path_suffix};
+    relative_sub_path = relative_sub_path.lexically_normal();
+
+    if (!relative_sub_path.empty()) {
+        const auto& first_component = *relative_sub_path.begin();
+        if (".." == first_component.string()) {
+            std::stringstream msg;
+            msg << "compose_cache_dir_physical_path - collection [";
+            msg << _spec_coll->collection;
+            msg << "] sub file path [";
+            msg << _sub_file_path;
+            msg << "] escapes the collection";
+            return ERROR(SYS_STRUCT_FILE_PATH_ERR, msg.str());
+        }
+    }
+
     // =-=-=-=-=-=-=-
     // compose the path
-    snprintf( _phy_path, MAX_NAME_LEN, "%s%s", _spec_coll->cacheDir, _sub_file_path + len );
+    const auto cache_dir = boost::filesystem::path{_spec_coll->cacheDir};
+    irods::error link_err = reject_linked_cache_paths(cache_dir, relative_sub_path, _sub_file_path);
+    if (!link_err.ok()) {
+        return PASSMSG("compose_cache_dir_physical_path failed to validate cache path.", link_err);
+    }
+
+    const auto physical_path = cache_dir / relative_sub_path;
+    snprintf(_phy_path, MAX_NAME_LEN, "%s", physical_path.c_str());
 
     // =-=-=-=-=-=-=-
     // Win!

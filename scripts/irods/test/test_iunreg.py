@@ -1,13 +1,8 @@
-from __future__ import print_function
 import os
 import shutil
 import socket
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 from .. import test
@@ -19,7 +14,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         self.admin = self.admin_sessions[0]
         self.user = self.user_sessions[0]
 
-        self.vault_path_root = os.path.join(os.getcwd(), 'regvault')
+        self.vault_path_root = '/tmp/test_iunregvault'
         os.mkdir(self.vault_path_root)
         self.resc1 = 'regHere'
         self.admin.assert_icommand([

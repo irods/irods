@@ -1,17 +1,12 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* fileOpr.h - header file for fileOpr.c
- */
-
-
-
-#ifndef FILE_OPR_HPP
-#define FILE_OPR_HPP
+#ifndef IRODS_FILE_OPR_HPP
+#define IRODS_FILE_OPR_HPP
 
 #include "irods/rodsConnect.h"
 #include "irods/fileDriver.hpp"
 #include "irods/chkNVPathPerm.h"
+
+#include <string>
+#include <string_view>
 
 #define NUM_FILE_DESC   1026    /* number of FileDesc */
 
@@ -21,6 +16,7 @@
 #define FD_INUSE        1
 
 #define STREAM_FILE_NAME        "stream"   /* a fake file name for stream */
+
 typedef struct {
     int inuseFlag;      /* whether the fileDesc is in use, 0=no */
     rodsServerHost_t *rodsServerHost;
@@ -58,6 +54,7 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
 int // JMC - backport 4766
 isValidFilePath( const std::string& path );
+int isValidPhysicalPathForRegistration(const std::string_view path);
 
 int
 matchCliVaultPath( rsComm_t*,
@@ -69,4 +66,5 @@ int
 filePathTypeInResc( rsComm_t *rsComm, const std::string& objPath, const std::string& fileName, const std::string& rescHier );
 int
 bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd );
-#endif  /* FILE_OPR_H */
+
+#endif // IRODS_FILE_OPR_HPP

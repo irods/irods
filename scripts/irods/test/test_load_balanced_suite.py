@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import contextlib
 import time
 import sys
@@ -20,7 +18,7 @@ from ..configuration import IrodsConfig
 class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
-            context_prefix = lib.get_hostname() + ':' + IrodsConfig().irods_directory
+            context_prefix = lib.get_hostname() + f':/tmp/load_balanced'
             admin_session.assert_icommand('iadmin modresc demoResc name origResc', 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand('iadmin mkresc demoResc load_balanced', 'STDOUT_SINGLELINE', 'load_balanced')
             admin_session.assert_icommand('iadmin mkresc rescA "unixfilesystem" ' + context_prefix + '/rescAVault', 'STDOUT_SINGLELINE', 'unixfilesystem')
