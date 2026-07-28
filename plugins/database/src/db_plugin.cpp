@@ -16603,11 +16603,12 @@ irods::error db_calc_logical_usage_and_quota_op(irods::plugin_context& _ctx, [[m
     }
 
     getNowStr(myTime);
-    cllBindVars[cllBindVarCount++] = myTime;
 
     // clang-format off
-    status = cmlExecuteNoAnswerSql(
 #ifdef MY_ICAT
+    cllBindVars[cllBindVarCount++] = PATH_SEPARATOR;
+    cllBindVars[cllBindVarCount++] = myTime;
+    status = cmlExecuteNoAnswerSql(
         // Update logical quota table
         "UPDATE R_LOGICAL_QUOTA_MAIN "
         // using values from:
@@ -16643,7 +16644,8 @@ irods::error db_calc_logical_usage_and_quota_op(irods::plugin_context& _ctx, [[m
                    "R_COLL_MAIN RCM1, "
                    "R_COLL_MAIN RCM2 "
               "WHERE R_DATA_MAIN.coll_id = RCM2.coll_id "
-                "AND RCM2.coll_name LIKE CONCAT(RCM1.coll_name, '%')) ranked_objs "
+                "AND (RCM2.coll_name LIKE CONCAT(RCM1.coll_name, ?, '%') "
+                     "OR RCM2.coll_name = RCM1.coll_name)) ranked_objs "
            // Only count one data object that is top-ranked.
            "WHERE ranked_objs.replica_rank = 1 "
            "GROUP BY basecoll) AS totals ON totals.basecoll = R_LOGICAL_QUOTA_MAIN.coll_id "
@@ -16654,6 +16656,9 @@ irods::error db_calc_logical_usage_and_quota_op(irods::plugin_context& _ctx, [[m
             "over_objects = SIGN(max_objects)*SIGN(max_objects)*(COALESCE(obj_total, 0) - max_objects), "
             "modify_ts = ?",
 #else
+    cllBindVars[cllBindVarCount++] = myTime;
+    cllBindVars[cllBindVarCount++] = PATH_SEPARATOR;
+    status = cmlExecuteNoAnswerSql(
         "UPDATE R_LOGICAL_QUOTA_MAIN "
         "SET (over_bytes, "
              "over_objects, "
@@ -16681,7 +16686,8 @@ irods::error db_calc_logical_usage_and_quota_op(irods::plugin_context& _ctx, [[m
                    "R_COLL_MAIN RCM2 "
               "WHERE R_DATA_MAIN.coll_id = RCM2.coll_id "
                 "AND RCM1.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
-                "AND RCM2.coll_name LIKE RCM1.coll_name || '%') AS ranked_objs "
+                "AND (RCM2.coll_name LIKE (RCM1.coll_name || ? || '%') "
+                     "OR RCM2.coll_name = RCM1.coll_name)) AS ranked_objs "
            "WHERE ranked_objs.replica_rank = 1)",
 #endif
      &icss);
