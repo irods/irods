@@ -4207,3 +4207,86 @@ class Test_Logical_Quotas(
             )
 
             self.admin.assert_icommand(["iadmin", "rmzone", zone_name])
+
+    def test_logical_quotas_do_not_count_similarly_prefixed_collections__issue_9034(self):
+        file_name = "test_logical_quota_similar_name"
+        file_path = os.path.join(self.quota_user.local_session_dir, file_name)
+        subcoll_path = f"{self.quota_user.session_collection}/subcoll"
+        uncounted_subcoll_path = f"{self.quota_user.session_collection}/subcollsimilar"
+        file_size = 4096
+        max_bytes = 10000
+        lib.make_file(
+            file_path,
+            file_size,
+            contents="arbitrary",
+        )
+        try:
+            self.quota_user.assert_icommand(["imkdir", subcoll_path])
+            self.quota_user.assert_icommand(["imkdir", uncounted_subcoll_path])
+
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    subcoll_path,
+                    "bytes",
+                    str(max_bytes),
+                ]
+            )
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"], "STDOUT_SINGLELINE", subcoll_path
+            )
+
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        subcoll_path,
+                        str(max_bytes),
+                        "<unset>",
+                        str(-max_bytes),
+                        "<unenforced>",
+                    )
+                )
+                in out
+            )
+
+            self.quota_user.assert_icommand(
+                [
+                    "iput",
+                    file_path,
+                    f"{uncounted_subcoll_path}/{file_name}",
+                ]
+            )
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"], "STDOUT_SINGLELINE", subcoll_path
+            )
+
+            # Should remain unchanged.
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        subcoll_path,
+                        str(max_bytes),
+                        "<unset>",
+                        str(-max_bytes),
+                        "<unenforced>",
+                    )
+                )
+                in out
+            )
+
+        finally:
+            self.admin.run_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    subcoll_path,
+                    "0",
+                    "0",
+                ]
+            )
