@@ -332,6 +332,8 @@ auto main(int _argc, char* _argv[]) -> int
                 break;
             }
 
+            log_stacktrace_files();
+
             if (g_terminate_graceful) {
                 log_af::info("{}: Received graceful shutdown instruction. Exiting agent factory main loop.", __func__);
                 break;
@@ -351,8 +353,6 @@ auto main(int _argc, char* _argv[]) -> int
                     log_af::info("{}: Received shutdown instruction. Exiting agent factory select() loop.", __func__);
                     break;
                 }
-
-                log_stacktrace_files();
 
                 if (g_terminate_graceful) {
                     log_af::info(
