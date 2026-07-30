@@ -1008,14 +1008,14 @@ namespace
             const auto p = entry.path().generic_string();
 
             if (p.ends_with(irods::STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX)) {
-                log_agent::trace("Skipping [{}].", p);
+                log_af::trace("{}: Skipping [{}].", __func__, p);
                 continue;
             }
 
             auto slash_pos = p.rfind("/");
 
             if (slash_pos == std::string::npos) {
-                log_agent::trace("Skipping [{}]. No forward slash separator found.", p);
+                log_af::trace("{}: Skipping [{}]. No forward slash separator found.", __func__, p);
                 continue;
             }
 
@@ -1023,28 +1023,29 @@ namespace
             const auto first_dot_pos = p.find(".", slash_pos);
 
             if (first_dot_pos == std::string::npos) {
-                log_agent::trace("Skipping [{}]. No dot separator found.", p);
+                log_af::trace("{}: Skipping [{}]. No dot separator found.", __func__, p);
                 continue;
             }
 
             const auto last_dot_pos = p.rfind(".");
 
             if (last_dot_pos == std::string::npos || last_dot_pos == first_dot_pos) {
-                log_agent::trace("Skipping [{}]. No dot separator found.", p);
+                log_af::trace("{}: Skipping [{}]. No dot separator found.", __func__, p);
                 continue;
             }
 
             const auto epoch_seconds = p.substr(slash_pos, first_dot_pos - slash_pos);
             const auto remaining_millis = p.substr(first_dot_pos + 1, last_dot_pos - (first_dot_pos + 1));
             const auto pid = p.substr(last_dot_pos + 1);
-            log_agent::trace("epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
-                              epoch_seconds,
-                              remaining_millis,
-                              pid);
+            log_af::trace("{}: epoch seconds = [{}], __func__, remaining millis = [{}], agent pid = [{}]",
+                          __func__,
+                          epoch_seconds,
+                          remaining_millis,
+                          pid);
 
             try {
                 // Convert the epoch value to ISO8601 format.
-                log_agent::trace("Converting epoch seconds to UTC timestamp.");
+                log_af::trace("{}: Converting epoch seconds to UTC timestamp.", __func__);
                 using boost::chrono::system_clock;
                 using boost::chrono::time_fmt;
                 const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
@@ -1058,7 +1059,7 @@ namespace
 
                 // 3. Write the contents of the stacktrace file to syslog.
                 // clang-format off
-                irods::experimental::log::server::critical({
+                log_af::critical({
                     {"log_message", boost::stacktrace::to_string(stacktrace)},
                     {"stacktrace_agent_pid", pid},
                     {"stacktrace_timestamp_utc", fmt::format("{}.{}Z", utc_ss.str(), remaining_millis)},
@@ -1072,13 +1073,13 @@ namespace
                 // We don't want the stacktrace files to go away without making it into the log.
                 // We can't rely on the log invocation above because of syslog.
                 // We don't want these files to accumulate for long running servers.
-                log_agent::trace("Removing stacktrace file from disk.");
+                log_af::trace("{}: Removing stacktrace file from disk.", __func__);
                 fs::remove(entry);
             }
             catch (...) {
                 // Something happened while logging the stacktrace file.
                 // Leaving the stacktrace file in-place for processing later.
-                log_agent::trace("Caught exception while processing stacktrace file.");
+                log_af::trace("{}: Caught exception while processing stacktrace file.", __func__);
             }
         }
     } // log_stacktrace_files
