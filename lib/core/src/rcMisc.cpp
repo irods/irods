@@ -29,6 +29,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_random.hpp"
 #include "irods/irods_path_recursion.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
@@ -66,6 +67,10 @@
 #include <random>
 #include <unordered_map>
 #include <iterator>
+#include <chrono>
+#include <cctype>
+
+using log_server = irods::experimental::log::server;
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -2109,261 +2114,244 @@ updateOffsetTimeStr( char *timeStr, int offset ) {
  */
 int
 getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
-
-    rodsLong_t  it, dt;
-    char *t, *s;
-    char u;
-    char tstr[200];
-    int n;
-
-    t = delayStr;
-    while ( isdigit( *t ) ) {
-        t++;
-    }
-    u = *t;
-    *t = '\0';
-    dt = atol( delayStr );
-    it = dt;
-    *t = u;
-    t++;
-    switch ( u ) {
-    case 's':
-        break;
-    case 'm':
-        dt = dt * 60;
-        break;
-    case 'h':
-        dt = dt * 3600;
-        break;
-    case 'd':
-        dt = dt * 3600 * 24;
-        break;
-    case 'y':
-        dt = dt * 3600 * 24 * 365;
-        break;
-    default:
-        break;
+    char* delay_index{delayStr};
+    while (std::isdigit(static_cast<unsigned char>(*delay_index))) {
+        delay_index++;
     }
 
-    while ( isspace( *t ) ) {
-        t++;
+    char time_unit{*delay_index};
+    *delay_index = '\0';
+    rodsLong_t no_unit_delay_time{std::atoll(delayStr)};
+    *delay_index = time_unit;
+    delay_index++;
+
+    std::chrono::duration<rodsLong_t> delay_duration{};
+    switch (time_unit) {
+        case 's':
+            delay_duration += std::chrono::seconds{no_unit_delay_time};
+            break;
+        case 'm':
+            delay_duration += std::chrono::minutes{no_unit_delay_time};
+            break;
+        case 'h':
+            delay_duration += std::chrono::hours{no_unit_delay_time};
+            break;
+        case 'd':
+            delay_duration += std::chrono::days{no_unit_delay_time};
+            break;
+        case 'y':
+            delay_duration += std::chrono::years{no_unit_delay_time};
+            break;
+        default:
+            delay_duration += std::chrono::seconds{no_unit_delay_time};
+            break;
     }
-    if ( strlen( t ) == 0 || !strcmp( t, "REPEAT FOR EVER" ) ) {
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
+
+    std::chrono::duration<rodsLong_t> current_time{std::atoll(currTime)};
+    auto next_delay{delay_duration + current_time};
+    auto double_delay{no_unit_delay_time * 2};
+
+    char* alt_delay_index{};
+    char alt_delay_buffer[200]{};
+    int delay_counter{};
+
+    auto skip_directive_and_whitespace{[](char* _index, const char* _directive) -> auto{
+        _index += std::strlen(_directive);
+        while (std::isspace(static_cast<unsigned char>(*_index))) {
+            _index++;
+        }
+        return _index;
+    }};
+
+    while (std::isspace(static_cast<unsigned char>(*delay_index))) {
+        delay_index++;
+    }
+    if (std::strlen(delay_index) == 0 || std::strcmp(delay_index, "REPEAT FOR EVER") == 0) {
+        std::sprintf(nextTime, "%lld", next_delay.count());
         return 0;
     }
-    if ( !strcmp( t, "DOUBLE FOR EVER" ) ) {
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        sprintf( delayStr, "%lld%c DOUBLE FOR EVER", it * 2, u );
+
+    if (const char* directive{"DOUBLE FOR EVER"}; std::strcmp(delay_index, directive) == 0) {
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        std::sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 3;
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
-        s = s + strlen( "REPEAT UNTIL SUCCESS OR UNTIL " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        convertDateFormat( tstr, currTime );
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( atol( tstr ) < dt ) {
+    
+    if (const char* directive{"REPEAT UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        convertDateFormat(alt_delay_buffer, currTime);
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::atoll(alt_delay_buffer) < next_delay.count()) {
             return 2;
         }
         else {
             return 1;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
-        s = s + strlen( "DOUBLE UNTIL SUCCESS OR UNTIL " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        convertDateFormat( tstr, currTime );
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR UNTIL %s", it * 2, u, s );
-        if ( atol( tstr ) < dt ) {
+
+    if (const char* directive{"DOUBLE UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        convertDateFormat(alt_delay_buffer, currTime);
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        std::sprintf(delayStr, "%lld%c %s%s", double_delay, time_unit, directive, alt_delay_index);
+        if (std::atoll(alt_delay_buffer) < delay_duration.count()) {
             return 2;
         }
         else {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR " ) ) != NULL ) {
-        s = s + strlen( "REPEAT UNTIL SUCCESS OR " );
-        while ( isspace( *s ) ) {
-            s++;
+
+    if (const char* directive{"REPEAT UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        alt_delay_index = alt_delay_buffer;
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
+            alt_delay_index++;
         }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        s = tstr;
-        while ( isdigit( *s ) ) {
-            s++;
-        }
-        *s = '\0';
-        n = atoi( tstr );
-        n--;
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-            sprintf( delayStr, "%lld%c REPEAT UNTIL SUCCESS OR %i %s", it, u, n, s + 1 );
+        *alt_delay_index = '\0';
+        delay_counter = std::atoi(alt_delay_buffer);
+        delay_counter--;
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
+            std::sprintf(delayStr, "%lld%c %s%i %s", delay_duration.count(), time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
-            sprintf( delayStr, "%lld%c REPEAT UNTIL SUCCESS OR %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
+            std::sprintf(delayStr, "%lld%c %s%i TIMES. ORIGINAL TIMES=%i", delay_duration.count(), time_unit, directive, delay_counter, delay_counter + 1);
         }
-        if ( n <= 0 ) {
+        if (delay_counter <= 0) {
             return 2;
         }
         else {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR " ) ) != NULL ) {
-        s = s + strlen( "DOUBLE UNTIL SUCCESS OR " );
-        while ( isspace( *s ) ) {
-            s++;
+
+    if (const char* directive{"DOUBLE UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        alt_delay_index = alt_delay_buffer;
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
+            alt_delay_index++;
         }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        s = tstr;
-        while ( isdigit( *s ) ) {
-            s++;
-        }
-        *s = '\0';
-        n = atoi( tstr );
-        n--;
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-            sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR %i %s", it * 2, u, n, s + 1 );
+        *alt_delay_index = '\0';
+        delay_counter = std::atoi(alt_delay_buffer);
+        delay_counter--;
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
+            std::sprintf(delayStr, "%lld%c %s%i %s", double_delay, time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
-            sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
+            std::sprintf(delayStr, "%lld%c %s%i TIMES. ORIGINAL TIMES=%i", double_delay, time_unit, directive, delay_counter, delay_counter + 1);
         }
-        if ( n <= 0 ) {
+        if (delay_counter <= 0) {
             return 2;
         }
         else {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS UPTO " ) ) != NULL ) {
-        s = s + strlen( "DOUBLE UNTIL SUCCESS UPTO " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        convertDateFormat( tstr, currTime );
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS UPTO %s", it * 2, u, s );
-        if ( atol( tstr ) > dt ) {
-            sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS UPTO %s", it * 2 , u, s );
+
+    if (const char* directive{"DOUBLE UNTIL SUCCESS UPTO "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr)
+    {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        convertDateFormat(alt_delay_buffer, currTime);
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        std::sprintf(delayStr, "%lld%c %s%s", double_delay, time_unit, directive, alt_delay_index);
+        if (std::atoll(alt_delay_buffer) > next_delay.count()) {
+            std::sprintf(delayStr, "%lld%c %s%s", double_delay, time_unit, directive, alt_delay_index);
         }
         else {
-            sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS UPTO %s", it , u, s );
+            std::sprintf(delayStr, "%lld%c %s%s", delay_duration.count(), time_unit, directive, alt_delay_index);
         }
         return 4;
     }
-    if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
+
+    if (std::strstr(delay_index, "REPEAT UNTIL SUCCESS") != nullptr) {
+        std::sprintf(nextTime, "%lld", next_delay.count());
         return 1;
     }
-    if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS", it * 2, u );
+
+    if (const char* directive{"DOUBLE UNTIL SUCCESS"}; std::strstr(delay_index, directive) != nullptr) {
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        std::sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 4;
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
-        s = s + strlen( "REPEAT UNTIL " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        convertDateFormat( tstr, currTime );
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( atol( tstr ) < dt ) {
+    
+    if (const char* directive{"REPEAT UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        convertDateFormat(alt_delay_buffer, currTime);
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::atoll(alt_delay_buffer) < next_delay.count()) {
             return 2;
         }
         else {
             return 0;
         }
     }
-
-    if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != NULL ) {
-        s = s + strlen( "DOUBLE UNTIL " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        convertDateFormat( tstr, currTime );
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        /* sprintf(delayStr,"%lld%c DOUBLE UNTIL %s", it * 2, u,s); */
-        sprintf( delayStr, "%lld%c DOUBLE UNTIL %s", it * 2, u, tstr );
-        if ( atol( tstr ) < dt ) {
-            return 2;
-        }
-        else {
-            return 3;
-        }
-
-    }
-    if ( ( s = strstr( t, "REPEAT " ) ) != NULL ) {
-        s = s + strlen( "REPEAT " );
-        while ( isspace( *s ) ) {
-            s++;
-        }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        s = tstr;
-        while ( isdigit( *s ) ) {
-            s++;
-        }
-        *s = '\0';
-        n = atoi( tstr );
-        n--;
-
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-            sprintf( delayStr, "%lld%c REPEAT %i %s", it, u, n, s + 1 );
-        }
-        else {
-            sprintf( delayStr, "%lld%c REPEAT %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
-        }
-        if ( n <= 0 ) {
+    
+    if (const char* directive{"DOUBLE UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        convertDateFormat(alt_delay_buffer, currTime);
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        std::sprintf(delayStr, "%lld%c %s%s", double_delay, time_unit, directive, alt_delay_buffer);
+        if (std::atoll(alt_delay_buffer) < next_delay.count()) {
             return 2;
         }
         else {
             return 3;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
-        s = s + strlen( "DOUBLE " );
-        while ( isspace( *s ) ) {
-            s++;
+    
+    if (const char* directive{"REPEAT "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        alt_delay_index = alt_delay_buffer;
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
+            alt_delay_index++;
         }
-        snprintf( tstr, sizeof( tstr ), "%s", s );
-        s = tstr;
-        while ( isdigit( *s ) ) {
-            s++;
-        }
-        *s = '\0';
-        n = atoi( tstr );
-        n--;
-        dt = dt   + atol( currTime );
-        sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-            sprintf( delayStr, "%lld%c DOUBLE %i %s", it * 2, u, n, s + 1 );
+        *alt_delay_index = '\0';
+        delay_counter = std::atoi(alt_delay_buffer);
+        delay_counter--;
+
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
+            std::sprintf(delayStr, "%lld%c %s%i %s", delay_duration.count(), time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
-            sprintf( delayStr, "%lld%c DOUBLE %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
+            std::sprintf(delayStr, "%lld%c %s%i TIMES. ORIGINAL TIMES=%i", delay_duration.count(), time_unit, directive, delay_counter, delay_counter + 1);
         }
-        if ( n <= 0 ) {
+        if (delay_counter <= 0) {
+            return 2;
+        }
+        else {
+            return 3;
+        }
+    }
+    
+    if (const char* directive{"DOUBLE "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
+        alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
+        std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
+        alt_delay_index = alt_delay_buffer;
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
+            alt_delay_index++;
+        }
+        *alt_delay_index = '\0';
+        delay_counter = std::atoi(alt_delay_buffer);
+        delay_counter--;
+        std::sprintf(nextTime, "%lld", next_delay.count());
+        if (std::strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
+            std::sprintf(delayStr, "%lld%c %s%i %s", double_delay, time_unit, directive, delay_counter, alt_delay_index + 1);
+        }
+        else {
+            std::sprintf(delayStr, "%lld%c %s%i TIMES. ORIGINAL TIMES=%i", double_delay, time_unit, directive, delay_counter, delay_counter + 1);
+        }
+        if (delay_counter <= 0) {
             return 2;
         }
         else {
@@ -2371,6 +2359,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
     }
 
+    log_server::error("The delay string {} is not recognized!", delayStr);
     return 0;
 }
 
@@ -2432,20 +2421,18 @@ isInteger( const char * inStr ) {
 
 int
 convertDateFormat( char * s, char * currTime ) {
-    rodsLong_t  it;
-    char tstr[200];
-    int i;
-    rstrcpy( tstr, s, 199 );
-    i = checkDateFormat( tstr );
-    if ( i != 0 ) {
-        return i;
+    constexpr int bufferSize{200};
+    char timeBuffer[bufferSize]{};
+    std::strncpy(timeBuffer, s, bufferSize - 1);
+    if (int errorCode{checkDateFormat(timeBuffer)}; errorCode != 0) {
+        return errorCode;
     }
-    if ( !isInteger( s ) && strchr( s, '-' ) == NULL && strchr( s, ':' ) == NULL ) {
-        it = atol( tstr ) + atol( currTime );
-        sprintf( s, "%lld", it );
+    if (!isInteger(s) && std::strchr(s, '-') == nullptr && std::strchr(s, ':') == nullptr) {
+        rodsLong_t it{std::atoll(timeBuffer) + std::atoll(currTime)};
+        std::sprintf(s, "%lld", it);
     }
     else {
-        strcpy( s, tstr );
+        std::strncpy(s, timeBuffer, bufferSize);
     }
     return 0;
 }
