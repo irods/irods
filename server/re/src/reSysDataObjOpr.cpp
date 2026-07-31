@@ -1157,8 +1157,8 @@ auto msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
     }
 
     const auto new_style = *static_cast<int*>(_style->inOutStruct);
-    if (new_style < 0 || new_style > 1) {
-        log_msi::error("{}: Invalid style [{}] for vault path scheme. Expected 0 or 1.", __func__, new_style);
+    if (new_style < 0 || new_style > 2) {
+        log_msi::error("{}: Invalid style [{}] for vault path scheme. Expected 0, 1, or 2.", __func__, new_style);
         _rei->status = SYS_INVALID_INPUT_PARAM;
         return _rei->status;
     }

@@ -1892,9 +1892,11 @@ OUTPUT ruleExecOut
         for suffix_length in [1, 3, 12, 32]:
             with self.subTest(f'good suffix length: [{suffix_length}]'):
                 do_test(1, [fr'.+/\d+/\d+/.+[.].{{10,}}[.].{{{suffix_length}}}$'], suffix_length)
+                # Style 2: like style 1 but filename removed.
+                do_test(2, [fr'.+/\d+/\d+/\d+[.].{{{suffix_length}}}$'], suffix_length)
 
         # Show that an invalid style results in an error.
-        for style in [-1, 2]:
+        for style in [-1, 3]:
             with self.subTest(f'invalid style: [{style}]'):
                 do_test(style, ['-130000 SYS_INVALID_INPUT_PARAM'], expect_error=True)
 
