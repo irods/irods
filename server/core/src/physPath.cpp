@@ -388,6 +388,19 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
                       static_cast<unsigned int>(std::time(nullptr)),
                       rnd_str.c_str());
     }
+    else if (detail::random_scheme_style == 2) {
+        const auto rnd_str =
+            irods::generate_random_alphanumeric_string(static_cast<std::int16_t>(detail::random_scheme_suffix_length));
+        std::snprintf(outPath,
+                      MAX_NAME_LEN,
+                      "%s/%s/%d/%d/%d.%s",
+                      vaultPath,
+                      userName,
+                      dir1,
+                      dir2,
+                      static_cast<unsigned int>(std::time(nullptr)),
+                      rnd_str.c_str());
+    }
     else {
         std::snprintf(outPath,
                       MAX_NAME_LEN,

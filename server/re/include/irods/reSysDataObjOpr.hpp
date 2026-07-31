@@ -51,10 +51,11 @@ msiSetRandomScheme( ruleExecInfo_t *rei );
 /// Styles:
 /// - 0: Default style, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>
 /// - 1: Append random characters, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>.<random_characters>
+/// - 2: Append random characters without filename, i.e. <vault_root>/<int>/<int>/<epoch_seconds>.<random_characters>
 ///
-/// \param[in] _style \parblock The new style of the randomly-generated string. A value of 1 results
+/// \param[in] _style \parblock The new style of the randomly-generated string. A value of 1 or 2 results
 ///                   in 5 randomly generated alphanumeric characters being appended to the physical
-///                   path. Attempting to set the value to anything other than 0 or 1 will result in
+///                   path. Attempting to set the value to anything other than 0, 1, or 2 will result in
 ///                   an error. See #msi_random_scheme_set_suffix_length for information about changing
 ///                   the length of the generated suffix string.
 ///                   \endparblock
@@ -70,7 +71,7 @@ int msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei);
 
 /// Sets the random scheme suffix length.
 ///
-/// The effects of this microservice are not applied unless the random scheme style is set to 1.
+/// The effects of this microservice are not applied unless the random scheme style is set to 1 or 2.
 /// See #msi_random_scheme_set_style for more information.
 ///
 /// This microservice has no effect if invoked outside of acSetVaultPathPolicy() or an error occurs.

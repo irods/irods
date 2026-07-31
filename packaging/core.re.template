@@ -304,10 +304,11 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #      Styles:
 #        - 0: Default style, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>
 #        - 1: Append random characters, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>.<random_characters>
+#        - 2: Append random characters without filename, i.e. <vault_root>/<int>/<int>/<epoch_seconds>.<random_characters>
 #
-#      A style of 1 results in 5 randomly generated alphanumeric characters
+#      A style of 1 or 2 results in 5 randomly generated alphanumeric characters
 #      being appended to the physical path. Attempting to set the value to anything
-#      other than 0 or 1 will result in an error.
+#      other than 0, 1, or 2 will result in an error.
 #
 #      See msi_set_random_scheme_suffix_length() for information about changing
 #      the length of the generated suffix string.
@@ -316,7 +317,7 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #      length.
 #
 #      The effects of this microservice are not applied unless the random scheme
-#      style is set to 1.
+#      style is set to 1 or 2.
 #
 #      This microservice has no effect if invoked outside of acSetVaultPathPolicy()
 #      or an error occurs.
