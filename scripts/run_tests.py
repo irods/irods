@@ -1,24 +1,19 @@
 #!/usr/bin/python3
-from __future__ import print_function
-
 try:
     import importlib
 except ImportError:
     from __builtin__ import __import__
+
 import argparse
+import fnmatch
 import itertools
+import json
 import logging
 import os
 import shutil
 import subprocess
 import sys
-import fnmatch
-import json
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
@@ -220,6 +215,10 @@ if __name__ == '__main__':
     # executables installed in this directory and used in the tests which need to be accessible, so add the directory
     # to the front of PATH for the duration of the tests.
     os.environ['PATH'] = ':'.join([irods.paths.server_bin_directory(), os.environ['PATH']])
+
+    # Guarantee that /var/lib/irods/log/test_mode_output.log is created so that tests which rely on reading log files
+    # have a better chance of succeeding. See docs.irods.org/5.0.2/getting_started/running/#test-mode for more details.
+    os.environ['IRODS_ENABLE_TEST_MODE'] = '1'
 
     IrodsController().start(test_mode=True)
     results = run_tests_from_names(test_identifiers, args.buffer_test_output, args.xml_output, args.skip_until)
