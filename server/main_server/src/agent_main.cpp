@@ -326,6 +326,8 @@ auto main(int _argc, char* _argv[]) -> int
         fd_set sockMask;
         FD_ZERO(&sockMask); // NOLINT(readability-isolate-declaration)
 
+        struct timeval time_out; // NOLINT(cppcoreguidelines-pro-type-member-init)
+
         while (true) {
             if (g_terminate) {
                 log_af::info("{}: Received shutdown instruction. Exiting agent factory main loop.", __func__);
@@ -342,13 +344,14 @@ auto main(int _argc, char* _argv[]) -> int
             // NOLINTNEXTLINE(hicpp-signed-bitwise, cppcoreguidelines-pro-bounds-constant-array-index)
             FD_SET(svrComm.sock, &sockMask);
 
-            int numSock = 0;
-            struct timeval time_out; // NOLINT(cppcoreguidelines-pro-type-member-init)
+            // Always set the timeval structure (if used) before invoking select(). This is required because
+            // select() modifies the structure on each invocation.
+            constexpr auto time_out_microseconds = 500 * 1000;
             time_out.tv_sec = 0;
-            time_out.tv_usec = 500 * 1000;
-            const auto original_time_out = time_out;
+            time_out.tv_usec = time_out_microseconds;
 
-            while ((numSock = select(svrComm.sock + 1, &sockMask, nullptr, nullptr, &time_out)) == -1) {
+            int socket_ready_count = 0;
+            while ((socket_ready_count = select(svrComm.sock + 1, &sockMask, nullptr, nullptr, &time_out)) == -1) {
                 if (g_terminate) {
                     log_af::info("{}: Received shutdown instruction. Exiting agent factory select() loop.", __func__);
                     break;
@@ -360,9 +363,9 @@ auto main(int _argc, char* _argv[]) -> int
                     break;
                 }
 
-                // "select" modifies the timeval structure, so reset it.
+                // select() modifies the timeval structure, so reset it.
                 time_out.tv_sec = 0;
-                time_out.tv_usec = 500 * 1000;
+                time_out.tv_usec = time_out_microseconds;
 
                 if (EINTR == errno) {
                     log_af::trace("{}: select() interrupted", __func__);
@@ -385,9 +388,7 @@ auto main(int _argc, char* _argv[]) -> int
                 break;
             }
 
-            if (0 == numSock) {
-                // "select" modifies the timeval structure, so reset it.
-                time_out = original_time_out;
+            if (0 == socket_ready_count) {
                 continue;
             }
 
