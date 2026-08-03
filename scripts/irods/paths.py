@@ -387,7 +387,7 @@ _testmode_server_log_path_cache = None
 def _testmode_server_log_path():
     global _testmode_server_log_path_cache
     if _testmode_server_log_path_cache is None:
-        _testmode_server_log_path_cache = _irods_directory() / 'test_mode_output.log'
+        _testmode_server_log_path_cache = _irods_directory() / 'log' / 'test_mode_output.log'
     return _testmode_server_log_path_cache
 
 def testmode_server_log_path():
