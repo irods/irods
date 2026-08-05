@@ -989,14 +989,14 @@ namespace
     {
         const auto sleep_time =
             irods::get_advanced_setting<int>(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
-        static auto start_time = std::chrono::steady_clock::now();
+        static auto previous_log_time = std::chrono::steady_clock::now();
         const auto now = std::chrono::steady_clock::now();
 
-        if (now - start_time < std::chrono::seconds{sleep_time}) {
+        if (now - previous_log_time < std::chrono::seconds{sleep_time}) {
             return;
         }
 
-        start_time = now;
+        previous_log_time = now;
 
         for (auto&& entry : fs::directory_iterator{irods::get_irods_stacktrace_directory().c_str()}) {
             // Expected filename format:
