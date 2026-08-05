@@ -1012,7 +1012,7 @@ namespace
                 continue;
             }
 
-            auto slash_pos = p.rfind("/");
+            auto slash_pos = p.rfind('/');
 
             if (slash_pos == std::string::npos) {
                 log_af::trace("{}: Skipping [{}]. No forward slash separator found.", __func__, p);
@@ -1020,14 +1020,14 @@ namespace
             }
 
             ++slash_pos;
-            const auto first_dot_pos = p.find(".", slash_pos);
+            const auto first_dot_pos = p.find('.', slash_pos);
 
             if (first_dot_pos == std::string::npos) {
                 log_af::trace("{}: Skipping [{}]. No dot separator found.", __func__, p);
                 continue;
             }
 
-            const auto last_dot_pos = p.rfind(".");
+            const auto last_dot_pos = p.rfind('.');
 
             if (last_dot_pos == std::string::npos || last_dot_pos == first_dot_pos) {
                 log_af::trace("{}: Skipping [{}]. No dot separator found.", __func__, p);
