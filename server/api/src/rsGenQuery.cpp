@@ -673,16 +673,16 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         zone_hint_str = zoneHint;
 
         // clean up path separator(s) and trailing '
-        if('/' == zone_hint_str[0]) {
-            zone_hint_str = zone_hint_str.substr(1);
+        if (zone_hint_str.starts_with('/')) {
+            zone_hint_str.erase(zone_hint_str.cbegin());
 
-            std::string::size_type pos = zone_hint_str.find_first_of("/");
-            if(std::string::npos != pos ) {
-                zone_hint_str = zone_hint_str.substr(0,pos);
+            const std::string::size_type pos = zone_hint_str.find_first_of("/");
+            if (std::string::npos != pos) {
+                zone_hint_str.erase(pos, zone_hint_str.size() - pos);
             }
         }
-        if('\'' == zone_hint_str[zone_hint_str.size()-1]) {
-            zone_hint_str = zone_hint_str.substr(0,zone_hint_str.size()-1);
+        if(zone_hint_str.ends_with('\'')) {
+            zone_hint_str.erase(--zone_hint_str.cend());
         }
 
     }

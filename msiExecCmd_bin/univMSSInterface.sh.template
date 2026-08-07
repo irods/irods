@@ -120,7 +120,7 @@ stat () {
     uid=`    echo $output | sed -nr 's/.*\<Uid: *\( *([0-9]*)\/.*/\1/p'`
     gid=`    echo $output | sed -nr 's/.*\<Gid: *\( *([0-9]*)\/.*/\1/p'`
     devid="0"
-    size=`   echo $output | sed -nr 's/.*\<Size: *([0-9]*)\>.*/\1/p'`
+    size=`   echo $output | sed -nr 's/.*\<Size: *([0-9]*)\>.*/\1/pI'`
     blksize=`echo $output | sed -nr 's/.*\<IO Block: *([0-9]*)\>.*/\1/p'`
     blkcnt=` echo $output | sed -nr 's/.*\<Blocks: *([0-9]*)\>.*/\1/p'`
     atime=`  echo $output | sed -nr 's/.*\<Access: *([0-9]{4,}-[01][0-9]-[0-3][0-9]) *([0-2][0-9]):([0-5][0-9]):([0-6][0-9])\..*/\1-\2.\3.\4/p'`

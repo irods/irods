@@ -270,6 +270,7 @@ objects_link_libraries(
   fmt::fmt
   spdlog::spdlog
   Threads::Threads
+  /usr/lib/gcc/x86_64-linux-gnu/15/libbacktrace.a
 )
 target_include_directories(
   irods_common_core

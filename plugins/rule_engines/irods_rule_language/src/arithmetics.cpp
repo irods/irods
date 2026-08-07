@@ -730,7 +730,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }*/
 
 
-        ExprType *argType = newTupleRes( n, &args[0], r )->exprType;
+        ExprType *argType = newTupleRes( n, args.data(), r )->exprType;
         if ( typeFuncParam( node->subtrees[1], argType, coercionType, env->current, localTypingConstraints, errmsg, newRegion ) != 0 ) {
             res = newErrorRes( r, RE_TYPE_ERROR );
             RETURN;
@@ -760,7 +760,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }
     }
     else {
-        memcpy( &argsProcessed[0], &args[0], sizeof( Res * ) * n );
+        memcpy( argsProcessed.data(), args.data(), sizeof( Res * ) * n );
     }
 
 
@@ -781,7 +781,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
             res = newUnspecifiedRes( r );
             break;
         case N_FD_FUNCTION:
-            res = (Res *) FD_SMSI_FUNC_PTR( fd )( &argsProcessed[0], n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
+            res = (Res *) FD_SMSI_FUNC_PTR( fd )( argsProcessed.data(), n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
             if(getNodeType(res) != N_ERROR) {
                 switch ( TYPE( res ) ) {
                     case T_BREAK:
@@ -794,10 +794,10 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
             }
             break;
         case N_FD_EXTERNAL:
-            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, argsProcessed.data(), n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         case N_FD_RULE_INDEX_LIST:
-            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, argsProcessed.data(), n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         default:
             res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
@@ -807,19 +807,19 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
       else
         switch ( getNodeType( fd ) ) {
         case N_FD_DECONSTRUCTOR:
-            res = deconstruct( &argsProcessed[0], FD_PROJ( fd ) );
+            res = deconstruct( argsProcessed.data(), FD_PROJ( fd ) );
             break;
         case N_FD_CONSTRUCTOR:
-            res = construct( fn, &argsProcessed[0], n, instantiate( node->exprType, env->current, 1, r ), r );
+            res = construct( fn, argsProcessed.data(), n, instantiate( node->exprType, env->current, 1, r ), r );
             break;
         case N_FD_FUNCTION:
-            res = ( Res * ) FD_SMSI_FUNC_PTR( fd )( &argsProcessed[0], n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
+            res = ( Res * ) FD_SMSI_FUNC_PTR( fd )( argsProcessed.data(), n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
             break;
         case N_FD_EXTERNAL:
-            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, argsProcessed.data(), n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         case N_FD_RULE_INDEX_LIST:
-            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, argsProcessed.data(), n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         default:
             res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
@@ -828,7 +828,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }
     }
     else {
-        res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+        res = execAction3( fn, argsProcessed.data(), n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
     }
 
     if ( GlobalREAuditFlag > 0 ) {
