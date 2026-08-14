@@ -57,6 +57,7 @@ set(
   client_connection
   client_server_negotiation
   connection_pool
+  data_obj_stat_api
   data_object_finalize
   data_object_modify_info
   data_object_proxy

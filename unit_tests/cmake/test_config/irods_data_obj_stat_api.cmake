@@ -1,0 +1,10 @@
+set(IRODS_TEST_TARGET irods_data_obj_stat_api)
+
+set(IRODS_TEST_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/test_data_obj_stat_api.cpp)
+
+set(IRODS_TEST_INCLUDE_PATH ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
+
+set(IRODS_TEST_LINK_LIBRARIES irods_common
+                              irods_client
+                              irods_plugin_dependencies
+                              ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so)

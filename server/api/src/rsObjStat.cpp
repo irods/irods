@@ -275,7 +275,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
 
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( atoi( &replStatus->value[replStatus->len * i] ) > 0 ) {
+                if (atoi(&replStatus->value[replStatus->len * i]) == 1) {
                     rstrcpy( ( *rodsObjStatOut )->dataId,
                              &dataId->value[dataId->len * i], NAME_LEN );
                     ( *rodsObjStatOut )->objSize =
