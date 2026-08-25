@@ -187,22 +187,26 @@ namespace
     ix::client_connection get_new_connection(const std::optional<std::string>& _client_user)
     {
         try {
+            rodsEnv env{};
+            _getRodsEnv(env);
+
+            const irods::experimental::fully_qualified_username local_admin{env.rodsUserName, env.rodsZone};
+
+            auto user = local_admin;
             if (_client_user) {
-                if (const auto executor = next_executor(); executor) {
-                    rodsEnv env{};
-                    _getRodsEnv(env);
-
-                    log_ds::debug("Connecting to host [{}] as proxy user [{}] on behalf of user [{}] ...",
-                                  *executor,
-                                  env.rodsUserName,
-                                  *_client_user);
-
-                    irods::experimental::fully_qualified_username local_admin{env.rodsUserName, env.rodsZone};
-                    irods::experimental::fully_qualified_username user{*_client_user, env.rodsZone};
-
-                    return {*executor, env.rodsPort, local_admin, user};
-                }
+                user = {*_client_user, env.rodsZone};
             }
+
+            auto executor = next_executor();
+            if (!executor) {
+                executor = env.rodsHost;
+            }
+
+            log_ds::debug("Connecting to host [{}] as proxy user [{}] on behalf of user [{}] ...",
+                          *executor,
+                          local_admin.full_name(),
+                          user.full_name());
+            return {*executor, env.rodsPort, local_admin, user};
         }
         catch (...) {
             log_ds::error("Could not get the next delay rule executor.");
