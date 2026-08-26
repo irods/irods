@@ -1943,6 +1943,48 @@ OUTPUT ruleExecOut
         data_path = lib.get_replica_full_row(self.user0, data_object, 0)['DATA_PATH']
         self.assertEqual(data_path, f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
+    def test_delay_server_executes_delay_rule_as_the_user_who_scheduled_it__issue_9059(self):
+        try:
+            # Decrease the delay server's sleep time so that delay rules are picked up faster.
+            server_config_filename = paths.server_config_path()
+            with lib.file_backed_up(server_config_filename):
+                with open(server_config_filename, 'r+') as f:
+                    config = json.load(f)
+                    config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 2
+                    f.seek(0)
+                    json.dump(config, f, sort_keys=True, indent=4, separators=(',', ': '))
+                    f.truncate()
+
+                # Add a rule that attaches metadata to a collection. The metadata will contain
+                # the username and zone of the user who scheduled the delay rule.
+                with temporary_core_file() as core:
+                    core.add_rule(textwrap.dedent(f'''\
+                    pep_api_exec_rule_expression_pre(*INSTANCE, *COMM, *EXEC_RULE) {{
+                        msiModAVUMetadata('-C', '{self.user0.session_collection}', 'set', *COMM.user_user_name, *COMM.user_rods_zone, '');
+                    }}
+                    '''))
+
+                    IrodsController().reload_configuration()
+
+                    # Schedule the delay rule.
+                    rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                    delay_rule = f'delay("<INST_NAME>{rep_name}</INST_NAME>") {{ writeLine("serverLog", "issue #9059"); }}'
+                    self.user0.assert_icommand(['irule', '-r', rep_name, delay_rule, 'null', 'ruleExecOut'])
+
+                    # Show the user's name and zone are attached as metadata to their session
+                    # collection. The metadata will only exist if the PEP defined in core.re fires.
+                    def metadata_exists_on_collection(attr, value):
+                        print(f'Looking for attr:[{attr}] value:[{value}] on collection:[{self.user0.session_collection}]')
+                        out, _, _ = self.user0.run_icommand(
+                            ['iquest', '%s', f"select COLL_NAME where META_COLL_ATTR_NAME = '{attr}' and META_COLL_ATTR_VALUE = '{value}'"])
+                        print(out)
+                        return self.user0.session_collection in out
+
+                    lib.delayAssert(lambda: metadata_exists_on_collection(self.user0.username, self.user0.zone_name))
+
+        finally:
+            IrodsController().reload_configuration()
+
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
