@@ -20,7 +20,7 @@ documentation at https://docs.irods.org.
 
 If using rsyslog, please add irodsAgent to your rsyslog configuration
 to avoid missing important log messages. For detailed instructions, See
-https://docs.irods.org/5.0.1/system_overview/server_log/#rsyslog-configuration.
+https://docs.irods.org/@IRODS_VERSION@/system_overview/server_log/#rsyslog-configuration.
 
 =======================================================================
 

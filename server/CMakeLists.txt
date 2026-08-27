@@ -169,6 +169,11 @@ configure_file(
   "${CMAKE_IRODS_BINARY_DIR}/packaging/server_config.json.template"
   @ONLY
 )
+configure_file(
+  "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_upgrade_instructions.txt.in"
+  "${CMAKE_IRODS_BINARY_DIR}/packaging/server_upgrade_instructions.txt"
+  @ONLY
+)
 install(
   FILES
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/connectControl.config.template"
@@ -178,7 +183,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/irodsMonPerf.config.in"
   "${CMAKE_IRODS_BINARY_DIR}/packaging/server_config.json.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_setup_instructions.txt"
-  "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_upgrade_instructions.txt"
+  "${CMAKE_IRODS_BINARY_DIR}/packaging/server_upgrade_instructions.txt"
   DESTINATION "${IRODS_HOME_DIRECTORY}/packaging"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
