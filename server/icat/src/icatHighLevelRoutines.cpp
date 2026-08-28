@@ -23,6 +23,7 @@
 #include "irods/irods_database_manager.hpp"
 #include "irods/irods_database_constants.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/logical_quota_utilities.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -4943,10 +4944,8 @@ auto chl_set_logical_quota(RsComm* _comm, const char* _coll_name, const char* _b
     return static_cast<int>(ret.code());
 } // chl_set_logical_quota
 
-auto chl_check_logical_quota(
-    RsComm* _comm,
-    const char* _coll_name,
-    std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>* _quota_values) -> int
+auto chl_check_logical_quota(RsComm* _comm, const char* _coll_name, irods::logical_quotas::quota_vector* _quota_values)
+    -> int
 {
     irods::database_object_ptr db_obj_ptr;
     if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {

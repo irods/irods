@@ -3,6 +3,7 @@
 
 /// \file
 
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/objInfo.h"
 #include "irods/ruleExecSubmit.h"
 #include "irods/rcConnect.h"
@@ -676,9 +677,7 @@ auto chl_set_logical_quota(RsComm* _comm, const char* _coll_name, const char* _b
 /// \retval <0 On failure.
 ///
 /// \since 5.1.0
-auto chl_check_logical_quota(
-    RsComm* _comm,
-    const char* _coll_name,
-    std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>* _quota_values) -> int;
+auto chl_check_logical_quota(RsComm* _comm, const char* _coll_name, irods::logical_quotas::quota_vector* _quota_values)
+    -> int;
 
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

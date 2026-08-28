@@ -2,6 +2,7 @@
 
 #include "irods/irods_logger.hpp"
 #include "irods/irods_plugin_context.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/msParam.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/ticketAdmin.h"
@@ -1441,12 +1442,12 @@ namespace irods::re_serialization
         return SUCCESS();
     } // serialize_ticketAdminInp_ptr
 
-    static error serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s(boost::any _p,
-                                                                                 serialized_parameter_t& _out)
+    static error serialize_ptr_to_vector_of_tuples_of_std_string_four_int64s_and_std_string(
+        boost::any _p,
+        serialized_parameter_t& _out)
     {
         try {
-            using tupletype = std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>;
-            const std::vector<tupletype>* inp = boost::any_cast<std::vector<tupletype>*>(_p);
+            const irods::logical_quotas::quota_vector* inp = boost::any_cast<irods::logical_quotas::quota_vector*>(_p);
             if (inp) {
                 _out["size"] = std::to_string(inp->size());
 
@@ -1455,12 +1456,13 @@ namespace irods::re_serialization
                 _out["_size"] = std::to_string(inp->size());
 
                 for (size_t i = 0; i < inp->size(); i++) {
-                    tupletype tup = inp->at(i);
-                    _out[std::to_string(i) + ":std_string"] = std::get<0>(tup);
-                    _out[std::to_string(i) + ":std_int64_1"] = std::get<1>(tup);
-                    _out[std::to_string(i) + ":std_int64_2"] = std::get<2>(tup);
-                    _out[std::to_string(i) + ":std_int64_3"] = std::get<3>(tup);
-                    _out[std::to_string(i) + ":std_int64_4"] = std::get<4>(tup);
+                    irods::logical_quotas::quota_vector::value_type tup = inp->at(i);
+                    _out[std::to_string(i) + ":string_1"] = std::get<0>(tup);
+                    _out[std::to_string(i) + ":int_1"] = std::to_string(std::get<1>(tup));
+                    _out[std::to_string(i) + ":int_2"] = std::to_string(std::get<2>(tup));
+                    _out[std::to_string(i) + ":int_3"] = std::to_string(std::get<3>(tup));
+                    _out[std::to_string(i) + ":int_4"] = std::to_string(std::get<4>(tup));
+                    _out[std::to_string(i) + ":string_2"] = std::get<5>(tup);
                 }
             }
             else {
@@ -1470,14 +1472,14 @@ namespace irods::re_serialization
         catch (const boost::bad_any_cast& e) {
             return ERROR(INVALID_ANY_CAST,
                          fmt::format("{}: failed to cast pointer to [std::vector<std::tuple<std::string, std::int64_t, "
-                                     "std::int64_t, std::int64_t>>*]: {}",
+                                     "std::int64_t, std::int64_t, std::string>>*]: {}",
                                      __func__,
                                      e.what()));
         }
         catch (const std::exception& e) {
             return ERROR(SYS_LIBRARY_ERROR,
                          fmt::format("{}: failed to serialize [std::vector<std::tuple<std::string, std::int64_t, "
-                                     "std::int64_t, std::int64_t>>*]: {}",
+                                     "std::int64_t, std::int64_t, std::string>>*]: {}",
                                      __func__,
                                      e.what()));
         }
@@ -1546,9 +1548,8 @@ namespace irods::re_serialization
             {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr},
             {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr},
             {std::type_index(typeid(TicketAdminInput*)), serialize_ticketAdminInp_ptr},
-            {std::type_index(
-                 typeid(std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>*)),
-             serialize_ptr_to_vector_of_tuples_of_std_string_and_four_int64s}};
+            {std::type_index(typeid(irods::logical_quotas::quota_vector*)),
+             serialize_ptr_to_vector_of_tuples_of_std_string_four_int64s_and_std_string}};
         return the_map;
     } // get_serialization_map
 

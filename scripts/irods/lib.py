@@ -576,6 +576,29 @@ def metadata_attr_with_value_exists(session, attr, value):
     print(out)
     return value in out
 
+# Checks data object at "path" for metadata with attribute "attr" and value "value".
+# "path" should be an absolute logical path to a data object.
+def metadata_attr_with_value_exists_on_data_object(session, attr, value, path):
+    print('looking for attr:[{0}] value:[{1}] on data object [{2}]'.format(attr, value, path))
+
+    out, _, _ = session.run_icommand(['iquest', '%s',
+            'select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\' and COLL_NAME = \'{}\' and DATA_NAME = \'{}\''.format(attr, *path.rsplit('/', 1))]),
+
+    print(out)
+    return value in out
+
+# Checks collection at "path" for metadata with attribute "attr" and value "value".
+# "path" should be an absolute logical path to a collection.
+def metadata_attr_with_value_exists_on_collection(session, attr, value, path):
+    print('looking for attr:[{0}] value:[{1}] on collection [{2}]'.format(attr, value, path))
+
+    out, _, _ = session.run_icommand(['iquest', '%s',
+            'select META_COLL_ATTR_VALUE where META_COLL_ATTR_NAME = \'{}\' and COLL_NAME = \'{}\''.format(attr, path)])
+
+    print(out)
+    return value in out
+
+
 def create_ufs_resource(session, resource_name, hostname=None):
     vault_name = resource_name + '_vault'
     vault_directory = os.path.join(session.local_session_dir, vault_name)

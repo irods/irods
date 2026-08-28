@@ -5,13 +5,25 @@
 
 #include <sys/types.h>
 
+#include <cstdint>
 #include <functional>
 #include <type_traits>
+#include <string>
+#include <tuple>
+#include <vector>
 
 struct RsComm;
 
 namespace irods::logical_quotas
 {
+    /// Type that represents a vector of quotas.
+    ///
+    /// Used internally to pass around lists of quotas.
+    ///
+    /// \since 5.1.0
+    using quota_vector =
+        std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t, std::string>>;
+
     /// Enum that represents a quota violation mode.
     ///
     /// Supports bitwise operations to represent different combinations of quota types being violated.

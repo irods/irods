@@ -27,6 +27,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_virtual_path.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/modAccessControl.h"
 #include "irods/msParam.h"
@@ -16897,10 +16898,9 @@ irods::error db_set_logical_quota_op(irods::plugin_context& _ctx,
     return SUCCESS();
 } // db_set_logical_quota_op
 
-irods::error db_check_logical_quota_op(
-    irods::plugin_context& _ctx,
-    const char* _coll_name,
-    std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>* _quota_values)
+irods::error db_check_logical_quota_op(irods::plugin_context& _ctx,
+                                       const char* _coll_name,
+                                       irods::logical_quotas::quota_vector* _quota_values)
 {
     // =-=-=-=-=-=-=-
     // check the context
@@ -16938,7 +16938,8 @@ irods::error db_check_logical_quota_op(
                        "R_LOGICAL_QUOTA_MAIN.max_bytes, "
                        "R_LOGICAL_QUOTA_MAIN.max_objects, "
                        "R_LOGICAL_QUOTA_MAIN.over_bytes, "
-                       "R_LOGICAL_QUOTA_MAIN.over_objects "
+                       "R_LOGICAL_QUOTA_MAIN.over_objects, "
+                       "R_LOGICAL_QUOTA_MAIN.modify_ts "
                 "FROM R_COLL_MAIN, "
                      "R_LOGICAL_QUOTA_MAIN "
                 "WHERE R_COLL_MAIN.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
@@ -16976,7 +16977,8 @@ irods::error db_check_logical_quota_op(
                        "R_LOGICAL_QUOTA_MAIN.max_bytes, "
                        "R_LOGICAL_QUOTA_MAIN.max_objects, "
                        "R_LOGICAL_QUOTA_MAIN.over_bytes, "
-                       "R_LOGICAL_QUOTA_MAIN.over_objects "
+                       "R_LOGICAL_QUOTA_MAIN.over_objects, "
+                       "R_LOGICAL_QUOTA_MAIN.modify_ts "
                 "FROM R_COLL_MAIN, "
                      "R_LOGICAL_QUOTA_MAIN "
                 "WHERE R_COLL_MAIN.coll_id = R_LOGICAL_QUOTA_MAIN.coll_id "
@@ -17016,7 +17018,8 @@ irods::error db_check_logical_quota_op(
                                              std::strtoll(values_ary[1], nullptr, 0),
                                              std::strtoll(values_ary[2], nullptr, 0),
                                              std::strtoll(values_ary[3], nullptr, 0),
-                                             std::strtoll(values_ary[4], nullptr, 0)));
+                                             std::strtoll(values_ary[4], nullptr, 0),
+                                             values_ary[5]));
     while ((status = cmlGetNextRowFromStatement(statementNum, &icss)) != CAT_NO_ROWS_FOUND) {
         if (status != 0) {
             cmlFreeStatement(statementNum, &icss);
@@ -17028,7 +17031,8 @@ irods::error db_check_logical_quota_op(
                                                  std::strtoll(values_ary[1], NULL, 0),
                                                  std::strtoll(values_ary[2], NULL, 0),
                                                  std::strtoll(values_ary[3], NULL, 0),
-                                                 std::strtoll(values_ary[4], NULL, 0)));
+                                                 std::strtoll(values_ary[4], NULL, 0),
+                                                 values_ary[5]));
     }
 
     cmlFreeStatement(statementNum, &icss);
@@ -17465,10 +17469,7 @@ irods::database* plugin_factory(
                       function<error(plugin_context&, const char*, const char*, const char*)>(db_set_logical_quota_op));
     pg->add_operation(
         DATABASE_OP_CHECK_LOGICAL_QUOTA,
-        function<error(plugin_context&,
-                       const char*,
-                       std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>>*)>(
-            db_check_logical_quota_op));
+        function<error(plugin_context&, const char*, irods::logical_quotas::quota_vector*)>(db_check_logical_quota_op));
 
     return pg;
 } // plugin_factory
