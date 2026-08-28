@@ -68,9 +68,19 @@ typedef struct LogicalQuota
     ///
     /// \since 5.1.0
     rodsLong_t over_objects;
+
+    /// The last modification time of the quota, as seconds from the epoch.
+    /// This is set on recalculation (even if no values were changed), creation,
+    /// and update of a logical quota.
+    ///
+    /// \since 5.1.0
+    char modify_time[TIME_LEN];
+
 } logicalQuota_t;
 
-#define logicalQuota_PI "str *collName; double maxBytes; double maxObjects; double overBytes; double overObjects;"
+#define logicalQuota_PI                                                                             \
+    "str *collName; double maxBytes; double maxObjects; double overBytes; double overObjects; str " \
+    "modify_time[TIME_LEN];"
 
 /// The type that represents a list of logical quota entries.
 ///

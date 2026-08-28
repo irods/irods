@@ -31,6 +31,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <boost/date_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fmt/compile.h>
 #include <fmt/format.h>
@@ -1019,12 +1020,29 @@ auto list_logical_quotas(const char* _coll_name = nullptr) -> int
         const std::string max_objects_string = std::to_string(quotaEntry.max_objects);
         const std::string bytes_over_string = std::to_string(quotaEntry.over_bytes);
         const std::string objects_over_string = std::to_string(quotaEntry.over_objects);
-        fmt::print("Collection name: {}\nMaximum bytes: {}\nMaximum objects: {}\nBytes over: {}\nObjects over: {}\n",
+
+        std::string modify_ts_string = "?";
+        try {
+            const auto pt = boost::posix_time::from_time_t(std::strtoll(quotaEntry.modify_time, nullptr, 10));
+
+            std::ostringstream ss;
+            ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_facet{"%Y-%m-%d.%H:%M:%S"}));
+            ss << pt;
+
+            modify_ts_string = ss.str();
+        }
+        catch (const std::exception& e) {
+            fmt::print(stderr, "Timestamp conversion error: {}", e.what());
+        }
+
+        fmt::print("Collection name: {}\nMaximum bytes: {}\nMaximum objects: {}\nBytes over: {}\nObjects over: "
+                   "{}\nLast modified: {}\n",
                    quotaEntry.coll_name,
                    (byte_limit_enforced ? max_byte_string.c_str() : "<unset>"),
                    (object_limit_enforced ? max_objects_string.c_str() : "<unset>"),
                    (byte_limit_enforced ? bytes_over_string.c_str() : "<unenforced>"),
-                   (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>"));
+                   (object_limit_enforced ? objects_over_string.c_str() : "<unenforced>"),
+                   modify_ts_string);
         if (i != logicalQuotaList->len - 1) {
             fmt::print("\n");
         }

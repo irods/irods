@@ -1,7 +1,11 @@
-import os
-import sys
-import unittest
 import contextlib
+import datetime
+import os
+import re
+import sys
+import time
+import textwrap
+import unittest
 
 from . import session
 from .. import database_connect
@@ -11,11 +15,13 @@ from .. import test
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
 
 
 class Test_Logical_Quotas(
     session.make_sessions_mixin([("otherrods", "rods")], []), unittest.TestCase
 ):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Logical_Quotas, self).setUp()
@@ -4458,3 +4464,196 @@ class Test_Logical_Quotas(
                     "0",
                 ]
             )
+
+
+    def test_logical_quota_timestamps__issue_9055(self):
+        subcoll_path = f"{self.quota_user.session_collection}/potato"
+        max_bytes = 10000
+        max_objects = 50
+
+        timestamp_regex = re.compile(r'Last modified: (.*)')
+        try:
+            self.quota_user.assert_icommand(["imkdir", subcoll_path])
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    subcoll_path,
+                    str(max_bytes),
+                    str(max_objects),
+                ]
+            )
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"], "STDOUT_SINGLELINE", subcoll_path
+            )
+
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        subcoll_path,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
+                )
+                in out
+            )
+
+            first_ts = timestamp_regex.search(out)
+
+            # Assert that we found something in "Last modified"
+            self.assertNotEqual(first_ts.group(1), None)
+
+            # Wait two seconds to induce a modify_time change
+            time.sleep(2)
+
+            self.admin.assert_icommand(["iadmin", "calculate_logical_usage"])
+
+            _, out, _ = self.admin.assert_icommand(
+                ["iadmin", "list_logical_quotas"], "STDOUT_SINGLELINE", subcoll_path
+            )
+
+            # All except timestamp should be unchanged, since nothing was added
+            self.assertTrue(
+                (
+                    self.llq_output_template
+                    % (
+                        subcoll_path,
+                        str(max_bytes),
+                        str(max_objects),
+                        str(-max_bytes),
+                        str(-max_objects),
+                    )
+                )
+                in out
+            )
+
+            second_ts = timestamp_regex.search(out)
+
+            self.assertNotEqual(second_ts.group(1), None)
+
+            # Assert that the first timestamp is before the second
+            self.assertTrue(datetime.datetime.strptime(first_ts.group(1), '%Y-%m-%d.%H:%M:%S') < datetime.datetime.strptime(second_ts.group(1), '%Y-%m-%d.%H:%M:%S'))
+
+        finally:
+            self.admin.run_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    subcoll_path,
+                    "0",
+                    "0",
+                ]
+            )
+
+    def test_logical_quota_re_serialization_parameter__issue_9055(self):
+        parameter_prefix = 'issue_9055_re_serialization_'
+        parameter_names = ['path', 'modify_time', 'max_bytes', 'max_objects', 'over_bytes', 'over_objects']
+
+        full_parameter_names = {x: f'{parameter_prefix}{x}' for x in parameter_names}
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''\
+                pep_database_check_logical_quota_post(*inst, *ctx, *out, *coll, *quotas) {{
+                    *ss = *quotas."size";
+                    *sz = int(*ss);
+                    for(*i=0;*i<*sz;*i=*i+1) {{
+                        msiGetValByKey(*quotas, str(*i) ++ ":string_1", *A);
+                        msiGetValByKey(*quotas, str(*i) ++ ":string_2", *B);
+                        msiGetValByKey(*quotas, str(*i) ++ ":int_1", *C);
+                        msiGetValByKey(*quotas, str(*i) ++ ":int_2", *D);
+                        msiGetValByKey(*quotas, str(*i) ++ ":int_3", *E);
+                        msiGetValByKey(*quotas, str(*i) ++ ":int_4", *F);
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['path']}', *A, '');
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['modify_time']}', *B, '');
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['max_bytes']}', *C, '');
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['max_objects']}', *D, '');
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['over_bytes']}', *E, '');
+                        msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['over_objects']}', *F, '');
+                    }}
+               }}
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
+                 def pep_database_check_logical_quota_post(rule_args, callback, rei):
+                     callback.writeLine('serverLog', 'blahblahblah')
+                     m = rule_args[4]
+                     for i in range(0, int(m['size'])):
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['path']}', m['%d:string_1' % i], '')
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['modify_time']}', m['%d:string_2' % i], '')
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['max_bytes']}', m['%d:int_1' % i], '')
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['max_objects']}', m['%d:int_2' % i], '')
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['over_bytes']}', m['%d:int_3' % i], '')
+                         callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['over_objects']}', m['%d:int_4' % i], '')
+             ''')
+        }
+
+        max_bytes = 5000
+        max_objects = 50
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                # Needed for the rule to trigger
+                self.quota_user.assert_icommand(
+                    [
+                        "ichmod",
+                        "own",
+                        self.admin.username,
+                        self.quota_user.session_collection
+                    ]
+                )
+
+
+                self.admin.assert_icommand(
+                    [
+                        "iadmin",
+                        "set_logical_quota",
+                        self.quota_user.session_collection,
+                        str(max_bytes),
+                        str(max_objects),
+                    ]
+                )
+
+                _, out, _ = self.admin.assert_icommand(
+                    ["iadmin", "list_logical_quotas"], "STDOUT_SINGLELINE", self.quota_user.session_collection
+                )
+
+                self.assertTrue(
+                    (
+                        self.llq_output_template
+                        % (
+                            self.quota_user.session_collection,
+                            str(max_bytes),
+                            str(max_objects),
+                            str(-max_bytes),
+                            str(-max_objects),
+                        )
+                    )
+                    in out
+                )
+
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.quota_user, full_parameter_names['path'], self.quota_user.session_collection, self.quota_user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.quota_user, full_parameter_names['max_bytes'], str(max_bytes), self.quota_user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.quota_user, full_parameter_names['max_objects'], str(max_objects), self.quota_user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.quota_user, full_parameter_names['over_bytes'], str(-max_bytes), self.quota_user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.quota_user, full_parameter_names['over_objects'], str(-max_objects), self.quota_user.session_collection))
+
+                _, out, _ = self.quota_user.assert_icommand(['iquest', '%s',
+                    f"select META_COLL_ATTR_VALUE where META_COLL_ATTR_NAME = '{full_parameter_names['modify_time']}' and COLL_NAME = '{self.quota_user.session_collection}'"], 'STDOUT')
+
+                # Check that the timestamp "looks like" a timestamp
+                self.assertTrue(re.match('[0-9]+', out))
+        finally:
+            self.admin.run_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+
+            IrodsController().reload_configuration()

@@ -4,6 +4,7 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_error.hpp"
+#include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rodsConnect.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
@@ -21,7 +22,7 @@ namespace
                               const getLogicalQuotaInp_t& _get_logical_quota_inp,
                               logicalQuotaList_t*& _logical_quota_list)
     {
-        std::vector<std::tuple<std::string, std::int64_t, std::int64_t, std::int64_t, std::int64_t>> quota_values;
+        irods::logical_quotas::quota_vector quota_values;
 
         int status = chl_check_logical_quota(&_comm, _get_logical_quota_inp.coll_name, &quota_values);
         if (status < 0) {
@@ -39,6 +40,7 @@ namespace
             _logical_quota_list->list[i].max_objects = std::get<2>(quota_values[i]);
             _logical_quota_list->list[i].over_bytes = std::get<3>(quota_values[i]);
             _logical_quota_list->list[i].over_objects = std::get<4>(quota_values[i]);
+            std::strncpy(_logical_quota_list->list[i].modify_time, std::get<5>(quota_values[i]).c_str(), TIME_LEN);
         }
 
         return status;
