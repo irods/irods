@@ -91,6 +91,12 @@ def find_shared_object(so_name, regex=False, additional_directories=[]):
 
     return paths
 
+
+def read_write_owner_opener(path, flags):
+    """Return a custom opener for use with open() which only grants read/write permissions for the file's owner."""
+    return os.open(path, flags, 0o600)
+
+
 def file_digest(filename, hash_type, encoding='hex'):
     block_size = pow(2, 20)
     hasher = hashlib.new(hash_type)
