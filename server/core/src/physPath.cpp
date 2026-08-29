@@ -57,16 +57,9 @@ namespace
 
     namespace detail
     {
-        enum class file_naming_policy
-        {
-            consistent,
-            random,
-            reversed_dataid
-        };
-
         struct file_naming_policy_config
         {
-            file_naming_policy policy = file_naming_policy::consistent;
+            ivpp::file_naming_policy policy = ivpp::file_naming_policy::consistent;
             int random_scheme_style = ivpp::random_scheme_config_default_style;
             int random_scheme_suffix_length = ivpp::random_scheme_config_default_suffix_length;
         };
@@ -182,24 +175,18 @@ namespace
             auto config = file_naming_policy_config{};
             const auto entries = split_resource_context(context);
 
-            const auto policy_values = get_context_values(entries, ivpp::file_naming_policy);
-            log_duplicate_context_key(ivpp::file_naming_policy, policy_values);
+            const auto policy_values = get_context_values(entries, ivpp::file_naming_policy_key);
+            log_duplicate_context_key(ivpp::file_naming_policy_key, policy_values);
             if (!policy_values.empty()) {
                 const auto& policy = policy_values.back();
-                if (policy == ivpp::file_naming_policy_consistent) {
-                    config.policy = file_naming_policy::consistent;
-                }
-                else if (policy == ivpp::file_naming_policy_random) {
-                    config.policy = file_naming_policy::random;
-                }
-                else if (policy == ivpp::file_naming_policy_reversed_dataid) {
-                    config.policy = file_naming_policy::reversed_dataid;
+                if (const auto parsed_policy = ivpp::to_file_naming_policy(policy); parsed_policy) {
+                    config.policy = *parsed_policy;
                 }
                 else {
                     log_agent::warn(
                         "Invalid value [{}] for resource context key [{}]. Using default value [{}].",
                         policy,
-                        ivpp::file_naming_policy,
+                        ivpp::file_naming_policy_key,
                         ivpp::file_naming_policy_consistent);
                 }
             }
@@ -440,7 +427,7 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return config_result.code();
     }
 
-    if ( config.policy != detail::file_naming_policy::random ) {
+    if ( config.policy != ivpp::file_naming_policy::random ) {
         status = setPathForGraftPathScheme( dataObjInp->objPath,
                                             vault_path.c_str(), DEF_ADD_USER_FLAG,
                                             rsComm->clientUser.userName, DEF_TRIM_DIR_CNT,
@@ -1119,7 +1106,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return config_result.code();
     }
 
-    if ( config.policy != detail::file_naming_policy::consistent ) {
+    if ( config.policy != ivpp::file_naming_policy::consistent ) {
         /* no need to sync */
         return 0;
     }

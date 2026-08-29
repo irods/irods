@@ -1008,7 +1008,7 @@ msiSetGraftPathScheme( msParam_t* /*xaddUserName*/, msParam_t* /*xtrimDirCnt*/,
     rei->status = 0;
     log_msi::warn(
         "msiSetGraftPathScheme is a no-op. Configure per-resource physical path naming with resource context key [{}].",
-        irods::vault_path_policy::file_naming_policy);
+        irods::vault_path_policy::file_naming_policy_key);
     return 0;
 }
 
@@ -1049,7 +1049,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
     rei->status = 0;
     log_msi::warn(
         "msiSetRandomScheme is a no-op. Configure per-resource physical path naming with resource context key [{}].",
-        irods::vault_path_policy::file_naming_policy);
+        irods::vault_path_policy::file_naming_policy_key);
     return 0;
 }
 
