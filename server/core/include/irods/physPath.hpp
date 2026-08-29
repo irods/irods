@@ -41,6 +41,8 @@ int setPathForGraftPathScheme(char *objPath,
 int setPathForRandomScheme(char *objPath,
                            const char *vaultPath,
                            char *userName,
+                           int randomSchemeStyle,
+                           int randomSchemeSuffixLength,
                            char *outPath);
 
 int resolveDupFilePath(RsComm *rsComm,
@@ -128,4 +130,3 @@ namespace irods
 } // namespace irods
 
 #endif // IRODS_PHYS_PATH_HPP
-

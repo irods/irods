@@ -34,6 +34,151 @@ def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replic
         admin_session.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [' {} '.format(str(i)), ' & ', data_obj_name])
     admin_session.assert_icommand_fail(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [' {} '.format(str(replica_count + 1)), data_obj_name])
 
+
+class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_File_Naming_Policy, self).setUp()
+        self.admin = self.admin_sessions[0]
+        self.resource_names = []
+
+    def tearDown(self):
+        self.admin.run_icommand(['irm', '-rf', self.admin.session_collection])
+
+        for parent, child in reversed(getattr(self, 'resource_children', [])):
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', parent, child])
+
+        for resource_name in reversed(self.resource_names):
+            self.admin.run_icommand(['iadmin', 'rmresc', resource_name])
+
+        super(Test_File_Naming_Policy, self).tearDown()
+
+    def make_ufs_resource(self, resource_name, context=None):
+        lib.create_ufs_resource(self.admin, resource_name)
+        self.resource_names.append(resource_name)
+
+        if context is not None:
+            self.admin.assert_icommand(['iadmin', 'modresc', resource_name, 'context', context])
+
+    def get_data_path(self, logical_path, replica_number=0):
+        return lib.get_replica_full_row(self.admin, logical_path, replica_number)['DATA_PATH']
+
+    def test_missing_policy_uses_consistent_layout(self):
+        resource_name = 'test_missing_file_naming_policy_resc'
+        self.make_ufs_resource(resource_name)
+
+        logical_path = os.path.join(self.admin.session_collection, 'missing_policy.txt')
+        self.admin.assert_icommand(['itouch', '-R', resource_name, logical_path])
+
+        self.assertEqual(
+            self.get_data_path(logical_path),
+            os.path.join(self.admin.local_session_dir, resource_name + '_vault', 'home', self.admin.username,
+                         self.admin.get_session_id(), os.path.basename(logical_path)))
+
+    def test_consistent_policy_renames_physical_path_on_logical_move(self):
+        resource_name = 'test_consistent_file_naming_policy_resc'
+        self.make_ufs_resource(resource_name, 'file_naming_policy=consistent')
+
+        logical_path = os.path.join(self.admin.session_collection, 'consistent_policy.txt')
+        moved_logical_path = logical_path + '.moved'
+        self.admin.assert_icommand(['itouch', '-R', resource_name, logical_path])
+        old_data_path = self.get_data_path(logical_path)
+
+        self.admin.assert_icommand(['imv', logical_path, moved_logical_path])
+
+        self.assertNotEqual(old_data_path, self.get_data_path(moved_logical_path))
+        self.assertTrue(self.get_data_path(moved_logical_path).endswith(os.path.basename(moved_logical_path)))
+
+    def test_random_policy_uses_random_layout_and_does_not_rename_on_logical_move(self):
+        resource_name = 'test_random_file_naming_policy_resc'
+        self.make_ufs_resource(resource_name, 'file_naming_policy=random')
+
+        logical_path = os.path.join(self.admin.session_collection, 'random_policy.txt')
+        moved_logical_path = logical_path + '.moved'
+        self.admin.assert_icommand(['itouch', '-R', resource_name, logical_path])
+        old_data_path = self.get_data_path(logical_path)
+
+        self.assertRegex(old_data_path, r'.+/\d+/\d+/random_policy[.]txt[.]\d+$')
+        self.admin.assert_icommand(['imv', logical_path, moved_logical_path])
+        self.assertEqual(old_data_path, self.get_data_path(moved_logical_path))
+
+    def test_invalid_and_duplicate_context_values_warn_and_use_effective_defaults(self):
+        resource_name = 'test_invalid_file_naming_policy_resc'
+        context = 'file_naming_policy=random;file_naming_policy=invalid;random_scheme_style=invalid;random_scheme_suffix_length=0'
+        self.make_ufs_resource(resource_name, context)
+        initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+
+        logical_path = os.path.join(self.admin.session_collection, 'invalid_policy.txt')
+        self.admin.assert_icommand(['itouch', '-R', resource_name, logical_path])
+
+        self.assertTrue(self.get_data_path(logical_path).endswith(os.path.basename(logical_path)))
+        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(
+            paths.server_log_path(), 'duplicate [file_naming_policy] keys', start_index=initial_log_size))
+        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(
+            paths.server_log_path(), 'Invalid value [invalid] for resource context key [file_naming_policy]',
+            start_index=initial_log_size))
+        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(
+            paths.server_log_path(), 'Invalid value [invalid] for resource context key [random_scheme_style]',
+            start_index=initial_log_size))
+        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(
+            paths.server_log_path(), 'Invalid value [0] for resource context key [random_scheme_suffix_length]',
+            start_index=initial_log_size))
+
+    def test_random_style_and_suffix_context_keys_affect_new_writes_only(self):
+        resource_name = 'test_random_config_file_naming_policy_resc'
+        self.make_ufs_resource(resource_name, 'file_naming_policy=random;random_scheme_style=1;random_scheme_suffix_length=12')
+
+        first_logical_path = os.path.join(self.admin.session_collection, 'random_config_first.txt')
+        self.admin.assert_icommand(['itouch', '-R', resource_name, first_logical_path])
+        first_data_path = self.get_data_path(first_logical_path)
+        self.assertRegex(first_data_path, r'.+/\d+/\d+/random_config_first[.]txt[.]\d+[.].{12}$')
+
+        self.admin.assert_icommand(['iadmin', 'modresc', resource_name, 'context',
+                                    'file_naming_policy=random;random_scheme_style=2;random_scheme_suffix_length=3'])
+
+        second_logical_path = os.path.join(self.admin.session_collection, 'random_config_second.txt')
+        self.admin.assert_icommand(['itouch', '-R', resource_name, second_logical_path])
+        self.assertEqual(first_data_path, self.get_data_path(first_logical_path))
+        self.assertRegex(self.get_data_path(second_logical_path), r'.+/\d+/\d+/\d+[.].{3}$')
+
+    def test_recursive_collection_move_with_mixed_leaf_resource_policies(self):
+        self.resource_children = []
+        replication_resource = 'test_mixed_file_naming_policy_repl_resc'
+        consistent_resource = 'test_mixed_file_naming_policy_consistent_resc'
+        random_resource = 'test_mixed_file_naming_policy_random_resc'
+
+        lib.create_replication_resource(self.admin, replication_resource)
+        self.resource_names.append(replication_resource)
+        self.make_ufs_resource(consistent_resource, 'file_naming_policy=consistent')
+        self.make_ufs_resource(random_resource, 'file_naming_policy=random')
+        lib.add_child_resource(self.admin, replication_resource, consistent_resource)
+        self.resource_children.append((replication_resource, consistent_resource))
+        lib.add_child_resource(self.admin, replication_resource, random_resource)
+        self.resource_children.append((replication_resource, random_resource))
+
+        collection = os.path.join(self.admin.session_collection, 'mixed_policy_collection')
+        logical_path = os.path.join(collection, 'data_object.txt')
+        moved_collection = collection + '.moved'
+        moved_logical_path = os.path.join(moved_collection, os.path.basename(logical_path))
+        self.admin.assert_icommand(['imkdir', collection])
+        self.admin.assert_icommand(['itouch', '-R', replication_resource, logical_path])
+
+        paths_before_move = {
+            lib.get_replica_full_row(self.admin, logical_path, replica_number)['DATA_RESC_NAME']:
+                lib.get_replica_full_row(self.admin, logical_path, replica_number)['DATA_PATH']
+            for replica_number in [0, 1]
+        }
+
+        self.admin.assert_icommand(['imv', collection, moved_collection])
+
+        paths_after_move = {
+            lib.get_replica_full_row(self.admin, moved_logical_path, replica_number)['DATA_RESC_NAME']:
+                lib.get_replica_full_row(self.admin, moved_logical_path, replica_number)['DATA_PATH']
+            for replica_number in [0, 1]
+        }
+        self.assertNotEqual(paths_before_move[consistent_resource], paths_after_move[consistent_resource])
+        self.assertEqual(paths_before_move[random_resource], paths_after_move[random_resource])
+
 class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unittest.TestCase):
 
     def setUp(self):

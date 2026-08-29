@@ -965,9 +965,8 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
 /**
  * \fn msiSetGraftPathScheme (msParam_t *xaddUserName, msParam_t *xtrimDirCnt, ruleExecInfo_t *rei)
  *
- * \brief  This microservice sets the VaultPath scheme to GRAFT_PATH.
- *    It grafts (adds) the logical path to the vault path of the resource
- *    when generating the physical path for a data object.
+ * \brief  Compatibility no-op. Physical path naming is configured per leaf
+ *    resource with the file_naming_policy resource context key.
  *
  * \module core
  *
@@ -989,8 +988,8 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence - rei->inOutMsParamArray (label == VAULT_PATH_POLICY)
- * \DolVarModified - rei->inOutMsParamArray (label == VAULT_PATH_POLICY)
+ * \DolVarDependence none
+ * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none
@@ -1002,75 +1001,22 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
  * \sa none
  **/
 int
-msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
+msiSetGraftPathScheme( msParam_t* /*xaddUserName*/, msParam_t* /*xtrimDirCnt*/,
                        ruleExecInfo_t *rei ) {
-    char *addUserNameStr;
-    char *trimDirCntStr;
-    int addUserName;
-    int trimDirCnt;
-    msParam_t *msParam;
-    vaultPathPolicy_t *vaultPathPolicy;
-
     RE_TEST_MACRO( "    Calling msiSetGraftPathScheme" )
 
-    addUserNameStr = ( char * ) xaddUserName->inOutStruct;
-    trimDirCntStr = ( char * ) xtrimDirCnt->inOutStruct;
-
-    if ( strcmp( addUserNameStr, "no" ) == 0 ) {
-        addUserName = 0;
-    }
-    else if ( strcmp( addUserNameStr, "yes" ) == 0 ) {
-        addUserName = 1;
-    }
-    else {
-        rodsLog( LOG_ERROR,
-                 "msiSetGraftPathScheme: invalid input addUserName %s", addUserNameStr );
-        rei->status = SYS_INPUT_PERM_OUT_OF_RANGE;
-        return SYS_INPUT_PERM_OUT_OF_RANGE;
-    }
-
-    if ( !isdigit( trimDirCntStr[0] ) ) {
-        rodsLog( LOG_ERROR,
-                 "msiSetGraftPathScheme: input trimDirCnt %s", trimDirCntStr );
-        rei->status = SYS_INPUT_PERM_OUT_OF_RANGE;
-        return SYS_INPUT_PERM_OUT_OF_RANGE;
-    }
-    else {
-        trimDirCnt = atoi( trimDirCntStr );
-    }
-
     rei->status = 0;
-
-    if ( ( msParam = getMsParamByLabel( &rei->inOutMsParamArray,
-                                        VAULT_PATH_POLICY ) ) != NULL ) {
-        vaultPathPolicy = ( vaultPathPolicy_t * ) msParam->inOutStruct;
-        if ( vaultPathPolicy == NULL ) {
-            vaultPathPolicy = ( vaultPathPolicy_t* )malloc( sizeof( vaultPathPolicy_t ) );
-            msParam->inOutStruct = ( void * ) vaultPathPolicy;
-        }
-        vaultPathPolicy->scheme = GRAFT_PATH_S;
-        vaultPathPolicy->addUserName = addUserName;
-        vaultPathPolicy->trimDirCnt = trimDirCnt;
-        return 0;
-    }
-    else {
-        vaultPathPolicy = ( vaultPathPolicy_t * ) malloc(
-                              sizeof( vaultPathPolicy_t ) );
-        vaultPathPolicy->scheme = GRAFT_PATH_S;
-        vaultPathPolicy->addUserName = addUserName;
-        vaultPathPolicy->trimDirCnt = trimDirCnt;
-        addMsParam( &rei->inOutMsParamArray, VAULT_PATH_POLICY,
-                    VaultPathPolicy_MS_T, ( void * ) vaultPathPolicy, NULL );
-    }
+    log_msi::warn(
+        "msiSetGraftPathScheme is a no-op. Configure per-resource physical path naming with resource context key [{}].",
+        irods::vault_path_policy::file_naming_policy);
     return 0;
 }
 
 /**
  * \fn msiSetRandomScheme (ruleExecInfo_t *rei)
  *
- * \brief  This microservice sets the scheme for composing the physical path in the vault to RANDOM.  A randomly generated path is appended to the
- *         vaultPath when generating the physical path. e.g., $vaultPath/$userName/$randomPath. The advantage with the RANDOM scheme is renaming
- *         operations (imv, irm) are much faster because there is no need to rename the corresponding physical path.
+ * \brief  Compatibility no-op. Physical path naming is configured per leaf
+ *         resource with file_naming_policy=random in the resource context.
  *
  * \module core
  *
@@ -1084,8 +1030,8 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence - rei->inOutMsParamArray (label==VAULT_PATH_POLICY)
- * \DolVarModified - rei->inOutMsParamArray (label==VAULT_PATH_POLICY)
+ * \DolVarDependence none
+ * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none
@@ -1098,132 +1044,30 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
  **/
 int
 msiSetRandomScheme( ruleExecInfo_t *rei ) {
-    msParam_t *msParam;
-    vaultPathPolicy_t *vaultPathPolicy;
-
     RE_TEST_MACRO( "    Calling msiSetRandomScheme" )
 
     rei->status = 0;
-
-    if ( ( msParam = getMsParamByLabel( &rei->inOutMsParamArray,
-                                        VAULT_PATH_POLICY ) ) != NULL ) {
-        vaultPathPolicy = ( vaultPathPolicy_t * ) msParam->inOutStruct;
-        if ( vaultPathPolicy == NULL ) {
-            vaultPathPolicy = ( vaultPathPolicy_t* )malloc( sizeof( vaultPathPolicy_t ) );
-            msParam->inOutStruct = ( void * ) vaultPathPolicy;
-        }
-        memset( vaultPathPolicy, 0, sizeof( vaultPathPolicy_t ) );
-        vaultPathPolicy->scheme = RANDOM_S;
-        return 0;
-    }
-    else {
-        vaultPathPolicy = ( vaultPathPolicy_t * ) malloc(
-                              sizeof( vaultPathPolicy_t ) );
-        memset( vaultPathPolicy, 0, sizeof( vaultPathPolicy_t ) );
-        vaultPathPolicy->scheme = RANDOM_S;
-        addMsParam( &rei->inOutMsParamArray, VAULT_PATH_POLICY,
-                    VaultPathPolicy_MS_T, ( void * ) vaultPathPolicy, NULL );
-    }
+    log_msi::warn(
+        "msiSetRandomScheme is a no-op. Configure per-resource physical path naming with resource context key [{}].",
+        irods::vault_path_policy::file_naming_policy);
     return 0;
 }
 
-auto msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei) -> int
+auto msi_random_scheme_set_style(MsParam* /*_style*/, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
-
-    if (!_style) {
-        log_msi::error("Invalid argument: Expected valid pointer for [_style] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    if (!_style->type) {
-        log_msi::error("Invalid argument: Expected valid pointer for [_style->type] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    if (std::strncmp(_style->type, INT_MS_T, std::strlen(INT_MS_T)) != 0) {
-        log_msi::error("Invalid argument: Expected integer for [_style->type] parameter. Received [{}].", _style->type);
-        _rei->status = SYS_INVALID_INPUT_PARAM;
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    if (!_style->inOutStruct) {
-        log_msi::error(
-            "Invalid argument: Expected valid pointer for [_style->inOutStruct] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    const auto new_style = *static_cast<int*>(_style->inOutStruct);
-    if (new_style < 0 || new_style > 2) {
-        log_msi::error("{}: Invalid style [{}] for vault path scheme. Expected 0, 1, or 2.", __func__, new_style);
-        _rei->status = SYS_INVALID_INPUT_PARAM;
-        return _rei->status;
-    }
-
-    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
-    auto* style = static_cast<int*>(std::malloc(sizeof(int)));
-    *style = new_style;
-    addMsParam(&_rei->inOutMsParamArray,
-               irods::vault_path_policy::random_scheme_style,
-               INT_MS_T,
-               static_cast<void*>(style),
-               nullptr);
-
+    log_msi::warn(
+        "msi_random_scheme_set_style is a no-op. Configure [{}] in the resource context.",
+        irods::vault_path_policy::random_scheme_style);
     return 0;
 } // msi_random_scheme_set_style
 
-auto msi_random_scheme_set_suffix_length(MsParam* _suffix_length, ruleExecInfo_t* _rei) -> int
+auto msi_random_scheme_set_suffix_length(MsParam* /*_suffix_length*/, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
-
-    if (!_suffix_length) {
-        log_msi::error("Invalid argument: Expected valid pointer for [_suffix_length] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    if (!_suffix_length->type) {
-        log_msi::error(
-            "Invalid argument: Expected valid pointer for [_suffix_length->type] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    if (std::strncmp(_suffix_length->type, INT_MS_T, std::strlen(INT_MS_T)) != 0) {
-        log_msi::error("Invalid argument: Expected integer for [_suffix_length->type] parameter. Received [{}].",
-                       _suffix_length->type);
-        _rei->status = SYS_INVALID_INPUT_PARAM;
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    if (!_suffix_length->inOutStruct) {
-        log_msi::error(
-            "Invalid argument: Expected valid pointer for [_suffix_length->inOutStruct] parameter. Received nullptr.");
-        _rei->status = INVALID_INPUT_ARGUMENT_NULL_POINTER;
-        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
-    }
-
-    const auto new_length = *static_cast<int*>(_suffix_length->inOutStruct);
-    if (new_length < 1 || new_length > 32) {
-        log_msi::error("{}: Invalid suffix length [{}] for vault path scheme. Length must satisfy the range [1, 32].",
-                       __func__,
-                       new_length);
-        _rei->status = SYS_INVALID_INPUT_PARAM;
-        return _rei->status;
-    }
-
-    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
-    auto* length = static_cast<int*>(std::malloc(sizeof(int)));
-    *length = new_length;
-    addMsParam(&_rei->inOutMsParamArray,
-               irods::vault_path_policy::random_scheme_suffix_length,
-               INT_MS_T,
-               static_cast<void*>(length),
-               nullptr);
-
+    log_msi::warn(
+        "msi_random_scheme_set_suffix_length is a no-op. Configure [{}] in the resource context.",
+        irods::vault_path_policy::random_scheme_suffix_length);
     return 0;
 } // msi_random_scheme_set_suffix_length
 
@@ -1440,4 +1284,3 @@ msiSetBulkPutPostProcPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
     }
     return rei->status;
 }
-
