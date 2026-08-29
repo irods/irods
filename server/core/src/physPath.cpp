@@ -60,7 +60,8 @@ namespace
         enum class file_naming_policy
         {
             consistent,
-            random
+            random,
+            reversed_dataid
         };
 
         struct file_naming_policy_config
@@ -190,6 +191,9 @@ namespace
                 }
                 else if (policy == ivpp::file_naming_policy_random) {
                     config.policy = file_naming_policy::random;
+                }
+                else if (policy == ivpp::file_naming_policy_reversed_dataid) {
+                    config.policy = file_naming_policy::reversed_dataid;
                 }
                 else {
                     log_agent::warn(
@@ -436,7 +440,7 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return config_result.code();
     }
 
-    if ( config.policy == detail::file_naming_policy::consistent ) {
+    if ( config.policy != detail::file_naming_policy::random ) {
         status = setPathForGraftPathScheme( dataObjInp->objPath,
                                             vault_path.c_str(), DEF_ADD_USER_FLAG,
                                             rsComm->clientUser.userName, DEF_TRIM_DIR_CNT,

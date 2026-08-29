@@ -7,11 +7,12 @@ namespace irods::vault_path_policy
 {
     /// Resource context keyword controlling physical path naming for new writes and logical move sync.
     ///
-    /// Supported values are "consistent" and "random". The value is case-sensitive, leaf-resource scoped,
-    /// and defaults to "consistent" when absent or invalid.
+    /// Supported values are "consistent", "random", and "reversed_dataid". The value is case-sensitive,
+    /// leaf-resource scoped, and defaults to "consistent" when absent or invalid.
     inline constexpr const char* file_naming_policy = "file_naming_policy";
     inline constexpr const char* file_naming_policy_consistent = "consistent";
     inline constexpr const char* file_naming_policy_random = "random";
+    inline constexpr const char* file_naming_policy_reversed_dataid = "reversed_dataid";
 
     /// Resource context keys used when file_naming_policy=random. These affect new writes only.
     inline constexpr const char* random_scheme_style = "random_scheme_style";
