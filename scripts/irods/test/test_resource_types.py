@@ -13,7 +13,6 @@ import subprocess
 import sys
 import tempfile
 import textwrap
-import textwrap
 import time
 import unittest
 
@@ -72,7 +71,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
 
         self.assertEqual(
             self.get_data_path(logical_path),
-            os.path.join(self.admin.local_session_dir, resource_name + '_vault', 'home', self.admin.username,
+            os.path.join(self.admin.local_session_dir, resource_name + '_vault', self.admin.username, 'home', self.admin.username,
                          self.admin.get_session_id(), os.path.basename(logical_path)))
 
     def test_consistent_policy_renames_physical_path_on_logical_move(self):
@@ -135,6 +134,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
 
         self.admin.assert_icommand(['iadmin', 'modresc', resource_name, 'context',
                                     'file_naming_policy=random;random_scheme_style=2;random_scheme_suffix_length=3'])
+        IrodsController().reload_configuration()
 
         second_logical_path = os.path.join(self.admin.session_collection, 'random_config_second.txt')
         self.admin.assert_icommand(['itouch', '-R', resource_name, second_logical_path])
@@ -142,26 +142,19 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
         self.assertRegex(self.get_data_path(second_logical_path), r'.+/\d+/\d+/\d+[.].{3}$')
 
     def test_recursive_collection_move_with_mixed_leaf_resource_policies(self):
-        self.resource_children = []
-        replication_resource = 'test_mixed_file_naming_policy_repl_resc'
         consistent_resource = 'test_mixed_file_naming_policy_consistent_resc'
         random_resource = 'test_mixed_file_naming_policy_random_resc'
 
-        lib.create_replication_resource(self.admin, replication_resource)
-        self.resource_names.append(replication_resource)
         self.make_ufs_resource(consistent_resource, 'file_naming_policy=consistent')
         self.make_ufs_resource(random_resource, 'file_naming_policy=random')
-        lib.add_child_resource(self.admin, replication_resource, consistent_resource)
-        self.resource_children.append((replication_resource, consistent_resource))
-        lib.add_child_resource(self.admin, replication_resource, random_resource)
-        self.resource_children.append((replication_resource, random_resource))
 
         collection = os.path.join(self.admin.session_collection, 'mixed_policy_collection')
         logical_path = os.path.join(collection, 'data_object.txt')
         moved_collection = collection + '.moved'
         moved_logical_path = os.path.join(moved_collection, os.path.basename(logical_path))
         self.admin.assert_icommand(['imkdir', collection])
-        self.admin.assert_icommand(['itouch', '-R', replication_resource, logical_path])
+        self.admin.assert_icommand(['itouch', '-R', consistent_resource, logical_path])
+        self.admin.assert_icommand(['irepl', '-R', random_resource, logical_path])
 
         paths_before_move = {
             lib.get_replica_full_row(self.admin, logical_path, replica_number)['DATA_RESC_NAME']:
