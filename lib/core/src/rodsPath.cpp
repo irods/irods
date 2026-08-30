@@ -510,7 +510,7 @@ int getLastPathElement(char* _logical_path, char* _last_path_element)
 
     namespace fs = irods::experimental::filesystem;
 
-    if (std::string_view sv = _logical_path; fs::path::preferred_separator == sv.back()) {
+    if (std::string_view sv = _logical_path; !sv.empty() && fs::path::preferred_separator == sv.back()) {
         sv = sv.substr(0, sv.size() - 1);
         rstrcpy(_last_path_element, std::string{sv}.data(), MAX_NAME_LEN);
         return 0;
@@ -525,7 +525,7 @@ int getLastPathElement(char* _logical_path, char* _last_path_element)
 
     std::string_view sv = object_name.c_str();
 
-    if (fs::path::preferred_separator == sv.back()) {
+    if (!sv.empty() && fs::path::preferred_separator == sv.back()) {
         sv = sv.substr(0, sv.size() - 1);
     }
 
