@@ -95,8 +95,8 @@ namespace
             return entries;
         } // split_resource_context
 
-        auto get_context_values(const std::vector<context_entry>& _entries,
-                                const std::string& _key) -> std::vector<std::string>
+        auto get_context_values(const std::vector<context_entry>& _entries, const std::string& _key)
+            -> std::vector<std::string>
         {
             std::vector<std::string> values;
 
@@ -159,8 +159,8 @@ namespace
             }
         } // parse_context_integer
 
-        auto get_file_naming_policy_config(const rodsLong_t _resc_id,
-                                           file_naming_policy_config& _config) -> irods::error
+        auto get_file_naming_policy_config(const rodsLong_t _resc_id, file_naming_policy_config& _config)
+            -> irods::error
         {
             if (_resc_id <= 0) {
                 return ERROR(SYS_INVALID_RESC_INPUT, "Invalid resource id for file naming policy lookup.");
