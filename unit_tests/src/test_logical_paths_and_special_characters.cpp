@@ -218,7 +218,7 @@ TEST_CASE("test getLastPathElement")
         REQUIRE(last_path_element == ""s);
     }
 
-    SECTION("")
+    SECTION("empty path string")
     {
         std::string path = "";
         REQUIRE(getLastPathElement(path.data(), last_path_element) == 0);
