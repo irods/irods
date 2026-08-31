@@ -519,7 +519,6 @@ int getLastPathElement(char* _logical_path, char* _last_path_element)
     auto object_name = fs::path{_logical_path}.object_name();
 
     if ("." == object_name || ".." == object_name) {
-        object_name.remove_object_name();
         *_last_path_element = '\0';
         return 0;
     }
