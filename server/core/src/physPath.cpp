@@ -95,7 +95,8 @@ namespace
             return entries;
         } // split_resource_context
 
-        auto get_context_values(const std::vector<context_entry>& _entries, const std::string& _key) -> std::vector<std::string>
+        auto get_context_values(const std::vector<context_entry>& _entries,
+                                const std::string& _key) -> std::vector<std::string>
         {
             std::vector<std::string> values;
 
@@ -140,27 +141,26 @@ namespace
                 std::size_t pos = 0;
                 const auto value = std::stoi(_value, &pos);
                 if (pos != _value.size()) {
-                    log_agent::warn(
-                        "Invalid value [{}] for resource context key [{}]. Using default value [{}].",
-                        _value,
-                        _key,
-                        _default_value);
+                    log_agent::warn("Invalid value [{}] for resource context key [{}]. Using default value [{}].",
+                                    _value,
+                                    _key,
+                                    _default_value);
                     return _default_value;
                 }
 
                 return value;
             }
             catch (const std::exception&) {
-                log_agent::warn(
-                    "Invalid value [{}] for resource context key [{}]. Using default value [{}].",
-                    _value,
-                    _key,
-                    _default_value);
+                log_agent::warn("Invalid value [{}] for resource context key [{}]. Using default value [{}].",
+                                _value,
+                                _key,
+                                _default_value);
                 return _default_value;
             }
         } // parse_context_integer
 
-        auto get_file_naming_policy_config(const rodsLong_t _resc_id, file_naming_policy_config& _config) -> irods::error
+        auto get_file_naming_policy_config(const rodsLong_t _resc_id,
+                                           file_naming_policy_config& _config) -> irods::error
         {
             if (_resc_id <= 0) {
                 return ERROR(SYS_INVALID_RESC_INPUT, "Invalid resource id for file naming policy lookup.");
@@ -168,7 +168,8 @@ namespace
 
             std::string context;
             if (const auto err = irods::get_resource_property<std::string>(_resc_id, irods::RESOURCE_CONTEXT, context);
-                !err.ok()) {
+                !err.ok())
+            {
                 return PASSMSG("Failed to retrieve resource context for file naming policy lookup.", err);
             }
 
@@ -183,11 +184,10 @@ namespace
                     config.policy = *parsed_policy;
                 }
                 else {
-                    log_agent::warn(
-                        "Invalid value [{}] for resource context key [{}]. Using default value [{}].",
-                        policy,
-                        ivpp::file_naming_policy_key,
-                        ivpp::file_naming_policy_consistent);
+                    log_agent::warn("Invalid value [{}] for resource context key [{}]. Using default value [{}].",
+                                    policy,
+                                    ivpp::file_naming_policy_key,
+                                    ivpp::file_naming_policy_consistent);
                 }
             }
 
@@ -200,11 +200,11 @@ namespace
                     config.random_scheme_style = style;
                 }
                 else {
-                    log_agent::warn(
-                        "Invalid value [{}] for resource context key [{}]. Expected 0, 1, or 2. Using default value [{}].",
-                        style_values.back(),
-                        ivpp::random_scheme_style,
-                        ivpp::random_scheme_config_default_style);
+                    log_agent::warn("Invalid value [{}] for resource context key [{}]. Expected 0, 1, or 2. Using "
+                                    "default value [{}].",
+                                    style_values.back(),
+                                    ivpp::random_scheme_style,
+                                    ivpp::random_scheme_config_default_style);
                 }
             }
 
@@ -218,11 +218,11 @@ namespace
                     config.random_scheme_suffix_length = suffix_length;
                 }
                 else {
-                    log_agent::warn(
-                        "Invalid value [{}] for resource context key [{}]. Length must satisfy the range [1, 32]. Using default value [{}].",
-                        suffix_length_values.back(),
-                        ivpp::random_scheme_suffix_length,
-                        ivpp::random_scheme_config_default_suffix_length);
+                    log_agent::warn("Invalid value [{}] for resource context key [{}]. Length must satisfy the range "
+                                    "[1, 32]. Using default value [{}].",
+                                    suffix_length_values.back(),
+                                    ivpp::random_scheme_suffix_length,
+                                    ivpp::random_scheme_config_default_suffix_length);
                 }
             }
 
@@ -378,7 +378,7 @@ getFileFlags( int l1descInx ) {
 int
 getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                  dataObjInp_t *dataObjInp ) {
-    char *filePath;
+    char* filePath;
     int status;
 
     if ( !dataObjInfo ) {
@@ -427,18 +427,21 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return config_result.code();
     }
 
-    if ( config.policy != ivpp::file_naming_policy::random ) {
-        status = setPathForGraftPathScheme( dataObjInp->objPath,
-                                            vault_path.c_str(), DEF_ADD_USER_FLAG,
-                                            rsComm->clientUser.userName, DEF_TRIM_DIR_CNT,
-                                            dataObjInfo->filePath );
+    if (config.policy != ivpp::file_naming_policy::random) {
+        status = setPathForGraftPathScheme(dataObjInp->objPath,
+                                           vault_path.c_str(),
+                                           DEF_ADD_USER_FLAG,
+                                           rsComm->clientUser.userName,
+                                           DEF_TRIM_DIR_CNT,
+                                           dataObjInfo->filePath);
     }
     else {
-        status = setPathForRandomScheme( dataObjInp->objPath,
-                                          vault_path.c_str(), rsComm->clientUser.userName,
-                                          config.random_scheme_style,
-                                          config.random_scheme_suffix_length,
-                                          dataObjInfo->filePath );
+        status = setPathForRandomScheme(dataObjInp->objPath,
+                                        vault_path.c_str(),
+                                        rsComm->clientUser.userName,
+                                        config.random_scheme_style,
+                                        config.random_scheme_suffix_length,
+                                        dataObjInfo->filePath);
     }
 
     return status;
@@ -493,9 +496,13 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     return 0;
 }
 
-int
-setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
-                        int randomSchemeStyle, int randomSchemeSuffixLength, char *outPath ) {
+int setPathForRandomScheme(char* objPath,
+                           const char* vaultPath,
+                           char* userName,
+                           int randomSchemeStyle,
+                           int randomSchemeSuffixLength,
+                           char* outPath)
+{
     int dir1, dir2;
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN];
@@ -515,10 +522,8 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
         return status;
     }
 
-    log_agent::debug("{}: Random scheme: style=[{}], suffix length=[{}]",
-                     __func__,
-                     randomSchemeStyle,
-                     randomSchemeSuffixLength);
+    log_agent::debug(
+        "{}: Random scheme: style=[{}], suffix length=[{}]", __func__, randomSchemeStyle, randomSchemeSuffixLength);
 
     if (randomSchemeStyle == 1) {
         const auto rnd_str =
@@ -1106,7 +1111,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return config_result.code();
     }
 
-    if ( config.policy != ivpp::file_naming_policy::consistent ) {
+    if (config.policy != ivpp::file_naming_policy::consistent) {
         /* no need to sync */
         return 0;
     }
@@ -1142,9 +1147,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( myDdataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         int status = getFilePathName(rsComm, dataObjInfo, &myDdataObjInp);
         if (status < 0) {
-            const auto err{ERROR(status,
-                                 (boost::format("getFilePathName err for [%s]") %
-                                  dataObjInfo->objPath).str().c_str())};
+            const auto err{
+                ERROR(status, (boost::format("getFilePathName err for [%s]") % dataObjInfo->objPath).str().c_str())};
             irods::log(err);
             return err.code();
         }
@@ -1152,9 +1156,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     else {
         int status = getFilePathName(rsComm, dataObjInfo, dataObjInp);
         if (status < 0) {
-            const auto err{ERROR(status,
-                                 (boost::format("getFilePathName err for [%s]") %
-                                  dataObjInfo->objPath).str().c_str())};
+            const auto err{
+                ERROR(status, (boost::format("getFilePathName err for [%s]") % dataObjInfo->objPath).str().c_str())};
             irods::log(err);
             return err.code();
         }

@@ -38,12 +38,12 @@ int setPathForGraftPathScheme(char *objPath,
                               int trimDirCnt,
                               char *outPath);
 
-int setPathForRandomScheme(char *objPath,
-                           const char *vaultPath,
-                           char *userName,
+int setPathForRandomScheme(char* objPath,
+                           const char* vaultPath,
+                           char* userName,
                            int randomSchemeStyle,
                            int randomSchemeSuffixLength,
-                           char *outPath);
+                           char* outPath);
 
 int resolveDupFilePath(RsComm *rsComm,
                        DataObjInfo *dataObjInfo,

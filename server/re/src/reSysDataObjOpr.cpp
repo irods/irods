@@ -1000,9 +1000,8 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
  * \post none
  * \sa none
  **/
-int
-msiSetGraftPathScheme( msParam_t* /*xaddUserName*/, msParam_t* /*xtrimDirCnt*/,
-                       ruleExecInfo_t *rei ) {
+int msiSetGraftPathScheme(msParam_t* /*xaddUserName*/, msParam_t* /*xtrimDirCnt*/, ruleExecInfo_t* rei)
+{
     RE_TEST_MACRO( "    Calling msiSetGraftPathScheme" )
 
     rei->status = 0;
@@ -1042,8 +1041,8 @@ msiSetGraftPathScheme( msParam_t* /*xaddUserName*/, msParam_t* /*xtrimDirCnt*/,
  * \post none
  * \sa none
  **/
-int
-msiSetRandomScheme( ruleExecInfo_t *rei ) {
+int msiSetRandomScheme(ruleExecInfo_t* rei)
+{
     RE_TEST_MACRO( "    Calling msiSetRandomScheme" )
 
     rei->status = 0;
@@ -1056,18 +1055,16 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
 auto msi_random_scheme_set_style(MsParam* /*_style*/, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
-    log_msi::warn(
-        "msi_random_scheme_set_style is a no-op. Configure [{}] in the resource context.",
-        irods::vault_path_policy::random_scheme_style);
+    log_msi::warn("msi_random_scheme_set_style is a no-op. Configure [{}] in the resource context.",
+                  irods::vault_path_policy::random_scheme_style);
     return 0;
 } // msi_random_scheme_set_style
 
 auto msi_random_scheme_set_suffix_length(MsParam* /*_suffix_length*/, ruleExecInfo_t* _rei) -> int
 {
     _rei->status = 0;
-    log_msi::warn(
-        "msi_random_scheme_set_suffix_length is a no-op. Configure [{}] in the resource context.",
-        irods::vault_path_policy::random_scheme_suffix_length);
+    log_msi::warn("msi_random_scheme_set_suffix_length is a no-op. Configure [{}] in the resource context.",
+                  irods::vault_path_policy::random_scheme_suffix_length);
     return 0;
 } // msi_random_scheme_set_suffix_length
 
