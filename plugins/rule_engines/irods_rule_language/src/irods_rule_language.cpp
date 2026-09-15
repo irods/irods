@@ -84,7 +84,9 @@ static std::string get_string_array_from_array(const nlohmann::json& _array)
     return str_array.substr(0, str_array.size() - 1);
 } // get_string_array_from_array
 
-void register_regexes_from_array(const nlohmann::json& _array, const std::string& _instance_name)
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static void register_regexes_from_array(const nlohmann::json& _array,
+                                        [[maybe_unused]] const std::string& _instance_name)
 {
     for (const auto& e : _array) {
         try {
@@ -119,7 +121,8 @@ void initialize_microservice_table()
 
 extern Cache ruleEngineConfig;
 
-irods::error setup(irods::default_re_ctx&, const std::string& _instance_name)
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error setup(irods::default_re_ctx&, const std::string& _instance_name)
 {
     local_instance_name = _instance_name;
 
@@ -180,7 +183,9 @@ irods::error setup(irods::default_re_ctx&, const std::string& _instance_name)
     return ERROR(SYS_INVALID_INPUT_PARAM, msg);
 } // setup
 
-irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _ret) {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _ret)
+{
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
             LOG_DEBUG,
@@ -200,14 +205,21 @@ irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _
     return SUCCESS();
 }
 
-irods::error list_rules( irods::default_re_ctx&, std::vector<std::string>& rule_vec ) {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& rule_vec)
+{
     for ( int i = 0; i < ruleEngineConfig.coreRuleSet->len; ++i ) {
        rule_vec.push_back( ruleEngineConfig.coreRuleSet->rules[i]->node->subtrees[0]->text );
     }
     return SUCCESS();
 }
 
-irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error exec_rule(irods::default_re_ctx&,
+                              const std::string& _rn,
+                              std::list<boost::any>& _ps,
+                              irods::callback _eff_hdlr)
+{
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
             LOG_DEBUG,
@@ -323,13 +335,13 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
     return CODE(ret);
 }
 
-irods::error exec_rule_text(
-    irods::default_re_ctx&,
-    const std::string&     _rt,
-    msParamArray_t*        _ms_params,
-    const std::string&     _out_desc,
-    irods::callback        _eff_hdlr) {
-
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error exec_rule_text(irods::default_re_ctx&,
+                                   const std::string& _rt,
+                                   msParamArray_t* _ms_params,
+                                   const std::string& _out_desc,
+                                   irods::callback _eff_hdlr)
+{
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
             LOG_DEBUG,
@@ -366,12 +378,12 @@ irods::error exec_rule_text(
     return SUCCESS();
 }
 
-irods::error exec_rule_expression(
-    irods::default_re_ctx&,
-    const std::string&     _rt,
-    msParamArray_t*        _ms_params,
-    irods::callback        _eff_hdlr) {
-
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+static irods::error exec_rule_expression(irods::default_re_ctx&,
+                                         const std::string& _rt,
+                                         msParamArray_t* _ms_params,
+                                         irods::callback _eff_hdlr)
+{
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
             LOG_DEBUG,
