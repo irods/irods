@@ -461,26 +461,54 @@ namespace irods {
         void call_setup_operations()
         {
             std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T>& _inp) {
-                _inp.re_->setup_operation(_inp.re_ctx_);
+                const auto err = _inp.re_->setup_operation(_inp.re_ctx_);
+                // clang-format off
+                IRODS_SERVER_ONLY(
+                    if (!err.ok()) {
+                        log_re::info("call_setup_operations: {}", err.result());
+                    }
+                )
+                // clang-format on
             });
         }
 
         void call_teardown_operations()
         {
             std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T>& _inp) {
-                _inp.re_->teardown_operation(_inp.re_ctx_);
+                const auto err = _inp.re_->teardown_operation(_inp.re_ctx_);
+                // clang-format off
+                IRODS_SERVER_ONLY(
+                    if (!err.ok()) {
+                        log_re::info("call_teardown_operations: {}", err.result());
+                    }
+                )
+                // clang-format on
             });
         }
 
         void call_start_operations() {
-            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
-                _inp.re_->start_operation(_inp.re_ctx_);
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T>& _inp) {
+                const auto err = _inp.re_->start_operation(_inp.re_ctx_);
+                // clang-format off
+                IRODS_SERVER_ONLY(
+                    if (!err.ok()) {
+                        log_re::info("call_start_operations: {}", err.result());
+                    }
+                )
+                // clang-format on
             });
         }
 
         void call_stop_operations() {
-            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
-                _inp.re_->stop_operation(_inp.re_ctx_);
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T>& _inp) {
+                const auto err = _inp.re_->stop_operation(_inp.re_ctx_);
+                // clang-format off
+                IRODS_SERVER_ONLY(
+                    if (!err.ok()) {
+                        log_re::info("call_stop_operations: {}", err.result());
+                    }
+                )
+                // clang-format on
             });
         }
 
