@@ -1,14 +1,8 @@
 #include "irods/irods_re_ruleexistshelper.hpp"
-#include "irods/irods_log.hpp"
-
-RuleExistsHelper* RuleExistsHelper::_instance = 0;
 
 RuleExistsHelper* RuleExistsHelper::Instance() {
-    if (!_instance) {
-        _instance = new RuleExistsHelper;
-    }
-
-    return _instance;
+    static RuleExistsHelper instance;
+    return &instance;
 }
 
 void RuleExistsHelper::registerRuleRegex( const std::string& _regex ) {
