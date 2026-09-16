@@ -179,3 +179,53 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
             f'attribute: {avu_name}\n',
             f'value: {avu_value}\n'
         ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
+    def test_all_peps_fire_as_expected_when_irods_rule_language_plugin_is_also_enabled__issue_9072(self):
+        # Enable the NREP. While the NREP isn't used, its presence is required to prove the PREP operates
+        # as intended. It has been observed that the iRODS 5 server (from 5.0.0 to 5.0.2) had a regression,
+        # resulting in the except and finally PEPs not firing.
+        with append_native_re_to_server_config():
+            with temporary_core_file(plugin_name=PYTHON_RULE_ENGINE_PLUGIN_NAME) as core_py:
+                attr_n_pre = 'issue_9072_pre'
+                attr_n_post = 'issue_9072_post'
+                attr_n_except = 'issue_9072_except'
+                attr_n_finally = 'issue_9072_finally'
+                attr_v = 'issue_9072_attr_value'
+
+                # Add rules to core.py that, when triggered, add metadata to the user's session collection.
+                # The metadata is used to confirm whether the PEPs fired.
+                #
+                # The post-PEP returns a -1 to the REPF so that the except-PEP fires.
+                core_py.add_rule(dedent(f'''\
+                    def pep_api_data_obj_get_pre(rule_args, callback, rei):
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_pre}', '{attr_v}', '');
+
+                    def pep_api_data_obj_get_post(rule_args, callback, rei):
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_post}', '{attr_v}', '');
+                        return -1
+
+                    def pep_api_data_obj_get_except(rule_args, callback, rei):
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_except}', '{attr_v}', '');
+
+                    def pep_api_data_obj_get_finally(rule_args, callback, rei):
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_finally}', '{attr_v}', '');
+                '''))
+                IrodsController().reload_configuration()
+
+                # Show the NREP is enabled.
+                rep_instance = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                msg = 'Hello, issue 9072!'
+                self.user.assert_icommand(['irule', '-r', rep_instance, f'writeLine("stdout", "{msg}")', 'null', 'ruleExecOut'], 'STDOUT', [msg])
+
+                # Trigger the PEPs!
+                data_object = 'issue_9072.txt'
+                self.user.assert_icommand(['itouch', data_object])
+                self.user.assert_icommand(
+                    ['iget', data_object, '-'], 'STDERR', ['ERROR: getUtil: get error for - status = -1 Unknown iRODS error, Operation not permitted'])
+
+                # All PEPs should have fired, resulting in metadata being attached to the user's session collection.
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.user, attr_n_pre, attr_v, self.user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.user, attr_n_post, attr_v, self.user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.user, attr_n_except, attr_v, self.user.session_collection))
+                self.assertTrue(lib.metadata_attr_with_value_exists_on_collection(self.user, attr_n_finally, attr_v, self.user.session_collection))
