@@ -5,11 +5,14 @@ import unittest
 from . import session
 from .. import lib
 from .. import test
+from ..configuration import IrodsConfig
 
 admins = []
 users  = [('alice', 'apass')]
 
 class Test_Ips(session.make_sessions_mixin(admins, users), unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Ips, self).setUp()
@@ -20,6 +23,7 @@ class Test_Ips(session.make_sessions_mixin(admins, users), unittest.TestCase):
         super(Test_Ips, self).tearDown()
 
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Issue is indepedent of any REP. NREP is used due to convenience.')
     def test_server_replaces_spaces_with_hyphens_in_client_names_reported_by_ips__issue_8733(self):
         # Launch a client that opens a connection to the server. This client will
         # not terminate until it receives the SIGINT signal. Notice the spaces in the name.
