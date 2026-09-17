@@ -184,7 +184,7 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
     def test_post_except_finally_peps_fire_as_expected_when_native_rule_language_is_also_enable__issue_9072(self):
         # Enable the NREP. While the NREP isn't used, its presence is required to prove the PREP operates
         # as intended. It has been observed that the iRODS 5 server (starting with 5.0.0) introduced a
-        # regression, resulting in the post, except, and finally PEPs not firing.
+        # regression, resulting in the except and finally PEPs not firing.
         with append_native_re_to_server_config():
             with temporary_core_file(plugin_name=PYTHON_RULE_ENGINE_PLUGIN_NAME) as core_py:
                 attr_n_pre = 'issue_9072_pre'
@@ -202,11 +202,11 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
                         callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_pre}', '{attr_v}', '');
 
                     def pep_api_data_obj_get_post(rule_args, callback, rei):
-                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_except}', '{attr_v}', '');
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_post}', '{attr_v}', '');
                         return -1
 
                     def pep_api_data_obj_get_except(rule_args, callback, rei):
-                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_post}', '{attr_v}', '');
+                        callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_except}', '{attr_v}', '');
 
                     def pep_api_data_obj_get_finally(rule_args, callback, rei):
                         callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_finally}', '{attr_v}', '');
