@@ -181,7 +181,7 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
         ])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
-    def test_post_except_finally_peps_fire_as_expected_when_native_rule_language_is_also_enable__issue_9072(self):
+    def test_all_peps_fire_as_expected_when_irods_rule_language_plugin_is_also_enabled__issue_9072(self):
         # Enable the NREP. While the NREP isn't used, its presence is required to prove the PREP operates
         # as intended. It has been observed that the iRODS 5 server (starting with 5.0.0) introduced a
         # regression, resulting in the except and finally PEPs not firing.
@@ -212,6 +212,11 @@ class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 
                         callback.msiModAVUMetadata('-C', '{self.user.session_collection}', 'set', '{attr_n_finally}', '{attr_v}', '');
                 '''))
                 IrodsController().reload_configuration()
+
+                # Show the NREP is enabled.
+                rep_instance = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                msg = 'Hello, issue 9072!'
+                self.user.assert_icommand(['irule', '-r', rep_instance, f'writeLine("stdout", "{msg}")', 'null', 'ruleExecOut'], 'STDOUT', [msg])
 
                 # Trigger the PEPs!
                 data_object = 'issue_9072.txt'
