@@ -77,7 +77,7 @@ auto set_replica_status(RcComm& _comm,
     return rcModDataObjMeta(&_comm, &inp);
 }
 
-TEST_CASE("Stat on single data object")
+TEST_CASE("rcObjStat on a data object with no heirarchy returns the object status of the data object requested")
 {
     load_client_api_plugins();
 
