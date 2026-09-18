@@ -104,6 +104,20 @@ TEST_CASE("Stat on single data object")
     REQUIRE(res->objSize == 0);
 }
 
+// This structure provides the setup and teardown for tests that
+// request its use.
+//
+// The structure provides:
+//  - a connection that may be used throughout the test
+//  - a UUID to help prevent naming collisions
+//  - a test specific collection (sandbox)
+//  - a simple resource heirarchy, replication with two unix resources beneath it
+//
+// Tests wishing to use the structure may use it by specificing it in the following:
+//  - TEST_CASE_PERSISTENT_FIXTURE(classname, ...)
+//    - Runs setup and teardown once, regardless of SECTION(...)
+//  - TEST_CASE_METHOD(classname, ...)
+//    - May run setup multiple times if SECTION(...) is present
 struct TestFixture
 {
     // Ignore member variable complaints for now
