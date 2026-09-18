@@ -77,7 +77,7 @@ auto set_replica_status(RcComm& _comm,
     return rcModDataObjMeta(&_comm, &inp);
 }
 
-TEST_CASE("rcObjStat on a data object with no heirarchy returns the object status of the data object requested")
+TEST_CASE("rcObjStat on a data object with no hierarchy returns the object status of the data object requested")
 {
     load_client_api_plugins();
 
@@ -111,7 +111,7 @@ TEST_CASE("rcObjStat on a data object with no heirarchy returns the object statu
 //  - a connection that may be used throughout the test
 //  - a UUID to help prevent naming collisions
 //  - a test specific collection (sandbox)
-//  - a simple resource heirarchy, replication with two unix resources beneath it
+//  - a simple resource hierarchy, replication with two unix resources beneath it
 //
 // Tests wishing to use the structure may use it by specificing it in the following:
 //  - TEST_CASE_PERSISTENT_FIXTURE(classname, ...)
@@ -135,7 +135,7 @@ struct test_fixture_for_issue_8993
     std::filesystem::path res_a_path;
     std::filesystem::path res_b_path;
 
-    // Resource info for the heirarchy
+    // Resource info for the hierarchy
     adm::resource_registration_info res_regis_a;
     adm::resource_registration_info res_regis_b;
     adm::resource_registration_info res_regis_repl;
