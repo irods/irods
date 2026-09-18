@@ -319,6 +319,56 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1, '-t', ticket], 'STDOUT_SINGLELINE', filename_3)
         self.admin.assert_icommand(['iticket', 'delete', ticket])
 
+    def test_ils_with_ticket_does_not_match_sibling_collection_with_common_prefix__issue_9081(self):
+        try:
+            # build paths
+            ticketed_collection = os.path.join(self.admin.session_collection, 'project-x')
+            child_collection = os.path.join(ticketed_collection, 'child')
+            sibling_collection = os.path.join(self.admin.session_collection, 'project-x-sibling')
+            ticket = 'ticket_ils_prefix__9081'
+
+            # create targets and ticket as admin
+            self.admin.assert_icommand(['imkdir', '-p', child_collection])
+            self.admin.assert_icommand(['imkdir', sibling_collection])
+            self.admin.assert_icommand(['iticket', 'create', 'read', ticketed_collection, ticket])
+
+            # show ticket works for target and child as rodsuser
+            self.user.assert_icommand(['ils', '-t', ticket, ticketed_collection], 'STDOUT', ticketed_collection)
+            self.user.assert_icommand(['ils', '-t', ticket, child_collection], 'STDOUT', child_collection)
+
+            # show rodsuser cannot list sibling
+            ec, out, _ = self.user.assert_icommand(['ils', '-t', ticket, sibling_collection], 'STDERR', 'user lacks access permission')
+            self.assertNotEqual(0, ec)
+
+        finally:
+            self.admin.run_icommand(['iticket', 'delete', ticket])
+
+    def test_iget_with_ticket_does_not_match_sibling_collection_with_common_prefix__issue_9081(self):
+        try:
+            # build paths
+            ticketed_collection = os.path.join(self.admin.session_collection, 'project-x')
+            sibling_collection = os.path.join(self.admin.session_collection, 'project-x-sibling')
+            ticketed_data_object = os.path.join(ticketed_collection, 'public.txt')
+            sibling_data_object = os.path.join(sibling_collection, 'hidden.txt')
+            ticket = 'ticket_iget_prefix_9081'
+
+            # create targets and ticket as admin
+            self.admin.assert_icommand(['imkdir', '-p', ticketed_collection])
+            self.admin.assert_icommand(['imkdir', sibling_collection])
+            self.admin.assert_icommand(['istream', 'write', ticketed_data_object], input='read me')
+            self.admin.assert_icommand(['istream', 'write', sibling_data_object], input='hidden stuff')
+            self.admin.assert_icommand(['iticket', 'create', 'read', ticketed_collection, ticket])
+
+            # show ticket works for target as rodsuser
+            self.user.assert_icommand(['iget', '-t', ticket, ticketed_data_object, '-'], 'STDOUT', 'read me')
+
+            # show rodsuser cannot list sibling object
+            ec, out, _ = self.user.assert_icommand(['iget', '-t', ticket, sibling_data_object, '-'], 'STDERR', '-890000 CAT_TICKET_INVALID')
+            self.assertNotEqual(0, ec)
+
+        finally:
+                self.admin.run_icommand(['iticket', 'delete', ticket])
+
     def test_ticket_create_ticket_with_string_as_number__issue_3553(self):
         filename = '3553_test_file'
         lib.make_file(filename, 1024, 'arbitrary')
