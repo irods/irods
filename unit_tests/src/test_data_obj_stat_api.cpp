@@ -118,7 +118,7 @@ TEST_CASE("Stat on single data object")
 //    - Runs setup and teardown once, regardless of SECTION(...)
 //  - TEST_CASE_METHOD(classname, ...)
 //    - May run setup multiple times if SECTION(...) is present
-struct TestFixture
+struct test_fixture_for_issue_8993
 {
     // Ignore member variable complaints for now
     // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
@@ -142,10 +142,10 @@ struct TestFixture
     // NOLINTEND(misc-non-private-member-variables-in-classes)
 
     // Make clang happy with the class
-    auto operator=(TestFixture&) -> TestFixture = delete;
-    TestFixture(TestFixture&) = delete;
-    auto operator=(TestFixture&&) -> TestFixture = delete;
-    TestFixture(TestFixture&&) = delete;
+    auto operator=(test_fixture_for_issue_8993&) -> test_fixture_for_issue_8993 = delete;
+    test_fixture_for_issue_8993(test_fixture_for_issue_8993&) = delete;
+    auto operator=(test_fixture_for_issue_8993&&) -> test_fixture_for_issue_8993 = delete;
+    test_fixture_for_issue_8993(test_fixture_for_issue_8993&&) = delete;
 
     static auto generate_uuid() -> std::string
     {
@@ -153,7 +153,7 @@ struct TestFixture
         return to_string(gen());
     }
 
-    TestFixture()
+    test_fixture_for_issue_8993()
         : env{}
         , test_uui{generate_uuid()}
         , conn{irods::experimental::defer_connection}
@@ -216,7 +216,7 @@ struct TestFixture
         }
     }
 
-    ~TestFixture() noexcept
+    ~test_fixture_for_issue_8993() noexcept
     {
         // Reset connection jic!
         conn.disconnect();
@@ -246,13 +246,13 @@ struct TestFixture
     }
 };
 
-TEST_CASE_METHOD(TestFixture, "Stat on data object with only good replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only good replicas")
 {
     auto res{stat(conn, test_data_object)};
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(TestFixture, "Stat on data object with mixed stale and good replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with mixed stale and good replicas")
 {
     constexpr rodsLong_t bad_size{10};
     auto& comm{static_cast<RcComm&>(conn)};
@@ -268,7 +268,7 @@ TEST_CASE_METHOD(TestFixture, "Stat on data object with mixed stale and good rep
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(TestFixture, "Stat on data object with only stale replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only stale replicas")
 {
     constexpr rodsLong_t bad_size_one{10};
     auto& comm{static_cast<RcComm&>(conn)};
@@ -288,7 +288,7 @@ TEST_CASE_METHOD(TestFixture, "Stat on data object with only stale replicas")
     REQUIRE(res->objSize == bad_size_one);
 }
 
-TEST_CASE_METHOD(TestFixture, "Stat on data object with invalid status")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with invalid status")
 {
     constexpr rodsLong_t bad_size{10};
     constexpr auto bad_status{42};
@@ -304,7 +304,7 @@ TEST_CASE_METHOD(TestFixture, "Stat on data object with invalid status")
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(TestFixture, "Stat on data object with only invalid status")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only invalid status")
 {
     constexpr rodsLong_t bad_size_one{10};
     constexpr auto bad_status_one{42};
