@@ -322,9 +322,9 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_ils_with_ticket_does_not_match_sibling_collection_with_common_prefix__issue_9081(self):
         try:
             # build paths
-            ticketed_collection = os.path.join(self.admin.session_collection, 'project-x')
+            ticketed_collection = os.path.join(self.admin.session_collection, 'ils-9081-project-x')
             child_collection = os.path.join(ticketed_collection, 'child')
-            sibling_collection = os.path.join(self.admin.session_collection, 'project-x-sibling')
+            sibling_collection = os.path.join(self.admin.session_collection, 'ils-9081-project-x-sibling')
             ticket = 'ticket_ils_prefix__9081'
 
             # create targets and ticket as admin
@@ -346,11 +346,11 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_iget_with_ticket_does_not_match_sibling_collection_with_common_prefix__issue_9081(self):
         try:
             # build paths
-            ticketed_collection = os.path.join(self.admin.session_collection, 'project-x')
-            sibling_collection = os.path.join(self.admin.session_collection, 'project-x-sibling')
+            ticketed_collection = os.path.join(self.admin.session_collection, 'iget-9081-project-x')
+            sibling_collection = os.path.join(self.admin.session_collection, 'iget-9081-project-x-sibling')
             ticketed_data_object = os.path.join(ticketed_collection, 'public.txt')
             sibling_data_object = os.path.join(sibling_collection, 'hidden.txt')
-            ticket = 'ticket_iget_prefix_9081'
+            ticket = 'ticket_iget_prefix__9081'
 
             # create targets and ticket as admin
             self.admin.assert_icommand(['imkdir', '-p', ticketed_collection])
