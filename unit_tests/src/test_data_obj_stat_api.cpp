@@ -246,7 +246,7 @@ struct test_fixture_for_issue_8993
     }
 };
 
-TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only good replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "rcObjStat on data object with only good replicas returns object status held by either good replica")
 {
     auto& comm{static_cast<RcComm&>(conn)};
     REQUIRE(irods::experimental::replica::replica_status(comm, test_data_object, 0) == GOOD_REPLICA);
@@ -256,7 +256,7 @@ TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only goo
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with mixed stale and good replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "rcObjStat on data object with mixed stale and good replicas returns object status held by good replica")
 {
     constexpr rodsLong_t bad_size{10};
     auto& comm{static_cast<RcComm&>(conn)};
@@ -272,7 +272,7 @@ TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with mixed st
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only stale replicas")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "rcObjStat on data object with only stale replicas returns status held by first replica")
 {
     constexpr rodsLong_t bad_size_one{10};
     auto& comm{static_cast<RcComm&>(conn)};
@@ -292,7 +292,7 @@ TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only sta
     REQUIRE(res->objSize == bad_size_one);
 }
 
-TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with invalid status")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "rcObjStat on data object with mixed good and invalid replicas returns object status from good replica")
 {
     constexpr rodsLong_t bad_size{10};
     constexpr auto bad_status{42};
@@ -308,7 +308,7 @@ TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with invalid 
     REQUIRE(res->objSize == 0);
 }
 
-TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only invalid status")
+TEST_CASE_METHOD(test_fixture_for_issue_8993, "rcObjStat on data object with only invalid replicas returns status held by first replica")
 {
     constexpr rodsLong_t bad_size_one{10};
     constexpr auto bad_status_one{42};
