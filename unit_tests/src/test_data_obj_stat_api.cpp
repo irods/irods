@@ -248,6 +248,10 @@ struct test_fixture_for_issue_8993
 
 TEST_CASE_METHOD(test_fixture_for_issue_8993, "Stat on data object with only good replicas")
 {
+    auto& comm{static_cast<RcComm&>(conn)};
+    REQUIRE(irods::experimental::replica::replica_status(comm, test_data_object, 0) == GOOD_REPLICA);
+    REQUIRE(irods::experimental::replica::replica_status(comm, test_data_object, 1) == GOOD_REPLICA);
+
     auto res{stat(conn, test_data_object)};
     REQUIRE(res->objSize == 0);
 }
