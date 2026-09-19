@@ -363,7 +363,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.user.assert_icommand(['iget', '-t', ticket, ticketed_data_object, '-'], 'STDOUT', 'read me')
 
             # show rodsuser cannot list sibling object
-            ec, out, _ = self.user.assert_icommand(['iget', '-t', ticket, sibling_data_object, '-'], 'STDERR', '-890000 CAT_TICKET_INVALID')
+            ec, out, _ = self.user.assert_icommand(['iget', '-t', ticket, sibling_data_object, '-'], 'STDERR', '-317000 USER_INPUT_PATH_ERR')
             self.assertNotEqual(0, ec)
 
         finally:
