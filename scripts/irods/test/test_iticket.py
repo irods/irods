@@ -367,7 +367,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.assertNotEqual(0, ec)
 
         finally:
-                self.admin.run_icommand(['iticket', 'delete', ticket])
+            self.admin.run_icommand(['iticket', 'delete', ticket])
 
     def test_ticket_create_ticket_with_string_as_number__issue_3553(self):
         filename = '3553_test_file'
