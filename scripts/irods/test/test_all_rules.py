@@ -1810,15 +1810,23 @@ OUTPUT ruleExecOut
             IrodsController().reload_configuration()
 
     def test_vault_path_random_scheme_customization_options__issue_8917(self):
-        # This function assumes acSetVaultPathPolicy()'s entire definition is on one line.
-        # The test will fail if that assumption is broken.
+        # For the NREP, this function assumes acSetVaultPathPolicy()'s entire definition is on one line.
+        # For the PREP, this function assumes the body of acSetVaultPathPolicy() contains one line.
         def replace_acSetVaultPathPolicyPEP(filepath, replacement_string):
+            line_appender_predicate = None
+            if plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
+                line_appender_predicate = lambda line: line.startswith('acSetVaultPathPolicy')
+            elif plugin_name == 'irods_rule_engine_plugin-python':
+                line_appender_predicate = lambda line: "    callback.msiSetGraftPathScheme('no', '1')" in line
+            else:
+                self.fail('Rule engine plugin not found. Expected NREP or PREP.')
+
             with open(filepath) as f:
                 lines = f.readlines()
 
             new_content = []
             for line in lines:
-                if line.startswith('acSetVaultPathPolicy'):
+                if line_appender_predicate(line):
                     new_content.append(replacement_string)
                 else:
                     new_content.append(line)
@@ -1837,11 +1845,12 @@ OUTPUT ruleExecOut
                             msi_random_scheme_set_suffix_length({suffix_length});
                         }}
                         '''),
+                    # The function signature is commented out, but exists for the reader of this test.
                     'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
-                        def acSetVaultPathPolicy(rule_args, callback, rei):
+                        #def acSetVaultPathPolicy(rule_args, callback, rei):
                             callback.msiSetRandomScheme()
                             callback.msi_random_scheme_set_style({style})
-                            callback.msi_random_scheme_set_suffix_length({suffix_length});
+                            callback.msi_random_scheme_set_suffix_length({suffix_length})
                         ''')
                 }
             else:
@@ -1853,8 +1862,9 @@ OUTPUT ruleExecOut
                             msi_random_scheme_set_style({style});
                         }}
                         '''),
+                    # The function signature is commented out, but exists for the reader of this test.
                     'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
-                        def acSetVaultPathPolicy(rule_args, callback, rei):
+                        #def acSetVaultPathPolicy(rule_args, callback, rei):
                             callback.msiSetRandomScheme()
                             callback.msi_random_scheme_set_style({style})
                         ''')
@@ -1943,6 +1953,7 @@ OUTPUT ruleExecOut
         data_path = lib.get_replica_full_row(self.user0, data_object, 0)['DATA_PATH']
         self.assertEqual(data_path, f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Issue is indepedent of any REP. NREP is used due to convenience.')
     def test_delay_server_executes_delay_rule_as_the_user_who_scheduled_it__issue_9059(self):
         try:
             # Decrease the delay server's sleep time so that delay rules are picked up faster.
