@@ -1682,7 +1682,7 @@ genqAppendAccessCheck() {
             cllBindVars[cllBindVarCount++] = sessionTicket;
             cllBindVars[cllBindVarCount++] = sessionTicket;
             cllBindVars[cllBindVarCount++] = sessionTicket;
-            if ( !rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '/%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             ticketAlreadyChecked = 1;
         }
 
@@ -1695,7 +1695,7 @@ genqAppendAccessCheck() {
 
                 cllBindVars[cllBindVarCount++] = sessionTicket;
                 cllBindVars[cllBindVarCount++] = sessionTicket;
-                if ( !rstrcat( whereSQL, "( R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, "( R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '/%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
         }
     }
