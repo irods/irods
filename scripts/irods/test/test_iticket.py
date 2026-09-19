@@ -337,7 +337,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.user.assert_icommand(['ils', '-t', ticket, child_collection], 'STDOUT', child_collection)
 
             # show rodsuser cannot list sibling
-            ec, out, _ = self.user.assert_icommand(['ils', '-t', ticket, sibling_collection], 'STDERR', 'user lacks access permission')
+            ec, _, _ = self.user.assert_icommand(['ils', '-t', ticket, sibling_collection], 'STDERR', 'user lacks access permission')
             self.assertNotEqual(0, ec)
 
         finally:
@@ -363,7 +363,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.user.assert_icommand(['iget', '-t', ticket, ticketed_data_object, '-'], 'STDOUT', 'read me')
 
             # show rodsuser cannot list sibling object
-            ec, out, _ = self.user.assert_icommand(['iget', '-t', ticket, sibling_data_object, '-'], 'STDERR', '-317000 USER_INPUT_PATH_ERR')
+            ec, _, _ = self.user.assert_icommand(['iget', '-t', ticket, sibling_data_object, '-'], 'STDERR', '-317000 USER_INPUT_PATH_ERR')
             self.assertNotEqual(0, ec)
 
         finally:
