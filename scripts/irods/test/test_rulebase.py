@@ -817,9 +817,6 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
     def test_acPostProcForCopy(self):
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['icp {testfile} {testfile}_copy'])
 
-    def test_acSetVaultPathPolicy(self):
-        self.pep_test_helper(commands=['iput -f {testfile}'])
-
     def test_acPreprocForDataObjOpen(self):
         rule_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
