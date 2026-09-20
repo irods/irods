@@ -428,9 +428,11 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if (config.policy != ivpp::file_naming_policy::random) {
+        // Preserve the shipped consistent layout from acSetVaultPathPolicy's
+        // msiSetGraftPathScheme("no", "1") default: <vault>/home/<user>/...
         status = setPathForGraftPathScheme(dataObjInp->objPath,
                                            vault_path.c_str(),
-                                           DEF_ADD_USER_FLAG,
+                                           0, // addUserName "no"
                                            rsComm->clientUser.userName,
                                            DEF_TRIM_DIR_CNT,
                                            dataObjInfo->filePath);

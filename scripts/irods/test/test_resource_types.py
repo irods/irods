@@ -71,7 +71,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
 
         self.assertEqual(
             self.get_data_path(logical_path),
-            os.path.join(self.admin.local_session_dir, resource_name + '_vault', self.admin.username, 'home', self.admin.username,
+            os.path.join(self.admin.local_session_dir, resource_name + '_vault', 'home', self.admin.username,
                          self.admin.get_session_id(), os.path.basename(logical_path)))
 
     def test_consistent_policy_renames_physical_path_on_logical_move(self):

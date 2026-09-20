@@ -1844,7 +1844,7 @@ OUTPUT ruleExecOut
         self.assertTrue(lib.replica_exists(self.user0, data_object, 0))
         self.assertEqual(
             lib.get_replica_full_row(self.user0, data_object, 0)['DATA_PATH'],
-            f'/var/lib/irods/Vault/{self.user0.username}/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
+            f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Only applicable to the NREP')
     def test_irule_cannot_modify_the_random_scheme_via_acSetVaultPathPolicy__issue_8917(self):
@@ -1882,7 +1882,7 @@ OUTPUT ruleExecOut
         # Show the physical path of the data object matches what we'd expect when the
         # random scheme isn't enabled.
         data_path = lib.get_replica_full_row(self.user0, data_object, 0)['DATA_PATH']
-        self.assertEqual(data_path, f'/var/lib/irods/Vault/{self.user0.username}/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
+        self.assertEqual(data_path, f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Issue is indepedent of any REP. NREP is used due to convenience.')
     def test_delay_server_executes_delay_rule_as_the_user_who_scheduled_it__issue_9059(self):
