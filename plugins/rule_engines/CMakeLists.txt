@@ -8,6 +8,7 @@ set(
   IRODS_RULE_ENGINE_PLUGINS
   irods_rule_language
   cpp_default_policy
+  metadata_guard
   passthrough
 )
 
