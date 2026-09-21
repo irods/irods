@@ -1171,7 +1171,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     int status = 0;
 
-    /* see if the new file exist */
+    /* see if the new file exists */
     if ( getSizeInVault( rsComm, dataObjInfo ) >= 0 ) {
         if ( ( status = chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier,
                                                 dataObjInfo->filePath, dataObjInfo->rescName, STALE_REPLICA ) ) <= 0 ) {
