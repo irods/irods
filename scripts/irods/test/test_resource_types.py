@@ -62,7 +62,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
     def get_data_path(self, logical_path, replica_number=0):
         return lib.get_replica_full_row(self.admin, logical_path, replica_number)['DATA_PATH']
 
-    def test_missing_policy_uses_consistent_layout(self):
+    def test_missing_policy_uses_consistent_layout__issue_9062(self):
         resource_name = 'test_missing_file_naming_policy_resc'
         self.make_ufs_resource(resource_name)
 
@@ -74,7 +74,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
             os.path.join(self.admin.local_session_dir, resource_name + '_vault', 'home', self.admin.username,
                          self.admin.get_session_id(), os.path.basename(logical_path)))
 
-    def test_consistent_policy_renames_physical_path_on_logical_move(self):
+    def test_consistent_policy_renames_physical_path_on_logical_move__issue_9062(self):
         resource_name = 'test_consistent_file_naming_policy_resc'
         self.make_ufs_resource(resource_name, 'file_naming_policy=consistent')
 
@@ -88,7 +88,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
         self.assertNotEqual(old_data_path, self.get_data_path(moved_logical_path))
         self.assertTrue(self.get_data_path(moved_logical_path).endswith(os.path.basename(moved_logical_path)))
 
-    def test_random_policy_uses_random_layout_and_does_not_rename_on_logical_move(self):
+    def test_random_policy_uses_random_layout_and_does_not_rename_on_logical_move__issue_9062(self):
         resource_name = 'test_random_file_naming_policy_resc'
         self.make_ufs_resource(resource_name, 'file_naming_policy=random')
 
@@ -101,7 +101,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
         self.admin.assert_icommand(['imv', logical_path, moved_logical_path])
         self.assertEqual(old_data_path, self.get_data_path(moved_logical_path))
 
-    def test_invalid_and_duplicate_context_values_warn_and_use_effective_defaults(self):
+    def test_invalid_and_duplicate_context_values_warn_and_use_effective_defaults__issue_9062(self):
         resource_name = 'test_invalid_file_naming_policy_resc'
         context = 'file_naming_policy=random;file_naming_policy=invalid;random_scheme_style=invalid;random_scheme_suffix_length=0'
         self.make_ufs_resource(resource_name, context)
@@ -123,7 +123,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
             paths.server_log_path(), 'Invalid value [0] for resource context key [random_scheme_suffix_length]',
             start_index=initial_log_size))
 
-    def test_random_style_and_suffix_context_keys_affect_new_writes_only(self):
+    def test_random_style_and_suffix_context_keys_affect_new_writes_only__issue_9062(self):
         resource_name = 'test_random_config_file_naming_policy_resc'
         self.make_ufs_resource(resource_name, 'file_naming_policy=random;random_scheme_style=1;random_scheme_suffix_length=12')
 
@@ -141,7 +141,7 @@ class Test_File_Naming_Policy(session.make_sessions_mixin([('otherrods', 'rods')
         self.assertEqual(first_data_path, self.get_data_path(first_logical_path))
         self.assertRegex(self.get_data_path(second_logical_path), r'.+/\d+/\d+/\d+[.].{3}$')
 
-    def test_recursive_collection_move_with_mixed_leaf_resource_policies(self):
+    def test_recursive_collection_move_with_mixed_leaf_resource_policies__issue_9062(self):
         consistent_resource = 'test_mixed_file_naming_policy_consistent_resc'
         random_resource = 'test_mixed_file_naming_policy_random_resc'
 
