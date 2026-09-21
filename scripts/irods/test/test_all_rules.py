@@ -1809,7 +1809,7 @@ OUTPUT ruleExecOut
         finally:
             IrodsController().reload_configuration()
 
-    def test_vault_path_random_scheme_microservices_are_noops__issue_8917(self):
+    def test_vault_path_random_scheme_microservices_are_noops__issue_9062(self):
         rule_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''\
                 do_test
@@ -1817,7 +1817,7 @@ OUTPUT ruleExecOut
                     msiSetRandomScheme();
                     msi_random_scheme_set_style(1);
                     msi_random_scheme_set_suffix_length(10);
-                    msi_touch('{{"logical_path": "{self.user0.session_collection}/issue_8917_noop.txt"}}');
+                    msi_touch('{{"logical_path": "{self.user0.session_collection}/issue_9062_noop.txt"}}');
                 }}
 
                 INPUT null
@@ -1828,15 +1828,15 @@ OUTPUT ruleExecOut
                     callback.msiSetRandomScheme()
                     callback.msi_random_scheme_set_style(1)
                     callback.msi_random_scheme_set_suffix_length(10)
-                    callback.msi_touch('{{"logical_path": "{self.user0.session_collection}/issue_8917_noop.txt"}}')
+                    callback.msi_touch('{{"logical_path": "{self.user0.session_collection}/issue_9062_noop.txt"}}')
 
                 INPUT null
                 OUTPUT ruleExecOut
                 ''')
         }
 
-        data_object = f'{self.user0.session_collection}/issue_8917_noop.txt'
-        rule_file_path = f'{self.user0.local_session_dir}/issue_8917_noop.r'
+        data_object = f'{self.user0.session_collection}/issue_9062_noop.txt'
+        rule_file_path = f'{self.user0.local_session_dir}/issue_9062_noop.r'
         with open(rule_file_path, 'w') as f:
             f.write(rule_map[plugin_name])
 
@@ -1847,9 +1847,9 @@ OUTPUT ruleExecOut
             f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Only applicable to the NREP')
-    def test_irule_cannot_modify_the_random_scheme_via_acSetVaultPathPolicy__issue_8917(self):
-        data_object = f'{self.user0.session_collection}/issue_8917_irule.txt'
-        rule_file_path = f'{self.user0.local_session_dir}/issue_8917_irule.r'
+    def test_irule_cannot_modify_the_random_scheme_via_acSetVaultPathPolicy__issue_9062(self):
+        data_object = f'{self.user0.session_collection}/issue_9062_irule.txt'
+        rule_file_path = f'{self.user0.local_session_dir}/issue_9062_irule.r'
 
         # The following policy should not have any effect on the physical path generated
         # via the call to msi_touch().
