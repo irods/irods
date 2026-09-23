@@ -6,6 +6,7 @@
 #include "irods/getRemoteZoneResc.h"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_hostname.hpp"
 
 #include <cstring>
 #include <vector>
@@ -413,9 +414,15 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     /* no match */
 
-    tmpRodsServerHost = mkServerHost( myHostAddr, myZoneName );
+    if (hostname_resolves_to_local_address(myHostAddr) && LocalServerHost != nullptr) {
+        queueHostName(LocalServerHost, myHostAddr, 0);
+        *rodsServerHost = LocalServerHost;
+        return LOCAL_HOST;
+    }
 
-    if ( tmpRodsServerHost == NULL ) {
+    tmpRodsServerHost = mkServerHost(myHostAddr, myZoneName);
+
+    if (tmpRodsServerHost == NULL) {
         rodsLog( LOG_ERROR,
                  "resolveHost: mkServerHost error" );
         return SYS_INVALID_SERVER_HOST;

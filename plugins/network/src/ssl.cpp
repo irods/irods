@@ -4,10 +4,12 @@
 #include "irods/irods_network_constants.hpp"
 #include "irods/irods_network_plugin.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/irods_hostname.hpp"
 #include "irods/irods_ssl_object.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
+#include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
 #include "irods/sockComm.h"
@@ -226,23 +228,14 @@ static SSL* ssl_init_socket(
 
 } // ssl_init_socket
 
-static int ssl_post_connection_check(
-    SSL *ssl,
-    const char *peer ) {
-
-    rodsEnv env;
-    int status = getRodsEnv( &env );
-    if ( status < 0 ) {
-        rodsLog(
-            LOG_ERROR,
-            "ssl_init_context - failed in getRodsEnv : %d",
-            status );
+static int ssl_post_connection_check(SSL* ssl, const char* peer, const rodsEnv* _env)
+{
+    if (!_env) {
         return 0;
-
     }
 
-    char *verify_server = env.irodsSSLVerifyServer;
-    if ( strlen( verify_server ) > 0 && strcmp( verify_server, "hostname" ) ) {
+    const char* verify_server = _env->irodsSSLVerifyServer;
+    if (strlen(verify_server) > 0 && strcmp(verify_server, "hostname")) {
         /* not being asked to verify that the peer hostname
            is in the certificate. */
         return 1;
@@ -260,15 +253,28 @@ static int ssl_post_connection_check(
         return 0;
     }
 
+    std::string peer_to_verify{peer};
+    if (CLIENT_PT != ::ProcessType) {
+        if (const auto resolved_hostname = resolve_hostname(peer, hostname_resolution_scheme::match_preferred)) {
+            peer_to_verify = *resolved_hostname;
+        }
+    }
+
+    if (peer_to_verify == peer && hostname_resolves_to_local_address(peer) && strlen(_env->rodsHost) > 0) {
+        peer_to_verify = _env->rodsHost;
+    }
+
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
     bool match = false;
-    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL ));
-    int num_names = sk_GENERAL_NAME_num( names );
-    for ( int i = 0; i < num_names; i++ ) {
+    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL));
+    int num_names = sk_GENERAL_NAME_num(names);
+    for (int i = 0; i < num_names; i++) {
         auto* name = sk_GENERAL_NAME_value( names, i );
         if ( name && name->type == GEN_DNS ) {
-            if ( !strcasecmp( reinterpret_cast<const char*>(ASN1_STRING_get0_data( name->d.dNSName )), peer ) ) {
+            if (!strcasecmp(
+                    reinterpret_cast<const char*>(ASN1_STRING_get0_data(name->d.dNSName)), peer_to_verify.c_str()))
+            {
                 match = true;
                 break;
             }
@@ -278,15 +284,15 @@ static int ssl_post_connection_check(
 
     /* if no match above, check the common name in the certificate */
     char name_text[256];
-    if ( !match &&
-            ( X509_NAME_get_text_by_NID( X509_get_subject_name( cert ),
-                                         NID_commonName, name_text, sizeof( name_text ) ) != -1 ) ) {
-        if ( !strcasecmp( name_text, peer ) ) {
+    if (!match &&
+        (X509_NAME_get_text_by_NID(X509_get_subject_name(cert), NID_commonName, name_text, sizeof(name_text)) != -1))
+    {
+        if (!strcasecmp(name_text, peer_to_verify.c_str())) {
             match = true;
         }
-        else if ( name_text[0] == '*' ) { /* wildcard domain */
-            const char *tmp = strchr( peer, '.' );
-            if ( tmp && !strcasecmp( tmp, name_text + 1 ) ) {
+        else if (name_text[0] == '*') { /* wildcard domain */
+            const char* tmp = strchr(peer_to_verify.c_str(), '.');
+            if (tmp && !strcasecmp(tmp, name_text + 1)) {
                 match = true;
             }
         }
@@ -577,12 +583,12 @@ irods::error ssl_client_start(irods::plugin_context& _ctx,
     }
 
     ssl_obj->ssl( ssl );
-    ssl_obj->ssl_ctx( ctx );
+    ssl_obj->ssl_ctx(ctx);
 
-    if (const auto ec = ssl_post_connection_check(ssl, ssl_obj->host().c_str()); !ec) {
+    if (const auto ec = ssl_post_connection_check(ssl, ssl_obj->host().c_str(), _env); !ec) {
         std::string err_str = "post connection certificate check failed";
-        ssl_build_error_string( err_str );
-        ssl_client_stop( _ctx, _env );
+        ssl_build_error_string(err_str);
+        ssl_client_stop(_ctx, _env);
         return ERROR(SSL_CERT_ERROR, err_str.c_str());
     }
 
