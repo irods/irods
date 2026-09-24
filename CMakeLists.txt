@@ -322,7 +322,9 @@ set(CMAKE_IRODS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_IRODS_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(GetGitRevisionDescription)
-get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
+if(NOT DEFINED IRODS_GIT_SHA1)
+  get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
+endif()
 configure_file(
   "${CMAKE_IRODS_SOURCE_DIR}/version.json.dist.in"
   "${CMAKE_IRODS_BINARY_DIR}/version.json.dist"
