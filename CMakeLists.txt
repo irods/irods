@@ -325,7 +325,7 @@ include(GetGitRevisionDescription)
 get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
 
 if(DEFINED IRODS_GIT_SHA1_TO_REPORT)
-  set(IRODS_GIT_SHA1 IRODS_GIT_SHA1_TO_REPORT)
+  set(IRODS_GIT_SHA1 "${IRODS_GIT_SHA1_TO_REPORT}")
 endif()
 
 configure_file(
