@@ -157,7 +157,7 @@ class test_server_authentication__issue_2295(unittest.TestCase):
         if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
             expected_output = 'ZONE_KEY_SIGNATURE_MISMATCH'
         else:
-            expected_output = 'Error: Cannot open data object.'
+            expected_output = 'Error: Cannot open data object [error code=-147000].'
         try:
             with open(paths.server_config_path()) as f:
                 svr_cfg = json.load(f)
