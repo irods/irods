@@ -1,14 +1,9 @@
-from __future__ import print_function
-import sys
-import shutil
-import os
-if sys.version_info >= (2, 7):
-    import unittest
-else:
-    import unittest2 as unittest
-import os
 import datetime
+import os
+import shutil
 import socket
+import sys
+import unittest
 
 from . import resource_suite
 from . import session
@@ -318,11 +313,12 @@ class test_ireg_replica(unittest.TestCase):
         """Test registering a file as a replica which does not exist on this host."""
         resource = 'reghere'
 
-        old_path_to_file = os.path.join('/var', 'lib', 'irods', 'version.json.dist')
-        new_path_to_file = os.path.join('/var', 'lib', 'irods', 'version.json.dist.new')
+        # "old_path_to_file" must reference a file that exists on all servers in the zone.
+        # The iRODS Testing Environment creates the following file on all servers/containers.
+        old_path_to_file = '/tmp/irods_issue_4206.txt'
+        new_path_to_file = old_path_to_file + '.renamed'
 
-        logical_path = os.path.join(self.admin.session_collection,
-                                    os.path.basename(old_path_to_file))
+        logical_path = os.path.join(self.admin.session_collection, os.path.basename(old_path_to_file))
 
         try:
             os.rename(old_path_to_file, new_path_to_file)
