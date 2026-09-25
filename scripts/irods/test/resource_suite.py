@@ -1320,6 +1320,7 @@ class ResourceSuite(ResourceBase):
                 ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', archive_hierarchy, 'DATA_REPL_STATUS', '0'])
             self.admin.run_icommand(['irm', '-f', logical_path])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "TODO(#9089): Enable once issue is resolved")
     def test_irsync_data_object_with_various_sizes_always_works__issue_6469(self):
         filename = "test_irsync_data_object_to_new_data_object__issue_6469"
         try:
