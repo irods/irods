@@ -4548,6 +4548,7 @@ class Test_Logical_Quotas(
                 ]
             )
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Database PEPs do not trigger on a catalog consumer.')
     def test_logical_quota_re_serialization_parameter__issue_9055(self):
         parameter_prefix = 'issue_9055_re_serialization_'
         parameter_names = ['path', 'modify_time', 'max_bytes', 'max_objects', 'over_bytes', 'over_objects']
@@ -4576,7 +4577,6 @@ class Test_Logical_Quotas(
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent(f'''\
                  def pep_database_check_logical_quota_post(rule_args, callback, rei):
-                     callback.writeLine('serverLog', 'blahblahblah')
                      m = rule_args[4]
                      for i in range(0, int(m['size'])):
                          callback.msiModAVUMetadata('-C', '{self.quota_user.session_collection}', 'set', '{full_parameter_names['path']}', m['%d:string_1' % i], '')
