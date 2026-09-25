@@ -1954,6 +1954,7 @@ OUTPUT ruleExecOut
         self.assertEqual(data_path, f'/var/lib/irods/Vault/home/{self.user0.username}/{self.user0.get_session_id()}/{os.path.basename(data_object)}')
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Issue is indepedent of any REP. NREP is used due to convenience.')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Requires the delay server to run on the same host.')
     def test_delay_server_executes_delay_rule_as_the_user_who_scheduled_it__issue_9059(self):
         try:
             # Decrease the delay server's sleep time so that delay rules are picked up faster.
