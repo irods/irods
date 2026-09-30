@@ -2528,7 +2528,7 @@ irods::error db_mod_data_obj_meta_op(
             theVal = getValByKey( _reg_param, ACL_COLLECTION_KW );
             if ( theVal != NULL && upCols == 1 &&
                     strcmp( updateCols[0], "data_path" ) == 0 ) {
-                int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
+                rodsLong_t iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
                 /*
                  In this case, the user is doing a 'imv' of a collection but one of
                  the sub-files is not owned by them.  We decided this should be
@@ -2536,7 +2536,7 @@ irods::error db_mod_data_obj_meta_op(
                  that the ACL_COLLECTION matches the beginning path of the object and
                  that the user has the appropriate access to that collection.
                  */
-                len = strlen( theVal );
+                auto len = strlen(theVal);
                 if ( strncmp( theVal, _data_obj_info->objPath, len ) == 0 ) {
 
                     iVal = cmlCheckDir( theVal,
