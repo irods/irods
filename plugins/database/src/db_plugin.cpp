@@ -1443,8 +1443,8 @@ findAVU( const char *attribute, const char *value, const char *units ) {
   Find existing or insert a new AVU triplet.
   Return code is error, or the AVU ID.
 */
-int
-findOrInsertAVU( const char *attribute, const char *value, const char *units ) {
+rodsLong_t findOrInsertAVU(const char* attribute, const char* value, const char* units)
+{
     char nextStr[MAX_NAME_LEN];
     char myTime[50];
     rodsLong_t status, seqNum;
@@ -1456,7 +1456,7 @@ findOrInsertAVU( const char *attribute, const char *value, const char *units ) {
     if ( logSQL != 0 ) {
         log_sql::debug("findOrInsertAVU SQL 1");
     }
-// =-=-=-=-=-=-=-
+
     status = cmlGetNextSeqVal( &icss );
     if ( status < 0 ) {
         log_db::info("findOrInsertAVU cmlGetNextSeqVal failure {}", status);
@@ -1487,7 +1487,6 @@ findOrInsertAVU( const char *attribute, const char *value, const char *units ) {
     }
     return seqNum;
 }
-
 
 /* create a path name with escaped SQL special characters (% and _) */
 std::string
