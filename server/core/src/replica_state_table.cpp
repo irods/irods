@@ -7,6 +7,8 @@
 //#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 //#include "irods/data_object_proxy.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <fmt/format.h>
 
 #include <map>
@@ -58,7 +60,9 @@ namespace irods::replica_state_table
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (_replica_number == std::stoi(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
+                    if (_replica_number ==
+                        boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>()))
+                    {
                         return index;
                     }
                 }
@@ -80,7 +84,9 @@ namespace irods::replica_state_table
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (_leaf_resource_id == std::stol(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                    if (_leaf_resource_id ==
+                        boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>()))
+                    {
                         return index;
                     }
                 }
@@ -98,11 +104,11 @@ namespace irods::replica_state_table
             if (std::end(replica_state_json_map) != replica_state_json_map.find(_key)) {
                 int index = -1;
 
-                const auto resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
+                const rodsLong_t resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (resc_id == std::stoi(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                    if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                         return index;
                     }
                 }
@@ -380,12 +386,12 @@ namespace irods::replica_state_table
             return false;
         }
 
-        const auto resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
+        const rodsLong_t resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
 
         std::scoped_lock rst_lock{rst_mutex};
 
         for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-            if (resc_id == std::stoll(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+            if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                 return true;
             }
         }
@@ -402,7 +408,7 @@ namespace irods::replica_state_table
         std::scoped_lock rst_lock{rst_mutex};
 
         for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-            if (_replica_number == std::stoi(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
+            if (_replica_number == boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
                 return true;
             }
         }
@@ -430,12 +436,12 @@ namespace irods::replica_state_table
     {
         std::scoped_lock rst_lock{rst_mutex};
 
-        const auto resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
+        const rodsLong_t resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
 
         const auto& replica_json = [&_key, &resc_id]
         {
             for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-                if (resc_id == std::stoll(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                     return e;
                 }
             }
@@ -469,7 +475,8 @@ namespace irods::replica_state_table
         const auto& replica_json = [&_key, &_replica_number]
         {
             for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-                if (_replica_number == std::stoi(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
+                if (_replica_number == boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>()))
+                {
                     return e;
                 }
             }
