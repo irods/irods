@@ -10067,7 +10067,7 @@ irods::error db_mod_access_control_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    int status1;
+    rodsLong_t status1;
     if ( adminMode ) {
         /* See if the input path is a collection
            and, if so, get the collectionID */
@@ -10103,7 +10103,7 @@ irods::error db_mod_access_control_op(
     }
     char collIdStr[MAX_NAME_LEN];
     if ( status1 >= 0 ) {
-        snprintf( collIdStr, MAX_NAME_LEN, "%d", status1 );
+        snprintf(collIdStr, MAX_NAME_LEN, "%lld", status1);
     }
 
     if ( status1 < 0 && inheritFlag != 0 ) {
@@ -10130,7 +10130,7 @@ irods::error db_mod_access_control_op(
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _path_name + 1 );
         }
 
-        int status2 = 0;
+        rodsLong_t status2 = 0;
         if ( adminMode ) {
             if ( logSQL != 0 ) {
                 log_sql::debug("chlModAccessControl SQL 15");
