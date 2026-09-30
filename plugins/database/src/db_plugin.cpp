@@ -16919,23 +16919,23 @@ irods::error db_check_logical_quota_op(irods::plugin_context& _ctx,
     if (_coll_name && *_coll_name != '\0') {
         // Check permissions before showing quotas
         // If user is admin, just short-circuit and check for existence
-        status = cmlCheckDir(_coll_name,
-                             _ctx.comm()->clientUser.userName,
-                             _ctx.comm()->clientUser.rodsZone,
-                             ACCESS_READ_OBJECT,
-                             &icss,
-                             (_ctx.comm()->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH));
+        auto access_check = cmlCheckDir(_coll_name,
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone,
+                                        ACCESS_READ_OBJECT,
+                                        &icss,
+                                        (_ctx.comm()->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH));
 
-        if (status < 0) {
+        if (access_check < 0) {
             log_db::info(
-                "{}: cmlCheckDir failed for collection name [{}] with status=[{}]", __func__, _coll_name, status);
-            return ERROR(status, "Insufficient privileges to collection or nonexistent collection specified.");
+                "{}: cmlCheckDir failed for collection name [{}] with status=[{}]", __func__, _coll_name, access_check);
+            return ERROR(access_check, "Insufficient privileges to collection or nonexistent collection specified.");
         }
 
         cllBindVars[cllBindVarCount++] = _coll_name;
 
         // clang-format off
-    status = cmlGetFirstRowFromSql(
+        status = cmlGetFirstRowFromSql(
                 "SELECT R_COLL_MAIN.coll_name, "
                        "R_LOGICAL_QUOTA_MAIN.max_bytes, "
                        "R_LOGICAL_QUOTA_MAIN.max_objects, "
