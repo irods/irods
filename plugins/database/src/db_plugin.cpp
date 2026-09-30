@@ -11109,11 +11109,14 @@ irods::error db_move_object_op(
         if ( logSQL != 0 ) {
             log_sql::debug("chlMoveObject SQL 9");
         }
-        status = cmlCheckDir( parentCollName,  _ctx.comm()->clientUser.userName,
-                              _ctx.comm()->clientUser.rodsZone,
-                              ACCESS_MODIFY_OBJECT, &icss );
-        if ( status < 0 ) {
-            return ERROR( status, "cmlCheckDir failed" );
+        // cmlCheckDir returns the collection ID on success, which may not fit in an int.
+        const rodsLong_t coll_id = cmlCheckDir(parentCollName,
+                                               _ctx.comm()->clientUser.userName,
+                                               _ctx.comm()->clientUser.rodsZone,
+                                               ACCESS_MODIFY_OBJECT,
+                                               &icss);
+        if (coll_id < 0) {
+            return ERROR(coll_id, "cmlCheckDir failed");
         }
 
         /* check that no other dataObj exists with the ObjName in the
