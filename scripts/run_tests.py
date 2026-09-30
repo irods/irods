@@ -122,9 +122,6 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.NOTSET)
     l = logging.getLogger(__name__)
 
-    irods.log.register_tty_handler(sys.stderr, logging.WARNING, None)
-    irods.log.register_file_handler(IrodsConfig().test_log_path)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--run_specific_test', metavar='dotted name')
     parser.add_argument('--skip_until', action="store")
@@ -140,6 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('--xml_output', action='store_true', dest='xml_output', default=False)
     parser.add_argument('--federation', nargs=3, metavar='<remote irods version, remote zone, remote host>')
     parser.add_argument('--hostnames', nargs=4, metavar='<ICAT_HOSTNAME HOSTNAME_1 HOSTNAME_2 HOSTNAME_3>')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='count', default=0, help='Enable verbose output')
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -154,6 +152,16 @@ if __name__ == '__main__':
 
     if args.use_mungefs:
         irods.test.settings.USE_MUNGEFS = True
+
+
+    log_levels = [
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG,
+    ]
+    lvl = max(0, min(args.verbose or 0, len(log_levels) - 1))
+    irods.log.register_tty_handler(sys.stderr, log_levels[lvl], None)
+    irods.log.register_file_handler(IrodsConfig().test_log_path)
 
     univmss_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh')
     if not os.path.exists(univmss_testing):
