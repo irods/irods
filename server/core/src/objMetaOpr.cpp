@@ -503,7 +503,7 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
 
 
 int
-checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operId ) {
+checkPermitForDataObject( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -517,8 +517,8 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
     splitPathByKey( objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
     snprintf( t1, MAX_NAME_LEN, " = '%s'", logicalEndName );
     snprintf( t11, MAX_NAME_LEN, " = '%s'", logicalParentDirName );
-    snprintf( t2, MAX_NAME_LEN, " = '%i'", userId );
-    snprintf( t3, MAX_NAME_LEN, " >= '%i' ", operId );
+    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
+    snprintf( t3, MAX_NAME_LEN, " >= '%lli' ", operId );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
@@ -539,7 +539,7 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
 }
 
 int
-checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operId ) {
+checkPermitForCollection( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -548,8 +548,8 @@ checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operI
     int status;
 
     snprintf( t1, MAX_NAME_LEN, " = '%s'", objName );
-    snprintf( t2, MAX_NAME_LEN, " = '%i'", userId );
-    snprintf( t4, MAX_NAME_LEN, " >= '%i' ", operId );
+    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
+    snprintf( t4, MAX_NAME_LEN, " >= '%lli' ", operId );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     addInxIval( &genQueryInp.selectInp, COL_COLL_ID, 1 );
@@ -569,7 +569,7 @@ checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operI
 }
 
 int
-checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId ) {
+checkPermitForResource( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -578,8 +578,8 @@ checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId 
     int status;
 
     snprintf( t1, MAX_NAME_LEN, " = '%s'", objName );
-    snprintf( t2, MAX_NAME_LEN, " = '%i'", userId );
-    snprintf( t4, MAX_NAME_LEN, " >= '%i' ", operId );
+    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
+    snprintf( t4, MAX_NAME_LEN, " >= '%lli' ", operId );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID, 1 );
@@ -672,7 +672,7 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
                         continue;
                     }
 
-                    int groupId = getUserId( rsComm, group_str, zone );
+                    rodsLong_t groupId = getUserId( rsComm, group_str, zone );
                     if ( groupId < 0 ) {
                         continue; 
                     }
