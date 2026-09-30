@@ -13657,7 +13657,7 @@ irods::error db_get_distinct_data_objs_missing_from_child_given_parent_op(
             return ERROR( status, "failed to get a row" );
         }
 
-        _results->push_back( atoi( icss.stmtPtr[ statement_num ]->resultValue[0] ) );
+        _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
 
     } // for i
 
