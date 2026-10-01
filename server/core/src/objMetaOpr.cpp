@@ -501,110 +501,99 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
     return status;
 }
 
+namespace
+{
+    int checkPermitForDataObject(rsComm_t* rsComm, char* objName, rodsLong_t userId, rodsLong_t operId)
+    {
+        genQueryInp_t genQueryInp;
+        genQueryOut_t* genQueryOut = nullptr;
+        char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t11[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t3[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char logicalEndName[MAX_NAME_LEN];
+        char logicalParentDirName[MAX_NAME_LEN];
 
-int
-checkPermitForDataObject( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t11[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t3[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    int status;
+        splitPathByKey(objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/');
+        snprintf(t1, MAX_NAME_LEN, " = '%s'", logicalEndName);
+        snprintf(t11, MAX_NAME_LEN, " = '%s'", logicalParentDirName);
+        snprintf(t2, MAX_NAME_LEN, " = '%lli'", userId);
+        snprintf(t3, MAX_NAME_LEN, " >= '%lli' ", operId);
 
-    splitPathByKey( objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
-    snprintf( t1, MAX_NAME_LEN, " = '%s'", logicalEndName );
-    snprintf( t11, MAX_NAME_LEN, " = '%s'", logicalParentDirName );
-    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
-    snprintf( t3, MAX_NAME_LEN, " >= '%lli' ", operId );
-
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, t1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, t11 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_ACCESS_USER_ID, t2 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_ACCESS_TYPE, t3 );
-    genQueryInp.maxRows = 2;
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp );
-    if ( status >= 0 ) {
-        return 1;
-    }
-    else {
+        memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+        addInxIval(&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_DATA_NAME, t1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_COLL_NAME, t11);
+        addInxVal(&genQueryInp.sqlCondInp, COL_DATA_ACCESS_USER_ID, t2);
+        addInxVal(&genQueryInp.sqlCondInp, COL_DATA_ACCESS_TYPE, t3);
+        genQueryInp.maxRows = 2;
+        const int status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+        freeGenQueryOut(&genQueryOut);
+        clearGenQueryInp(&genQueryInp);
+        if (status >= 0) {
+            return 1;
+        }
         return 0;
     }
-}
 
-int
-checkPermitForCollection( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    int status;
+    int checkPermitForCollection(rsComm_t* rsComm, char* objName, rodsLong_t userId, rodsLong_t operId)
+    {
+        genQueryInp_t genQueryInp;
+        genQueryOut_t* genQueryOut = nullptr;
+        char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
 
-    snprintf( t1, MAX_NAME_LEN, " = '%s'", objName );
-    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
-    snprintf( t4, MAX_NAME_LEN, " >= '%lli' ", operId );
+        snprintf(t1, MAX_NAME_LEN, " = '%s'", objName);
+        snprintf(t2, MAX_NAME_LEN, " = '%lli'", userId);
+        snprintf(t4, MAX_NAME_LEN, " >= '%lli' ", operId);
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    addInxIval( &genQueryInp.selectInp, COL_COLL_ID, 1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, t1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_ACCESS_USER_ID, t2 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_ACCESS_TYPE, t4 );
-    genQueryInp.maxRows = 2;
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp );
-    if ( status >= 0 ) {
-        return 1;
-    }
-    else {
+        memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+        addInxIval(&genQueryInp.selectInp, COL_COLL_ID, 1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_COLL_NAME, t1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_COLL_ACCESS_USER_ID, t2);
+        addInxVal(&genQueryInp.sqlCondInp, COL_COLL_ACCESS_TYPE, t4);
+        genQueryInp.maxRows = 2;
+        const int status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+        freeGenQueryOut(&genQueryOut);
+        clearGenQueryInp(&genQueryInp);
+        if (status >= 0) {
+            return 1;
+        }
         return 0;
     }
-}
 
-int
-checkPermitForResource( rsComm_t *rsComm, char *objName, rodsLong_t userId, rodsLong_t operId ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
-    int status;
+    int checkPermitForResource(rsComm_t* rsComm, char* objName, rodsLong_t userId, rodsLong_t operId)
+    {
+        genQueryInp_t genQueryInp;
+        genQueryOut_t* genQueryOut = nullptr;
+        char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
+        char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
 
-    snprintf( t1, MAX_NAME_LEN, " = '%s'", objName );
-    snprintf( t2, MAX_NAME_LEN, " = '%lli'", userId );
-    snprintf( t4, MAX_NAME_LEN, " >= '%lli' ", operId );
+        snprintf(t1, MAX_NAME_LEN, " = '%s'", objName);
+        snprintf(t2, MAX_NAME_LEN, " = '%lli'", userId);
+        snprintf(t4, MAX_NAME_LEN, " >= '%lli' ", operId);
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID, 1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, t1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_RESC_ACCESS_USER_ID, t2 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_RESC_ACCESS_TYPE, t4 );
-    genQueryInp.maxRows = 2;
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp );
-    if ( status >= 0 ) {
-        return 1;
-    }
-    else {
+        memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+        addInxIval(&genQueryInp.selectInp, COL_R_RESC_ID, 1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, t1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_RESC_ACCESS_USER_ID, t2);
+        addInxVal(&genQueryInp.sqlCondInp, COL_RESC_ACCESS_TYPE, t4);
+        genQueryInp.maxRows = 2;
+        const int status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+        freeGenQueryOut(&genQueryOut);
+        clearGenQueryInp(&genQueryInp);
+        if (status >= 0) {
+            return 1;
+        }
         return 0;
     }
-}
-
+} // anonymous namespace
 
 int
 checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper ) {
-    int i;
-    rodsLong_t operId;
-    rodsLong_t userId;
-    operId = getTokenId( rsComm, "access_type", oper );
+    const rodsLong_t operId = getTokenId(rsComm, "access_type", oper);
     if ( operId < 0 ) {
         // jjames - if they provide an invalid oper, give a better return code
         if ( operId == CAT_NO_ROWS_FOUND ) {
@@ -613,11 +602,12 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
         return operId;
     }
 
-    userId = getUserId( rsComm, user, zone );
+    const rodsLong_t userId = getUserId(rsComm, user, zone);
     if ( userId < 0 ) {
         return userId;
     }
 
+    int i{};
     if ( !strcmp( objType, "-d" ) ) {
         i = checkPermitForDataObject( rsComm, objName, userId, operId );
     }
@@ -672,7 +662,7 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
                         continue;
                     }
 
-                    rodsLong_t groupId = getUserId( rsComm, group_str, zone );
+                    const rodsLong_t groupId = getUserId(rsComm, group_str, zone);
                     if ( groupId < 0 ) {
                         continue; 
                     }
