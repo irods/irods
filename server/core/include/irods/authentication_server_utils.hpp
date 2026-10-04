@@ -22,6 +22,7 @@ namespace irods::authentication
     ///
     /// \throws \p irods::exception \parblock In the following situations:
     ///   - Fetching information about the user or zone fails
+    ///   - The authenticated user does not match the connection's proxy user
     ///   - The proxy user does not have sufficient privilege to act on behalf of a different client user
     /// \endparblock
     ///

@@ -441,6 +441,25 @@ irods::error native_auth_agent_response(
             }
         }
 
+        // The verified credentials must belong to the proxy user named in the startup packet.
+        // The client user can differ when an authorized proxy acts on another user's behalf.
+        if (ret.ok()) {
+            char authenticated_user[NAME_LEN + 2]{};
+            char authenticated_zone[NAME_LEN + 2]{};
+            if (const auto ec = parseUserName(_resp->username, authenticated_user, authenticated_zone); ec < 0) {
+                ret = ERROR(ec, "Invalid authenticated username.");
+            }
+            else if (strcmp(authenticated_user, _ctx.comm()->proxyUser.userName) != 0 ||
+                     (authenticated_zone[0] != '\0' &&
+                      strcmp(authenticated_zone, _ctx.comm()->proxyUser.rodsZone) != 0)) {
+                ret = ERROR(AUTHENTICATION_ERROR,
+                            fmt::format("Authenticated user [{}] does not match connection proxy user [{}#{}].",
+                                        _resp->username,
+                                        _ctx.comm()->proxyUser.userName,
+                                        _ctx.comm()->proxyUser.rodsZone));
+            }
+        }
+
         /* Set the clientUser zone if it is null. */
         if ( ret.ok() && 0 == strlen( _ctx.comm()->clientUser.rodsZone ) ) {
             zoneInfo_t *tmpZoneInfo;

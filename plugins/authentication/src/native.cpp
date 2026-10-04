@@ -573,6 +573,18 @@ namespace irods::authentication
                 }
             }
 
+            // The verified credentials must belong to the proxy user named in the startup packet.
+            // The client user can differ when an authorized proxy acts on another user's behalf.
+            const auto& user_name = req.at("user_name").get_ref<const std::string&>();
+            if (user_name != comm.proxyUser.userName || zone_name != comm.proxyUser.rodsZone) {
+                THROW(AUTHENTICATION_ERROR,
+                      fmt::format("Authenticated user [{}#{}] does not match connection proxy user [{}#{}].",
+                                  user_name,
+                                  zone_name,
+                                  comm.proxyUser.userName,
+                                  comm.proxyUser.rodsZone));
+            }
+
             /* Set the clientUser zone if it is null. */
             if ('\0' == comm.clientUser.rodsZone[0]) {
                 zoneInfo_t* tmpZoneInfo{};
