@@ -44,6 +44,16 @@ namespace irods::authentication
         if ('\0' == _comm.clientUser.rodsZone[0]) {
             std::strncpy(_comm.clientUser.rodsZone, local_zone_info->zoneName, NAME_LEN);
         }
+        // The verified credentials must belong to the proxy user named in the startup packet.
+        // The client user can differ when an authorized proxy acts on another user's behalf.
+        if (_user_name != _comm.proxyUser.userName || _zone_name != _comm.proxyUser.rodsZone) {
+            THROW(AUTHENTICATION_ERROR,
+                  fmt::format("Authenticated user [{}#{}] does not match connection proxy user [{}#{}].",
+                              _user_name,
+                              _zone_name,
+                              _comm.proxyUser.userName,
+                              _comm.proxyUser.rodsZone));
+        }
         // Get the user type of the user whose password was just verified.
         const auto user = adm::user{_user_name, _zone_name};
         const auto user_type = adm::server::type(_comm, user);
