@@ -196,7 +196,9 @@ namespace irods::client_api_allowlist
                 return false;
             }
 
-            if (!is_client_to_agent_connection()) {
+            // Confirm an authenticated administrator before skipping the client allowlist.
+            if (!is_client_to_agent_connection() &&
+                _comm.proxyUser.authInfo.authFlag >= REMOTE_PRIV_USER_AUTH) {
                 log_api::trace("Connection is a server-to-server connection. Skipping client API allowlist.");
                 return false;
             }

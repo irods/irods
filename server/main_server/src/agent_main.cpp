@@ -1180,6 +1180,18 @@ namespace
             }
 
             status = readAndProcClientMsg(&_comm, READ_HEADER_TIMEOUT);
+            // A signed zone key and authenticated admin required to continue.
+            if (_comm.proxyUser.authInfo.authFlag >= LOCAL_USER_AUTH &&
+                _comm.proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH &&
+                irods::server_property_exists(irods::AGENT_CONN_KW))
+            {
+                log_agent::error("{}: Rejecting server-to-server connection for non-administrative proxy user [{}].",
+                                 __func__,
+                                 _comm.proxyUser.userName);
+                status = SYS_PROXYUSER_NO_PRIV;
+                break;
+            }
+
             if (status < 0) {
                 if (status == DISCONN_STATUS) {
                     status = 0;
