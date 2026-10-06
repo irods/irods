@@ -10,6 +10,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cstring>
 #include <iostream>
@@ -143,10 +144,10 @@ int chkObjConsistency(rcComm_t* conn,
         const char* objName = genQueryOut->sqlResult[0].value;
         const char* objPath = genQueryOut->sqlResult[1].value;
 
-        intmax_t objSize = 0;
+        std::intmax_t objSize = 0;
 
         try {
-            objSize = std::stoll(genQueryOut->sqlResult[2].value);
+            objSize = boost::lexical_cast<std::intmax_t>(genQueryOut->sqlResult[2].value);
         }
         catch (const std::invalid_argument& e) {
             std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
@@ -158,7 +159,7 @@ int chkObjConsistency(rcComm_t* conn,
         }
 
         const char* objChksum = genQueryOut->sqlResult[3].value;
-        const intmax_t srcSize = fs::file_size(p);
+        const std::intmax_t srcSize = fs::file_size(p);
 
         if (srcSize == objSize) {
             if (myRodsArgs->verifyChecksum == True) {

@@ -3668,7 +3668,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
         rstrcpy(addr->hostAddr, buffer, LONG_NAME_LEN);
         std::size_t port_parse_idx{};
         try {
-            addr->portNum = std::stoi(port, &port_parse_idx);
+            addr->portNum = boost::lexical_cast<int>(port, &port_parse_idx);
         }
         catch (...) {
             // previously, we used atoi to parse the port number.

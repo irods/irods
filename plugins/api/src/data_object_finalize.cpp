@@ -46,6 +46,7 @@
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/data_object_proxy.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
@@ -156,14 +157,17 @@ namespace
                     //      the file_object.
                     irods::file_object_ptr obj;
                     if (_logical_path.empty()) {
-                        obj = irods::file_object_factory(_comm, std::stoll(replica.at("before").at("data_id").get<std::string>()));
+                        obj = irods::file_object_factory(
+                            _comm,
+                            boost::lexical_cast<rodsLong_t>(replica.at("before").at("data_id").get<std::string>()));
                     }
                     else {
                         auto [before, after] = split_before_and_after_info(_replicas);
                         obj = irods::file_object_factory(_comm, _logical_path, after);
                     }
 
-                    const auto leaf_resource_id = std::stoll(replica.at("after").at("resc_id").get<std::string>());
+                    const auto leaf_resource_id =
+                        boost::lexical_cast<rodsLong_t>(replica.at("after").at("resc_id").get<std::string>());
                     obj->resc_hier(resc_mgr.leaf_id_to_hier(leaf_resource_id));
 
                     set_file_object_keywords(replica.at(FILE_MODIFIED_KW), obj);
@@ -245,9 +249,11 @@ namespace
             // This section will perform permissions checks and update ticket information
             // only if not running in privileged mode. This matches the behavior of
             // the mod_data_obj_meta database operation.
-            const auto data_id = std::stoll(_replicas.front().at("before").at("data_id").get<std::string>());
+            const auto data_id =
+                boost::lexical_cast<rodsLong_t>(_replicas.front().at("before").at("data_id").get<std::string>());
 
-            const auto bytes_written = !_bytes_written.empty() ? std::stoll(_bytes_written.data()) : 0;
+            const auto bytes_written =
+                !_bytes_written.empty() ? boost::lexical_cast<rodsLong_t>(_bytes_written.data()) : 0;
 
             if (!_admin_operation) {
                 // If the caller indicates that bytes have been written (equivalent

@@ -35,6 +35,7 @@
 #include "unit_test_utils.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 
 #include <unistd.h>
@@ -312,7 +313,7 @@ TEST_CASE("filesystem")
             irods::experimental::client_connection conn;
             irods::query query{static_cast<rcComm_t*>(conn), gql};
 
-            return fs::object_time_type{duration_type{std::stoull(query.front()[0])}};
+            return fs::object_time_type{duration_type{boost::lexical_cast<duration_type::rep>(query.front()[0])}};
         }();
 
         REQUIRE(first_replica_mtime < second_replica_mtime);

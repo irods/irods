@@ -11,6 +11,7 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cstdint>
 #include <cstdio>
@@ -360,7 +361,7 @@ auto throw_if_id_cannot_be_converted_to_int(const std::string& key) -> void
     std::string k{key};
     boost::algorithm::trim(k);
     try {
-        std::stoul(k);
+        boost::lexical_cast<std::int64_t>(k);
     }
     catch(const std::invalid_argument&){
         THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID has incorrect format.");

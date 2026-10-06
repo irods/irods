@@ -18,6 +18,8 @@
 #include "irods/irods_linked_list_iterator.hpp"
 #include "irods/logical_locking.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <tuple>
 #include <type_traits> // For std::remove_cv_t
 #include <utility>
@@ -62,7 +64,7 @@ namespace
             return DEF_MIN_COPY_CNT;
         }
         try {
-            const auto minimum_replica_count = std::stoi(copies_kw);
+            const auto minimum_replica_count = boost::lexical_cast<std::int32_t>(copies_kw);
             if (minimum_replica_count <= 0) {
                 THROW(SYS_INVALID_INPUT_PARAM,
                       fmt::format("{}: {} value [{}] must be a positive value.", __func__, COPIES_KW, copies_kw));
@@ -125,7 +127,7 @@ namespace
         // If a specific replica number is specified, only trim that one!
         if (const char* repl_num = getValByKey(&_inp.condInput, REPL_NUM_KW); repl_num) {
             try {
-                const auto num = std::stoi(repl_num);
+                const auto num = boost::lexical_cast<int>(repl_num);
 
                 const auto repl = std::find_if(replica_list.begin(), replica_list.end(), [num](const auto& repl) {
                     return num == repl.repl_num();

@@ -16,6 +16,8 @@
 #include "irods/replica_proxy.hpp"
 #include "irods/data_object_proxy.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <fmt/format.h>
 
 namespace {
@@ -318,7 +320,7 @@ namespace irods {
         const char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
         if (repl_num) {
             try {
-                _file_obj->repl_requested(std::stoi(repl_num));
+                _file_obj->repl_requested(boost::lexical_cast<int>(repl_num));
             }
             catch (const std::invalid_argument& e) {
                 return ERROR(USER_INVALID_REPLICA_INPUT, fmt::format("invalid replica number argument:[{}]", repl_num));

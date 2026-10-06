@@ -40,6 +40,8 @@
 
 #include "irods/logical_locking.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 namespace
 {
     namespace ill = irods::logical_locking;
@@ -268,7 +270,8 @@ namespace
             return {obj, std::ref(source_replica)};
         }
         else if (cond_input.contains(REPL_NUM_KW)) {
-            auto maybe_source_replica = obj->get_replica(std::stoi(cond_input.at(REPL_NUM_KW).value().data()));
+            auto maybe_source_replica =
+                obj->get_replica(boost::lexical_cast<int>(cond_input.at(REPL_NUM_KW).value().data()));
             if (!maybe_source_replica) {
                 const std::string msg = "error finding source replica.";
 
@@ -490,7 +493,8 @@ namespace
                 "select max(DATA_REPL_NUM) where DATA_ID = '{}'", source_replica.data_id()
             );
 
-            source_replica.replica_number(std::stoi(irods::query{&_comm, query_string}.front().at(0)) + 1);
+            source_replica.replica_number(boost::lexical_cast<int>(irods::query{&_comm, query_string}.front().at(0)) +
+                                          1);
             source_replica.mtime(SET_TIME_TO_NOW_KW);
             source_replica.status(nlohmann::json{{"original_status", std::to_string(STALE_REPLICA)}}.dump());
 

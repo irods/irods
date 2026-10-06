@@ -41,6 +41,7 @@
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods/query_builder.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
@@ -395,11 +396,11 @@ namespace
         replica_number_type replica_number = -1;
 
         for (auto&& row : query) {
-            const auto mtime = std::stoull(row[0]);
+            const auto mtime = boost::lexical_cast<std::uintmax_t>(row[0]);
 
             if (mtime > latest_mtime) {
                 latest_mtime = mtime;
-                replica_number = std::stoi(row[1]);
+                replica_number = boost::lexical_cast<replica_number_type>(row[1]);
             }
         }
 

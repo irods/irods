@@ -36,6 +36,6 @@ TEST_CASE("test to_version")
     CHECK(!irods::to_version("rods4.two.9"));
     CHECK(!irods::to_version("rods4.-2.9"));
 
-    // to_version uses std::stoi, so overflow will throw std::out_of_range
+    // to_version uses boost::lexical_cast, so overflow will throw boost::bad_lexical_cast
     CHECK_THROWS(irods::to_version("rods400000000000000.200000000000000.900000000000000"));
 }

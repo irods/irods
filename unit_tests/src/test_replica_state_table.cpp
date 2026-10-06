@@ -4,10 +4,13 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/logical_locking.hpp"
 #include "irods/replica_state_table.hpp"
+#include "irods/rodsType.h"
 
+#include <boost/lexical_cast.hpp>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,10 +21,10 @@ namespace
     namespace rst = irods::replica_state_table;
 
     constexpr int REPLICA_COUNT       = 3;
-    constexpr std::uint64_t SIZE_1    = 4000;
-    constexpr std::uint64_t SIZE_2    = 9999;
-    constexpr std::uint64_t DATA_ID_1 = 10101;
-    constexpr std::uint64_t DATA_ID_2 = 20202;
+    constexpr rodsLong_t SIZE_1    = 4000;
+    constexpr rodsLong_t SIZE_2    = 9999;
+    constexpr rodsLong_t DATA_ID_1 = 10101;
+    constexpr rodsLong_t DATA_ID_2 = 20202;
     const std::string LOGICAL_PATH_1  = "/tempZone/home/rods/foo";
     const std::string LOGICAL_PATH_2  = "/tempZone/home/rods/goo";
     const std::string UPDATED_COMMENT = "updated";
@@ -167,10 +170,15 @@ TEST_CASE("replica state table", "[basic]")
 
         SECTION("property accessors")
         {
-            CHECK(target_replica_number == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_repl_num", rst::state_type::after)));
-            CHECK(DATA_ID_1 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
-            CHECK(SIZE_2 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
-            CHECK(STALE_REPLICA == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
+            CHECK(target_replica_number ==
+                  boost::lexical_cast<int>(
+                      rst::get_property(DATA_ID_1, target_replica_number, "data_repl_num", rst::state_type::after)));
+            CHECK(DATA_ID_1 == boost::lexical_cast<rodsLong_t>(rst::get_property(
+                                   DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
+            CHECK(SIZE_2 == boost::lexical_cast<rodsLong_t>(rst::get_property(
+                                DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
+            CHECK(STALE_REPLICA == boost::lexical_cast<int>(rst::get_property(
+                                       DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
         }
     }
 
@@ -223,9 +231,12 @@ TEST_CASE("replica state table", "[basic]")
 
         SECTION("property accessors")
         {
-            CHECK(DATA_ID_1 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
-            CHECK(SIZE_2 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
-            CHECK(STALE_REPLICA == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
+            CHECK(DATA_ID_1 == boost::lexical_cast<rodsLong_t>(rst::get_property(
+                                   DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
+            CHECK(SIZE_2 == boost::lexical_cast<rodsLong_t>(rst::get_property(
+                                DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
+            CHECK(STALE_REPLICA == boost::lexical_cast<int>(rst::get_property(
+                                       DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
         }
     }
 
@@ -272,7 +283,7 @@ TEST_CASE("replica state table", "[basic]")
 
         CHECK(rst::contains(proxy.data_id(), proxy.replica_number()));
         CHECK(REPLICA_COUNT + 1 == rst::at(proxy.data_id()).size());
-        CHECK(REPL_NUM == std::stoi(rst::get_property(proxy.data_id(), REPL_NUM, "data_repl_num")));
+        CHECK(REPL_NUM == boost::lexical_cast<int>(rst::get_property(proxy.data_id(), REPL_NUM, "data_repl_num")));
 
         SECTION("erase entry for existing entry")
         {
@@ -319,7 +330,8 @@ TEST_CASE("logical_locking", "[basic]")
     REQUIRE(REPLICA_COUNT == rst::at(DATA_ID_1).size());
 
     for (int i = 0; i < REPLICA_COUNT; ++i) {
-        const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+        const auto replica_status =
+            boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
         REQUIRE(GOOD_REPLICA == replica_status);
     }
 
@@ -330,7 +342,8 @@ TEST_CASE("logical_locking", "[basic]")
         ill::lock(DATA_ID_1, locked_replica_number, ill::lock_type::write);
 
         for (int i = 0; i < REPLICA_COUNT; ++i) {
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            const auto replica_status =
+                boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
             if (locked_replica_number == i) {
                 CHECK(INTERMEDIATE_REPLICA == replica_status);
             }
@@ -340,7 +353,7 @@ TEST_CASE("logical_locking", "[basic]")
 
             // the data status column should contain an original_status key with the original replica status as its value
             const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
-            REQUIRE(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+            REQUIRE(GOOD_REPLICA == boost::lexical_cast<int>(data_status.at("original_status").get<std::string>()));
         }
 
         SECTION("restore status")
@@ -348,7 +361,8 @@ TEST_CASE("logical_locking", "[basic]")
             ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status);
 
             for (int i = 0; i < REPLICA_COUNT; ++i) {
-                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+                const auto replica_status =
+                    boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
                 REQUIRE(GOOD_REPLICA == replica_status);
 
                 // the data_status column should be empty again
@@ -361,7 +375,8 @@ TEST_CASE("logical_locking", "[basic]")
             ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, STALE_REPLICA);
 
             for (int i = 0; i < REPLICA_COUNT; ++i) {
-                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+                const auto replica_status =
+                    boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
                 if (locked_replica_number == i) {
                     // unlock() does not change the replica status of the target replica
                     CHECK(GOOD_REPLICA == replica_status);
@@ -385,12 +400,13 @@ TEST_CASE("logical_locking", "[basic]")
 
         for (int i = 0; i < REPLICA_COUNT; ++i) {
             // All replicas should be read-locked, including the target replica
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            const auto replica_status =
+                boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
             CHECK(READ_LOCKED == replica_status);
 
             // the data status column should contain an original_status key with the original replica status as its value
             const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
-            CHECK(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+            CHECK(GOOD_REPLICA == boost::lexical_cast<int>(data_status.at("original_status").get<std::string>()));
 
             // TODO: need to check for how many readers, who they are, etc.
         }
@@ -398,7 +414,8 @@ TEST_CASE("logical_locking", "[basic]")
         REQUIRE(0 == ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status));
 
         for (int i = 0; i < REPLICA_COUNT; ++i) {
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            const auto replica_status =
+                boost::lexical_cast<int>(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
             CHECK(GOOD_REPLICA == replica_status);
 
             // the data_status column should be empty again

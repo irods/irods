@@ -26,6 +26,8 @@
 #include "irods/key_value_proxy.hpp"
 #include "irods/replica_proxy.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <cstring>
 
 int
@@ -713,7 +715,7 @@ namespace irods
         }
 
         if (cond_input.contains(OPEN_TYPE_KW)) {
-            l1desc.openType = std::stoi(cond_input.at(OPEN_TYPE_KW).value().data());
+            l1desc.openType = boost::lexical_cast<int>(cond_input.at(OPEN_TYPE_KW).value().data());
         }
 
         l1desc.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));

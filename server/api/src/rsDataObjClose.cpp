@@ -61,6 +61,8 @@
 
 #include "irods/logical_locking.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <memory>
 #include <functional>
 #include <sys/types.h>
@@ -378,7 +380,8 @@ namespace
                 irods::log(LOG_DEBUG, fmt::format(
                     "[{}:{}] - NO bytes written to existing replica, RESTORE sibling replicas [path=[{}], hier=[{}]]",
                     __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
-                r.replica_status(std::stoi(rst::get_property(r.data_id(), r.replica_number(), "data_is_dirty")));
+                r.replica_status(
+                    boost::lexical_cast<int>(rst::get_property(r.data_id(), r.replica_number(), "data_is_dirty")));
                 sibling_status = ill::restore_status;
             }
         }

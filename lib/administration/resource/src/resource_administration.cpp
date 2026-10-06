@@ -14,7 +14,10 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/query_builder.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
+
+#include <chrono>
 
 namespace irods::experimental::administration::NAMESPACE_IMPL
 {
@@ -134,12 +137,16 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 info.info_ = row[8];
                 info.free_space_ = row[9];
                 info.parent_id_ = row[11];
-                info.ctime_ = resource_time_type{std::chrono::seconds{std::stoull(row[12])}};
-                info.mtime_ = resource_time_type{std::chrono::seconds{std::stoull(row[13])}};
-                info.mtime_millis_ = std::chrono::milliseconds{std::stoull(row[14])};
+                info.ctime_ =
+                    resource_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(row[12])}};
+                info.mtime_ =
+                    resource_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(row[13])}};
+                info.mtime_millis_ =
+                    std::chrono::milliseconds{boost::lexical_cast<std::chrono::milliseconds::rep>(row[14])};
 
                 if (!row[10].empty()) {
-                    info.free_space_time_ = resource_time_type{std::chrono::seconds{std::stoull(row[10])}};
+                    info.free_space_time_ = resource_time_type{
+                        std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(row[10])}};
                 }
                 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 

@@ -69,6 +69,9 @@
 #define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #include "irods/user_administration.hpp"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
+
 #include <algorithm>
 #include <cstring>
 #include <functional>
@@ -78,8 +81,6 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-
-#include <boost/make_shared.hpp>
 
 namespace
 {
@@ -796,7 +797,7 @@ namespace
             }
         }
         else if (replica_number_input && std::strlen(replica_number_input) > 0) {
-            if (const auto replica_number = std::stoi(replica_number_input);
+            if (const auto replica_number = boost::lexical_cast<int>(replica_number_input);
                 replica_number != source_replica.repl_num()) {
                 THROW(SYS_REPLICA_INACCESSIBLE,
                       fmt::format("specified source replica number [{}] does not exist "
@@ -976,7 +977,7 @@ namespace
             }
         }
         else if (irods::experimental::keyword_has_a_value(_inp.condInput, REPL_NUM_KW)) {
-            if (const auto replica_number = std::stoi(source_cond_input.at(REPL_NUM_KW).value().data());
+            if (const auto replica_number = boost::lexical_cast<int>(source_cond_input.at(REPL_NUM_KW).value().data());
                 replica_number != source_replica.repl_num()) {
                 THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
                     "specified source replica number [{}] does not exist "

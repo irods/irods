@@ -23,9 +23,11 @@
 #include "irods/irods_server_api_call.hpp"
 #include "irods/server_utilities.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 
+#include <cstdint>
 #include <string>
 // clang-format on
 
@@ -72,7 +74,7 @@ namespace
 
         // Try to parse the string into a valid signed 64-bit integer.
         try {
-            if (const auto i = std::stoll(_rule_id); i <= 0) {
+            if (const auto i = boost::lexical_cast<std::int64_t>(_rule_id); i <= 0) {
                 log_api::error("Invalid input: _rule_id [{}] must be greater than zero.", i);
                 return false;
             }

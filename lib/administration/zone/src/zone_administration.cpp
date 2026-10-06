@@ -1,5 +1,7 @@
 #include "irods/zone_administration.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #ifdef IRODS_ZONE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 // The server maintains a list of the zones known to the system.
 // The library takes advantage of this information where possible to avoid
@@ -88,7 +90,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 .name{_zone_name},
                 .connection_info = std::move(row[2]),
                 .comment = std::move(row[3]),
-                .id = std::stoi(row[0]),
+                .id = boost::lexical_cast<int>(row[0]),
                 .type = (row[1] == "local") ? zone_type::local : zone_type::remote
             };
             // clang-format on

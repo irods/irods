@@ -13,6 +13,7 @@
 
 #include <fmt/format.h>
 #include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
@@ -92,7 +93,7 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
     IRODS_MSI_REQUIRE_VALID_POINTER(_handle->inOutStruct);
 
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
+        const auto ctx_handle_index = boost::lexical_cast<rodsLong_t>(static_cast<char*>(_handle->inOutStruct));
 
         if (ctx_handle_index < 0) {
             log_msi::error("{}: Unknown context handle.", __func__);
@@ -149,7 +150,7 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
     IRODS_MSI_REQUIRE_VALID_POINTER(_column_index->inOutStruct);
 
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
+        const auto ctx_handle_index = boost::lexical_cast<rodsLong_t>(static_cast<char*>(_handle->inOutStruct));
 
         if (ctx_handle_index < 0) {
             log_msi::error("{}: Unknown context handle.", __func__);
@@ -164,7 +165,7 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
         }
 
         auto& ctx = iter->second;
-        const auto column_index = std::stoll(static_cast<char*>(_column_index->inOutStruct));
+        const auto column_index = boost::lexical_cast<std::size_t>(static_cast<char*>(_column_index->inOutStruct));
 
         const auto& value = ctx.rows.at(ctx.current_row).at(column_index).get_ref<const std::string&>();
         log_msi::debug("{}: Column value = [{}]", __func__, value);
@@ -192,7 +193,7 @@ auto msi_genquery2_free(MsParam* _handle, RuleExecInfo* _rei) -> int
     IRODS_MSI_REQUIRE_VALID_POINTER(_handle->inOutStruct);
 
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
+        const auto ctx_handle_index = boost::lexical_cast<rodsLong_t>(static_cast<char*>(_handle->inOutStruct));
 
         if (ctx_handle_index < 0) {
             log_msi::error("{}: Unknown context handle.", __func__);

@@ -9,6 +9,8 @@
 #include "irods/objInfo.h"
 #include "irods/replica.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include <string_view>
@@ -364,16 +366,16 @@ namespace irods::experimental::replica
             try {
                 auto proxy = replica_proxy{_doi};
 
-                proxy.data_id(std::stoul(_info[index::DATA_ID]));
-                proxy.collection_id(std::stoul(_info[index::DATA_COLL_ID]));
-                proxy.replica_number(std::stoi(_info[index::DATA_REPL_NUM]));
+                proxy.data_id(boost::lexical_cast<rodsLong_t>(_info[index::DATA_ID]));
+                proxy.collection_id(boost::lexical_cast<rodsLong_t>(_info[index::DATA_COLL_ID]));
+                proxy.replica_number(boost::lexical_cast<int>(_info[index::DATA_REPL_NUM]));
                 proxy.version(_info[index::DATA_VERSION]);
                 proxy.type(_info[index::DATA_TYPE_NAME]);
-                proxy.size(std::stoul(_info[index::DATA_SIZE]));
+                proxy.size(boost::lexical_cast<rodsLong_t>(_info[index::DATA_SIZE]));
                 proxy.physical_path(_info[index::DATA_PATH]);
                 proxy.owner_user_name(_info[index::DATA_OWNER_NAME]);
                 proxy.owner_zone_name(_info[index::DATA_OWNER_ZONE]);
-                proxy.replica_status(std::stoi(_info[index::DATA_REPL_STATUS]));
+                proxy.replica_status(boost::lexical_cast<int>(_info[index::DATA_REPL_STATUS]));
                 proxy.status(_info[index::DATA_STATUS]);
                 proxy.checksum(_info[index::DATA_CHECKSUM]);
                 proxy.mode(_info[index::DATA_MODE]);
@@ -381,9 +383,9 @@ namespace irods::experimental::replica
                 proxy.atime(_info[index::DATA_ACCESS_TIME]);
                 proxy.ctime(_info[index::DATA_CREATE_TIME]);
                 proxy.mtime(_info[index::DATA_MODIFY_TIME]);
-                proxy.resource_id(std::stoul(_info[index::DATA_RESC_ID]));
+                proxy.resource_id(boost::lexical_cast<rodsLong_t>(_info[index::DATA_RESC_ID]));
                 proxy.data_expiry(_info[index::DATA_EXPIRY]);
-                proxy.map_id(std::stoi(_info[index::DATA_MAP_ID]));
+                proxy.map_id(boost::lexical_cast<int>(_info[index::DATA_MAP_ID]));
 
                 proxy.resource(_info[index::DATA_RESC_NAME]);
                 proxy.hierarchy(_info[index::DATA_RESC_HIER]);
@@ -566,26 +568,26 @@ namespace irods::experimental::replica
         auto proxy_lm_pair = make_replica_proxy();
         auto& proxy = proxy_lm_pair.first;
 
-        proxy.data_id(std::stoul(_input.at("data_id").get<std::string>()));
-        proxy.collection_id(std::stoul(_input.at("coll_id").get<std::string>()));
-        proxy.replica_number(std::stoi(_input.at("data_repl_num").get<std::string>()));
+        proxy.data_id(boost::lexical_cast<rodsLong_t>(_input.at("data_id").get<std::string>()));
+        proxy.collection_id(boost::lexical_cast<rodsLong_t>(_input.at("coll_id").get<std::string>()));
+        proxy.replica_number(boost::lexical_cast<int>(_input.at("data_repl_num").get<std::string>()));
         proxy.version(_input.at("data_version").get<std::string>());
         proxy.type(_input.at("data_type_name").get<std::string>());
-        proxy.size(std::stoul(_input.at("data_size").get<std::string>()));
+        proxy.size(boost::lexical_cast<rodsLong_t>(_input.at("data_size").get<std::string>()));
         proxy.physical_path(_input.at("data_path").get<std::string>());
         proxy.owner_user_name(_input.at("data_owner_name").get<std::string>());
         proxy.owner_zone_name(_input.at("data_owner_zone").get<std::string>());
-        proxy.replica_status(std::stoi(_input.at("data_is_dirty").get<std::string>()));
+        proxy.replica_status(boost::lexical_cast<int>(_input.at("data_is_dirty").get<std::string>()));
         proxy.status(_input.at("data_status").get<std::string>());
         proxy.checksum(_input.at("data_checksum").get<std::string>());
         proxy.data_expiry(_input.at("data_expiry_ts").get<std::string>());
-        proxy.map_id(std::stoi(_input.at("data_map_id").get<std::string>()));
+        proxy.map_id(boost::lexical_cast<int>(_input.at("data_map_id").get<std::string>()));
         proxy.mode(_input.at("data_mode").get<std::string>());
         proxy.comments(_input.at("r_comment").get<std::string>());
         proxy.atime(_input.at("access_ts").get<std::string>());
         proxy.ctime(_input.at("create_ts").get<std::string>());
         proxy.mtime(_input.at("modify_ts").get<std::string>());
-        proxy.resource_id(std::stoul(_input.at("resc_id").get<std::string>()));
+        proxy.resource_id(boost::lexical_cast<rodsLong_t>(_input.at("resc_id").get<std::string>()));
 
         // TODO: resource() and hierarchy() are not being populated
 

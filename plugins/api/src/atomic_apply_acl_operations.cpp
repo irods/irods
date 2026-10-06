@@ -41,6 +41,7 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
@@ -196,7 +197,7 @@ namespace
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
-            return std::stoll(row[0]);
+            return boost::lexical_cast<id_type>(row[0]);
         }
 
         log::api::error("Failed to resolve path to an ID [path={}]", _logical_path);
