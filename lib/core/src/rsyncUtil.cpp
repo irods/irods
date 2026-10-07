@@ -14,6 +14,7 @@
 #include "irods/irods_path_recursion.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_query.hpp"
+#include "irods/collection_entry_validation.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -696,6 +697,12 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
     mySrcPath.objType = DATA_OBJ_T;
 
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+        if (!irods::is_valid_collection_entry(collEnt)) {
+            rodsLogError(LOG_ERROR, INVALID_OBJECT_NAME, "rsyncCollToDirUtil: Invalid name for collection entry");
+            rclCloseCollection(&collHandle);
+            return INVALID_OBJECT_NAME;
+        }
+
         if ( collEnt.objType == DATA_OBJ_T ) {
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,
@@ -1010,6 +1017,12 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     mySrcPath.objType = DATA_OBJ_T;
 
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+        if (!irods::is_valid_collection_entry(collEnt)) {
+            rodsLogError(LOG_ERROR, INVALID_OBJECT_NAME, "rsyncCollToCollUtil: Invalid name for collection entry");
+            rclCloseCollection(&collHandle);
+            return INVALID_OBJECT_NAME;
+        }
+
         if ( collEnt.objType == DATA_OBJ_T ) {
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,

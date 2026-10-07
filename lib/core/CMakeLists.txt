@@ -12,6 +12,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/chksumUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/chrono.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/client_connection.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/collection_entry_validation.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/connection_pool.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/cpUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/data_object_proxy.hpp"

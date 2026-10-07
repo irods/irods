@@ -11,6 +11,7 @@
 #include "irods/cpUtil.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/irods_virtual_path.hpp"
+#include "irods/collection_entry_validation.hpp"
 
 #include <cstring>
 
@@ -304,6 +305,12 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         return status;
     }
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+        if (!irods::is_valid_collection_entry(collEnt)) {
+            rodsLogError(LOG_ERROR, INVALID_OBJECT_NAME, "cpCollUtil: Invalid name for collection entry");
+            rclCloseCollection(&collHandle);
+            return INVALID_OBJECT_NAME;
+        }
+
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
