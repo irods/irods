@@ -323,6 +323,10 @@ set(CMAKE_IRODS_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(GetGitRevisionDescription)
 
+# By setting IRODS_GIT_SHA1_TO_REPORT, the real SHA1 is not used.
+# Instead, the SHA1 is set to IRODS_GIT_SHA1_TO_REPORT.
+# If the same SHA1 is used every compilation, the ccache direct
+# hit rate significantly improves along with the compilation speed.
 if (DEFINED IRODS_GIT_SHA1_TO_REPORT)
   set(IRODS_GIT_SHA1 "${IRODS_GIT_SHA1_TO_REPORT}")
 else()
