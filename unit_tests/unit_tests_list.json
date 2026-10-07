@@ -6,6 +6,7 @@
     "irods_capped_memory_resource",
     "irods_client_connection",
     "irods_client_server_negotiation",
+    "irods_collection_entry_validation",
     "irods_connection_pool",
     "irods_data_obj_stat_api",
     "irods_data_object_finalize",
