@@ -31,6 +31,7 @@ option(IRODS_DISABLE_COMPILER_OPTIMIZATIONS "Disables compiler optimizations by 
 option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and other features provided by Address Sanitizer." OFF)
 option(IRODS_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER "Enables detection of undefined behavior provided by Undefined Behavior Sanitizer." OFF)
 option(IRODS_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER_IMPLICIT_CONVERSION_CHECK "Enables detection of implicit conversions by Undefined Behavior Sanitizer." OFF)
+option(IRODS_ENABLE_STATIC_SHA1 "Sets the Git SHA1 to a static value, improving ccache hits." OFF)
 option(IRODS_ENABLE_ALL_TESTS "Enables all tests (e.g. C/C++ unit tests, microservices specifically designed for testing)." OFF)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -323,12 +324,13 @@ set(CMAKE_IRODS_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(GetGitRevisionDescription)
 
-# By setting IRODS_GIT_SHA1_TO_REPORT, the real SHA1 is not used.
-# Instead, the SHA1 is set to IRODS_GIT_SHA1_TO_REPORT.
-# If the same SHA1 is used every compilation, the ccache direct
+# By setting IRODS_ENABLE_STATIC_SHA1, the real SHA1 is not used.
+# Instead, the SHA1 is set to a static string.
+# Since the same SHA1 is used every compilation, the ccache direct
 # hit rate significantly improves along with the compilation speed.
-if (DEFINED IRODS_GIT_SHA1_TO_REPORT)
-  set(IRODS_GIT_SHA1 "${IRODS_GIT_SHA1_TO_REPORT}")
+if (IRODS_ENABLE_STATIC_SHA1)
+  # Set a static SHA1 of appropriate length with valid hex values
+  set(IRODS_GIT_SHA1 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 else()
   get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
 endif()
