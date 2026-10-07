@@ -13,6 +13,7 @@
 #include "irods/sockComm.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/collection_entry_validation.hpp"
 
 #include <cstring>
 
@@ -429,6 +430,12 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
         return status;
     }
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+        if (!irods::is_valid_collection_entry(collEnt)) {
+            rodsLogError(LOG_ERROR, INVALID_OBJECT_NAME, "getCollUtil: Invalid name for collection entry");
+            rclCloseCollection(&collHandle);
+            return INVALID_OBJECT_NAME;
+        }
+
         if ( collEnt.objType == DATA_OBJ_T ) {
             rodsLong_t mySize;
 
