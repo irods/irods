@@ -56,6 +56,7 @@ set(
   capped_memory_resource
   client_connection
   client_server_negotiation
+  collection_entry_validation
   connection_pool
   data_obj_stat_api
   data_object_finalize
