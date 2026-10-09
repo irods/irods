@@ -49,9 +49,12 @@
 #include "irods/query_builder.hpp"
 #include "irods/escape_utilities.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 
 #include <cctype>
+#include <chrono>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <iterator>
@@ -216,9 +219,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 }};
 
                 try {
-                    s.id = std::stoll(output->dataId);
-                    s.ctime = std::stoll(output->createTime);
-                    s.mtime = std::stoll(output->modifyTime);
+                    s.id = boost::lexical_cast<rodsLong_t>(output->dataId);
+                    s.ctime = boost::lexical_cast<rodsLong_t>(output->createTime);
+                    s.mtime = boost::lexical_cast<rodsLong_t>(output->modifyTime);
                 }
                 catch (...) {
                     throw filesystem_error{"stat error: cannot convert string to integer", _p, make_error_code(SYS_INTERNAL_ERR)};
@@ -770,9 +773,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         for (auto&& row : query) {
             // As we iterate over the replicas, compare the mtimes and capture the size
             // of the latest good replica.
-            if (const auto current_mtime = std::stoull(row[1]); current_mtime > latest_mtime) {
+            if (const auto current_mtime = boost::lexical_cast<std::uint64_t>(row[1]); current_mtime > latest_mtime) {
                 latest_mtime = current_mtime;
-                size = std::stoull(row[0]);
+                size = boost::lexical_cast<std::uintmax_t>(row[0]);
             }
         }
 
@@ -870,7 +873,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
         for (auto&& row : qb.build(_comm, gql)) {
-            return object_time_type{std::chrono::seconds{std::stoull(row[0])}};
+            return object_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(row[0])}};
         }
 
         throw filesystem_error{"cannot get mtime", _p, make_error_code(CAT_NO_ROWS_FOUND)};
@@ -929,7 +932,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         for (const auto& sql : {data_obj_sql, colls_sql}) {
             for (const auto& row : qb.build(_comm, sql)) {
-                count += std::stoull(row[0]);
+                count += boost::lexical_cast<std::uintmax_t>(row[0]);
             }
         }
 
@@ -968,7 +971,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         for (const auto& sql : {data_obj_sql, colls_sql}) {
             for (const auto& row : qb.build(_comm, sql)) {
-                count += std::stoull(row[0]);
+                count += boost::lexical_cast<std::uintmax_t>(row[0]);
             }
         }
 
@@ -1118,7 +1121,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         for (const auto& row : qb.build(_comm, gql)) {
             // As we iterate over the replicas, compare the mtimes and capture the checksum
             // of the latest good replica.
-            if (const auto current_mtime = std::stoull(row[1]); current_mtime > latest_mtime) {
+            if (const auto current_mtime = boost::lexical_cast<std::uintmax_t>(row[1]); current_mtime > latest_mtime) {
                 latest_mtime = current_mtime;
                 checksum = row[0];
             }

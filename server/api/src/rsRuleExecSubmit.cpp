@@ -18,8 +18,10 @@
 #include "irods/server_utilities.hpp"
 #include "irods/json_serialization.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 
+#include <cstdint>
 #include <cstring>
 #include <string>
 
@@ -68,7 +70,8 @@ namespace
         // Verify that the priority is valid if the client provided one.
         if (std::strlen(ruleExecSubmitInp->priority) > 0) {
             try {
-                if (const auto p = std::stoi(ruleExecSubmitInp->priority); p < 1 || p > 9) {
+                if (const auto p = boost::lexical_cast<std::int_fast16_t>(ruleExecSubmitInp->priority); p < 1 || p > 9)
+                {
                     rodsLog(LOG_ERROR, "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
                     return SYS_INVALID_INPUT_PARAM;
                 }

@@ -12,6 +12,9 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/system_error.hpp"
 
+#include <boost/lexical_cast.hpp>
+
+#include <chrono>
 #include <functional>
 #include <string>
 #include <cassert>
@@ -100,8 +103,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         // clang-format off
         if (e->dataId)     { entry.data_id_ = e->dataId; }
-        if (e->createTime) { entry.ctime_ = object_time_type{std::chrono::seconds{std::stoll(e->createTime)}}; }
-        if (e->modifyTime) { entry.mtime_ = object_time_type{std::chrono::seconds{std::stoll(e->modifyTime)}}; }
+        if (e->createTime) { entry.ctime_ = object_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(e->createTime)}}; }
+        if (e->modifyTime) { entry.mtime_ = object_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(e->modifyTime)}}; }
         if (e->chksum)     { entry.checksum_ = e->chksum; }
         if (e->ownerName)  { entry.owner_ = e->ownerName; }
         if (e->dataType)   { entry.data_type_ = e->dataType; }

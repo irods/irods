@@ -41,6 +41,7 @@
 #include <boost/asio.hpp>
 #include <boost/chrono.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/stacktrace.hpp>
 
@@ -185,9 +186,9 @@ auto main(int _argc, char* _argv[]) -> int
                     throw std::exception{};
                 }
 
-                const auto value = std::stoll(resolution_in_seconds);
-                // Limited to 32-bit values.
-                if (value < 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                const auto value = boost::lexical_cast<std::int32_t>(resolution_in_seconds);
+                // Must be positive.
+                if (value < 0) {
                     throw std::exception{};
                 }
 
@@ -1049,7 +1050,7 @@ namespace
                 log_af::trace("{}: Converting epoch seconds to UTC timestamp.", __func__);
                 using boost::chrono::system_clock;
                 using boost::chrono::time_fmt;
-                const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
+                const auto tp = system_clock::from_time_t(boost::lexical_cast<std::time_t>(epoch_seconds));
                 std::ostringstream utc_ss;
                 utc_ss << time_fmt(boost::chrono::timezone::utc, "%FT%T") << tp;
 

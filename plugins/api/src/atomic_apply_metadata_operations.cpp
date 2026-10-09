@@ -41,6 +41,7 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
@@ -189,7 +190,7 @@ namespace
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
-            return std::stoll(row[0]);
+            return boost::lexical_cast<id_type>(row[0]);
         }
 
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name={}]", _entity_name)};

@@ -10,6 +10,7 @@
 #include <irods/rodsPath.h>
 
 #include <boost/date_time.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cstdio>
 #include <locale>
@@ -45,7 +46,7 @@ void showRestrictions( char *inColumn );
 std::string to_utc_timestamp(const std::string_view _seconds)
 {
     try {
-        const auto tt = std::stoll(_seconds.data());
+        const auto tt = boost::lexical_cast<std::time_t>(_seconds.data());
         const auto pt = boost::posix_time::from_time_t(tt);
 
         std::ostringstream ss;

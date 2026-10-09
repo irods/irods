@@ -44,6 +44,7 @@
 #include "irods/thread_pool.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -51,6 +52,7 @@
 #include <unistd.h>
 
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <chrono>
@@ -346,7 +348,7 @@ namespace
                 // If the priority cannot be parsed into a valid signed integer, set it
                 // to the default priority level of 5.
                 try {
-                    if (const auto p = std::stoi(_inp.priority); p < 1 || p > 9) {
+                    if (const auto p = boost::lexical_cast<std::int_fast16_t>(_inp.priority); p < 1 || p > 9) {
                         addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
                     }
                 }

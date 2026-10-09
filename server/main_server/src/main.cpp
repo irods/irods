@@ -31,6 +31,7 @@
 #include <boost/any.hpp>
 #include <boost/asio.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 
 #include <fmt/format.h>
@@ -1537,7 +1538,7 @@ Signals:
     {
         for (const auto& entry : fs::directory_iterator{irods::get_irods_proc_directory().c_str()}) {
             try {
-                const auto agent_pid = std::stoi(entry.path().stem().string());
+                const auto agent_pid = boost::lexical_cast<pid_t>(entry.path().stem().string());
 
                 // If the agent process does not exist or the main server process doesn't
                 // have permission to send signals to the agent process, then remove the
@@ -1683,7 +1684,7 @@ Signals:
                 return false;
             }
 
-            irods::access_time_queue::init(*queue_name_prefix, std::stoi(*queue_size));
+            irods::access_time_queue::init(*queue_name_prefix, boost::lexical_cast<std::int32_t>(*queue_size));
 
             // Verify the batch size value is acceptable.
             try {
@@ -1691,7 +1692,7 @@ Signals:
                     throw std::exception{};
                 }
 
-                const auto value = std::stoll(*batch_size);
+                const auto value = boost::lexical_cast<std::size_t>(*batch_size);
                 // Limited to 32-bit values.
                 if (value <= 0 || value > std::numeric_limits<std::int32_t>::max()) {
                     throw std::exception{};

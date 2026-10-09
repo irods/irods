@@ -176,7 +176,7 @@ namespace
                         is_min_option ? auth_config::default_password_min_time : auth_config::default_password_max_time;
                     auto& config = is_min_option ? _out.password_min_time : _out.password_max_time;
                     try {
-                        config = std::stoll(option_value);
+                        config = boost::lexical_cast<rodsLong_t>(option_value);
                         if (config < 0) {
                             config = default_value;
                             log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
@@ -301,7 +301,7 @@ namespace
         }
 
         try {
-            _out = std::stoi(lifetime_in_seconds_str.data());
+            _out = boost::lexical_cast<std::int32_t>(lifetime_in_seconds_str.data());
             if (_out <= 0) {
                 _out = default_token_lifetime_in_seconds;
                 log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
@@ -3667,7 +3667,7 @@ irods::error db_mod_rule_exec_op(
                 }
 
                 try {
-                    if (const auto p = std::stoi(theVal); p < 1 || p > 9) {
+                    if (const auto p = boost::lexical_cast<std::int_fast32_t>(theVal); p < 1 || p > 9) {
                         return ERROR(SYS_INVALID_INPUT_PARAM,
                                      "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
                     }
@@ -16023,7 +16023,7 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
                 log_db::debug("{}: Successfully converted rule_id string [{}] to integer [{}].",
                               __func__,
                               rule_id_string,
-                              std::stoll(rule_id_string));
+                              boost::lexical_cast<rodsLong_t>(rule_id_string));
             }
             catch (const std::exception& e) {
                 log_db::error(
@@ -16369,7 +16369,7 @@ auto db_check_session_token_op(irods::plugin_context& _ctx, const char* _json_in
             stmt.bind(1, zone_name.c_str());
             for (auto result = nanodbc::execute(stmt); result.next();) {
                 const auto token = result.get<std::string>(0);
-                const auto expiration = std::stoll(result.get<std::string>(1));
+                const auto expiration = boost::lexical_cast<std::int64_t>(result.get<std::string>(1));
                 const auto salt = result.get<std::string>(2);
                 tokens.emplace_back(session_token_info{token, expiration, salt});
             }

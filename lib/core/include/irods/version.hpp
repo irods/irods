@@ -95,7 +95,7 @@ namespace irods
     ///
     /// \retval std::nullopt If _version is empty or not formatted as described above
     ///
-    /// \throws std::out_of_range See std::stoi documentation
+    /// \throws boost::bad_lexical_cast See boost::lexical_cast documentation
     ///
     /// \since 4.3.0
     auto to_version(const std::string& _version) -> std::optional<version>;

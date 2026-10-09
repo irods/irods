@@ -12,7 +12,9 @@
 #include "irods/rodsClient.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <cstddef>
@@ -135,7 +137,7 @@ namespace unit_test_utils
         return true;
     }
 
-    inline auto get_agent_pid(RcComm& _comm) -> int
+    inline auto get_agent_pid(RcComm& _comm) -> pid_t
     {
         ExecMyRuleInp inp{};
         const auto free_cond_input = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
@@ -160,7 +162,7 @@ namespace unit_test_utils
         }
 
         try {
-            return std::stoi(static_cast<char*>(out_array->msParam[0]->inOutStruct));
+            return boost::lexical_cast<pid_t>(static_cast<char*>(out_array->msParam[0]->inOutStruct));
         }
         catch (const std::invalid_argument&) {
             return -2;

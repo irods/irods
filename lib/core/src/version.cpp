@@ -2,6 +2,7 @@
 #include "irods/rodsLog.h"
 #include "irods/version.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 
 #include <regex>
@@ -28,9 +29,9 @@ namespace irods
             // Where <_version> represents the string that was searched.
             if (m.size() == 4) {
                 return irods::version{
-                    static_cast<std::uint16_t>(std::stoi(m[1].str())), // Major
-                    static_cast<std::uint16_t>(std::stoi(m[2].str())), // Minor
-                    static_cast<std::uint16_t>(std::stoi(m[3].str()))  // Patch
+                    boost::lexical_cast<std::uint16_t>(m[1].str()), // Major
+                    boost::lexical_cast<std::uint16_t>(m[2].str()), // Minor
+                    boost::lexical_cast<std::uint16_t>(m[3].str())  // Patch
                 };
             }
             else if (CLIENT_PT != ProcessType) {

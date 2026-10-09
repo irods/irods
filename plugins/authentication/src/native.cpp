@@ -28,6 +28,8 @@
 #include "irods/rsAuthRequest.hpp"
 #endif // RODS_SERVER
 
+#include <boost/lexical_cast.hpp>
+
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
@@ -403,7 +405,7 @@ namespace irods::authentication
                         // for getting the limited password considers non-positive values invalid. Therefore, we drop
                         // through to the "else" case for 0 and pass non-zero values to the limited password machinery
                         // to allow it to perform the value checking.
-                        if (const auto ttl = std::stoi(ttl_str); 0 != ttl) {
+                        if (const auto ttl = boost::lexical_cast<int>(ttl_str); 0 != ttl) {
                             record_limited_password(_comm, ttl, password->c_str());
                             // Now that the limited password is recorded in the auth file, we need to authenticate with
                             // the limited password to ensure that things are working. Call the start operation - the

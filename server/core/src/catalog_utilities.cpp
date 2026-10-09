@@ -6,6 +6,8 @@
 #include "irods/irods_logger.hpp"
 #include "irods/irods_rs_comm_query.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <fmt/format.h>
 
 #include <type_traits>
@@ -55,7 +57,8 @@ namespace irods::experimental::catalog
             _bp.statement.bind(_bp.index, value.c_str());
         }
         else {
-            const std::uint64_t v = std::stoull(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
+            const auto v =
+                boost::lexical_cast<std::uint64_t>(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
             _bp.bind_values.push_back(v);
 
             const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
@@ -68,7 +71,7 @@ namespace irods::experimental::catalog
 
     auto bind_integer_to_statement(bind_parameters& _bp) -> void
     {
-        const int v = std::stoi(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
+        const auto v = boost::lexical_cast<int>(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
         _bp.bind_values.push_back(v);
 
         const int& value = std::get<int>(_bp.bind_values.back());

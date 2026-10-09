@@ -82,6 +82,7 @@
 
 #include "irods/logical_locking.hpp"
 
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 
 #include <chrono>
@@ -946,7 +947,7 @@ namespace
         }
 
         try {
-            const auto atime = std::stoull(std::string{_atime});
+            const auto atime = boost::lexical_cast<rodsULong_t>(_atime);
             return std::cmp_greater_equal(_current_time - atime, g_atime_resolution_in_seconds);
         }
         catch (const irods::exception& e) {

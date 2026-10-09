@@ -11,7 +11,6 @@
 #include "irods/msParam.h"
 #include "irods/rodsLog.h"
 
-// =-=-=-=-=-=-=-
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_file_object.hpp"
@@ -35,14 +34,17 @@
 #include "irods/key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
+#include <boost/lexical_cast.hpp>
+
+// =-=-=-=-=-=-=-
 // stl includes
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <string>
 #include <map>
 #include <list>
-#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -536,7 +538,7 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
 
     std::string operation{};
     try {
-        switch(std::stoi(open_type_str)) {
+        switch(boost::lexical_cast<std::int_fast32_t>(open_type_str)) {
             case CREATE_TYPE:
                 operation = irods::CREATE_OPERATION;
                 break;

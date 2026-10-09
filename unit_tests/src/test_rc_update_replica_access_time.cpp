@@ -18,6 +18,7 @@
 #include "irods/user_administration.hpp"
 
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
@@ -251,7 +252,7 @@ TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad acc
     const auto updates = json{
         {"access_time_updates", json::array_t{
             {
-                {"data_id", std::stoull(data_id)},
+                {"data_id", boost::lexical_cast<rodsLong_t>(data_id)},
                 {"replica_number", 0},
                 {"atime", bad_atime}
             }
@@ -333,7 +334,7 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
     const auto updates = json{
         {"access_time_updates", json::array_t{
             {
-                {"data_id", std::stoull(data_id)},
+                {"data_id", boost::lexical_cast<rodsLong_t>(data_id)},
                 {"replica_number", 0},
                 {"atime", expected_atime}
             }
@@ -418,13 +419,13 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
         {"access_time_updates", json::array_t{
             // Replica 1 of the first data object.
             {
-                {"data_id", std::stoull(std::get<0>(replica_info_0))},
+                {"data_id", boost::lexical_cast<rodsLong_t>(std::get<0>(replica_info_0))},
                 {"replica_number", 1},
                 {"atime", expected_atime_0}
             },
             // Replica 0 of the second data object.
             {
-                {"data_id", std::stoull(std::get<0>(replica_info_1))},
+                {"data_id", boost::lexical_cast<rodsLong_t>(std::get<0>(replica_info_1))},
                 {"replica_number", 0},
                 {"atime", expected_atime_1}
             }
@@ -534,7 +535,7 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
         const auto updates = json{
             {"access_time_updates", json::array_t{
                 {
-                    {"data_id", std::stoull(data_id)},
+                    {"data_id", boost::lexical_cast<rodsLong_t>(data_id)},
                     {"replica_number", 0},
                     {"atime", expected_atime}
                 },
@@ -594,7 +595,7 @@ TEST_CASE("#8260: opening a replica for reading updates its access time")
     // Adjust the replica's atime so that a read operation triggers an atime update.
     auto replica_info = get_replica_info(conn, logical_path, 0);
     DataObjInfo info_input{};
-    info_input.dataId = std::stoull(std::get<0>(replica_info));
+    info_input.dataId = boost::lexical_cast<rodsLong_t>(std::get<0>(replica_info));
 
     KeyValPair reg_params{};
     const auto* configured_atime = "00000000000";
@@ -657,7 +658,7 @@ TEST_CASE("#8260: opening a replica for writing does not update its access time"
     // trigger atime updates.
     auto replica_info = get_replica_info(conn, logical_path, 0);
     DataObjInfo info_input{};
-    info_input.dataId = std::stoull(std::get<0>(replica_info));
+    info_input.dataId = boost::lexical_cast<rodsLong_t>(std::get<0>(replica_info));
 
     KeyValPair reg_params{};
     const auto* configured_atime = "00000000000";

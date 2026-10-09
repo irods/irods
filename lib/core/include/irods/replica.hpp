@@ -34,6 +34,8 @@
 #include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
 
+#include <boost/lexical_cast.hpp>
+
 #include <fmt/format.h>
 
 #include <chrono>
@@ -493,7 +495,7 @@ namespace irods::experimental::replica
 
         std::string_view size = result[genquery_column_index::DATA_SIZE];
 
-        return static_cast<std::uintmax_t>(std::stoull(size.data()));
+        return boost::lexical_cast<std::uintmax_t>(size.data());
     } // replica_size
 
     /// \param[in] _comm connection object
@@ -517,7 +519,7 @@ namespace irods::experimental::replica
 
         std::string_view size = result[genquery_column_index::DATA_SIZE];
 
-        return static_cast<std::uintmax_t>(std::stoull(size.data()));
+        return boost::lexical_cast<std::uintmax_t>(size.data());
     } // replica_size
 
     /// \param[in] _comm connection object
@@ -641,7 +643,7 @@ namespace irods::experimental::replica
 
         std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
 
-        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
+        return object_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(mtime.data())}};
     } // last_write_time
 
     /// \brief Returns timestamp of last time this replica was written to
@@ -669,7 +671,7 @@ namespace irods::experimental::replica
 
         std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
 
-        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
+        return object_time_type{std::chrono::seconds{boost::lexical_cast<std::chrono::seconds::rep>(mtime.data())}};
     } // last_write_time
 
     /// \brief Sets value of the timestamp of last time this replica was written to
@@ -774,7 +776,7 @@ namespace irods::experimental::replica
         try {
             const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-            return std::stoi(replica_info[genquery_column_index::DATA_REPL_NUM]);
+            return boost::lexical_cast<replica_number_type>(replica_info[genquery_column_index::DATA_REPL_NUM]);
         }
         catch (const irods::exception& e) {
             if (CAT_NO_ROWS_FOUND == e.code()) {
@@ -873,7 +875,7 @@ namespace irods::experimental::replica
 
         std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
 
-        return static_cast<int>(std::stoi(status.data()));
+        return boost::lexical_cast<int>(status.data());
     } // replica_status
 
     /// \param[in] _comm connection object
@@ -897,7 +899,7 @@ namespace irods::experimental::replica
 
         std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
 
-        return static_cast<int>(std::stoi(status.data()));
+        return boost::lexical_cast<int>(status.data());
     } // replica_status
 
     /// \param[in] _comm connection object
