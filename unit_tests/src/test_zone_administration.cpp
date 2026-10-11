@@ -149,3 +149,30 @@ TEST_CASE("exceptions")
     }
 }
 
+// TODO(#9119): Update test once the data type of the "id" member variable is changed in iRODS 6.
+TEST_CASE("#9119: zone_info sets id member to -1 when integer value cannot be represented by signed 32-bit integer")
+{
+    load_client_api_plugins();
+
+    const auto* const test_zone_name = "unit_test_test_zone_issue_9119";
+
+    irods::experimental::client_connection conn;
+
+    namespace adm = irods::experimental::administration;
+
+    REQUIRE_NOTHROW(adm::client::add_zone(conn, test_zone_name));
+
+    irods::at_scope_exit remove_test_zones{[&conn, &test_zone_name] {
+        if (adm::client::zone_exists(conn, test_zone_name)) {
+            adm::client::remove_zone(conn, test_zone_name);
+        }
+    }};
+
+    const auto zone_info = adm::client::zone_info(conn, test_zone_name);
+    REQUIRE(zone_info.has_value());
+    CHECK(zone_info->id == -1);
+    CHECK(zone_info->type == adm::zone_type::remote);
+    CHECK(zone_info->name == test_zone_name);
+    CHECK(zone_info->connection_info.empty());
+    CHECK(zone_info->comment.empty());
+}
