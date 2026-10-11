@@ -269,6 +269,9 @@ namespace irods::experimental::administration
 
         /// Returns information about a zone.
         ///
+        /// \note The id member of zone_info will be set to -1 if its value cannot be represented by a
+        ///       signed 32-bit integer. The zone id can be obtained as a string by using GenQuery.
+        ///
         /// \param[in] _comm      The connection object.
         /// \param[in] _zone_name The name of the zone.
         ///
