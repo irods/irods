@@ -1,5 +1,8 @@
 #include "irods/zone_administration.hpp"
 
+#include <charconv>
+#include <system_error>
+
 #ifdef IRODS_ZONE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 // The server maintains a list of the zones known to the system.
 // The library takes advantage of this information where possible to avoid
@@ -83,12 +86,22 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
             fmt::format("select ZONE_ID, ZONE_TYPE, ZONE_CONNECTION, ZONE_COMMENT where ZONE_NAME = '{}'", _zone_name);
 
         for (auto&& row : irods::query{&_comm, gql}) {
+            // Set the zone id member variable to -1 if its value exceeds the representable range of a
+            // signed 32-bit integer.
+            int zone_id = -1;
+            const auto* b = row[0].c_str();
+            const auto* e = b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(b, e, zone_id);
+            if (std::errc{} != ec || e != ptr) {
+                zone_id = -1;
+            }
+
             // clang-format off
             return administration::zone_info{
                 .name{_zone_name},
                 .connection_info = std::move(row[2]),
                 .comment = std::move(row[3]),
-                .id = std::stoi(row[0]),
+                .id = zone_id,
                 .type = (row[1] == "local") ? zone_type::local : zone_type::remote
             };
             // clang-format on
