@@ -859,3 +859,19 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
         # Copy should have happened and set the replica to good
         self.assertEqual(lib.get_replica_status(self.admin, data_object_name, 0), '1')
+
+    def test_irsync_exits_without_failure_when_using_very_verbose_flag__issue_8277(self):
+        test_file_name = 'huh__issue_8277'
+        test_file_path = os.path.join(self.user0.local_session_dir, test_file_name)
+
+        with open(test_file_path, 'w') as f:
+            f.write('to who?')
+
+        dest_file = os.path.join(self.user0.session_collection, 'guh__issue_8277')
+        self.user0.assert_icommand(['itouch', dest_file])
+
+        # cwd is a keyword argument of Popen. It's needed to sync a file using it's
+        # relative path to reproduce the original issue.
+        _, out, _ = self.user0.assert_icommand(['irsync', '-V', test_file_name, f'i:{dest_file}'], 'STDOUT_SINGLELINE', test_file_name, cwd=self.user0.local_session_dir, desired_rc=0)
+
+        self.assertNotIn('-31000 SYS_INVALID_FILE_PATH', out)
