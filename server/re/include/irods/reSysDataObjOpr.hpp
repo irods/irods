@@ -43,10 +43,11 @@ msiSetRandomScheme( ruleExecInfo_t *rei );
 
 /// Sets the random scheme style.
 ///
-/// This microservice allows administrators to change how physical paths are generated. The effects of
-/// this microservice are not applied unless the vault path policy is set to the random scheme.
+/// This microservice is retained for compatibility and is now a no-op. Configure random physical path
+/// naming per leaf resource with the resource context keys file_naming_policy=random and
+/// random_scheme_style.
 ///
-/// This microservice has no effect if invoked outside of acSetVaultPathPolicy() or an error occurs.
+/// The supported random_scheme_style values are 0, 1, and 2.
 ///
 /// Styles:
 /// - 0: Default style, i.e. <vault_root>/<int>/<int>/<filename>.<epoch_seconds>
@@ -71,10 +72,11 @@ int msi_random_scheme_set_style(MsParam* _style, ruleExecInfo_t* _rei);
 
 /// Sets the random scheme suffix length.
 ///
-/// The effects of this microservice are not applied unless the random scheme style is set to 1 or 2.
-/// See #msi_random_scheme_set_style for more information.
+/// This microservice is retained for compatibility and is now a no-op. Configure random physical path
+/// naming per leaf resource with the resource context keys file_naming_policy=random and
+/// random_scheme_suffix_length.
 ///
-/// This microservice has no effect if invoked outside of acSetVaultPathPolicy() or an error occurs.
+/// The supported random_scheme_suffix_length range is [1, 32].
 ///
 /// \param[in] _suffix_length The new length of the randomly-generated string. The value must
 ///                           satisfy the range [1, 32]. Failing to satisfy this requirement will
