@@ -61,10 +61,14 @@
 
 #include "irods/logical_locking.hpp"
 
-#include <memory>
-#include <functional>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <charconv>
+#include <functional>
+#include <memory>
+#include <string>
+#include <system_error>
 
 namespace
 {
@@ -378,7 +382,24 @@ namespace
                 irods::log(LOG_DEBUG, fmt::format(
                     "[{}:{}] - NO bytes written to existing replica, RESTORE sibling replicas [path=[{}], hier=[{}]]",
                     __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
-                r.replica_status(std::stoi(rst::get_property(r.data_id(), r.replica_number(), "data_is_dirty")));
+                int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string replica_status_str =
+                    rst::get_property(r.data_id(), r.replica_number(), "data_is_dirty");
+                const auto* value_b = replica_status_str.data();
+                const auto* value_e =
+                    value_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(value_b, value_e, replica_status);
+                if (std::errc{} != ec) {
+                    log_api::error("[{}:{}] - failed to parse replica status "
+                                   "[error=[{}], path=[{}], hierarchy=[{}]]",
+                                   __FUNCTION__,
+                                   __LINE__,
+                                   std::make_error_code(ec).message(),
+                                   r.logical_path(),
+                                   r.hierarchy());
+                    return INVALID_LEXICAL_CAST;
+                }
+                r.replica_status(replica_status);
                 sibling_status = ill::restore_status;
             }
         }
@@ -388,7 +409,7 @@ namespace
         if (const auto ec = ill::unlock(r.data_id(), r.replica_number(), r.replica_status(), sibling_status); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to unlock data object "
-                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
                 __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
 
             return ec;

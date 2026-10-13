@@ -16,7 +16,6 @@
 #include "irods/irods_database_plugin.hpp"
 #include "irods/irods_hasher_factory.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_pam_auth_object.hpp"
 #include "irods/irods_postgres_object.hpp"
@@ -49,7 +48,6 @@
 #include <nlohmann/json.hpp>
 
 #include <boost/date_time.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 
 #include <algorithm>
@@ -64,6 +62,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <thread> // For std::this_thread::sleep_for
 #include <type_traits>
 #include <utility>
@@ -175,19 +174,11 @@ namespace
                     const auto default_value =
                         is_min_option ? auth_config::default_password_min_time : auth_config::default_password_max_time;
                     auto& config = is_min_option ? _out.password_min_time : _out.password_max_time;
-                    try {
-                        config = std::stoll(option_value);
-                        if (config < 0) {
-                            config = default_value;
-                            log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
-                                         "Using default value [{}].",
-                                         _namespace,
-                                         option_name,
-                                         option_value,
-                                         config);
-                        }
-                    }
-                    catch (const std::exception& e) {
+                    const auto* value_b = option_value.c_str();
+                    const auto* value_e =
+                            value_b + option_value.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(value_b, value_e, config);
+                    if (std::errc{} != ec) {
                         config = default_value;
                         log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], "
                                      "value:[{}]. Using default value [{}]. error:[{}]",
@@ -195,12 +186,12 @@ namespace
                                      option_name,
                                      option_value,
                                      config,
-                                     e.what());
+                                     std::make_error_code(ec).message());
                     }
-                    catch (...) {
+                    else if (config < 0) {
                         config = default_value;
-                        log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], "
-                                     "value:[{}]. Using default value [{}]. error:[Unknown error]",
+                        log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
+                                     "Using default value [{}].",
                                      _namespace,
                                      option_name,
                                      option_value,
@@ -300,27 +291,28 @@ namespace
             return ERROR(status, "Failed to get auth token lifetime configuration.");
         }
 
-        try {
-            _out = std::stoi(lifetime_in_seconds_str.data());
-            if (_out <= 0) {
-                _out = default_token_lifetime_in_seconds;
-                log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
-                             "default value [{}].",
-                             config_namespace,
-                             config_option_name,
-                             lifetime_in_seconds_str.data(),
-                             _out);
-            }
-        }
-        catch (const std::exception& e) {
+        const auto* value_b = lifetime_in_seconds_str.data();
+        const auto* value_e =
+            value_b + lifetime_in_seconds_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(value_b, value_e, _out);
+        if (std::errc{} != ec) {
             _out = default_token_lifetime_in_seconds;
             log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
                          "Using default value [{}]. error:[{}]",
                          config_namespace,
                          config_option_name,
-                         lifetime_in_seconds_str.data(),
+                         lifetime_in_seconds_str,
                          _out,
-                         e.what());
+                         std::make_error_code(ec).message());
+        }
+        else if (_out <= 0) {
+            _out = default_token_lifetime_in_seconds;
+            log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. Using "
+                         "default value [{}].",
+                         config_namespace,
+                         config_option_name,
+                         lifetime_in_seconds_str,
+                         _out);
         }
 
         return SUCCESS();
@@ -581,15 +573,8 @@ int get_object_count_of_resource_by_name(
         return ret.code();
     }
 
-    std::string resc_id_str;
-    ret = irods::lexical_cast<std::string>(resc_id, resc_id_str);
-    if(!ret.ok()) {
-        log_db::error(PASS(ret).result());
-        return ret.code();
-    }
-
     std::vector<std::string> bindVars;
-    bindVars.push_back( resc_id_str );
+    bindVars.push_back(fmt::to_string(resc_id));
     int status = cmlGetIntegerValueFromSql(
                      ( char* )"select count(data_id) from R_DATA_MAIN where resc_id=?",
                      &_count,
@@ -2339,7 +2324,7 @@ irods::error db_mod_data_obj_meta_op(
                 rodsLong_t resc_id;
                 resc_mgr.hier_to_leaf_id(theVal,resc_id);
 
-                update_resc_id_str = boost::lexical_cast<std::string>(resc_id);
+                update_resc_id_str = fmt::to_string(resc_id);
                 updateVals.push_back( update_resc_id_str.c_str() );
             }
             else {
@@ -2586,7 +2571,7 @@ irods::error db_mod_data_obj_meta_op(
         else {
             rodsLong_t id = 0;
             resc_mgr.hier_to_leaf_id( _data_obj_info->rescHier, id );
-            where_resc_id_str = boost::lexical_cast<std::string>(id);
+            where_resc_id_str = fmt::to_string(id);
             j = numConditions;
             whereColsAndConds[j] = "resc_id=";
             whereValues[j] = where_resc_id_str.c_str();
@@ -2875,7 +2860,7 @@ irods::error db_reg_data_obj_op(
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
     std::snprintf(_data_obj_info->dataOwnerZone, sizeof(_data_obj_info->dataOwnerZone), "%s", _ctx.comm()->clientUser.rodsZone);
 
-    std::string resc_id_str = boost::lexical_cast<std::string>(_data_obj_info->rescId);
+    std::string resc_id_str = fmt::to_string(_data_obj_info->rescId);
 
     cllBindVars[0] = dataIdNum;
     cllBindVars[1] = collIdNum;
@@ -3167,7 +3152,7 @@ irods::error db_reg_replica_op(
     }
     statementNumber = status;
 
-    std::string resc_id_str = boost::lexical_cast<std::string>(_dst_data_obj_info->rescId);
+    std::string resc_id_str = fmt::to_string(_dst_data_obj_info->rescId);
 
     cVal[IX_DATA_REPL_NUM]   = nextRepl;
     //cVal[IX_RESC_NAME]       = _dst_data_obj_info->rescName;
@@ -3660,20 +3645,21 @@ irods::error db_mod_rule_exec_op(
 
         if (theVal) {
             if (std::string_view{regParamNames[i]} == RULE_PRIORITY_KW) {
-                if (std::strlen(theVal) == 0) {
+                const std::string_view rule_prio_str{theVal};
+                if (rule_prio_str.empty()) {
                     return ERROR(SYS_INVALID_INPUT_PARAM,
                                  "Delay rule priority cannot be empty. Delay rule priority must "
                                  "satisfy the following requirement: 1 <= P <= 9.");
                 }
 
-                try {
-                    if (const auto p = std::stoi(theVal); p < 1 || p > 9) {
-                        return ERROR(SYS_INVALID_INPUT_PARAM,
-                                     "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
-                    }
-                }
-                catch (...) {
-                    return ERROR(SYS_INVALID_INPUT_PARAM, "Delay rule priority is not an integer.");
+                std::int_fast8_t rule_prio; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* rule_prio_b = rule_prio_str.data();
+                const auto* rule_prio_e =
+                    rule_prio_b + rule_prio_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(rule_prio_b, rule_prio_e, rule_prio);
+                if (std::errc{} != ec || rule_prio < 1 || rule_prio > 9) {
+                    return ERROR(SYS_INVALID_INPUT_PARAM,
+                                 "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
                 }
             }
 
@@ -3781,15 +3767,7 @@ static irods::error extract_resource_properties_for_operations(
         return PASS(ret);
     }
 
-    try {
-        _resc_id = boost::lexical_cast<std::string>(resc_id);
-    } catch( boost::bad_lexical_cast& ) {
-        std::stringstream msg;
-        msg << "failed to cast " << resc_id;
-        return ERROR(
-                INVALID_LEXICAL_CAST,
-                msg.str());
-    }
+    _resc_id = fmt::to_string(resc_id);
 
     return SUCCESS();
 
@@ -14220,14 +14198,19 @@ namespace
                 // For this reason, if the server receives a zero or empty string, we don't have
                 // to modify "ticket_expiration_string" because it is already an empty string.
                 if (std::strcmp(_arg4, "") != 0 && std::strcmp(_arg4, "0") != 0) {
-                    try {
-                        // Try to parse the timestamp argument as seconds since epoch.
-                        const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
+                    // Try to parse the timestamp argument as seconds since epoch.
+                    std::int64_t seconds_since_epoch; // NOLINT(cppcoreguidelines-init-variables)
+                    const std::string_view value_str{_arg4};
+                    const auto* value_b = value_str.data();
+                    const auto* value_e =
+                            value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(value_b, value_e, seconds_since_epoch);
+                    if (std::errc{} == ec) {
                         ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
                     }
-                    catch (const boost::bad_lexical_cast&) {
+                    else {
                         //
-                        // If an exception was thrown, the timestamp argument was not something that
+                        // If we get an error, the timestamp argument was not something that
                         // represented seconds since epoch. For that reason, the client may have passed
                         // an actual timestamp, which we attempt to process here.
                         //
@@ -14947,12 +14930,17 @@ irods::error db_mod_ticket_op(
             // For this reason, if the server receives a zero or empty string, we don't have
             // to modify "ticket_expiration_string" because it is already an empty string.
             if (std::strcmp(_arg4, "") != 0 && std::strcmp(_arg4, "0") != 0) {
-                try {
-                    // Try to parse the timestamp argument as seconds since epoch.
-                    const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
+                // Try to parse the timestamp argument as seconds since epoch.
+                std::int64_t seconds_since_epoch; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string_view value_str{_arg4};
+                const auto* value_b = value_str.data();
+                const auto* value_e =
+                        value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(value_b, value_e, seconds_since_epoch);
+                if (std::errc{} == ec) {
                     ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
                 }
-                catch (const boost::bad_lexical_cast&) {
+                else {
                     //
                     // If an exception was thrown, the timestamp argument was not something that
                     // represented seconds since epoch. For that reason, the client may have passed
@@ -16019,15 +16007,22 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
             stmt.bind(0, secs.c_str());
 
             const auto& rule_id_string = rule_id.get_ref<const std::string&>();
-            try {
+            rodsLong_t rule_id_int; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = rule_id_string.data();
+            const auto* value_e =
+                    value_b + rule_id_string.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, rule_id_int);
+            if (std::errc{} == ec) {
                 log_db::debug("{}: Successfully converted rule_id string [{}] to integer [{}].",
                               __func__,
                               rule_id_string,
-                              std::stoll(rule_id_string));
+                              rule_id_int);
             }
-            catch (const std::exception& e) {
-                log_db::error(
-                    "{}: Could not convert rule_id string [{}] to integer: {}", __func__, rule_id_string, e.what());
+            else {
+                log_db::error("{}: Could not convert rule_id string [{}] to integer: {}",
+                              __func__,
+                              rule_id_string,
+                              std::make_error_code(ec).message());
                 return ERROR(SYS_INVALID_INPUT_PARAM,
                              fmt::format("Could not convert rule_id string [{}] to integer", rule_id_string));
             }
@@ -16368,8 +16363,16 @@ auto db_check_session_token_op(irods::plugin_context& _ctx, const char* _json_in
             stmt.bind(0, user_name.c_str());
             stmt.bind(1, zone_name.c_str());
             for (auto result = nanodbc::execute(stmt); result.next();) {
+                std::int64_t expiration; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string expiration_str = result.get<std::string>(1);
+                const auto* value_b = expiration_str.data();
+                const auto* value_e =
+                        value_b + expiration_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(value_b, value_e, expiration);
+                if (std::errc{} != ec) {
+                    throw std::system_error{std::make_error_code(ec)};
+                }
                 const auto token = result.get<std::string>(0);
-                const auto expiration = std::stoll(result.get<std::string>(1));
                 const auto salt = result.get<std::string>(2);
                 tokens.emplace_back(session_token_info{token, expiration, salt});
             }

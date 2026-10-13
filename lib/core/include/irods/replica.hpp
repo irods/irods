@@ -36,10 +36,12 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
 #include <chrono>
 #include <iomanip>
 #include <optional>
 #include <string_view>
+#include <system_error>
 #include <variant>
 
 struct DataObjInfo;
@@ -478,6 +480,7 @@ namespace irods::experimental::replica
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws std::system_error if size cannot be parsed
     ///
     /// \returns std::uintmax_t
     /// \retval size of specified replica in bytes
@@ -491,9 +494,14 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view size = result[genquery_column_index::DATA_SIZE];
-
-        return static_cast<std::uintmax_t>(std::stoull(size.data()));
+        std::uintmax_t size; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* size_b = result[genquery_column_index::DATA_SIZE].c_str();
+        const auto* size_e = size_b + result[genquery_column_index::DATA_SIZE].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(size_b, size_e, size);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+        return size;
     } // replica_size
 
     /// \param[in] _comm connection object
@@ -502,6 +510,7 @@ namespace irods::experimental::replica
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
+    /// \throws std::system_error if size cannot be parsed
     ///
     /// \returns std::uintmax_t
     /// \retval size of specified replica in bytes
@@ -515,9 +524,14 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view size = result[genquery_column_index::DATA_SIZE];
-
-        return static_cast<std::uintmax_t>(std::stoull(size.data()));
+        std::uintmax_t size; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* size_b = result[genquery_column_index::DATA_SIZE].c_str();
+        const auto* size_e = size_b + result[genquery_column_index::DATA_SIZE].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(size_b, size_e, size);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+        return size;
     } // replica_size
 
     /// \param[in] _comm connection object
@@ -624,6 +638,7 @@ namespace irods::experimental::replica
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws std::system_error if timestamp cannot be parsed
     ///
     /// \returns irods::filesystem::object_time_type
     /// \retval Timestamp of the last time the replica was written to
@@ -639,9 +654,15 @@ namespace irods::experimental::replica
 
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
+        std::chrono::seconds::rep mtime; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* mtime_b = result[genquery_column_index::DATA_MODIFY_TIME].c_str();
+        const auto* mtime_e = mtime_b + result[genquery_column_index::DATA_MODIFY_TIME].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, mtime);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
 
-        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
+        return object_time_type{std::chrono::seconds{mtime}};
     } // last_write_time
 
     /// \brief Returns timestamp of last time this replica was written to
@@ -667,9 +688,15 @@ namespace irods::experimental::replica
 
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
+        std::chrono::seconds::rep mtime; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* mtime_b = result[genquery_column_index::DATA_MODIFY_TIME].c_str();
+        const auto* mtime_e = mtime_b + result[genquery_column_index::DATA_MODIFY_TIME].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, mtime);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
 
-        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
+        return object_time_type{std::chrono::seconds{mtime}};
     } // last_write_time
 
     /// \brief Sets value of the timestamp of last time this replica was written to
@@ -760,6 +787,7 @@ namespace irods::experimental::replica
     /// \param[in] _leaf_resource_name
     ///
     /// \throws irods::exception If query fails
+    /// \throws std::system_error if replica number cannot be parsed
     ///
     /// \retval std::string containing the resource name which hosts the specified replica
     /// \retval std::nullopt if no replica by the specified leaf resource name is found
@@ -774,7 +802,14 @@ namespace irods::experimental::replica
         try {
             const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-            return std::stoi(replica_info[genquery_column_index::DATA_REPL_NUM]);
+            replica_number_type rnum; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* rnum_b = replica_info[genquery_column_index::DATA_REPL_NUM].c_str();
+            const auto* rnum_e = rnum_b + replica_info[genquery_column_index::DATA_REPL_NUM].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(rnum_b, rnum_e, rnum);
+            if (std::errc{} != ec) {
+                throw std::system_error(std::make_error_code(ec));
+            }
+            return rnum;
         }
         catch (const irods::exception& e) {
             if (CAT_NO_ROWS_FOUND == e.code()) {
@@ -858,6 +893,7 @@ namespace irods::experimental::replica
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws std::system_error if replica status cannot be parsed
     ///
     /// \returns int
     /// \retval replica status
@@ -871,9 +907,14 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
-
-        return static_cast<int>(std::stoi(status.data()));
+        int status; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* status_b = result[genquery_column_index::DATA_REPL_STATUS].c_str();
+        const auto* status_e = status_b + result[genquery_column_index::DATA_REPL_STATUS].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(status_b, status_e, status);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+        return status;
     } // replica_status
 
     /// \param[in] _comm connection object
@@ -882,6 +923,7 @@ namespace irods::experimental::replica
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
+    /// \throws std::system_error if replica status cannot be parsed
     ///
     /// \returns int
     /// \retval replica status
@@ -895,9 +937,14 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
-
-        return static_cast<int>(std::stoi(status.data()));
+        int status; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* status_b = result[genquery_column_index::DATA_REPL_STATUS].c_str();
+        const auto* status_e = status_b + result[genquery_column_index::DATA_REPL_STATUS].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(status_b, status_e, status);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+        return status;
     } // replica_status
 
     /// \param[in] _comm connection object

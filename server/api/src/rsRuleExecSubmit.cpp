@@ -20,8 +20,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include <charconv>
+#include <cstdint>
 #include <cstring>
 #include <string>
+#include <string_view>
+#include <system_error>
 
 namespace
 {
@@ -66,21 +70,21 @@ namespace
         irods::at_scope_exit clear_cond_input{[&kvp] { kvp.clear(); }};
 
         // Verify that the priority is valid if the client provided one.
-        if (std::strlen(ruleExecSubmitInp->priority) > 0) {
-            try {
-                if (const auto p = std::stoi(ruleExecSubmitInp->priority); p < 1 || p > 9) {
-                    rodsLog(LOG_ERROR, "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
-                    return SYS_INVALID_INPUT_PARAM;
-                }
-            }
-            catch (...) {
-                rodsLog(LOG_ERROR, "Delay rule priority is not an integer.");
-                return SYS_INVALID_INPUT_PARAM;
-            }
-        }
-        else {
+        const std::string_view rule_prio_str{ruleExecSubmitInp->priority};
+        if (rule_prio_str.empty()) {
             // The client did not provide a priority, use the default value.
             rstrcpy(ruleExecSubmitInp->priority, "5", sizeof(ruleExecSubmitInp_t::priority));
+        }
+        else {
+            std::int_fast8_t rule_prio; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* rule_prio_b = rule_prio_str.data();
+            const auto* rule_prio_e =
+                rule_prio_b + rule_prio_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(rule_prio_b, rule_prio_e, rule_prio);
+            if (std::errc{} != ec || rule_prio < 1 || rule_prio > 9) {
+                rodsLog(LOG_ERROR, "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
+                return SYS_INVALID_INPUT_PARAM;
+            }
         }
 
         // Register the request.

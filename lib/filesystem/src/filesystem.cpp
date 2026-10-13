@@ -51,14 +51,19 @@
 
 #include <fmt/format.h>
 
-#include <cctype>
-#include <cstring>
-#include <string>
-#include <iterator>
-#include <exception>
-#include <sstream>
-#include <iomanip>
 #include <algorithm>
+#include <cctype>
+#include <charconv>
+#include <chrono>
+#include <cstdint>
+#include <cstring>
+#include <exception>
+#include <iomanip>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <system_error>
 
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
@@ -215,13 +220,31 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                     freeRodsObjStat(output);
                 }};
 
-                try {
-                    s.id = std::stoll(output->dataId);
-                    s.ctime = std::stoll(output->createTime);
-                    s.mtime = std::stoll(output->modifyTime);
+                const std::string_view id_str{output->dataId};
+                const auto* id_b = id_str.data();
+                const auto* id_e = id_b + id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                std::from_chars_result fcres = std::from_chars(id_b, id_e, s.id);
+                if (std::errc{} != fcres.ec) {
+                    throw filesystem_error{
+                        "stat error: cannot convert id string to integer", _p, std::make_error_code(fcres.ec)};
                 }
-                catch (...) {
-                    throw filesystem_error{"stat error: cannot convert string to integer", _p, make_error_code(SYS_INTERNAL_ERR)};
+
+                const std::string_view ctime_str{output->createTime};
+                const auto* ctime_b = ctime_str.data();
+                const auto* ctime_e = ctime_b + ctime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fcres = std::from_chars(ctime_b, ctime_e, s.ctime);
+                if (std::errc{} != fcres.ec) {
+                    throw filesystem_error{
+                        "stat error: cannot convert ctime string to integer", _p, std::make_error_code(fcres.ec)};
+                }
+
+                const std::string_view mtime_str{output->modifyTime};
+                const auto* mtime_b = mtime_str.data();
+                const auto* mtime_e = mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fcres = std::from_chars(mtime_b, mtime_e, s.mtime);
+                if (std::errc{} != fcres.ec) {
+                    throw filesystem_error{
+                        "stat error: cannot convert mtime string to integer", _p, std::make_error_code(fcres.ec)};
                 }
 
                 s.size = output->objSize;
@@ -770,9 +793,21 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         for (auto&& row : query) {
             // As we iterate over the replicas, compare the mtimes and capture the size
             // of the latest good replica.
-            if (const auto current_mtime = std::stoull(row[1]); current_mtime > latest_mtime) {
+            std::uint64_t current_mtime; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* mtime_b = row[1].c_str();
+            const auto* mtime_e = mtime_b + row[1].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::from_chars_result fcres = std::from_chars(mtime_b, mtime_e, current_mtime);
+            if (std::errc{} != fcres.ec) {
+                throw filesystem_error{"cannot convert mtime string to integer", _p, std::make_error_code(fcres.ec)};
+            }
+            if (current_mtime > latest_mtime) {
                 latest_mtime = current_mtime;
-                size = std::stoull(row[0]);
+                const auto* size_b = row[0].c_str();
+                const auto* size_e = size_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fcres = std::from_chars(size_b, size_e, size);
+                if (std::errc{} != fcres.ec) {
+                    throw filesystem_error{"cannot convert size string to integer", _p, std::make_error_code(fcres.ec)};
+                }
             }
         }
 
@@ -870,7 +905,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
         for (auto&& row : qb.build(_comm, gql)) {
-            return object_time_type{std::chrono::seconds{std::stoull(row[0])}};
+            std::chrono::seconds::rep secs; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* secs_b = row[0].c_str();
+            const auto* secs_e = secs_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(secs_b, secs_e, secs);
+            if (std::errc{} != ec) {
+                throw filesystem_error{"cannot convert mtime string to integer", _p, std::make_error_code(ec)};
+            }
+            return object_time_type{std::chrono::seconds{secs}};
         }
 
         throw filesystem_error{"cannot get mtime", _p, make_error_code(CAT_NO_ROWS_FOUND)};
@@ -929,7 +971,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         for (const auto& sql : {data_obj_sql, colls_sql}) {
             for (const auto& row : qb.build(_comm, sql)) {
-                count += std::stoull(row[0]);
+                std::uintmax_t count_incr; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* count_incr_b = row[0].c_str();
+                const auto* count_incr_e = count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(count_incr_b, count_incr_e, count_incr);
+                if (std::errc{} != ec) {
+                    throw filesystem_error{"cannot convert string to integer", _p, std::make_error_code(ec)};
+                }
+                count += count_incr;
             }
         }
 
@@ -968,7 +1017,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         for (const auto& sql : {data_obj_sql, colls_sql}) {
             for (const auto& row : qb.build(_comm, sql)) {
-                count += std::stoull(row[0]);
+                std::uintmax_t count_incr; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* count_incr_b = row[0].c_str();
+                const auto* count_incr_e = count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(count_incr_b, count_incr_e, count_incr);
+                if (std::errc{} != ec) {
+                    throw filesystem_error{"cannot convert string to integer", _p, std::make_error_code(ec)};
+                }
+                count += count_incr;
             }
         }
 
@@ -1118,7 +1174,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         for (const auto& row : qb.build(_comm, gql)) {
             // As we iterate over the replicas, compare the mtimes and capture the checksum
             // of the latest good replica.
-            if (const auto current_mtime = std::stoull(row[1]); current_mtime > latest_mtime) {
+            std::uintmax_t current_mtime; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* mtime_b = row[1].c_str();
+            const auto* mtime_e = mtime_b + row[1].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::from_chars_result fcres = std::from_chars(mtime_b, mtime_e, current_mtime);
+            if (std::errc{} != fcres.ec) {
+                throw filesystem_error{"cannot convert mtime string to integer", _p, std::make_error_code(fcres.ec)};
+            }
+            if (current_mtime > latest_mtime) {
                 latest_mtime = current_mtime;
                 checksum = row[0];
             }

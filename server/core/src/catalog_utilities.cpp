@@ -8,6 +8,9 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
+#include <string>
+#include <system_error>
 #include <type_traits>
 
 namespace
@@ -55,7 +58,14 @@ namespace irods::experimental::catalog
             _bp.statement.bind(_bp.index, value.c_str());
         }
         else {
-            const std::uint64_t v = std::stoull(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
+            std::uint64_t v; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string& v_str = _bp.json_input.at(_bp.column_name).get_ref<const std::string&>();
+            const auto* v_b = v_str.c_str();
+            const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(v_b, v_e, v);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
             _bp.bind_values.push_back(v);
 
             const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
@@ -68,7 +78,14 @@ namespace irods::experimental::catalog
 
     auto bind_integer_to_statement(bind_parameters& _bp) -> void
     {
-        const int v = std::stoi(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
+        int v; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& v_str = _bp.json_input.at(_bp.column_name).get_ref<const std::string&>();
+        const auto* v_b = v_str.c_str();
+        const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(v_b, v_e, v);
+        if (std::errc{} != ec) {
+            throw std::system_error{std::make_error_code(ec)};
+        }
         _bp.bind_values.push_back(v);
 
         const int& value = std::get<int>(_bp.bind_values.back());

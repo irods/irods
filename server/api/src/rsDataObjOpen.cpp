@@ -84,8 +84,11 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
 #include <chrono>
 #include <stdexcept>
+#include <string_view>
+#include <system_error>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -946,7 +949,13 @@ namespace
         }
 
         try {
-            const auto atime = std::stoull(std::string{_atime});
+            rodsULong_t atime; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = _atime.data();
+            const auto* value_e = value_b + _atime.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, atime);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
             return std::cmp_greater_equal(_current_time - atime, g_atime_resolution_in_seconds);
         }
         catch (const irods::exception& e) {

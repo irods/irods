@@ -18,6 +18,10 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
+#include <string_view>
+#include <system_error>
+
 namespace {
     namespace id = irods::experimental::data_object;
 } // anonymous namespace
@@ -315,17 +319,22 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // if a repl is requested, cache that fact
-        const char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
-        if (repl_num) {
-            try {
-                _file_obj->repl_requested(std::stoi(repl_num));
+        const std::string_view repl_num_str{getValByKey(&_data_obj_inp->condInput, REPL_NUM_KW)};
+        if (!repl_num_str.empty()) {
+            int repl_num; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* repl_num_b = repl_num_str.data();
+            const auto* repl_num_e =
+                repl_num_b + repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(repl_num_b, repl_num_e, repl_num);
+            if (std::errc::result_out_of_range == ec) {
+                return ERROR(
+                    USER_INVALID_REPLICA_INPUT, fmt::format("replica number is out of range:[{}]", repl_num_str));
             }
-            catch (const std::invalid_argument& e) {
-                return ERROR(USER_INVALID_REPLICA_INPUT, fmt::format("invalid replica number argument:[{}]", repl_num));
+            if (std::errc{} != ec) {
+                return ERROR(
+                    USER_INVALID_REPLICA_INPUT, fmt::format("invalid replica number argument:[{}]", repl_num_str));
             }
-            catch (const std::out_of_range& e) {
-                return ERROR(USER_INVALID_REPLICA_INPUT, fmt::format("replica number is out of range:[{}]", repl_num));
-            }
+            _file_obj->repl_requested(repl_num);
         }
 
         // =-=-=-=-=-=-=-
@@ -339,7 +348,7 @@ namespace irods {
                 freeAllDataObjInfo( head_ptr );
             }
 
-            if (repl_num && status == CAT_NO_ROWS_FOUND) {
+            if (!repl_num_str.empty() && status == CAT_NO_ROWS_FOUND) {
                 return ERROR(SYS_REPLICA_DOES_NOT_EXIST, "replica does not exist");
             }
 

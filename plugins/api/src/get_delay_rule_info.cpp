@@ -26,7 +26,11 @@
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 
+#include <charconv>
+#include <cstdint>
 #include <string>
+#include <string_view>
+#include <system_error>
 // clang-format on
 
 namespace
@@ -71,14 +75,18 @@ namespace
         }
 
         // Try to parse the string into a valid signed 64-bit integer.
-        try {
-            if (const auto i = std::stoll(_rule_id); i <= 0) {
-                log_api::error("Invalid input: _rule_id [{}] must be greater than zero.", i);
-                return false;
-            }
-        }
-        catch (...) {
+        std::int64_t rule_id; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string_view rule_id_str{_rule_id};
+        const auto* rule_id_b = rule_id_str.data();
+        const auto* rule_id_e =
+            rule_id_b + rule_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(rule_id_b, rule_id_e, rule_id);
+        if (std::errc{} != ec) {
             log_api::error("Invalid input: could not parse _rule_id [{}] into a signed integer.", _rule_id);
+            return false;
+        }
+        if (rule_id <= 0) {
+            log_api::error("Invalid input: _rule_id [{}] must be greater than zero.", rule_id);
             return false;
         }
 

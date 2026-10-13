@@ -69,17 +69,19 @@
 #define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #include "irods/user_administration.hpp"
 
-#include <algorithm>
-#include <cstring>
-#include <functional>
-#include <string>
-#include <string_view>
-#include <vector>
+#include <boost/make_shared.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
-#include <boost/make_shared.hpp>
+#include <algorithm>
+#include <charconv>
+#include <cstring>
+#include <functional>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <vector>
 
 namespace
 {
@@ -785,6 +787,7 @@ namespace
         // returned as 0.0. Either the replica is inaccessible or it does not exist.
         const auto* source_resource_input = getValByKey(&source_inp.condInput, RESC_NAME_KW);
         const auto* replica_number_input = getValByKey(&source_inp.condInput, REPL_NUM_KW);
+        const std::string_view replica_number_str{replica_number_input};
         if (source_resource_input && std::strlen(source_resource_input) > 0) {
             if (!irods::hierarchy_parser{source_hierarchy}.resc_in_hier(source_resource_input)) {
                 THROW(SYS_REPLICA_INACCESSIBLE,
@@ -795,13 +798,20 @@ namespace
                                   source_hierarchy));
             }
         }
-        else if (replica_number_input && std::strlen(replica_number_input) > 0) {
-            if (const auto replica_number = std::stoi(replica_number_input);
-                replica_number != source_replica.repl_num()) {
+        else if (!replica_number_str.empty()) {
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = replica_number_str.data();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                THROW(INVALID_LEXICAL_CAST, fmt::format("cannot parse replica number [{}]", replica_number_str));
+            }
+            if (replica_number != source_replica.repl_num()) {
                 THROW(SYS_REPLICA_INACCESSIBLE,
                       fmt::format("specified source replica number [{}] does not exist "
                                   "or the replica is inaccessible at this time",
-                                  replica_number_input));
+                                  replica_number_str));
             }
         }
 
@@ -976,8 +986,16 @@ namespace
             }
         }
         else if (irods::experimental::keyword_has_a_value(_inp.condInput, REPL_NUM_KW)) {
-            if (const auto replica_number = std::stoi(source_cond_input.at(REPL_NUM_KW).value().data());
-                replica_number != source_replica.repl_num()) {
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string_view replica_number_str = source_cond_input.at(REPL_NUM_KW).value();
+            const auto* value_b = replica_number_str.data();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                THROW(INVALID_LEXICAL_CAST, fmt::format("cannot parse replica number [{}]", replica_number_str));
+            }
+            if (replica_number != source_replica.repl_num()) {
                 THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
                     "specified source replica number [{}] does not exist "
                     "or the replica is inaccessible at this time",

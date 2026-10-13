@@ -39,18 +39,20 @@
 
 #include <unistd.h>
 
-#include <cstring>
+#include <algorithm>
+#include <array>
+#include <charconv>
+#include <chrono>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
-#include <vector>
 #include <iostream>
 #include <iterator>
-#include <algorithm>
-#include <thread>
-#include <chrono>
-#include <array>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <thread>
+#include <vector>
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity, readability-function-size)
 TEST_CASE("filesystem")
@@ -312,7 +314,13 @@ TEST_CASE("filesystem")
             irods::experimental::client_connection conn;
             irods::query query{static_cast<rcComm_t*>(conn), gql};
 
-            return fs::object_time_type{duration_type{std::stoull(query.front()[0])}};
+            duration_type::rep mtime; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string mtime_str = query.front()[0];
+            const auto* mtime_b = mtime_str.c_str();
+            const auto* mtime_e = mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, mtime);
+            CHECK(std::errc{} == ec);
+            return fs::object_time_type{duration_type{mtime}};
         }();
 
         REQUIRE(first_replica_mtime < second_replica_mtime);

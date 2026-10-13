@@ -11,7 +11,6 @@
 #include "irods/msParam.h"
 #include "irods/rodsLog.h"
 
-// =-=-=-=-=-=-=-
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_file_object.hpp"
@@ -35,14 +34,20 @@
 #include "irods/key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
+#include <fmt/format.h>
+
+// =-=-=-=-=-=-=-
 // stl includes
+#include <charconv>
+#include <cstdint>
 #include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <map>
 #include <list>
-#include <boost/lexical_cast.hpp>
+#include <map>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <vector>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -526,8 +531,8 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
     }};
 
     // Get operation type based on reason for opening the file
-    const auto open_type_str{getValByKey(&file_obj->cond_input(), OPEN_TYPE_KW)};
-    if (nullptr == open_type_str) {
+    const std::string_view open_type_str{getValByKey(&file_obj->cond_input(), OPEN_TYPE_KW)};
+    if (open_type_str.empty()) {
         irods::log(LOG_DEBUG,
                    (boost::format("[%s] - no OPEN_TYPE_KW value provided") %
                     __FUNCTION__).str());
@@ -535,22 +540,25 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
     }
 
     std::string operation{};
-    try {
-        switch(std::stoi(open_type_str)) {
-            case CREATE_TYPE:
-                operation = irods::CREATE_OPERATION;
-                break;
-            case OPEN_FOR_WRITE_TYPE:
-                operation = irods::WRITE_OPERATION;
-                break;
-            default:
-                throw std::invalid_argument(open_type_str);
-        }
-    }
-    catch (const std::invalid_argument&) {
+    std::int_fast8_t open_type; // NOLINT(cppcoreguidelines-init-variables)
+    const auto* open_type_b = open_type_str.data();
+    const auto* open_type_e =
+        open_type_b + open_type_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    auto [ptr, ec] = std::from_chars(open_type_b, open_type_e, open_type);
+    if (std::errc{} != ec) {
         return ERROR(SYS_INVALID_INPUT_PARAM,
-                     (boost::format("[%s] - invalid OPEN_TYPE_KW value provided:[%s]") %
-                      __FUNCTION__ % open_type_str).str());
+                     fmt::format("[{}] - invalid OPEN_TYPE_KW value provided:[{}]", __FUNCTION__, open_type_str));
+    }
+    switch (open_type) {
+        case CREATE_TYPE:
+            operation = irods::CREATE_OPERATION;
+            break;
+        case OPEN_FOR_WRITE_TYPE:
+            operation = irods::WRITE_OPERATION;
+            break;
+        default:
+            return ERROR(SYS_INVALID_INPUT_PARAM,
+                         fmt::format("[{}] - invalid OPEN_TYPE_KW value provided:[{}]", __FUNCTION__, open_type_str));
     }
 
     // Create child list and list of operations to replicate - then, replicate
@@ -1502,11 +1510,15 @@ int get_rebalance_batch_size(irods::plugin_context& _ctx) {
 
         const auto it = kvp.find(irods::REPL_LIMIT_KEY);
         if (it != kvp.end()) {
-            try {
-                return boost::lexical_cast<int>(it->second);
-            } catch (const boost::bad_lexical_cast&) {
-                THROW(SYS_INVALID_INPUT_PARAM, boost::format("failed to cast string [%s] to integer") % it->second);
+            int size; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string& size_str = it->second;
+            const auto* size_b = size_str.c_str();
+            const auto* size_e = size_b + size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(size_b, size_e, size);
+            if (std::errc{} == ec) {
+                return size;
             }
+            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("failed to cast string [{}] to integer", size_str));
         }
     }
     return DEFAULT_REBALANCE_BATCH_SIZE;
@@ -1591,6 +1603,8 @@ irods::error repl_file_notify(
 //    any useful values into the property map for reference in later
 //    operations.  semicolon is the preferred delimiter
 class repl_resource : public irods::resource {
+    private:
+        using log_rs = irods::experimental::log::resource;
 
     public:
         repl_resource(
@@ -1615,94 +1629,104 @@ class repl_resource : public irods::resource {
                 }
 
                 auto retry_attempts = irods::DEFAULT_RETRY_ATTEMPTS;
-                if ( kvp_map.find( irods::RETRY_ATTEMPTS_KW ) != kvp_map.end() ) {
-                    try {
-                        // boost::lexical_cast does not raise errors on negatives when casting to unsigned
-                        const int int_retry_attempts = boost::lexical_cast< int >( kvp_map[ irods::RETRY_ATTEMPTS_KW ] );
-                        if ( int_retry_attempts < 0 ) {
-                            irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                           boost::format(
-                                           "[%s] - [%s] for resource [%s] is < 0; using default value [%d]" ) %
-                                           __FUNCTION__ %
-                                           _inst_name %
-                                           irods::RETRY_ATTEMPTS_KW.c_str() %
-                                           irods::DEFAULT_RETRY_ATTEMPTS ) );
-                        }
-                        else {
-                            retry_attempts = static_cast< decltype( retry_attempts ) >( int_retry_attempts );
-                        }
+                if (kvp_map.find(irods::RETRY_ATTEMPTS_KW) != kvp_map.end()) {
+                    auto int_retry_attempts = retry_attempts;
+                    const std::string& retry_attempts_str = kvp_map[irods::RETRY_ATTEMPTS_KW];
+                    const auto* retry_attempts_b = retry_attempts_str.c_str();
+                    const auto* retry_attempts_e =
+                        retry_attempts_b +
+                        retry_attempts_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(retry_attempts_b, retry_attempts_e, int_retry_attempts);
+                    if (std::errc{} != ec) {
+                        log_rs::error(
+                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_ATTEMPTS_KW,
+                            _inst_name,
+                            retry_attempts_str,
+                            retry_attempts);
                     }
-                    catch ( const boost::bad_lexical_cast& ) {
-                        irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format(
-                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
-                                        __FUNCTION__ %
-                                        irods::RETRY_ATTEMPTS_KW %
-                                        _inst_name %
-                                        kvp_map[ irods::RETRY_ATTEMPTS_KW ] %
-                                        irods::DEFAULT_RETRY_ATTEMPTS ) );
+                    else if (int_retry_attempts < 0) {
+                        log_rs::error(
+                            "[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_ATTEMPTS_KW,
+                            _inst_name,
+                            retry_attempts_str,
+                            retry_attempts);
+                    }
+                    else {
+                        retry_attempts = int_retry_attempts;
                     }
                 }
-                properties_.set< decltype( retry_attempts ) >( irods::RETRY_ATTEMPTS_KW, retry_attempts );
+                properties_.set<decltype(retry_attempts)>(irods::RETRY_ATTEMPTS_KW, retry_attempts);
 
                 auto retry_delay_in_seconds = irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS;
-                if ( kvp_map.find( irods::RETRY_FIRST_DELAY_IN_SECONDS_KW ) != kvp_map.end() ) {
-                    try {
-                        // boost::lexical_cast does not raise errors on negatives when casting to unsigned
-                        const int int_retry_delay = boost::lexical_cast< int >( kvp_map[ irods::RETRY_FIRST_DELAY_IN_SECONDS_KW ] );
-                        if ( int_retry_delay <= 0 ) {
-                            irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                           boost::format(
-                                           "[%s] - [%s] for resource [%s] is <= 0; using default value [%d]" ) %
-                                           __FUNCTION__ %
-                                           _inst_name %
-                                           irods::RETRY_FIRST_DELAY_IN_SECONDS_KW.c_str() %
-                                           irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) );
-                        }
-                        else {
-                            retry_delay_in_seconds = static_cast< decltype( retry_delay_in_seconds ) >( int_retry_delay );
-                        }
+                if (kvp_map.find(irods::RETRY_FIRST_DELAY_IN_SECONDS_KW) != kvp_map.end()) {
+                    auto int_retry_delay = retry_attempts;
+                    const std::string& retry_delay_str = kvp_map[irods::RETRY_FIRST_DELAY_IN_SECONDS_KW];
+                    const auto* retry_delay_b = retry_delay_str.c_str();
+                    const auto* retry_delay_e =
+                        retry_delay_b +
+                        retry_delay_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(retry_delay_b, retry_delay_e, int_retry_delay);
+                    if (std::errc{} != ec) {
+                        log_rs::error(
+                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
+                            _inst_name,
+                            retry_delay_str,
+                            retry_delay_in_seconds);
                     }
-                    catch ( const boost::bad_lexical_cast& ) {
-                        irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format(
-                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
-                                        __FUNCTION__ %
-                                        irods::RETRY_FIRST_DELAY_IN_SECONDS_KW.c_str() %
-                                        _inst_name %
-                                        kvp_map[ irods::RETRY_FIRST_DELAY_IN_SECONDS_KW ] %
-                                        irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) );
+                    else if (int_retry_delay < 0) {
+                        log_rs::error(
+                            "[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
+                            _inst_name,
+                            retry_delay_str,
+                            retry_delay_in_seconds);
+                    }
+                    else {
+                        retry_delay_in_seconds = int_retry_delay;
                     }
                 }
-                properties_.set< decltype( retry_delay_in_seconds ) >( irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, retry_delay_in_seconds );
+                properties_.set<decltype(retry_delay_in_seconds)>(
+                    irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, retry_delay_in_seconds);
 
                 auto backoff_multiplier = irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER;
-                if ( kvp_map.find( irods::RETRY_BACKOFF_MULTIPLIER_KW ) != kvp_map.end() ) {
-                    try {
-                        backoff_multiplier = boost::lexical_cast< decltype( backoff_multiplier ) >( kvp_map[ irods::RETRY_BACKOFF_MULTIPLIER_KW ] );
-                        if ( backoff_multiplier < 1 ) {
-                            irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                           boost::format(
-                                           "[%s] - [%s] for resource [%s] is < 1; using default value [%d]" ) %
-                                           __FUNCTION__ %
-                                           _inst_name %
-                                           irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
-                                           irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) );
-                            backoff_multiplier = irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER;
-                        }
+                if (kvp_map.find(irods::RETRY_BACKOFF_MULTIPLIER_KW) != kvp_map.end()) {
+                    auto fltp_backoff_multiplier = retry_attempts;
+                    const std::string& backoff_multiplier_str = kvp_map[irods::RETRY_BACKOFF_MULTIPLIER_KW];
+                    const auto* backoff_multiplier_b = backoff_multiplier_str.c_str();
+                    const auto* backoff_multiplier_e =
+                        backoff_multiplier_b +
+                        backoff_multiplier_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(backoff_multiplier_b, backoff_multiplier_e, fltp_backoff_multiplier);
+                    if (std::errc{} != ec) {
+                        log_rs::error(
+                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_BACKOFF_MULTIPLIER_KW,
+                            _inst_name,
+                            backoff_multiplier_str,
+                            backoff_multiplier);
                     }
-                    catch ( const boost::bad_lexical_cast& ) {
-                        irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format(
-                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
-                                        __FUNCTION__ %
-                                        irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
-                                        _inst_name %
-                                        kvp_map[ irods::RETRY_BACKOFF_MULTIPLIER_KW ] %
-                                        irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) );
+                    else if (fltp_backoff_multiplier < 1.0) {
+                        log_rs::error(
+                            "[{}] - [{}] for resouce [{}] is < 1 ([{}]); using default value [{}]",
+                            __FUNCTION__,
+                            irods::RETRY_BACKOFF_MULTIPLIER_KW,
+                            _inst_name,
+                            backoff_multiplier_str,
+                            backoff_multiplier);
+                    }
+                    else {
+                        backoff_multiplier = fltp_backoff_multiplier;
                     }
                 }
-                properties_.set< decltype( backoff_multiplier ) >( irods::RETRY_BACKOFF_MULTIPLIER_KW, backoff_multiplier );
+                properties_.set<decltype(backoff_multiplier)>(irods::RETRY_BACKOFF_MULTIPLIER_KW, backoff_multiplier);
 
                 if ( kvp_map.find( READ_KW ) != kvp_map.end() ) {
                     properties_.set< std::string >( READ_KW, kvp_map[ READ_KW ] );

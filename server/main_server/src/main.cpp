@@ -46,6 +46,7 @@
 
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <chrono>
 #include <csignal>
 #include <cstdint>
@@ -59,6 +60,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <thread>
 #include <unordered_map>
 #include <utility>
@@ -1537,7 +1539,14 @@ Signals:
     {
         for (const auto& entry : fs::directory_iterator{irods::get_irods_proc_directory().c_str()}) {
             try {
-                const auto agent_pid = std::stoi(entry.path().stem().string());
+                pid_t agent_pid; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string pid_str = entry.path().stem().string();
+                const auto* pid_b = pid_str.c_str();
+                const auto* pid_e = pid_b + pid_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(pid_b, pid_e, agent_pid);
+                if (std::errc{} != ec) {
+                    throw std::system_error{std::make_error_code(ec)};
+                }
 
                 // If the agent process does not exist or the main server process doesn't
                 // have permission to send signals to the agent process, then remove the
@@ -1683,7 +1692,17 @@ Signals:
                 return false;
             }
 
-            irods::access_time_queue::init(*queue_name_prefix, std::stoi(*queue_size));
+            std::int32_t queue_size_int; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string queue_size_str = queue_size.value();
+            const auto* queue_size_b = queue_size_str.c_str();
+            const auto* queue_size_e =
+                queue_size_b + queue_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::from_chars_result fcres = std::from_chars(queue_size_b, queue_size_e, queue_size_int);
+            if (std::errc{} != fcres.ec) {
+                throw std::system_error{std::make_error_code(fcres.ec)};
+            }
+
+            irods::access_time_queue::init(*queue_name_prefix, queue_size_int);
 
             // Verify the batch size value is acceptable.
             try {
@@ -1691,13 +1710,21 @@ Signals:
                     throw std::exception{};
                 }
 
-                const auto value = std::stoll(*batch_size);
-                // Limited to 32-bit values.
-                if (value <= 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                std::int32_t batch_size_int; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string batch_size_str = batch_size.value();
+                const auto* batch_size_b = batch_size_str.c_str();
+                const auto* batch_size_e =
+                    batch_size_b + batch_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fcres = std::from_chars(batch_size_b, batch_size_e, batch_size_int);
+                if (std::errc{} != fcres.ec) {
+                    throw std::system_error{std::make_error_code(fcres.ec)};
+                }
+                // Must be positive or 0.
+                if (batch_size_int <= 0) {
                     throw std::exception{};
                 }
 
-                g_atime_batch_size = value;
+                g_atime_batch_size = batch_size_int;
             }
             catch (const std::exception&) {
                 g_atime_invalid_batch_size_detected = true;

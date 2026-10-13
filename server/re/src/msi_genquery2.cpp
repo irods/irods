@@ -16,12 +16,15 @@
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <charconv>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <map>
 #include <string>
+#include <string_view>
+#include <system_error>
 
 namespace
 {
@@ -91,14 +94,24 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
 
     IRODS_MSI_REQUIRE_VALID_POINTER(_handle->inOutStruct);
 
+    rodsLong_t ctx_handle_index; // NOLINT(cppcoreguidelines-init-variables)
+    const std::string_view index_str{static_cast<char*>(_handle->inOutStruct)};
+    const auto* index_b = index_str.data();
+    const auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    auto [ptr, ec] = std::from_chars(index_b, index_e, ctx_handle_index);
+    if (std::errc{} != ec) {
+        log_msi::error("{}: Failed to parse context handle index [{}]: {}",
+                       __func__,
+                       index_str,
+                       std::make_error_code(ec).message());
+        return INVALID_LEXICAL_CAST;
+    }
+    if (ctx_handle_index < 0) {
+        log_msi::error("{}: Unknown context handle.", __func__);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
-
-        if (ctx_handle_index < 0) {
-            log_msi::error("{}: Unknown context handle.", __func__);
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
         auto iter = gq2_context.find(ctx_handle_index);
 
         if (std::end(gq2_context) == iter) {
@@ -148,14 +161,24 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
     IRODS_MSI_REQUIRE_VALID_POINTER(_handle->inOutStruct);
     IRODS_MSI_REQUIRE_VALID_POINTER(_column_index->inOutStruct);
 
+    rodsLong_t ctx_handle_index; // NOLINT(cppcoreguidelines-init-variables)
+    std::string_view index_str{static_cast<char*>(_handle->inOutStruct)};
+    auto* index_b = index_str.data();
+    auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    std::from_chars_result fcres = std::from_chars(index_b, index_e, ctx_handle_index);
+    if (std::errc{} != fcres.ec) {
+        log_msi::error("{}: Failed to parse context handle index [{}]: {}",
+                       __func__,
+                       index_str,
+                       std::make_error_code(fcres.ec).message());
+        return INVALID_LEXICAL_CAST;
+    }
+    if (ctx_handle_index < 0) {
+        log_msi::error("{}: Unknown context handle.", __func__);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
-
-        if (ctx_handle_index < 0) {
-            log_msi::error("{}: Unknown context handle.", __func__);
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
         auto iter = gq2_context.find(ctx_handle_index);
 
         if (std::end(gq2_context) == iter) {
@@ -163,9 +186,20 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        auto& ctx = iter->second;
-        const auto column_index = std::stoll(static_cast<char*>(_column_index->inOutStruct));
+        std::size_t column_index; // NOLINT(cppcoreguidelines-init-variables)
+        index_str = std::string_view{static_cast<char*>(_column_index->inOutStruct)};
+        auto* index_b = index_str.data();
+        auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        std::from_chars_result fcres = std::from_chars(index_b, index_e, column_index);
+        if (std::errc{} != fcres.ec) {
+            log_msi::error("{}: Failed to parse column index [{}]: {}",
+                           __func__,
+                           index_str,
+                           std::make_error_code(fcres.ec).message());
+            return INVALID_LEXICAL_CAST;
+        }
 
+        auto& ctx = iter->second;
         const auto& value = ctx.rows.at(ctx.current_row).at(column_index).get_ref<const std::string&>();
         log_msi::debug("{}: Column value = [{}]", __func__, value);
         fillStrInMsParam(_column_value, value.c_str());
@@ -191,14 +225,24 @@ auto msi_genquery2_free(MsParam* _handle, RuleExecInfo* _rei) -> int
 
     IRODS_MSI_REQUIRE_VALID_POINTER(_handle->inOutStruct);
 
+    rodsLong_t ctx_handle_index; // NOLINT(cppcoreguidelines-init-variables)
+    const std::string_view index_str{static_cast<char*>(_handle->inOutStruct)};
+    const auto* index_b = index_str.data();
+    const auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    auto [ptr, ec] = std::from_chars(index_b, index_e, ctx_handle_index);
+    if (std::errc{} != ec) {
+        log_msi::error("{}: Failed to parse context handle index [{}]: {}",
+                       __func__,
+                       index_str,
+                       std::make_error_code(ec).message());
+        return INVALID_LEXICAL_CAST;
+    }
+    if (ctx_handle_index < 0) {
+        log_msi::error("{}: Unknown context handle.", __func__);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     try {
-        const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
-
-        if (ctx_handle_index < 0) {
-            log_msi::error("{}: Unknown context handle.", __func__);
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
         auto iter = gq2_context.find(ctx_handle_index);
 
         if (std::end(gq2_context) == iter) {

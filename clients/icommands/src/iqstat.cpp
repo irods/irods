@@ -1,21 +1,26 @@
 #include "utility.hpp"
 #include <irods/irods_client_api_table.hpp>
+#include <irods/irods_exception.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_query.hpp>
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
+#include <irods/rodsErrorTable.h>
 #include <irods/rodsLog.h>
 #include <irods/user_administration.hpp>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/format.hpp>
 
+#include <fmt/format.h>
+
+#include <charconv>
 #include <cstdint>
 #include <cstdio>
-#include <stdexcept>
 #include <string>
+#include <system_error>
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -359,20 +364,19 @@ auto throw_if_id_cannot_be_converted_to_int(const std::string& key) -> void
 {
     std::string k{key};
     boost::algorithm::trim(k);
-    try {
-        std::stoul(k);
-    }
-    catch(const std::invalid_argument&){
+    std::int64_t key_int; // NOLINT(cppcoreguidelines-init-variables)
+    const auto* k_b = k.c_str();
+    const auto* k_e = k_b + k.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    auto [ptr, ec] = std::from_chars(k_b, k_e, key_int);
+    if (std::errc::invalid_argument == ec) {
         THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID has incorrect format.");
     }
-    catch(const std::out_of_range&){
+    if (std::errc::result_out_of_range == ec) {
         THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID is too large.");
     }
-    catch(const std::exception& e){
-        auto message = std::string{ "Error parsing delay rule ID: "} + e.what();
+    if (std::errc{} != ec) {
+        const std::string message =
+            fmt::format("Error parsing delay rule ID: {}", std::make_error_code(ec).message());
         THROW(SYS_INVALID_INPUT_PARAM, message);
-    }
-    catch(...){
-        THROW(SYS_INVALID_INPUT_PARAM, "Unknown error parsing delay rule ID.");
     }
 }

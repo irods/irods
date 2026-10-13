@@ -12,9 +12,13 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/system_error.hpp"
 
+#include <cassert>
+#include <charconv>
+#include <chrono>
 #include <functional>
 #include <string>
-#include <cassert>
+#include <string_view>
+#include <system_error>
 
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
@@ -100,12 +104,32 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         // clang-format off
         if (e->dataId)     { entry.data_id_ = e->dataId; }
-        if (e->createTime) { entry.ctime_ = object_time_type{std::chrono::seconds{std::stoll(e->createTime)}}; }
-        if (e->modifyTime) { entry.mtime_ = object_time_type{std::chrono::seconds{std::stoll(e->modifyTime)}}; }
         if (e->chksum)     { entry.checksum_ = e->chksum; }
         if (e->ownerName)  { entry.owner_ = e->ownerName; }
         if (e->dataType)   { entry.data_type_ = e->dataType; }
         // clang-format on
+        if (e->createTime) {
+            std::chrono::seconds::rep ctime; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string_view ctime_str{e->createTime};
+            const auto* ctime_b = ctime_str.data();
+            const auto* ctime_e = ctime_b + ctime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(ctime_b, ctime_e, ctime);
+            if (std::errc{} != ec) {
+                throw filesystem_error{"could not parse create time", std::make_error_code(ec)};
+            }
+            entry.ctime_ = object_time_type{std::chrono::seconds{ctime}};
+        }
+        if (e->modifyTime) {
+            std::chrono::seconds::rep mtime; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string_view mtime_str{e->modifyTime};
+            const auto* mtime_b = mtime_str.data();
+            const auto* mtime_e = mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, mtime);
+            if (std::errc{} != ec) {
+                throw filesystem_error{"could not parse modify time", std::make_error_code(ec)};
+            }
+            entry.mtime_ = object_time_type{std::chrono::seconds{mtime}};
+        }
 
         switch (e->objType) {
             case COLL_OBJ_T:

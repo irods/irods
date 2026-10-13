@@ -13,13 +13,16 @@
 
 #include <boost/filesystem.hpp>
 
+#include <sys/types.h>
 #include <unistd.h>
 
+#include <charconv>
 #include <cstddef>
-#include <string>
-#include <string_view>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <string_view>
+#include <system_error>
 
 namespace unit_test_utils
 {
@@ -135,7 +138,7 @@ namespace unit_test_utils
         return true;
     }
 
-    inline auto get_agent_pid(RcComm& _comm) -> int
+    inline auto get_agent_pid(RcComm& _comm) -> pid_t
     {
         ExecMyRuleInp inp{};
         const auto free_cond_input = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
@@ -159,15 +162,22 @@ namespace unit_test_utils
             return -1;
         }
 
-        try {
-            return std::stoi(static_cast<char*>(out_array->msParam[0]->inOutStruct));
-        }
-        catch (const std::invalid_argument&) {
+        const std::string_view pid_str{static_cast<char*>(out_array->msParam[0]->inOutStruct)};
+        pid_t pid; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* pid_b = pid_str.data();
+        const auto* pid_e = pid_b + pid_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(pid_b, pid_e, pid);
+        if (std::errc::invalid_argument == ec) {
             return -2;
         }
-        catch (const std::out_of_range&) {
+        if (std::errc::result_out_of_range == ec) {
             return -3;
         }
+        if (std::errc{} != ec) {
+            return -4;
+        }
+
+        return pid;
     } // get_agent_pid
 } // namespace unit_test_utils
 
