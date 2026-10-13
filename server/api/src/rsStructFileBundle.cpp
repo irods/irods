@@ -3,6 +3,7 @@
 #include "irods/apiHeaderAll.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/irods_file_object.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_resource_redirect.hpp"
@@ -117,6 +118,57 @@ namespace
             }
         }
 
+        if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0 &&
+            fs::server::exists(*rsComm, structFileBundleInp->objPath) &&
+            !getValByKey(&structFileBundleInp->condInput, FORCE_FLAG_KW))
+        {
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
+
+        // =-=-=-=-=-=-
+        // get the resc hier string
+        std::string resc_hier;
+        char* resc_hier_ptr = getValByKey(&structFileBundleInp->condInput, RESC_HIER_STR_KW);
+        if (!resc_hier_ptr) {
+            rodsLog(LOG_NOTICE, "%s :: RESC_HIER_STR_KW is NULL", __FUNCTION__);
+            return SYS_INVALID_RESC_INPUT;
+        }
+
+        resc_hier = resc_hier_ptr;
+
+        irods::hierarchy_parser parser;
+        if (const auto err = parser.set_string(resc_hier); !err.ok()) {
+            irods::log(PASSMSG("failed to parse resource hierarchy", err));
+            return err.code();
+        }
+
+        std::string resource;
+        if (const auto err = parser.last_resc(resource); !err.ok()) {
+            irods::log(PASSMSG("failed to get leaf resource from hierarchy", err));
+            return err.code();
+        }
+
+        // =-=-=-=-=-=-
+        // Check the source collection before creating the archive object. This
+        // prevents the archive path from shadowing the source collection during
+        // recursive collection reads.
+        chkObjPermAndStat_t chkObjPermAndStatInp;
+        memset(&chkObjPermAndStatInp, 0, sizeof(chkObjPermAndStatInp));
+        rstrcpy(chkObjPermAndStatInp.objPath, structFileBundleInp->collection, MAX_NAME_LEN);
+        chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
+        addKeyVal(&chkObjPermAndStatInp.condInput, RESC_NAME_KW, resource.c_str());
+        addKeyVal(&chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier.c_str());
+        status = rsChkObjPermAndStat(rsComm, &chkObjPermAndStatInp);
+        clearKeyVal(&chkObjPermAndStatInp.condInput);
+
+        if (status < 0) {
+            rodsLog(LOG_ERROR,
+                    "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
+                    chkObjPermAndStatInp.objPath,
+                    status);
+            return status;
+        }
+
         // =-=-=-=-=-=-=-
         // capture the object path in the data obj struct
         rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
@@ -131,11 +183,6 @@ namespace
             l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
         }
         else {
-            if (fs::server::exists(*rsComm, structFileBundleInp->objPath) &&
-                !getValByKey(&structFileBundleInp->condInput, FORCE_FLAG_KW)) {
-                return OVERWRITE_WITHOUT_FORCE_FLAG;
-            }
-
             l1descInx = rsDataObjCreate( rsComm, &dataObjInp );
         }
 
@@ -163,39 +210,6 @@ namespace
 
         // convert resc id to a string for the cond input
         std::string resc_id_str = boost::lexical_cast<std::string>(L1desc[l1descInx].dataObjInfo->rescId);
-
-        // =-=-=-=-=-=-=-
-        // check object permissions / stat
-        chkObjPermAndStat_t chkObjPermAndStatInp;
-        memset( &chkObjPermAndStatInp, 0, sizeof( chkObjPermAndStatInp ) );
-        rstrcpy( chkObjPermAndStatInp.objPath, structFileBundleInp->collection, MAX_NAME_LEN );
-        chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
-        addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,     L1desc[l1descInx].dataObjInfo->rescName );
-        addKeyVal( &chkObjPermAndStatInp.condInput, RESC_ID_KW, resc_id_str.c_str());
-
-        // =-=-=-=-=-=-=-
-        // get the resc hier string
-        std::string resc_hier;
-        char* resc_hier_ptr = getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW );
-        if ( !resc_hier_ptr ) {
-            rodsLog( LOG_NOTICE, "%s :: RESC_HIER_STR_KW is NULL", __FUNCTION__ );
-        }
-        else {
-            addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier_ptr );
-            resc_hier = resc_hier_ptr;
-        }
-        status = rsChkObjPermAndStat( rsComm, &chkObjPermAndStatInp );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
-                     chkObjPermAndStatInp.objPath, status );
-            openedDataObjInp_t dataObjCloseInp{};
-            dataObjCloseInp.l1descInx = l1descInx;
-            //L1desc[l1descInx].oprStatus = status;
-            rsDataObjClose( rsComm, &dataObjCloseInp );
-            return status;
-        }
-
-        clearKeyVal( &chkObjPermAndStatInp.condInput );
 
         // =-=-=-=-=-=-=-
         // create the special hidden directory where the bundling happens
