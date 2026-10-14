@@ -59,7 +59,7 @@ namespace irods::experimental::catalog
         }
         else {
             std::uint64_t v; // NOLINT(cppcoreguidelines-init-variables)
-            const std::string& v_str = _bp.json_input.at(_bp.column_name).get_ref<const std::string&>();
+            const std::string& v_str = _bp.json_input.at(_bp.column_name.data()).get_ref<const std::string&>();
             const auto* v_b = v_str.c_str();
             const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             auto [ptr, ec] = std::from_chars(v_b, v_e, v);
@@ -79,7 +79,7 @@ namespace irods::experimental::catalog
     auto bind_integer_to_statement(bind_parameters& _bp) -> void
     {
         int v; // NOLINT(cppcoreguidelines-init-variables)
-        const std::string& v_str = _bp.json_input.at(_bp.column_name).get_ref<const std::string&>();
+        const std::string& v_str = _bp.json_input.at(_bp.column_name.data()).get_ref<const std::string&>();
         const auto* v_b = v_str.c_str();
         const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         auto [ptr, ec] = std::from_chars(v_b, v_e, v);
