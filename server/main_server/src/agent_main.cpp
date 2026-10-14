@@ -188,7 +188,9 @@ auto main(int _argc, char* _argv[]) -> int
 
                 std::int32_t atime_resolution; // NOLINT(cppcoreguidelines-init-variables)
                 const auto* atime_resolution_b = resolution_in_seconds.c_str();
-                const auto* atime_resolution_e = atime_resolution_b + resolution_in_seconds.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* atime_resolution_e =
+                    atime_resolution_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    resolution_in_seconds.size();
                 auto [ptr, ec] = std::from_chars(atime_resolution_b, atime_resolution_e, atime_resolution);
                 if (std::errc{} != ec) {
                     throw std::system_error{std::make_error_code(ec)};
@@ -1058,7 +1060,8 @@ namespace
                 using boost::chrono::time_fmt;
                 std::time_t tt; // NOLINT(cppcoreguidelines-init-variables)
                 const auto* secs_b = epoch_seconds.c_str();
-                const auto* secs_e = secs_b + epoch_seconds.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* secs_e =
+                    secs_b + epoch_seconds.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 auto [ptr, ec] = std::from_chars(secs_b, secs_e, tt);
                 if (std::errc{} != ec) {
                     throw std::system_error{std::make_error_code(ec)};

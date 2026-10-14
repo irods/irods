@@ -1711,7 +1711,7 @@ Signals:
                 }
 
                 std::int32_t batch_size_int; // NOLINT(cppcoreguidelines-init-variables)
-                const std::string batch_size_str = batch_size.value();
+                const std::string& batch_size_str = batch_size.value();
                 const auto* batch_size_b = batch_size_str.c_str();
                 const auto* batch_size_e =
                     batch_size_b + batch_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

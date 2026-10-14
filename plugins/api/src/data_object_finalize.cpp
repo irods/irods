@@ -1,4 +1,11 @@
+#ifdef RODS_SERVER
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#endif
+
 #include "irods/plugins/api/api_plugin_number.h"
+
+#include "irods/apiHandler.hpp"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/fileDriver.hpp"
 #include "irods/irods_configuration_keywords.hpp"
@@ -8,8 +15,6 @@
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsPackInstruct.h"
-
-#include "irods/apiHandler.hpp"
 
 #include <functional>
 #include <stdexcept>
@@ -24,9 +29,12 @@
 
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
+#include "irods/data_object_proxy.hpp"
+#include "irods/filesystem.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_logger.hpp"
@@ -38,13 +46,8 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/objDesc.hpp"
 #include "irods/rodsConnect.h"
+#include "irods/rodsType.h"
 #include "irods/server_utilities.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "irods/data_object_proxy.hpp"
 
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>

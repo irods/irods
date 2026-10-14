@@ -1,22 +1,22 @@
 #include "irods/rsRuleExecSubmit.hpp"
-
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_re_structs.hpp"
-#include "irods/rodsErrorTable.h"
-#include "irods/rodsConnect.h"
-#include "irods/icatHighLevelRoutines.hpp"
-#include "irods/rcMisc.h"
-#include "irods/miscServerFunct.hpp"
-
-#include "irods/irods_log.hpp"
-#include "irods/irods_get_full_path_for_config_file.hpp"
-#include "irods/irods_random.hpp"
-#include "irods/irods_configuration_keywords.hpp"
-#include "irods/key_value_proxy.hpp"
-#include "irods/catalog_utilities.hpp"
 #include "irods/ruleExecSubmit.h"
-#include "irods/server_utilities.hpp"
+
+#include "irods/catalog_utilities.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_re_structs.hpp"
 #include "irods/json_serialization.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsConnect.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/server_utilities.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -30,6 +30,7 @@
 namespace
 {
     using json = nlohmann::json;
+    using log_api = irods::experimental::log::api;
 
     auto is_input_valid(const ruleExecSubmitInp_t* _input) noexcept -> bool
     {
@@ -82,7 +83,7 @@ namespace
                 rule_prio_b + rule_prio_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             auto [ptr, ec] = std::from_chars(rule_prio_b, rule_prio_e, rule_prio);
             if (std::errc{} != ec || rule_prio < 1 || rule_prio > 9) {
-                rodsLog(LOG_ERROR, "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
+                log_api::error("Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
                 return SYS_INVALID_INPUT_PARAM;
             }
         }

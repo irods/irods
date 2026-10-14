@@ -231,7 +231,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
                 const std::string_view ctime_str{output->createTime};
                 const auto* ctime_b = ctime_str.data();
-                const auto* ctime_e = ctime_b + ctime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* ctime_e =
+                    ctime_b + ctime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 fcres = std::from_chars(ctime_b, ctime_e, s.ctime);
                 if (std::errc{} != fcres.ec) {
                     throw filesystem_error{
@@ -240,7 +241,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
                 const std::string_view mtime_str{output->modifyTime};
                 const auto* mtime_b = mtime_str.data();
-                const auto* mtime_e = mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* mtime_e =
+                    mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 fcres = std::from_chars(mtime_b, mtime_e, s.mtime);
                 if (std::errc{} != fcres.ec) {
                     throw filesystem_error{
@@ -973,7 +975,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             for (const auto& row : qb.build(_comm, sql)) {
                 std::uintmax_t count_incr; // NOLINT(cppcoreguidelines-init-variables)
                 const auto* count_incr_b = row[0].c_str();
-                const auto* count_incr_e = count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* count_incr_e =
+                    count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 auto [ptr, ec] = std::from_chars(count_incr_b, count_incr_e, count_incr);
                 if (std::errc{} != ec) {
                     throw filesystem_error{"cannot convert string to integer", _p, std::make_error_code(ec)};
@@ -1019,7 +1022,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             for (const auto& row : qb.build(_comm, sql)) {
                 std::uintmax_t count_incr; // NOLINT(cppcoreguidelines-init-variables)
                 const auto* count_incr_b = row[0].c_str();
-                const auto* count_incr_e = count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                const auto* count_incr_e =
+                    count_incr_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 auto [ptr, ec] = std::from_chars(count_incr_b, count_incr_e, count_incr);
                 if (std::errc{} != ec) {
                     throw filesystem_error{"cannot convert string to integer", _p, std::make_error_code(ec)};
@@ -1177,9 +1181,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             std::uintmax_t current_mtime; // NOLINT(cppcoreguidelines-init-variables)
             const auto* mtime_b = row[1].c_str();
             const auto* mtime_e = mtime_b + row[1].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            std::from_chars_result fcres = std::from_chars(mtime_b, mtime_e, current_mtime);
-            if (std::errc{} != fcres.ec) {
-                throw filesystem_error{"cannot convert mtime string to integer", _p, std::make_error_code(fcres.ec)};
+            auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, current_mtime);
+            if (std::errc{} != ec) {
+                throw filesystem_error{"cannot convert mtime string to integer", _p, std::make_error_code(ec)};
             }
             if (current_mtime > latest_mtime) {
                 latest_mtime = current_mtime;

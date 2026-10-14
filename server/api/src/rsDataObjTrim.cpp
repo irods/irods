@@ -1,23 +1,28 @@
-#include "irods/dataObjTrim.h"
-#include "irods/dataObjUnlink.h"
-#include "irods/dataObjOpr.hpp"
-#include "irods/rcMisc.h"
-#include "irods/rodsLog.h"
-#include "irods/objMetaOpr.hpp"
-#include "irods/specColl.hpp"
 #include "irods/rsDataObjTrim.hpp"
-#include "irods/icatDefines.h"
+#include "irods/dataObjTrim.h"
+
+#include "irods/dataObjOpr.hpp"
+#include "irods/dataObjUnlink.h"
 #include "irods/getRemoteZoneResc.h"
-#include "irods/rsDataObjUnlink.hpp"
-#include "irods/rsDataObjOpen.hpp"
-
-// =-=-=-=-=-=-=-
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/icatDefines.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_linked_list_iterator.hpp"
+#include "irods/irods_resource_redirect.hpp"
 #include "irods/logical_locking.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsKeyWdDef.h"
+#include "irods/rodsLog.h"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjUnlink.hpp"
+#include "irods/specColl.hpp"
 
+#include <fmt/format.h>
+
+#include <algorithm>
 #include <charconv>
 #include <string_view>
 #include <system_error>
@@ -152,7 +157,7 @@ namespace
                                   std::make_error_code(ec).message()));
             }
 
-            const auto repl = std::find_if(replica_list.begin(), replica_list.end(), [num](const auto& repl) {
+            const auto repl = std::ranges::find_if(replica_list, [num](const auto& repl) {
                 return num == repl.repl_num();
             });
 
@@ -161,10 +166,10 @@ namespace
             }
 
             if (const auto ret = ill::try_lock(_info, ill::lock_type::write, num); ret < 0) {
-                const auto msg = fmt::format(
-                    "trim not allowed because data object is locked "
-                    "[path=[{}], hierarchy=[{}]]",
-                    _obj->logical_path(), repl->resc_hier());
+                const auto msg = fmt::format("trim not allowed because data object is locked "
+                                             "[path=[{}], hierarchy=[{}]]",
+                                             _obj->logical_path(),
+                                             repl->resc_hier());
 
                 THROW(ret, msg);
             }

@@ -1,18 +1,35 @@
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "irods/rsDataObjPhymv.hpp"
+#include "irods/dataObjPhymv.h"
+
+#include "irods/data_object_proxy.hpp"
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjOpr.hpp"
-#include "irods/dataObjPhymv.h"
 #include "irods/dataObjRepl.h"
 #include "irods/fileClose.h"
+#include "irods/filesystem.hpp"
+#include "irods/finalize_utilities.hpp"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatDefines.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/json_serialization.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/physPath.hpp"
+#include "irods/replica_access_table.hpp"
+#include "irods/replication_utilities.hpp"
+#include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
 #include "irods/rsDataObjClose.hpp"
 #include "irods/rsDataObjOpen.hpp"
-#include "irods/rsDataObjPhymv.hpp"
-#include "irods/rsDataObjPhymv.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/rsDataObjTrim.hpp"
 #include "irods/rsDataObjUnlink.hpp"
@@ -22,23 +39,7 @@
 #include "irods/rs_replica_close.hpp"
 #include "irods/specColl.hpp"
 
-#include "irods/finalize_utilities.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_resource_backport.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/json_serialization.hpp"
-#include "irods/key_value_proxy.hpp"
-#include "irods/replica_access_table.hpp"
-#include "irods/replication_utilities.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "irods/data_object_proxy.hpp"
-
-#include "irods/logical_locking.hpp"
+#include <fmt/format.h>
 
 #include <charconv>
 #include <system_error>

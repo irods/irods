@@ -1,15 +1,16 @@
 #include "irods/msi_genquery2.hpp"
 
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods/rs_genquery2.hpp"
-#include "irods/msParam.h"
-#include "irods/irods_re_structs.hpp"
+#include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_re_structs.hpp"
 #include "irods/irods_state_table.h"
+#include "irods/msParam.h"
+#include "irods/msi_preconditions.hpp"
 #include "irods/rodsError.h"
 #include "irods/rodsErrorTable.h"
-#include "irods/msi_preconditions.hpp"
-#include "irods/irods_exception.hpp"
+#include "irods/rodsType.h"
+#include "irods/rs_genquery2.hpp"
 
 #include <fmt/format.h>
 #include <boost/any.hpp>
@@ -163,8 +164,8 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
 
     rodsLong_t ctx_handle_index; // NOLINT(cppcoreguidelines-init-variables)
     std::string_view index_str{static_cast<char*>(_handle->inOutStruct)};
-    auto* index_b = index_str.data();
-    auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const auto* index_b = index_str.data();
+    const auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::from_chars_result fcres = std::from_chars(index_b, index_e, ctx_handle_index);
     if (std::errc{} != fcres.ec) {
         log_msi::error("{}: Failed to parse context handle index [{}]: {}",
@@ -188,9 +189,9 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
 
         std::size_t column_index; // NOLINT(cppcoreguidelines-init-variables)
         index_str = std::string_view{static_cast<char*>(_column_index->inOutStruct)};
-        auto* index_b = index_str.data();
-        auto* index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        std::from_chars_result fcres = std::from_chars(index_b, index_e, column_index);
+        index_b = index_str.data();
+        index_e = index_b + index_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fcres = std::from_chars(index_b, index_e, column_index);
         if (std::errc{} != fcres.ec) {
             log_msi::error("{}: Failed to parse column index [{}]: {}",
                            __func__,

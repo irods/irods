@@ -452,8 +452,7 @@ namespace irods::replica_state_table
 
         for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
             int e_repl_num; // NOLINT(cppcoreguidelines-init-variables)
-            const std::string& e_repl_num_str =
-                e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
+            const std::string& e_repl_num_str = e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
             const auto* e_repl_num_b = e_repl_num_str.c_str();
             const auto* e_repl_num_e =
                 e_repl_num_b + e_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -540,8 +539,7 @@ namespace irods::replica_state_table
         {
             for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                 int e_repl_num; // NOLINT(cppcoreguidelines-init-variables)
-                const std::string& e_repl_num_str =
-                    e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
+                const std::string& e_repl_num_str = e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
                 const auto* e_repl_num_b = e_repl_num_str.c_str();
                 const auto* e_repl_num_e =
                     e_repl_num_b + e_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

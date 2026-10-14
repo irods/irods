@@ -5,49 +5,39 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
+#include "irods/dataObjInpOut.h"
 #include "irods/icatHighLevelRoutines.hpp"
-#include "irods/irods_configuration_keywords.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/msParam.h"
-#include "irods/rodsLog.h"
-
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_resource_plugin.hpp"
-#include "irods/irods_file_object.hpp"
 #include "irods/irods_collection_object.hpp"
-#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_plugin_base.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_resource_redirect.hpp"
 #include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/msParam.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGenQuery.hpp"
+
 #include "irods/private/irods_repl_retry.hpp"
 #include "irods/private/irods_repl_types.hpp"
 #include "irods/private/irods_object_oper.hpp"
 #include "irods/private/irods_replicator.hpp"
 #include "irods/private/irods_create_write_replicator.hpp"
-#include "irods/irods_resource_redirect.hpp"
 #include "irods/private/irods_repl_rebalance.hpp"
-#include "irods/irods_kvp_string_parser.hpp"
-#include "irods/irods_random.hpp"
-#include "irods/irods_exception.hpp"
-#include "irods/rsGenQuery.hpp"
-#include "irods/key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
 #include <fmt/format.h>
-
-// =-=-=-=-=-=-=-
-// stl includes
-#include <charconv>
-#include <cstdint>
-#include <iostream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <string>
-#include <string_view>
-#include <system_error>
-#include <vector>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -55,9 +45,7 @@
 #include <sys/file.h>
 #include <sys/param.h>
 #endif
-#include <errno.h>
 #include <sys/stat.h>
-#include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -73,7 +61,6 @@
 #include <unistd.h>
 #endif
 #include <dirent.h>
-
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
@@ -82,7 +69,20 @@
 #endif
 #include <sys/stat.h>
 
-#include <string.h>
+// =-=-=-=-=-=-=-
+// stl includes
+#include <charconv>
+#include <cstdint>
+#include <cstring>
+#include <cerrno>
+#include <iostream>
+#include <list>
+#include <map>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <vector>
 
 
 const std::string READ_KW( "read" );
@@ -1603,149 +1603,144 @@ irods::error repl_file_notify(
 //    any useful values into the property map for reference in later
 //    operations.  semicolon is the preferred delimiter
 class repl_resource : public irods::resource {
-    private:
-        using log_rs = irods::experimental::log::resource;
+  private:
+    using log_rs = irods::experimental::log::resource;
 
-    public:
-        repl_resource(
-            const std::string& _inst_name,
-            const std::string& _context ) :
-            irods::resource(
-                    _inst_name,
-                    _context ) {
-
-                if ( _context.empty() ) {
-                    // Retry capability requires default values to be used if not set
-                    properties_.set< decltype( irods::DEFAULT_RETRY_ATTEMPTS ) >( irods::RETRY_ATTEMPTS_KW, irods::DEFAULT_RETRY_ATTEMPTS );
-                    properties_.set< decltype( irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) >( irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS );
-                    properties_.set< decltype( irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) >( irods::RETRY_BACKOFF_MULTIPLIER_KW, irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER );
-                    return;
-                }
-
-                irods::kvp_map_t kvp_map;
-                irods::error ret = irods::parse_kvp_string( _context, kvp_map );
-                if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-                }
-
-                auto retry_attempts = irods::DEFAULT_RETRY_ATTEMPTS;
-                if (kvp_map.find(irods::RETRY_ATTEMPTS_KW) != kvp_map.end()) {
-                    auto int_retry_attempts = retry_attempts;
-                    const std::string& retry_attempts_str = kvp_map[irods::RETRY_ATTEMPTS_KW];
-                    const auto* retry_attempts_b = retry_attempts_str.c_str();
-                    const auto* retry_attempts_e =
-                        retry_attempts_b +
-                        retry_attempts_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    auto [ptr, ec] = std::from_chars(retry_attempts_b, retry_attempts_e, int_retry_attempts);
-                    if (std::errc{} != ec) {
-                        log_rs::error(
-                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_ATTEMPTS_KW,
-                            _inst_name,
-                            retry_attempts_str,
-                            retry_attempts);
-                    }
-                    else if (int_retry_attempts < 0) {
-                        log_rs::error(
-                            "[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_ATTEMPTS_KW,
-                            _inst_name,
-                            retry_attempts_str,
-                            retry_attempts);
-                    }
-                    else {
-                        retry_attempts = int_retry_attempts;
-                    }
-                }
-                properties_.set<decltype(retry_attempts)>(irods::RETRY_ATTEMPTS_KW, retry_attempts);
-
-                auto retry_delay_in_seconds = irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS;
-                if (kvp_map.find(irods::RETRY_FIRST_DELAY_IN_SECONDS_KW) != kvp_map.end()) {
-                    auto int_retry_delay = retry_attempts;
-                    const std::string& retry_delay_str = kvp_map[irods::RETRY_FIRST_DELAY_IN_SECONDS_KW];
-                    const auto* retry_delay_b = retry_delay_str.c_str();
-                    const auto* retry_delay_e =
-                        retry_delay_b +
-                        retry_delay_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    auto [ptr, ec] = std::from_chars(retry_delay_b, retry_delay_e, int_retry_delay);
-                    if (std::errc{} != ec) {
-                        log_rs::error(
-                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
-                            _inst_name,
-                            retry_delay_str,
-                            retry_delay_in_seconds);
-                    }
-                    else if (int_retry_delay < 0) {
-                        log_rs::error(
-                            "[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
-                            _inst_name,
-                            retry_delay_str,
-                            retry_delay_in_seconds);
-                    }
-                    else {
-                        retry_delay_in_seconds = int_retry_delay;
-                    }
-                }
-                properties_.set<decltype(retry_delay_in_seconds)>(
-                    irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, retry_delay_in_seconds);
-
-                auto backoff_multiplier = irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER;
-                if (kvp_map.find(irods::RETRY_BACKOFF_MULTIPLIER_KW) != kvp_map.end()) {
-                    auto fltp_backoff_multiplier = retry_attempts;
-                    const std::string& backoff_multiplier_str = kvp_map[irods::RETRY_BACKOFF_MULTIPLIER_KW];
-                    const auto* backoff_multiplier_b = backoff_multiplier_str.c_str();
-                    const auto* backoff_multiplier_e =
-                        backoff_multiplier_b +
-                        backoff_multiplier_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    auto [ptr, ec] = std::from_chars(backoff_multiplier_b, backoff_multiplier_e, fltp_backoff_multiplier);
-                    if (std::errc{} != ec) {
-                        log_rs::error(
-                            "[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_BACKOFF_MULTIPLIER_KW,
-                            _inst_name,
-                            backoff_multiplier_str,
-                            backoff_multiplier);
-                    }
-                    else if (fltp_backoff_multiplier < 1.0) {
-                        log_rs::error(
-                            "[{}] - [{}] for resouce [{}] is < 1 ([{}]); using default value [{}]",
-                            __FUNCTION__,
-                            irods::RETRY_BACKOFF_MULTIPLIER_KW,
-                            _inst_name,
-                            backoff_multiplier_str,
-                            backoff_multiplier);
-                    }
-                    else {
-                        backoff_multiplier = fltp_backoff_multiplier;
-                    }
-                }
-                properties_.set<decltype(backoff_multiplier)>(irods::RETRY_BACKOFF_MULTIPLIER_KW, backoff_multiplier);
-
-                if ( kvp_map.find( READ_KW ) != kvp_map.end() ) {
-                    properties_.set< std::string >( READ_KW, kvp_map[ READ_KW ] );
-                }
-            } // ctor
-
-        irods::error post_disconnect_maintenance_operation(
-            irods::pdmo_type& ) {
-            irods::error result = SUCCESS();
-            // nothing to do
-            return result;
+  public:
+    repl_resource(const std::string& _inst_name, const std::string& _context)
+        : irods::resource(_inst_name, _context)
+    {
+        if (_context.empty()) {
+            // Retry capability requires default values to be used if not set
+            properties_.set<decltype(irods::DEFAULT_RETRY_ATTEMPTS)>(
+                irods::RETRY_ATTEMPTS_KW, irods::DEFAULT_RETRY_ATTEMPTS);
+            properties_.set<decltype(irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS)>(
+                irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS);
+            properties_.set<decltype(irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER)>(
+                irods::RETRY_BACKOFF_MULTIPLIER_KW, irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER);
+            return;
         }
 
-        irods::error need_post_disconnect_maintenance_operation(
-            bool& _flag ) {
-            irods::error result = SUCCESS();
-            _flag = false;
-            return result;
+        irods::kvp_map_t kvp_map;
+        irods::error ret = irods::parse_kvp_string(_context, kvp_map);
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
         }
+
+        auto retry_attempts = irods::DEFAULT_RETRY_ATTEMPTS;
+        auto kvp_iter = kvp_map.find(irods::RETRY_ATTEMPTS_KW);
+        if (kvp_iter != kvp_map.end()) {
+            auto int_retry_attempts = retry_attempts;
+            const std::string& retry_attempts_str = kvp_iter->second;
+            const auto* retry_attempts_b = retry_attempts_str.c_str();
+            const auto* retry_attempts_e =
+                retry_attempts_b + retry_attempts_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(retry_attempts_b, retry_attempts_e, int_retry_attempts);
+            if (std::errc{} != ec) {
+                log_rs::error("[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_ATTEMPTS_KW,
+                              _inst_name,
+                              retry_attempts_str,
+                              retry_attempts);
+            }
+            else if (int_retry_attempts < 0) {
+                log_rs::error("[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_ATTEMPTS_KW,
+                              _inst_name,
+                              retry_attempts_str,
+                              retry_attempts);
+            }
+            else {
+                retry_attempts = int_retry_attempts;
+            }
+        }
+        properties_.set<decltype(retry_attempts)>(irods::RETRY_ATTEMPTS_KW, retry_attempts);
+
+        auto retry_delay_in_seconds = irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS;
+        kvp_iter = kvp_map.find(irods::RETRY_FIRST_DELAY_IN_SECONDS_KW);
+        if (kvp_iter != kvp_map.end()) {
+            auto int_retry_delay = retry_attempts;
+            const std::string& retry_delay_str = kvp_iter->second;
+            const auto* retry_delay_b = retry_delay_str.c_str();
+            const auto* retry_delay_e =
+                retry_delay_b + retry_delay_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(retry_delay_b, retry_delay_e, int_retry_delay);
+            if (std::errc{} != ec) {
+                log_rs::error("[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
+                              _inst_name,
+                              retry_delay_str,
+                              retry_delay_in_seconds);
+            }
+            else if (int_retry_delay < 0) {
+                log_rs::error("[{}] - [{}] for resouce [{}] is < 0 ([{}]); using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_FIRST_DELAY_IN_SECONDS_KW,
+                              _inst_name,
+                              retry_delay_str,
+                              retry_delay_in_seconds);
+            }
+            else {
+                retry_delay_in_seconds = int_retry_delay;
+            }
+        }
+        properties_.set<decltype(retry_delay_in_seconds)>(
+            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW, retry_delay_in_seconds);
+
+        auto backoff_multiplier = irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER;
+        kvp_iter = kvp_map.find(irods::RETRY_BACKOFF_MULTIPLIER_KW);
+        if (kvp_iter != kvp_map.end()) {
+            auto fltp_backoff_multiplier = retry_attempts;
+            const std::string& backoff_multiplier_str = kvp_iter->second;
+            const auto* backoff_multiplier_b = backoff_multiplier_str.c_str();
+            const auto* backoff_multiplier_e =
+                backoff_multiplier_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                backoff_multiplier_str.size();
+            auto [ptr, ec] = std::from_chars(backoff_multiplier_b, backoff_multiplier_e, fltp_backoff_multiplier);
+            if (std::errc{} != ec) {
+                log_rs::error("[{}] - failed to cast [{}] for resouce [{}] from value [{}]; using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_BACKOFF_MULTIPLIER_KW,
+                              _inst_name,
+                              backoff_multiplier_str,
+                              backoff_multiplier);
+            }
+            else if (fltp_backoff_multiplier < 1.0) {
+                log_rs::error("[{}] - [{}] for resouce [{}] is < 1 ([{}]); using default value [{}]",
+                              __FUNCTION__,
+                              irods::RETRY_BACKOFF_MULTIPLIER_KW,
+                              _inst_name,
+                              backoff_multiplier_str,
+                              backoff_multiplier);
+            }
+            else {
+                backoff_multiplier = fltp_backoff_multiplier;
+            }
+        }
+        properties_.set<decltype(backoff_multiplier)>(irods::RETRY_BACKOFF_MULTIPLIER_KW, backoff_multiplier);
+
+        kvp_iter = kvp_map.find(READ_KW);
+        if (kvp_iter != kvp_map.end()) {
+            properties_.set<std::string>(READ_KW, kvp_iter->second);
+        }
+    } // ctor
+
+    irods::error post_disconnect_maintenance_operation(irods::pdmo_type& /*unused*/) override
+    {
+        irods::error result = SUCCESS();
+        // nothing to do
+        return result;
+    }
+
+    irods::error need_post_disconnect_maintenance_operation(bool& _flag) override
+    {
+        irods::error result = SUCCESS();
+        _flag = false;
+        return result;
+    }
 
 }; // class repl_resource
 

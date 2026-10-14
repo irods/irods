@@ -1,20 +1,20 @@
-#include "irods/miscServerFunct.hpp"
-#include "irods/dataObjOpr.hpp"
-#include "irods/objDesc.hpp"
-
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/irods_file_object.hpp"
+
+#include "irods/data_object_proxy.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/filesystem.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_stacktrace.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "irods/miscServerFunct.hpp"
+#include "irods/objDesc.hpp"
 #include "irods/replica_proxy.hpp"
-#include "irods/data_object_proxy.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsKeyWdDef.h"
 
 #include <fmt/format.h>
 

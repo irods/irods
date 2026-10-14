@@ -375,8 +375,7 @@ auto throw_if_id_cannot_be_converted_to_int(const std::string& key) -> void
         THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID is too large.");
     }
     if (std::errc{} != ec) {
-        const std::string message =
-            fmt::format("Error parsing delay rule ID: {}", std::make_error_code(ec).message());
+        const std::string message = fmt::format("Error parsing delay rule ID: {}", std::make_error_code(ec).message());
         THROW(SYS_INVALID_INPUT_PARAM, message);
     }
 }

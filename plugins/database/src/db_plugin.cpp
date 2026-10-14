@@ -54,6 +54,7 @@
 #include <cctype>
 #include <charconv>
 #include <chrono>
+#include <cstdint>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
@@ -63,7 +64,6 @@
 #include <string>
 #include <string_view>
 #include <system_error>
-#include <thread> // For std::this_thread::sleep_for
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -176,7 +176,7 @@ namespace
                     auto& config = is_min_option ? _out.password_min_time : _out.password_max_time;
                     const auto* value_b = option_value.c_str();
                     const auto* value_e =
-                            value_b + option_value.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        value_b + option_value.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     auto [ptr, ec] = std::from_chars(value_b, value_e, config);
                     if (std::errc{} != ec) {
                         config = default_value;
@@ -2860,7 +2860,7 @@ irods::error db_reg_data_obj_op(
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
     std::snprintf(_data_obj_info->dataOwnerZone, sizeof(_data_obj_info->dataOwnerZone), "%s", _ctx.comm()->clientUser.rodsZone);
 
-    std::string resc_id_str = fmt::to_string(_data_obj_info->rescId);
+    const std::string resc_id_str = fmt::to_string(_data_obj_info->rescId);
 
     cllBindVars[0] = dataIdNum;
     cllBindVars[1] = collIdNum;
@@ -3152,7 +3152,7 @@ irods::error db_reg_replica_op(
     }
     statementNumber = status;
 
-    std::string resc_id_str = fmt::to_string(_dst_data_obj_info->rescId);
+    const std::string resc_id_str = fmt::to_string(_dst_data_obj_info->rescId);
 
     cVal[IX_DATA_REPL_NUM]   = nextRepl;
     //cVal[IX_RESC_NAME]       = _dst_data_obj_info->rescName;
@@ -14203,7 +14203,7 @@ namespace
                     const std::string_view value_str{_arg4};
                     const auto* value_b = value_str.data();
                     const auto* value_e =
-                            value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     auto [ptr, ec] = std::from_chars(value_b, value_e, seconds_since_epoch);
                     if (std::errc{} == ec) {
                         ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
@@ -14935,7 +14935,7 @@ irods::error db_mod_ticket_op(
                 const std::string_view value_str{_arg4};
                 const auto* value_b = value_str.data();
                 const auto* value_e =
-                        value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 auto [ptr, ec] = std::from_chars(value_b, value_e, seconds_since_epoch);
                 if (std::errc{} == ec) {
                     ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
@@ -16010,7 +16010,7 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
             rodsLong_t rule_id_int; // NOLINT(cppcoreguidelines-init-variables)
             const auto* value_b = rule_id_string.data();
             const auto* value_e =
-                    value_b + rule_id_string.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                value_b + rule_id_string.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             auto [ptr, ec] = std::from_chars(value_b, value_e, rule_id_int);
             if (std::errc{} == ec) {
                 log_db::debug("{}: Successfully converted rule_id string [{}] to integer [{}].",
@@ -16367,7 +16367,7 @@ auto db_check_session_token_op(irods::plugin_context& _ctx, const char* _json_in
                 const std::string expiration_str = result.get<std::string>(1);
                 const auto* value_b = expiration_str.data();
                 const auto* value_e =
-                        value_b + expiration_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    value_b + expiration_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 auto [ptr, ec] = std::from_chars(value_b, value_e, expiration);
                 if (std::errc{} != ec) {
                     throw std::system_error{std::make_error_code(ec)};

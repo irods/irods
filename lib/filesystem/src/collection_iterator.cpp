@@ -108,9 +108,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         if (e->ownerName)  { entry.owner_ = e->ownerName; }
         if (e->dataType)   { entry.data_type_ = e->dataType; }
         // clang-format on
-        if (e->createTime) {
+        const std::string_view ctime_str{e->createTime};
+        if (!ctime_str.empty()) {
             std::chrono::seconds::rep ctime; // NOLINT(cppcoreguidelines-init-variables)
-            const std::string_view ctime_str{e->createTime};
             const auto* ctime_b = ctime_str.data();
             const auto* ctime_e = ctime_b + ctime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             auto [ptr, ec] = std::from_chars(ctime_b, ctime_e, ctime);
@@ -119,9 +119,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             }
             entry.ctime_ = object_time_type{std::chrono::seconds{ctime}};
         }
-        if (e->modifyTime) {
+        const std::string_view mtime_str{e->modifyTime};
+        if (!mtime_str.empty()) {
             std::chrono::seconds::rep mtime; // NOLINT(cppcoreguidelines-init-variables)
-            const std::string_view mtime_str{e->modifyTime};
             const auto* mtime_b = mtime_str.data();
             const auto* mtime_e = mtime_b + mtime_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             auto [ptr, ec] = std::from_chars(mtime_b, mtime_e, mtime);

@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 
 #include <charconv>
+#include <cstdint>
 #include <regex>
 #include <system_error>
 
@@ -30,33 +31,33 @@ namespace irods
             // Where <_version> represents the string that was searched.
             if (m.size() == 4) {
                 std::uint16_t major; // NOLINT(cppcoreguidelines-init-variables)
-                const std::string major_str = m[1].str();
-                const auto* major_b = major_str.c_str();
-                const auto* major_e = major_b + major_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                std::from_chars_result fc_res = std::from_chars(major_b, major_e, major);
+                std::string v_str = m[1].str();
+                const auto* v_b = v_str.c_str();
+                const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                std::from_chars_result fc_res = std::from_chars(v_b, v_e, major);
                 if (std::errc{} != fc_res.ec) {
                     throw std::system_error(std::make_error_code(fc_res.ec));
                 }
 
                 std::uint16_t minor; // NOLINT(cppcoreguidelines-init-variables)
-                const std::string minor_str = m[2].str();
-                const auto* minor_b = minor_str.c_str();
-                const auto* minor_e = minor_b + minor_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                fc_res = std::from_chars(minor_b, minor_e, minor);
+                v_str = m[2].str();
+                v_b = v_str.c_str();
+                v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(v_b, v_e, minor);
                 if (std::errc{} != fc_res.ec) {
                     throw std::system_error(std::make_error_code(fc_res.ec));
                 }
 
                 std::uint16_t patch; // NOLINT(cppcoreguidelines-init-variables)
-                const std::string patch_str = m[2].str();
-                const auto* patch_b = patch_str.c_str();
-                const auto* patch_e = patch_b + patch_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                fc_res = std::from_chars(patch_b, patch_e, patch);
+                v_str = m[2].str();
+                v_b = v_str.c_str();
+                v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(v_b, v_e, patch);
                 if (std::errc{} != fc_res.ec) {
                     throw std::system_error(std::make_error_code(fc_res.ec));
                 }
 
-                return irods::version{major, minor, patch};
+                return irods::version{.major = major, .minor = minor, .patch = patch};
             }
             else if (CLIENT_PT != ProcessType) {
                 rodsLog(LOG_NOTICE,

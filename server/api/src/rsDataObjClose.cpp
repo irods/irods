@@ -407,10 +407,13 @@ namespace
         rst::update(r.data_id(), r);
 
         if (const auto ec = ill::unlock(r.data_id(), r.replica_number(), r.replica_status(), sibling_status); ec < 0) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - failed to unlock data object "
-                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
-                __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
+            log_api::error("[{}:{}] - failed to unlock data object "
+                           "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                           __FUNCTION__,
+                           __LINE__,
+                           ec,
+                           r.logical_path(),
+                           r.hierarchy());
 
             return ec;
         }

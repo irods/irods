@@ -13,6 +13,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -162,7 +163,8 @@ namespace unit_test_utils
             return -1;
         }
 
-        const std::string_view pid_str{static_cast<char*>(out_array->msParam[0]->inOutStruct)};
+        const std::string_view pid_str{static_cast<char*>(
+            out_array->msParam[0]->inOutStruct)}; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         pid_t pid; // NOLINT(cppcoreguidelines-init-variables)
         const auto* pid_b = pid_str.data();
         const auto* pid_e = pid_b + pid_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)

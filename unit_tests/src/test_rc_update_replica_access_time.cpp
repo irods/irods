@@ -13,6 +13,7 @@
 #include "irods/resource_administration.hpp"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/rodsType.h"
 #include "irods/transport/default_transport.hpp"
 #include "irods/update_replica_access_time.h"
 #include "irods/user_administration.hpp"
@@ -430,14 +431,16 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     rodsLong_t data_id_0; // NOLINT(cppcoreguidelines-init-variables)
     const std::string data_id_0_str = std::get<0>(replica_info_0);
     const auto* data_id_0_b = data_id_0_str.c_str();
-    const auto* data_id_0_e = data_id_0_b + data_id_0_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const auto* data_id_0_e =
+        data_id_0_b + data_id_0_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     const std::from_chars_result data_id_0_fcres = std::from_chars(data_id_0_b, data_id_0_e, data_id_0);
     CHECK(std::errc{} == data_id_0_fcres.ec);
 
     rodsLong_t data_id_1; // NOLINT(cppcoreguidelines-init-variables)
     const std::string data_id_1_str = std::get<0>(replica_info_1);
     const auto* data_id_1_b = data_id_1_str.c_str();
-    const auto* data_id_1_e = data_id_1_b + data_id_1_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const auto* data_id_1_e =
+        data_id_1_b + data_id_1_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     const std::from_chars_result data_id_1_fcres = std::from_chars(data_id_1_b, data_id_1_e, data_id_1);
     CHECK(std::errc{} == data_id_1_fcres.ec);
 
@@ -557,7 +560,8 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
 
         rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
         const auto* data_id_b = data_id_str.c_str();
-        const auto* data_id_e = data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const auto* data_id_e =
+            data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
         CHECK(std::errc{} == data_id_fcres.ec);
 
