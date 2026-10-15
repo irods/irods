@@ -13,11 +13,11 @@
 
 #include <boost/filesystem.hpp>
 
-#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <charconv>
+#include <csignal>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
