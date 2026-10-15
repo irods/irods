@@ -869,7 +869,10 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
         dest_file = f'{self.user0.session_collection}/guh'
         self.user0.assert_icommand(['itouch', dest_file])
-        out, err, rc = self.user0.run_icommand(['irsync', '-V', test_file_name, f'i:{dest_file}' ], cwd=self.testing_tmp_dir)
+
+        command_to_run_and_check_elsewhere = ['irsync', '-V', test_file_name, f'i:{dest_file}']
+        out, err, rc = self.user0.run_icommand(command_to_run_and_check_elsewhere, cwd=self.testing_tmp_dir)
+        lib.log_command_result(command_to_run_and_check_elsewhere, out, err, rc)
 
         self.assertTrue(rc == 0)
         self.assertNotIn('SYS_INVALID_FILE_PATH', out)
