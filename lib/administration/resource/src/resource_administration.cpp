@@ -16,6 +16,10 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
+#include <chrono>
+#include <system_error>
+
 namespace irods::experimental::administration::NAMESPACE_IMPL
 {
     auto add_resource(RxComm& _comm, const resource_registration_info& _info) -> void
@@ -105,6 +109,19 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         }
     }
 
+    template <typename TType>
+    static inline TType get_time_value(const std::string& _value_in)
+    {
+        typename TType::rep value_out; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* val_b = _value_in.c_str();
+        const auto* val_e = val_b + _value_in.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(val_b, val_e, value_out);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+        return TType{value_out};
+    }
+
     auto resource_info(RxComm& _comm, const resource_name_type _name) -> std::optional<class resource_info>
     {
         try {
@@ -134,12 +151,12 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 info.info_ = row[8];
                 info.free_space_ = row[9];
                 info.parent_id_ = row[11];
-                info.ctime_ = resource_time_type{std::chrono::seconds{std::stoull(row[12])}};
-                info.mtime_ = resource_time_type{std::chrono::seconds{std::stoull(row[13])}};
-                info.mtime_millis_ = std::chrono::milliseconds{std::stoull(row[14])};
+                info.ctime_ = resource_time_type{get_time_value<std::chrono::seconds>(row[12])};
+                info.mtime_ = resource_time_type{get_time_value<std::chrono::seconds>(row[13])};
+                info.mtime_millis_ = get_time_value<std::chrono::milliseconds>(row[14]);
 
                 if (!row[10].empty()) {
-                    info.free_space_time_ = resource_time_type{std::chrono::seconds{std::stoull(row[10])}};
+                    info.free_space_time_ = resource_time_type{get_time_value<std::chrono::seconds>(row[10])};
                 }
                 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 

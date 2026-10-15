@@ -18,6 +18,8 @@
 #include "irods/rsGetHierFromLeafId.hpp"
 #include "irods/rsQuerySpecColl.hpp"
 #include "irods/rsDataObjClose.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_stacktrace.hpp"
@@ -26,7 +28,12 @@
 #include "irods/key_value_proxy.hpp"
 #include "irods/replica_proxy.hpp"
 
+#include <fmt/format.h>
+
+#include <charconv>
 #include <cstring>
+#include <string_view>
+#include <system_error>
 
 int
 initL1desc() {
@@ -713,7 +720,15 @@ namespace irods
         }
 
         if (cond_input.contains(OPEN_TYPE_KW)) {
-            l1desc.openType = std::stoi(cond_input.at(OPEN_TYPE_KW).value().data());
+            const std::string_view open_type_str = cond_input.at(OPEN_TYPE_KW).value();
+            const auto* open_type_b = open_type_str.data();
+            const auto* open_type_e =
+                open_type_b + open_type_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(open_type_b, open_type_e, l1desc.openType);
+            if (std::errc{} != ec) {
+                THROW(INVALID_LEXICAL_CAST,
+                      fmt::format("[{}] - failed to convert open type string to integer", __FUNCTION__));
+            }
         }
 
         l1desc.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));

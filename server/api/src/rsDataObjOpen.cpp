@@ -1,11 +1,17 @@
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/dataObjOpen.h"
+
 #include "irods/access_time_queue.hpp"
 #include "irods/agent_globals.hpp"
 #include "irods/apiNumber.h"
+#include "irods/data_object_proxy.hpp"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjCreateAndStat.h"
 #include "irods/dataObjInpOut.h"
-#include "irods/dataObjOpen.h"
 #include "irods/dataObjOpenAndStat.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjRepl.h"
@@ -13,82 +19,75 @@
 #include "irods/escape_utilities.hpp"
 #include "irods/fileCreate.h"
 #include "irods/fileOpen.h"
+#include "irods/filesystem.hpp"
+#include "irods/finalize_utilities.hpp"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_get_l1desc.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_linked_list_iterator.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
 #include "irods/irods_resource_types.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/logical_locking.hpp"
+#include "irods/logical_quota_utilities.hpp"
+#include "irods/miscServerFunct.hpp"
 #include "irods/objDesc.hpp"
 #include "irods/objInfo.h"
 #include "irods/objMetaOpr.hpp"
-#include "irods/miscServerFunct.hpp"
 #include "irods/physPath.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
 #include "irods/regDataObj.h"
 #include "irods/regReplica.h"
+#include "irods/replica_access_table.hpp"
+#include "irods/replica_state_table.hpp"
 #include "irods/resource.hpp"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
+#include "irods/rodsType.h"
+#include "irods/rs_get_logical_quota.hpp"
+#include "irods/rs_register_physical_path.hpp"
 #include "irods/rsDataObjClose.hpp"
 #include "irods/rsDataObjCreate.hpp"
-#include "irods/rsDataObjOpen.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/rsDataObjUnlink.hpp"
 #include "irods/rsFileCreate.hpp"
 #include "irods/rsFileOpen.hpp"
 #include "irods/rsGetRescQuota.hpp"
-#include "irods/rs_get_logical_quota.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsObjStat.hpp"
-#include "irods/rs_register_physical_path.hpp"
 #include "irods/rsRegDataObj.hpp"
 #include "irods/rsRegReplica.hpp"
 #include "irods/rsSubStructFileCreate.hpp"
 #include "irods/rsSubStructFileOpen.hpp"
 #include "irods/rsUnregDataObj.hpp"
 #include "irods/specColl.hpp"
+#include "irods/scoped_privileged_client.hpp"
 #include "irods/subStructFileCreate.h"
 #include "irods/subStructFileOpen.h"
 
-// =-=-=-=-=-=-=-
-#include "irods/finalize_utilities.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_log.hpp"
-#include "irods/irods_resource_backport.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_server_api_call.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/key_value_proxy.hpp"
-#include "irods/logical_quota_utilities.hpp"
-#include "irods/replica_access_table.hpp"
-#include "irods/replica_state_table.hpp"
-#include "irods/scoped_privileged_client.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
-#include "irods/irods_query.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "irods/data_object_proxy.hpp"
-
-#include "irods/logical_locking.hpp"
-
 #include <fmt/format.h>
-
-#include <chrono>
-#include <stdexcept>
 
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <charconv>
+#include <chrono>
+#include <stdexcept>
+#include <string_view>
+#include <system_error>
 
 namespace
 {
@@ -946,7 +945,13 @@ namespace
         }
 
         try {
-            const auto atime = std::stoull(std::string{_atime});
+            rodsULong_t atime; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = _atime.data();
+            const auto* value_e = value_b + _atime.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, atime);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
             return std::cmp_greater_equal(_current_time - atime, g_atime_resolution_in_seconds);
         }
         catch (const irods::exception& e) {

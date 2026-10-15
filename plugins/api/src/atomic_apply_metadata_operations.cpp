@@ -45,12 +45,13 @@
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
 
+#include <charconv>
+#include <chrono>
 #include <cstdlib>
 #include <string>
 #include <string_view>
-#include <tuple>
-#include <chrono>
 #include <system_error>
+#include <tuple>
 
 namespace
 {
@@ -189,7 +190,16 @@ namespace
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
-            return std::stoll(row[0]);
+            id_type object_id; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* object_id_b = row[0].c_str();
+            const auto* object_id_e =
+                object_id_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(object_id_b, object_id_e, object_id);
+            if (std::errc{} != ec) {
+                log::api::error("Could not parse ID [entity_name={}, id={}]", _entity_name, row[0]);
+                return INVALID_LEXICAL_CAST;
+            }
+            return object_id;
         }
 
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name={}]", _entity_name)};

@@ -44,9 +44,11 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <charconv>
+#include <chrono>
 #include <string>
 #include <string_view>
-#include <chrono>
+#include <system_error>
 // clang-format on
 
 /*
@@ -395,11 +397,26 @@ namespace
         replica_number_type replica_number = -1;
 
         for (auto&& row : query) {
-            const auto mtime = std::stoull(row[0]);
+            std::uintmax_t mtime; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* mtime_b = row[0].c_str();
+            const auto* mtime_e = mtime_b + row[0].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::from_chars_result fcres = std::from_chars(mtime_b, mtime_e, mtime);
+            if (std::errc{} != fcres.ec) {
+                THROW(INVALID_LEXICAL_CAST,
+                      fmt::format("Error parsing mtime: {}", std::make_error_code(fcres.ec).message()));
+            }
 
             if (mtime > latest_mtime) {
                 latest_mtime = mtime;
-                replica_number = std::stoi(row[1]);
+                replica_number_type replica_number; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* replica_number_b = row[1].c_str();
+                const auto* replica_number_e =
+                    replica_number_b + row[1].size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fcres = std::from_chars(replica_number_b, replica_number_e, replica_number);
+                if (std::errc{} != fcres.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing replica_number: {}", std::make_error_code(fcres.ec).message()));
+                }
             }
         }
 

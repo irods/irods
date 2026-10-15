@@ -1,23 +1,26 @@
 #include "irods/json_serialization.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_resource_manager.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/replica_state_table.hpp"
 #include "irods/rs_data_object_finalize.hpp"
 
 //#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 //#include "irods/data_object_proxy.hpp"
 
-#include <boost/lexical_cast.hpp>
-
 #include <fmt/format.h>
 
+#include <charconv>
 #include <map>
 #include <mutex>
+#include <system_error>
 
 extern irods::resource_manager resc_mgr;
 
 namespace irods::replica_state_table
 {
+    using log_server = irods::experimental::log::server;
+
     namespace
     {
         // clang-format off
@@ -60,9 +63,19 @@ namespace irods::replica_state_table
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (_replica_number ==
-                        boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>()))
-                    {
+                    int e_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+                    const std::string& e_repl_num_str =
+                        e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
+                    const auto* e_repl_num_b = e_repl_num_str.c_str();
+                    const auto* e_repl_num_e =
+                        e_repl_num_b + e_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(e_repl_num_b, e_repl_num_e, e_repl_num);
+                    if (std::errc{} != ec) {
+                        log_server::warn(
+                            "Unparsable replica number [{}] at index [{}] for key [{}]", e_repl_num_str, index, _key);
+                        continue;
+                    }
+                    if (_replica_number == e_repl_num) {
                         return index;
                     }
                 }
@@ -84,9 +97,18 @@ namespace irods::replica_state_table
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (_leaf_resource_id ==
-                        boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>()))
-                    {
+                    int e_resc_id; // NOLINT(cppcoreguidelines-init-variables)
+                    const std::string& e_resc_id_str = e.at(BEFORE_KW).at("resc_id").get_ref<const std::string&>();
+                    const auto* e_resc_id_b = e_resc_id_str.c_str();
+                    const auto* e_resc_id_e =
+                        e_resc_id_b + e_resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(e_resc_id_b, e_resc_id_e, e_resc_id);
+                    if (std::errc{} != ec) {
+                        log_server::warn(
+                            "Unparsable resource ID [{}] at index [{}] for key [{}]", e_resc_id_str, index, _key);
+                        continue;
+                    }
+                    if (_leaf_resource_id == e_resc_id) {
                         return index;
                     }
                 }
@@ -108,7 +130,18 @@ namespace irods::replica_state_table
 
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                    int e_resc_id; // NOLINT(cppcoreguidelines-init-variables)
+                    const std::string& e_resc_id_str = e.at(BEFORE_KW).at("resc_id").get_ref<const std::string&>();
+                    const auto* e_resc_id_b = e_resc_id_str.c_str();
+                    const auto* e_resc_id_e =
+                        e_resc_id_b + e_resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(e_resc_id_b, e_resc_id_e, e_resc_id);
+                    if (std::errc{} != ec) {
+                        log_server::warn(
+                            "Unparsable resource ID [{}] at index [{}] for key [{}]", e_resc_id_str, index, _key);
+                        continue;
+                    }
+                    if (resc_id == e_resc_id) {
                         return index;
                     }
                 }
@@ -391,7 +424,17 @@ namespace irods::replica_state_table
         std::scoped_lock rst_lock{rst_mutex};
 
         for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-            if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+            int e_resc_id; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string& e_resc_id_str = e.at(BEFORE_KW).at("resc_id").get_ref<const std::string&>();
+            const auto* e_resc_id_b = e_resc_id_str.c_str();
+            const auto* e_resc_id_e =
+                e_resc_id_b + e_resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(e_resc_id_b, e_resc_id_e, e_resc_id);
+            if (std::errc{} != ec) {
+                log_server::warn("Unparsable resource ID [{}] at index for key [{}]", e_resc_id_str, _key);
+                continue;
+            }
+            if (resc_id == e_resc_id) {
                 return true;
             }
         }
@@ -408,7 +451,17 @@ namespace irods::replica_state_table
         std::scoped_lock rst_lock{rst_mutex};
 
         for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-            if (_replica_number == boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
+            int e_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string& e_repl_num_str = e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
+            const auto* e_repl_num_b = e_repl_num_str.c_str();
+            const auto* e_repl_num_e =
+                e_repl_num_b + e_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(e_repl_num_b, e_repl_num_e, e_repl_num);
+            if (std::errc{} != ec) {
+                log_server::warn("Unparsable replica number [{}] for key [{}]", e_repl_num_str, _key);
+                continue;
+            }
+            if (_replica_number == e_repl_num) {
                 return true;
             }
         }
@@ -441,7 +494,17 @@ namespace irods::replica_state_table
         const auto& replica_json = [&_key, &resc_id]
         {
             for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-                if (resc_id == boost::lexical_cast<rodsLong_t>(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                int e_resc_id; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& e_resc_id_str = e.at(BEFORE_KW).at("resc_id").get_ref<const std::string&>();
+                const auto* e_resc_id_b = e_resc_id_str.c_str();
+                const auto* e_resc_id_e =
+                    e_resc_id_b + e_resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(e_resc_id_b, e_resc_id_e, e_resc_id);
+                if (std::errc{} != ec) {
+                    log_server::warn("Unparsable resource ID [{}] at index for key [{}]", e_resc_id_str, _key);
+                    continue;
+                }
+                if (resc_id == e_resc_id) {
                     return e;
                 }
             }
@@ -475,8 +538,17 @@ namespace irods::replica_state_table
         const auto& replica_json = [&_key, &_replica_number]
         {
             for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
-                if (_replica_number == boost::lexical_cast<int>(e.at(BEFORE_KW).at("data_repl_num").get<std::string>()))
-                {
+                int e_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& e_repl_num_str = e.at(BEFORE_KW).at("data_repl_num").get_ref<const std::string&>();
+                const auto* e_repl_num_b = e_repl_num_str.c_str();
+                const auto* e_repl_num_e =
+                    e_repl_num_b + e_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(e_repl_num_b, e_repl_num_e, e_repl_num);
+                if (std::errc{} != ec) {
+                    log_server::warn("Unparsable replica number [{}] for key [{}]", e_repl_num_str, _key);
+                    continue;
+                }
+                if (_replica_number == e_repl_num) {
                     return e;
                 }
             }
