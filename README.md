@@ -23,7 +23,7 @@ The development infrastructure supports exhaustive testing on supported platform
 
 iRODS has a 30+ year history of funded projects.
 
-Funders have included DARPA, NSF, DOD, DOE, LC, NARA, NASA, NOAA, USPTO, and LLNL.
+Funders have included DARPA, NSF, NIH, DOD, DOE, LC, NARA, NASA, NOAA, USPTO, and LLNL.
 
 [https://irods.org/history](https://irods.org/history/)
 
