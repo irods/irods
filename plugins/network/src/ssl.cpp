@@ -267,7 +267,7 @@ static int ssl_post_connection_check(SSL* ssl, const char* peer, const rodsEnv* 
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
     bool match = false;
-    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL));
+    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i(cert, NID_subject_alt_name, nullptr, nullptr));
     int num_names = sk_GENERAL_NAME_num(names);
     for (int i = 0; i < num_names; i++) {
         auto* name = sk_GENERAL_NAME_value( names, i );

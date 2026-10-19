@@ -422,7 +422,7 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     tmpRodsServerHost = mkServerHost(myHostAddr, myZoneName);
 
-    if (tmpRodsServerHost == NULL) {
+    if (tmpRodsServerHost == nullptr) {
         rodsLog( LOG_ERROR,
                  "resolveHost: mkServerHost error" );
         return SYS_INVALID_SERVER_HOST;
