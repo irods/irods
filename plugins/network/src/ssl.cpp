@@ -1,10 +1,10 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_buffer_encryption.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_hostname.hpp"
 #include "irods/irods_network_constants.hpp"
 #include "irods/irods_network_plugin.hpp"
 #include "irods/irods_server_properties.hpp"
-#include "irods/irods_hostname.hpp"
 #include "irods/irods_ssl_object.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/msParam.h"
@@ -17,17 +17,17 @@
 
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <iostream>
+
+#include <fmt/format.h>
 
 #include <openssl/decoder.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
-
-#include <fmt/format.h>
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
