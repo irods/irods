@@ -871,6 +871,6 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand(['itouch', dest_file])
 
         command_to_run_and_check_elsewhere = ['irsync', '-V', test_file_name, f'i:{dest_file}']
-        _, out, _ = self.user0.assert_icommand(command_to_run_and_check_elsewhere, 'STDOUT_SINGLELINE', test_file_name, cwd=self.testing_tmp_dir, desired_rc=0)
+        _, out, _ = self.user0.assert_icommand(command_to_run_and_check_elsewhere, 'STDOUT_SINGLELINE', test_file_name, cwd=self.user0.local_session_dir, desired_rc=0)
 
         self.assertNotIn('-31000 SYS_INVALID_FILE_PATH', out)
