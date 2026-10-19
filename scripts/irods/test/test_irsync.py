@@ -860,14 +860,14 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # Copy should have happened and set the replica to good
         self.assertEqual(lib.get_replica_status(self.admin, data_object_name, 0), '1')
 
-    def test_irsync_exits_without_failure__issue_8277(self):
-        test_file_name = 'huh'
-        test_file_path = os.path.join(self.testing_tmp_dir, test_file_name)
+    def test_irsync_exits_without_failure_when_using_very_verbose_flag__issue_8277(self):
+        test_file_name = 'huh__issue_8277'
+        test_file_path = os.path.join(self.user0.local_session_dir, test_file_name)
 
         with open(test_file_path, 'w') as f:
             f.write('to who?')
 
-        dest_file = f'{self.user0.session_collection}/guh'
+        dest_file = os.path.join(self.user0.session_collection, 'guh__issue_8277')
         self.user0.assert_icommand(['itouch', dest_file])
 
         command_to_run_and_check_elsewhere = ['irsync', '-V', test_file_name, f'i:{dest_file}']
