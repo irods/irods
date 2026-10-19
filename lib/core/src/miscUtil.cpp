@@ -442,10 +442,10 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
     struct timeval diffTime;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     float transRate, sizeInMb, timeInSec;
-    int status;
 
-
-    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
+    if (const auto status{splitPathByKey(objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/')};
+        status < 0 && status != SYS_INVALID_FILE_PATH)
+    {
         rodsLogError( LOG_NOTICE, status,
                       "printTiming: splitPathByKey for %s error, status = %d",
                       objPath, status );
