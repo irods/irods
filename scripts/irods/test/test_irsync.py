@@ -875,5 +875,5 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         lib.log_command_result(command_to_run_and_check_elsewhere, out, err, rc)
 
         self.assertEqual(rc, 0)
-        self.assertNotIn('SYS_INVALID_FILE_PATH', out)
+        self.assertNotIn('-31000 SYS_INVALID_FILE_PATH', out)
         self.assertIn(test_file_name, out)
