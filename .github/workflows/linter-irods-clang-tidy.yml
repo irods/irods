@@ -48,7 +48,8 @@ jobs:
                     bison \
                     lsb-release \
                     libsystemd-dev \
-                    libarchive-dev
+                    libarchive-dev \
+                    yq
             - name: Install iRODS Externals
               run: |
                   sudo mkdir -p /etc/apt/keyrings
