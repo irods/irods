@@ -12,6 +12,7 @@ import shutil
 
 from .resource_suite import ResourceBase
 from .. import lib
+from .. import paths
 from .. import test
 
 class Test_iRsync(ResourceBase, unittest.TestCase):
@@ -84,15 +85,22 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         copy_obj = os.path.join(self.user0.session_collection, 'server_copy_icp')
         new_sync_obj = os.path.join(self.user0.session_collection, 'server_copy_new_sync')
         existing_sync_obj = os.path.join(self.user0.session_collection, 'server_copy_existing_sync')
+        legacy_obj = os.path.join(self.user0.session_collection, 'server_copy_legacy')
+        same_host_obj = os.path.join(self.user0.session_collection, 'server_copy_same_host')
+        move_obj = os.path.join(self.user0.session_collection, 'server_copy_phymv')
         lib.make_file(source, 34 * 1024 * 1024, 'random')
         lib.make_file(other, 34 * 1024 * 1024, 'zero')
 
         def assert_server_copy(command, logical_path):
+            log_offset = lib.get_file_size_by_path(paths.server_log_path())
             stdout, stderr, status = self.user0.run_icommand(command)
             self.assertEqual(0, status, stderr)
             # The client-side multi-1247 PUT/GET marker must not appear for
             # copies whose source and destination are both iRODS objects.
             self.assertNotIn('multi-1247 transfer', stdout)
+            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
+                msg='multi-1247 server copy: ' + logical_path,
+                count=0, start_index=log_offset))
             self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, dest_resc))
             self.user0.assert_icommand(['ichksum', '-K', logical_path])
             self.user0.assert_icommand(['iget', '-N', '0', '-f', logical_path, downloaded])
@@ -127,8 +135,55 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
                 self.assertEqual(0, status, stderr)
                 self.assertIn('a match', stdout)
                 self.assertNotIn('multi-1247 transfer', stdout)
+
+                # Disabling threading keeps the original single-copy route.
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                stdout, stderr, status = self.user0.run_icommand(
+                    ['icp', '-V', '-N', '0', '-R', dest_resc, source_obj, legacy_obj])
+                self.assertEqual(0, status, stderr)
+                self.assertNotIn('multi-1247 transfer', stdout)
+                self.assertTrue(lib.replica_exists_on_resource(self.user0, legacy_obj, dest_resc))
+                self.assertTrue(lib.log_message_occurrences_equals_count(
+                    msg='multi-1247 server copy: ' + legacy_obj,
+                    count=0, start_index=log_offset))
+                self.user0.assert_icommand(['iget', '-N', '0', '-f', legacy_obj, downloaded])
+                self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                self.user0.assert_icommand(['icp', '-N', '3', '-R', source_resc,
+                                            source_obj, same_host_obj])
+                self.assertTrue(lib.replica_exists_on_resource(self.user0, same_host_obj, source_resc))
+                self.assertTrue(lib.log_message_occurrences_equals_count(
+                    msg='multi-1247 server copy: ' + same_host_obj,
+                    count=0, start_index=log_offset))
+                self.user0.assert_icommand(['iget', '-N', '0', '-f', same_host_obj, downloaded])
+                self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+
+                # Replication shares dataObjCopy with icp and irsync.
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                self.user0.assert_icommand(['irepl', '-N', '3', '-R', dest_resc, source_obj])
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
+                    msg='multi-1247 server copy: ' + source_obj,
+                    count=0, start_index=log_offset))
+                self.assertTrue(lib.replica_exists_on_resource(self.user0, source_obj, dest_resc))
+                self.user0.assert_icommand(['ichksum', '-K', source_obj])
+
+                # Physical moves use the same byte-copy function, but must
+                # still remove the source replica only after finalization.
+                self.user0.assert_icommand(['iput', '-N', '0', '-R', source_resc,
+                                            source, move_obj])
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                self.user0.assert_icommand(['iphymv', '-S', source_resc, '-R', dest_resc, move_obj])
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
+                    msg='multi-1247 server copy: ' + move_obj,
+                    count=0, start_index=log_offset))
+                self.assertFalse(lib.replica_exists_on_resource(self.user0, move_obj, source_resc))
+                self.assertTrue(lib.replica_exists_on_resource(self.user0, move_obj, dest_resc))
+                self.user0.assert_icommand(['iget', '-N', '0', '-f', move_obj, downloaded])
+                self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
             finally:
-                for obj in (source_obj, copy_obj, new_sync_obj, existing_sync_obj):
+                for obj in (source_obj, copy_obj, new_sync_obj, existing_sync_obj,
+                            legacy_obj, same_host_obj, move_obj):
                     self.user0.run_icommand(['irm', '-f', obj])
                 lib.remove_resource(self.admin, dest_resc)
         finally:

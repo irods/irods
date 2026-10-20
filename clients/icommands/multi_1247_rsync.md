@@ -11,10 +11,22 @@ the checksum decision without following a GET action, so listing cannot
 download the file. `-V` reports the transport when a transfer occurs.
 
 Portal transfers remain for older or unrecognized servers, small files,
-`-N 0`, federation, and other unsupported transfer modes. iRODS-to-iRODS
-copies remain on the server-side copy/replication path; eliminating their
-server-to-server portals is separate work. The legacy `rcDataObjRsync`
-behavior remains available to other callers.
+`-N 0`, federation, ticket/public access, and other unsupported transfer
+modes. For large iRODS-to-iRODS copies between different resource servers
+in a local zone, the server-side copy/replication path can instead use
+independent authenticated connections on the descriptor-owning server's API
+port when both resource servers support iRODS 5.0+. It keeps the original
+replica opens, policy, checksum handling and finalization; only the bytes
+move without a portal.
+This compatible path can relay bytes through the descriptor-owning server
+rather than sending them directly from one resource server to the other.
+The post-copy policy runs on that coordinating server (as for a single-thread
+copy), rather than on the destination resource server as it does for some
+parallel portal copies. Administrators with different rulebases on their
+resource servers can use `-N 0` to retain the existing route. For operations
+without `-N`, returning zero from the server's `acSetNumThreads` policy
+selects the legacy route instead.
+The legacy `rcDataObjRsync` behavior remains available to other callers.
 
 The default number of workers without `-N` comes from the client environment.
 Retrieving the server's `acSetNumThreads` policy result without creating a
