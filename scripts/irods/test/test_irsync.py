@@ -74,6 +74,46 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         sync_and_check_marker(['irsync', '-V', '-l', '-N', '2', source, 'i:' + unchecked_obj], False)
         sync_and_check_marker(['irsync', '-V', '-N', '0', source, 'i:' + unchecked_obj], False)
 
+    def test_large_server_to_server_copies_keep_the_server_side_path(self):
+        source = os.path.join(self.testing_tmp_dir, 'server_copy_source')
+        other = os.path.join(self.testing_tmp_dir, 'server_copy_other')
+        downloaded = os.path.join(self.testing_tmp_dir, 'server_copy_downloaded')
+        source_obj = os.path.join(self.user0.session_collection, 'server_copy_source')
+        copy_obj = os.path.join(self.user0.session_collection, 'server_copy_icp')
+        new_sync_obj = os.path.join(self.user0.session_collection, 'server_copy_new_sync')
+        existing_sync_obj = os.path.join(self.user0.session_collection, 'server_copy_existing_sync')
+        lib.make_file(source, 34 * 1024 * 1024, 'random')
+        lib.make_file(other, 34 * 1024 * 1024, 'zero')
+
+        self.user0.assert_icommand(['iput', '-N', '0', '-K', source, source_obj])
+
+        def assert_server_copy(command, logical_path):
+            stdout, stderr, status = self.user0.run_icommand(command)
+            self.assertEqual(0, status, stderr)
+            # The client-side multi-1247 PUT/GET marker must not appear for
+            # copies whose source and destination are both iRODS objects.
+            self.assertNotIn('multi-1247 transfer', stdout)
+            self.user0.assert_icommand(['ichksum', '-K', logical_path])
+            self.user0.assert_icommand(['iget', '-N', '0', '-f', logical_path, downloaded])
+            self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+
+        # icp and a missing irsync target take the DATA_OBJ_COPY path.
+        assert_server_copy(['icp', '-V', '-K', '-N', '3', source_obj, copy_obj], copy_obj)
+        assert_server_copy(['irsync', '-V', '-K', '-N', '3',
+                            'i:' + source_obj, 'i:' + new_sync_obj], new_sync_obj)
+
+        # An existing target without a catalog checksum delegates the
+        # comparison and transfer to DATA_OBJ_RSYNC instead of DATA_OBJ_COPY.
+        self.user0.assert_icommand(['iput', '-N', '0', other, existing_sync_obj])
+        assert_server_copy(['irsync', '-V', '-N', '3',
+                            'i:' + source_obj, 'i:' + existing_sync_obj], existing_sync_obj)
+
+        stdout, stderr, status = self.user0.run_icommand(
+            ['irsync', '-V', '-N', '3', 'i:' + source_obj, 'i:' + existing_sync_obj])
+        self.assertEqual(0, status, stderr)
+        self.assertIn('a match', stdout)
+        self.assertNotIn('multi-1247 transfer', stdout)
+
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
