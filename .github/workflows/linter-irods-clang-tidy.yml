@@ -83,7 +83,7 @@ jobs:
 
                   # Run clang-tidy on the changes.
                   git diff -U0 origin/$GITHUB_BASE_REF | \
-                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 300 | \
+                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 300 -export-fixes fixes.yaml | \
                       tee clang_tidy_output.txt
 
                   # Return a failure if the output contains a clang-tidy error.
@@ -99,6 +99,8 @@ jobs:
                       echo 'This command only works while the branch associated with this pull request is checked out.'
                       echo
 
+                      yq -r 'reduce .Diagnostics.[] as $item ([]; . + ["::\($item.Level) file=\($item.DiagnosticMessage.FilePath),line=None,col=\($item.DiagnosticMessage.FileOffset)::\($item.DiagnosticMessage.Message)"]) | .[]' fixes.yaml
+
                       exit 1
                   fi
 
@@ -113,6 +115,8 @@ jobs:
                       echo
                       echo 'This command only works while the branch associated with this pull request is checked out.'
                       echo
+
+                      yq -r 'reduce .Diagnostics.[] as $item ([]; . + ["::\($item.Level) file=\($item.DiagnosticMessage.FilePath),line=None,col=\($item.DiagnosticMessage.FileOffset)::\($item.DiagnosticMessage.Message)"]) | .[]' fixes.yaml
 
                       exit 0
                   fi
