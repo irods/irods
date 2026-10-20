@@ -14,8 +14,14 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/collection_entry_validation.hpp"
+#include "irods/dataObjGet.h"
+#include "irods/version.hpp"
 
+#include <algorithm>
 #include <cstring>
+#include <exception>
+#include <optional>
+#include <string>
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
@@ -244,7 +250,44 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
         dataObjOprInp->dataSize = srcSize;
     }
 
-    status = rcDataObjGet( conn, dataObjOprInp, targPath );
+    // Retain the existing portal path for older servers and cases which need
+    // its sequential or restart behavior. The new path changes only the byte
+    // transport, leaving DATA_OBJ_GET and its checksum response in charge.
+    std::optional<irods::version> server_version;
+    try {
+        if (conn->svrVersion) {
+            server_version = irods::to_version(conn->svrVersion->relVersion);
+        }
+    }
+    catch (const std::exception&) {
+        // An unrecognized version uses the original transfer implementation.
+    }
+
+    const auto zone = std::string{conn->clientUser.rodsZone};
+    const bool local_zone = std::string{srcPath}.starts_with("/" + zone + "/");
+    const bool use_multi_connection = server_version && *server_version >= irods::version{5, 0, 0}
+        && local_zone && srcSize > 32 * 1024 * 1024
+        && strcmp(targPath, STDOUT_FILE_NAME) != 0
+        && conn->fileRestart.flags != FILE_RESTART_ON
+        && dataObjOprInp->numThreads != NO_THREADING
+        && dataObjOprInp->specColl == nullptr
+        && rodsArgs->purgeCache != True
+        && strcmp(conn->clientUser.userName, PUBLIC_USER_NAME) != 0;
+
+    if (use_multi_connection) {
+        rodsEnv env{};
+        status = getRodsEnv(&env);
+        if (status == 0) {
+            const int workers = dataObjOprInp->numThreads > 0
+                ? dataObjOprInp->numThreads : env.irodsDefaultNumberTransferThreads;
+            status = rcDataObjGetMultiConnection(conn, dataObjOprInp, targPath,
+                                                 std::max(1, workers),
+                                                 rodsArgs->ticket ? rodsArgs->ticketString : nullptr);
+        }
+    }
+    else {
+        status = rcDataObjGet(conn, dataObjOprInp, targPath);
+    }
 
     if ( status >= 0 ) {
         /* old objState use numCopies in place of dataMode.
@@ -525,4 +568,3 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
         return status;
     }
 }
-
