@@ -78,6 +78,8 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         source = os.path.join(self.testing_tmp_dir, 'server_copy_source')
         other = os.path.join(self.testing_tmp_dir, 'server_copy_other')
         downloaded = os.path.join(self.testing_tmp_dir, 'server_copy_downloaded')
+        source_resc = 'server_copy_source_resc'
+        dest_resc = 'server_copy_dest_resc'
         source_obj = os.path.join(self.user0.session_collection, 'server_copy_source')
         copy_obj = os.path.join(self.user0.session_collection, 'server_copy_icp')
         new_sync_obj = os.path.join(self.user0.session_collection, 'server_copy_new_sync')
@@ -85,34 +87,52 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         lib.make_file(source, 34 * 1024 * 1024, 'random')
         lib.make_file(other, 34 * 1024 * 1024, 'zero')
 
-        self.user0.assert_icommand(['iput', '-N', '0', '-K', source, source_obj])
-
         def assert_server_copy(command, logical_path):
             stdout, stderr, status = self.user0.run_icommand(command)
             self.assertEqual(0, status, stderr)
             # The client-side multi-1247 PUT/GET marker must not appear for
             # copies whose source and destination are both iRODS objects.
             self.assertNotIn('multi-1247 transfer', stdout)
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, dest_resc))
             self.user0.assert_icommand(['ichksum', '-K', logical_path])
             self.user0.assert_icommand(['iget', '-N', '0', '-f', logical_path, downloaded])
             self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
 
-        # icp and a missing irsync target take the DATA_OBJ_COPY path.
-        assert_server_copy(['icp', '-V', '-K', '-N', '3', source_obj, copy_obj], copy_obj)
-        assert_server_copy(['irsync', '-V', '-K', '-N', '3',
-                            'i:' + source_obj, 'i:' + new_sync_obj], new_sync_obj)
+        # On a topology, force the source onto consumer 1 and the targets
+        # onto consumer 2, rather than merely copying within one server.
+        lib.create_ufs_resource(self.admin, source_resc, hostname=test.settings.HOSTNAME_1)
+        try:
+            lib.create_ufs_resource(self.admin, dest_resc, hostname=test.settings.HOSTNAME_2)
+            try:
+                self.user0.assert_icommand(['iput', '-N', '0', '-K', '-R', source_resc,
+                                            source, source_obj])
+                self.assertTrue(lib.replica_exists_on_resource(self.user0, source_obj, source_resc))
 
-        # An existing target without a catalog checksum delegates the
-        # comparison and transfer to DATA_OBJ_RSYNC instead of DATA_OBJ_COPY.
-        self.user0.assert_icommand(['iput', '-N', '0', other, existing_sync_obj])
-        assert_server_copy(['irsync', '-V', '-N', '3',
-                            'i:' + source_obj, 'i:' + existing_sync_obj], existing_sync_obj)
+                # icp and a missing irsync target take the DATA_OBJ_COPY path.
+                assert_server_copy(['icp', '-V', '-K', '-N', '3', '-R', dest_resc,
+                                    source_obj, copy_obj], copy_obj)
+                assert_server_copy(['irsync', '-V', '-K', '-N', '3', '-R', dest_resc,
+                                    'i:' + source_obj, 'i:' + new_sync_obj], new_sync_obj)
 
-        stdout, stderr, status = self.user0.run_icommand(
-            ['irsync', '-V', '-N', '3', 'i:' + source_obj, 'i:' + existing_sync_obj])
-        self.assertEqual(0, status, stderr)
-        self.assertIn('a match', stdout)
-        self.assertNotIn('multi-1247 transfer', stdout)
+                # An existing target without a catalog checksum delegates the
+                # comparison and transfer to DATA_OBJ_RSYNC instead.
+                self.user0.assert_icommand(['iput', '-N', '0', '-R', dest_resc,
+                                            other, existing_sync_obj])
+                assert_server_copy(['irsync', '-V', '-N', '3', '-R', dest_resc,
+                                    'i:' + source_obj, 'i:' + existing_sync_obj], existing_sync_obj)
+
+                stdout, stderr, status = self.user0.run_icommand(
+                    ['irsync', '-V', '-N', '3', '-R', dest_resc,
+                     'i:' + source_obj, 'i:' + existing_sync_obj])
+                self.assertEqual(0, status, stderr)
+                self.assertIn('a match', stdout)
+                self.assertNotIn('multi-1247 transfer', stdout)
+            finally:
+                for obj in (source_obj, copy_obj, new_sync_obj, existing_sync_obj):
+                    self.user0.run_icommand(['irm', '-f', obj])
+                lib.remove_resource(self.admin, dest_resc)
+        finally:
+            lib.remove_resource(self.admin, source_resc)
 
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
