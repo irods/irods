@@ -11,21 +11,26 @@ the checksum decision without following a GET action, so listing cannot
 download the file. `-V` reports the transport when a transfer occurs.
 
 Portal transfers remain for older or unrecognized servers, small files,
-`-N 0`, federation, ticket/public access, and other unsupported transfer
-modes. For large iRODS-to-iRODS copies between different resource servers
-in a local zone, the server-side copy/replication path can instead use
-independent authenticated connections on the descriptor-owning server's API
-port when both resource servers support iRODS 5.0+. It keeps the original
-replica opens, policy, checksum handling and finalization; only the bytes
-move without a portal.
-This compatible path can relay bytes through the descriptor-owning server
-rather than sending them directly from one resource server to the other.
-The post-copy policy runs on that coordinating server (as for a single-thread
-copy), rather than on the destination resource server as it does for some
-parallel portal copies. Administrators with different rulebases on their
-resource servers can use `-N 0` to retain the existing route. For operations
-without `-N`, returning zero from the server's `acSetNumThreads` policy
-selects the legacy route instead.
+`-N 0`, federation, ticket/public access, `irepl -a`, and other unsupported
+transfer modes. For large iRODS-to-iRODS copies between different resource
+servers in a local zone, the server-side copy/replication path can instead use
+independent authenticated API-port connections when both resource servers
+advertise `IRODS_LIBRARY_FEATURE_AUTHENTICATE_CLIENT`. If the destination
+also advertises `IRODS_LIBRARY_FEATURE_SERVER_SIDE_MULTI_1247_COPY`, the
+request is forwarded there *before* opening descriptors. The destination
+owns the replica token,
+and bytes travel directly from the source to the destination; its post-copy
+policy runs on the destination as with the parallel portal path.
+
+Destinations without the delegation feature can still use the portal-free
+transport, but it relays bytes through the descriptor-owning server. The
+post-copy policy runs on that coordinator (as for a single-thread copy),
+rather than on the destination resource server as it does for some parallel
+portal copies. Administrators with different rulebases on their resource
+servers can use `-N 0` to retain the existing route. For operations without
+`-N`, returning zero from `acSetNumThreads` selects the legacy route instead.
+Both transports retain the original replica opens, checksum decisions and
+finalization.
 The legacy `rcDataObjRsync` behavior remains available to other callers.
 
 The default number of workers without `-N` comes from the client environment.

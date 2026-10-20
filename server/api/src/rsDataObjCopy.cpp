@@ -19,6 +19,8 @@
 #include "irods/rsDataObjOpen.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/rsGlobalExtern.hpp"
+#include "irods/server_side_copy_delegation.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/rsRegDataObj.hpp"
 #include "irods/scoped_privileged_client.hpp"
 #include "irods/server_utilities.hpp"
@@ -36,6 +38,8 @@
 #include <boost/format.hpp>
 
 #include <chrono>
+#include <cstdlib>
+#include <stdexcept>
 
 namespace
 {
@@ -312,6 +316,81 @@ namespace
             return USER_INPUT_PATH_ERR;
         }
 
+        // Resolve both hierarchies before either L1 descriptor is opened.
+        // Opening on the coordinator would create the destination token there
+        // and force the API-port workers to relay bytes through this host.
+        bool dispatched_copy = false;
+        try {
+            if (getValByKey(&destDataObjInp->condInput,
+                            irods::server_side_copy::delegated_keyword) ||
+                destDataObjInp->numThreads == NO_THREADING ||
+                srcDataObjInp->specColl || destDataObjInp->specColl ||
+                getValByKey(&srcDataObjInp->condInput, TICKET_KW) ||
+                getValByKey(&destDataObjInp->condInput, TICKET_KW) ||
+                std::strcmp(rsComm->clientUser.userName, PUBLIC_USER_NAME) == 0 ||
+                fs::server::data_object_size(*rsComm, srcDataObjInp->objPath) <= 32 * 1024 * 1024) {
+                throw std::runtime_error{"Copy is not eligible for delegation."};
+            }
+            dataObjCopyInp_t delegated{};
+            if (replDataObjInp(srcDataObjInp, &delegated.srcDataObjInp) >= 0 &&
+                replDataObjInp(destDataObjInp, &delegated.destDataObjInp) >= 0)
+            {
+                const irods::at_scope_exit clear_delegated{[&] {
+                    clearKeyVal(&delegated.srcDataObjInp.condInput);
+                    clearKeyVal(&delegated.destDataObjInp.condInput);
+                    std::free(delegated.srcDataObjInp.specColl);
+                    std::free(delegated.destDataObjInp.specColl);
+                }};
+                auto& source = delegated.srcDataObjInp;
+                auto& destination = delegated.destDataObjInp;
+                source.openFlags = O_RDONLY;
+                destination.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+                auto [selected_source, source_hierarchy] =
+                    irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, source);
+                if (!selected_source) {
+                    throw std::runtime_error{"Source hierarchy selection returned no object."};
+                }
+                const auto source_replica = selected_source->get_replica(source_hierarchy);
+                if (!source_replica || source_replica->get().replica_status() != GOOD_REPLICA) {
+                    throw std::runtime_error{"No eligible source replica for delegation."};
+                }
+                const auto size = source_replica->get().size();
+                const int source_mode = std::atoi(source_replica->get().mode().c_str());
+                if (source_mode >= 0100) {
+                    destination.createMode = source_mode;
+                }
+                const auto destination_hierarchy = std::get<std::string>(
+                    irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, destination));
+                if (auto* host = irods::server_side_copy::destination_for_delegation(
+                        *rsComm, source_hierarchy, destination_hierarchy, size, destination))
+                {
+                    addKeyVal(&source.condInput, RESC_HIER_STR_KW, source_hierarchy.c_str());
+                    addKeyVal(&destination.condInput, RESC_HIER_STR_KW, destination_hierarchy.c_str());
+                    addKeyVal(&destination.condInput,
+                              irods::server_side_copy::delegated_keyword, "");
+                    log_api::info("Delegating multi-1247 copy of [{}] to [{}].",
+                                  destination.objPath, host->hostName->name);
+                    dispatched_copy = true;
+                    return _rcDataObjCopy(host->conn, &delegated, transStat);
+                }
+            }
+            else {
+                clearKeyVal(&delegated.srcDataObjInp.condInput);
+                clearKeyVal(&delegated.destDataObjInp.condInput);
+                std::free(delegated.srcDataObjInp.specColl);
+                std::free(delegated.destDataObjInp.specColl);
+            }
+        }
+        catch (const std::exception& e) {
+            if (dispatched_copy) {
+                log_api::error("Delegated copy failed after dispatch: [{}].", e.what());
+                return SYS_INTERNAL_ERR; // Do not retry an uncertain write.
+            }
+            // Selection for this transport must not alter the legacy error
+            // handling. In particular, do not perform an extra data open.
+            log_api::debug("Copy delegation unavailable: [{}].", e.what());
+        }
+
         const int srcL1descInx = open_source_data_obj(rsComm, *srcDataObjInp);
         if (srcL1descInx < 3 || srcL1descInx >= NUM_L1_DESC) {
             return srcL1descInx < 0 ? srcL1descInx : SYS_FILE_DESC_OUT_OF_RANGE;
@@ -391,4 +470,3 @@ int rsDataObjCopy(rsComm_t* rsComm,
     // Do not update the collection mtime here because the open API call for the destination data object does it.
     return rsDataObjCopy_impl(rsComm, dataObjCopyInp, transStat);
 }
-

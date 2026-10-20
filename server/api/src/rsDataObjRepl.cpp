@@ -44,6 +44,7 @@
 #include "irods/rsUnbunAndRegPhyBunfile.hpp"
 #include "irods/rsUnregDataObj.hpp"
 #include "irods/rs_replica_close.hpp"
+#include "irods/server_side_copy_delegation.hpp"
 #include "irods/replica_open.h"
 #include "irods/replica_close.h"
 #include "irods/specColl.hpp"
@@ -62,7 +63,6 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_string_tokenize.hpp"
-#include "irods/version.hpp"
 #include "irods/json_serialization.hpp"
 #include "irods/key_value_proxy.hpp"
 #include "irods/logical_locking.hpp"
@@ -936,6 +936,18 @@ namespace
             source_cond_input.at(RESC_HIER_STR_KW).value(),
             destination_cond_input.at(RESC_HIER_STR_KW).value()));
 
+        if (auto* host = irods::server_side_copy::destination_for_delegation(
+                _comm, source_hierarchy, destination_hierarchy,
+                source_replica.size(), _inp)) {
+            cond_input[irods::server_side_copy::delegated_keyword] = "";
+            const irods::at_scope_exit remove_marker{[&] {
+                cond_input.erase(irods::server_side_copy::delegated_keyword);
+            }};
+            log_api::info("Delegating multi-1247 replication of [{}] to [{}].",
+                          _inp.objPath, host->hostName->name);
+            return _rcDataObjRepl(host->conn, &_inp, _stat);
+        }
+
         // replicate!
         const int ec = replicate_data(_comm, source_inp, destination_inp, _stat);
 
@@ -1319,26 +1331,6 @@ namespace
         }
     }
 
-    auto supports_api_port_copy(RsComm& comm, rodsServerHost_t* host) -> bool
-    {
-        if (!host) {
-            return false;
-        }
-        if (host->localFlag == LOCAL_HOST) {
-            return true;
-        }
-        if (svrToSvrConnect(&comm, host) < 0 || !host->conn || !host->conn->svrVersion) {
-            return false;
-        }
-        try {
-            const auto version = irods::to_version(host->conn->svrVersion->relVersion);
-            return version && *version >= irods::version{5, 0, 0};
-        }
-        catch (const std::exception&) {
-            return false;
-        }
-    }
-
     // A byte-only replacement for the inter-server portal. The descriptor
     // owning server is the coordinator: its replica token and logical locks
     // remain valid on the independent API-port connections.
@@ -1379,8 +1371,8 @@ namespace
         auto* source_host = FileDesc[source.l3descInx].rodsServerHost;
         auto* destination_host = FileDesc[destination.l3descInx].rodsServerHost;
         if (source_host == destination_host ||
-            !supports_api_port_copy(comm, source_host) ||
-            !supports_api_port_copy(comm, destination_host)) {
+            !irods::server_side_copy::supports_api_port_copy(comm, source_host) ||
+            !irods::server_side_copy::supports_api_port_copy(comm, destination_host)) {
             return std::nullopt;
         }
 

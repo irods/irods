@@ -91,6 +91,21 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         lib.make_file(source, 34 * 1024 * 1024, 'random')
         lib.make_file(other, 34 * 1024 * 1024, 'zero')
 
+        # The destination resource server owns the copy's primary descriptors
+        # after delegation. Source/provider/third-consumer servers must not
+        # coordinate its API-port byte transfer.
+        coordinator_is_local = (test.settings.RUN_IN_TOPOLOGY and
+                                lib.get_hostname() == test.settings.HOSTNAME_2)
+
+        def assert_copy_coordinator(logical_path, log_offset):
+            marker = 'multi-1247 server copy: ' + logical_path
+            if coordinator_is_local:
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
+                    msg=marker, count=0, start_index=log_offset))
+            else:
+                self.assertTrue(lib.log_message_occurrences_equals_count(
+                    msg=marker, count=0, start_index=log_offset))
+
         def assert_server_copy(command, logical_path):
             log_offset = lib.get_file_size_by_path(paths.server_log_path())
             stdout, stderr, status = self.user0.run_icommand(command)
@@ -98,9 +113,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
             # The client-side multi-1247 PUT/GET marker must not appear for
             # copies whose source and destination are both iRODS objects.
             self.assertNotIn('multi-1247 transfer', stdout)
-            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
-                msg='multi-1247 server copy: ' + logical_path,
-                count=0, start_index=log_offset))
+            assert_copy_coordinator(logical_path, log_offset)
             self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, dest_resc))
             self.user0.assert_icommand(['ichksum', '-K', logical_path])
             self.user0.assert_icommand(['iget', '-N', '0', '-f', logical_path, downloaded])
@@ -162,9 +175,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
                 # Replication shares dataObjCopy with icp and irsync.
                 log_offset = lib.get_file_size_by_path(paths.server_log_path())
                 self.user0.assert_icommand(['irepl', '-N', '3', '-R', dest_resc, source_obj])
-                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
-                    msg='multi-1247 server copy: ' + source_obj,
-                    count=0, start_index=log_offset))
+                assert_copy_coordinator(source_obj, log_offset)
                 self.assertTrue(lib.replica_exists_on_resource(self.user0, source_obj, dest_resc))
                 self.user0.assert_icommand(['ichksum', '-K', source_obj])
 
@@ -174,9 +185,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
                                             source, move_obj])
                 log_offset = lib.get_file_size_by_path(paths.server_log_path())
                 self.user0.assert_icommand(['iphymv', '-S', source_resc, '-R', dest_resc, move_obj])
-                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(
-                    msg='multi-1247 server copy: ' + move_obj,
-                    count=0, start_index=log_offset))
+                assert_copy_coordinator(move_obj, log_offset)
                 self.assertFalse(lib.replica_exists_on_resource(self.user0, move_obj, source_resc))
                 self.assertTrue(lib.replica_exists_on_resource(self.user0, move_obj, dest_resc))
                 self.user0.assert_icommand(['iget', '-N', '0', '-f', move_obj, downloaded])
