@@ -1,4 +1,5 @@
 import copy
+import filecmp
 import os
 import re
 import sys
@@ -25,6 +26,53 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.testing_tmp_dir)
         super(Test_iRsync, self).tearDown()
+
+    def test_multi_1247_syncs_local_files_without_a_portal(self):
+        source = os.path.join(self.testing_tmp_dir, 'multi_1247_source')
+        other = os.path.join(self.testing_tmp_dir, 'multi_1247_other')
+        downloaded = os.path.join(self.testing_tmp_dir, 'multi_1247_downloaded')
+        obj = os.path.join(self.user0.session_collection, 'multi_1247_object')
+        unchecked_obj = os.path.join(self.user0.session_collection, 'multi_1247_unchecked')
+        lib.make_file(source, 34 * 1024 * 1024, 'random')
+        lib.make_file(other, 34 * 1024 * 1024, 'zero')
+
+        def sync_and_check_marker(command, expected=True):
+            stdout, stderr, status = self.user0.run_icommand(command)
+            self.assertEqual(0, status, stderr)
+            self.assertEqual(expected, 'multi-1247 transfer' in stdout, stdout)
+            return stdout
+
+        # New destination: the direct PUT/GET calls in rsyncUtil.
+        sync_and_check_marker(['irsync', '-V', '-K', '-N', '3', '-R',
+                               self.user0.default_resource, source, 'i:' + obj])
+        self.user0.assert_icommand(['ichksum', '-K', obj])
+        sync_and_check_marker(['irsync', '-V', '-K', '-N', '2', 'i:' + obj, downloaded])
+        self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+        os.unlink(downloaded)
+        sync_and_check_marker(['irsync', '-V', 'i:' + obj, downloaded])
+        self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+
+        # Existing destination without a catalog checksum: the server-requested
+        # PUT/GET actions inside rcDataObjRsync, not the direct calls above.
+        self.user0.assert_icommand(['iput', '-N', '0', '-f', other, obj])
+        sync_and_check_marker(['irsync', '-V', '-K', '-N', '2', source, 'i:' + obj])
+        self.user0.assert_icommand(['iget', '-N', '0', '-f', '-K', obj, downloaded])
+        self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+
+        self.user0.assert_icommand(['iput', '-N', '0', other, unchecked_obj])
+        stdout = sync_and_check_marker(['irsync', '-V', '-l', '-N', '2', 'i:' + unchecked_obj, downloaded], False)
+        self.assertIn('   N', stdout)
+        self.assertTrue(filecmp.cmp(source, downloaded, shallow=False))
+        stdout = sync_and_check_marker(['irsync', '-V', '-l', '-N', '2', 'i:' + unchecked_obj, other], False)
+        self.assertNotIn('   N', stdout)
+        sync_and_check_marker(['irsync', '-V', '-N', '2', 'i:' + unchecked_obj, downloaded])
+        self.assertTrue(filecmp.cmp(other, downloaded, shallow=False))
+
+        # Matches and dry runs do not transfer; -N 0 keeps the legacy path.
+        sync_and_check_marker(['irsync', '-V', '-N', '2', 'i:' + unchecked_obj, downloaded], False)
+        sync_and_check_marker(['irsync', '-V', '-s', '-N', '2', source, 'i:' + unchecked_obj], False)
+        sync_and_check_marker(['irsync', '-V', '-l', '-N', '2', source, 'i:' + unchecked_obj], False)
+        sync_and_check_marker(['irsync', '-V', '-N', '0', source, 'i:' + unchecked_obj], False)
 
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)

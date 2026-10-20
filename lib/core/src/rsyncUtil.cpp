@@ -15,17 +15,66 @@
 #include "irods/irods_exception.hpp"
 #include "irods/irods_query.hpp"
 #include "irods/collection_entry_validation.hpp"
+#include "irods/dataObjGet.h"
+#include "irods/dataObjPut.h"
+#include "irods/dataObjRsync.h"
+#include "irods/version.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
 #include <sys/time.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <optional>
 #include <sstream>
+#include <string>
 
 static int CurrentTime = 0;
+
+namespace
+{
+    // Return zero to use the original portal transfer. Keep this decision in
+    // irsync so other callers of the public GET/PUT/Rsync APIs are unchanged.
+    auto multi_connection_thread_count(rcComm_t* conn, const dataObjInp_t& input,
+                                       rodsLong_t size) -> int
+    {
+        if (size <= 32 * 1024 * 1024 || input.numThreads == NO_THREADING ||
+            input.specColl || conn->fileRestart.flags == FILE_RESTART_ON)
+        {
+            return 0;
+        }
+
+        try {
+            const auto version = conn->svrVersion
+                ? irods::to_version(conn->svrVersion->relVersion) : std::nullopt;
+            if (!version || *version < irods::version{5, 0, 0}) {
+                return 0;
+            }
+        }
+        catch (const std::exception&) {
+            return 0;
+        }
+
+        const auto zone = std::string{conn->clientUser.rodsZone};
+        if (!std::string{input.objPath}.starts_with("/" + zone + "/")) {
+            return 0; // Federation continues to use the original transport.
+        }
+
+        if (input.numThreads > 0) {
+            return input.numThreads;
+        }
+
+        rodsEnv env{};
+        if (getRodsEnv(&env) != 0) {
+            return 0;
+        }
+        return std::max(1, env.irodsDefaultNumberTransferThreads);
+    }
+} // anonymous namespace
 
 int
 ageExceeded( int ageLimit, int myTime, char *objPath, rodsLong_t fileSize );
@@ -193,6 +242,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     struct timeval startTime, endTime;
     int getFlag = 0;
     int syncFlag = 0;
+    bool listed_change = false;
     char *chksum;
 
     if ( srcPath == NULL || targPath == NULL ) {
@@ -292,7 +342,10 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( getFlag == 1 ) {
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
-            status = rcDataObjGet( conn, dataObjOprInp, targPath->outPath );
+            const int workers = multi_connection_thread_count(conn, *dataObjOprInp, srcPath->size);
+            status = workers > 0
+                ? rcDataObjGetMultiConnection(conn, dataObjOprInp, targPath->outPath, workers)
+                : rcDataObjGet(conn, dataObjOprInp, targPath->outPath);
         }
         else {
             status = 0;
@@ -307,7 +360,26 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         addKeyVal( &dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
                    targPath->outPath );
         addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, LOCAL_TO_IRODS );
-        status = rcDataObjRsync( conn, dataObjOprInp );
+        if (myRodsArgs->longOption != True) {
+            const int workers = multi_connection_thread_count(conn, *dataObjOprInp, srcPath->size);
+            status = workers > 0
+                ? rcDataObjRsyncMultiConnection(conn, dataObjOprInp, workers)
+                : rcDataObjRsync(conn, dataObjOprInp);
+        }
+        else {
+            const int workers = multi_connection_thread_count(conn, *dataObjOprInp, srcPath->size);
+            if (workers > 0) {
+                status = rcDataObjRsyncDryRun(conn, dataObjOprInp);
+                if (status == SYS_RSYNC_TARGET_MODIFIED) {
+                    printf("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+                    listed_change = true;
+                    status = 0;
+                }
+            }
+            else {
+                status = rcDataObjRsync(conn, dataObjOprInp);
+            }
+        }
         rmKeyVal( &dataObjOprInp->condInput, RSYNC_DEST_PATH_KW );
         rmKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW );
     }
@@ -315,7 +387,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         status = 0;
     }
 
-    if ( status >= 0 && myRodsArgs->verbose == True ) {
+    if ( status >= 0 && myRodsArgs->verbose == True && !listed_change ) {
         if ( getFlag > 0 ||
                 ( syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED ) ) {
             ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
@@ -480,7 +552,10 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( putFlag == 1 ) {
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
-            status = rcDataObjPut( conn, dataObjOprInp, srcPath->outPath );
+            const int workers = multi_connection_thread_count(conn, *dataObjOprInp, srcPath->size);
+            status = workers > 0
+                ? rcDataObjPutMultiConnection(conn, dataObjOprInp, srcPath->outPath, workers)
+                : rcDataObjPut(conn, dataObjOprInp, srcPath->outPath);
         }
         else {
             status = 0;
@@ -494,7 +569,10 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL );
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
-            status = rcDataObjRsync( conn, dataObjOprInp );
+            const int workers = multi_connection_thread_count(conn, *dataObjOprInp, srcPath->size);
+            status = workers > 0
+                ? rcDataObjRsyncMultiConnection(conn, dataObjOprInp, workers)
+                : rcDataObjRsync(conn, dataObjOprInp);
         }
         else {
             status = 0;
@@ -1134,6 +1212,10 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, VERIFY_BY_SIZE_KW, "" );
     }
 
+    if ( rodsArgs->veryVerbose == True ) {
+        addKeyVal( &dataObjInp->condInput, VERY_VERBOSE_KW, "" );
+    }
+
     if ( rodsArgs->all == True ) {
         addKeyVal( &dataObjInp->condInput, ALL_KW, "" );
     }
@@ -1263,4 +1345,3 @@ ageExceeded( int ageLimit, int myTime, char *objPath,
         return 0;
     }
 }
-

@@ -42,4 +42,13 @@ extern "C"
 int rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp );
 int _rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp, msParamArray_t **outParamArray );
 
+#ifdef __cplusplus
+// Preserve the Rsync checksum decision, but use independent API-port
+// connections when the server requests a client-side PUT or GET transfer.
+int rcDataObjRsyncMultiConnection(rcComm_t* conn, dataObjInp_t* input, int thread_count);
+// Ask the server whether a transfer is required without performing its
+// client-side GET or PUT action. Only for local zones on 5.0+ servers.
+int rcDataObjRsyncDryRun(rcComm_t* conn, dataObjInp_t* input);
+#endif
+
 #endif

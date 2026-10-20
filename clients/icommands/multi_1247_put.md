@@ -20,6 +20,7 @@ extension could return this policy decision separately.
 
 Future removal of portals should be staged separately: cover federation,
 special collections and restartable transfers, migrate the remaining portal
-clients (`irsync`, etc.), and only then delete `putFileToPortal`, the
+clients (`irule`, etc.), and only then delete `putFileToPortal`, the
 server portal handlers, and their protocol structures. Do not remove the
-legacy transfer merely because `iput` and `iget` can use the new path locally.
+legacy transfer merely because `iput`, `iget`, and `irsync` can use the new
+path locally.
