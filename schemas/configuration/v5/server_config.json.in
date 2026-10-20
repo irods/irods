@@ -229,7 +229,6 @@
                         "maxLength": 49
                     },
                     "zone_key_signing_hash_scheme": {
-                        "type": "enum",
                         "enum": [
                             "md5",
                             "sha256"
@@ -403,7 +402,6 @@
             "maxLength": 49
         },
         "zone_key_signing_hash_scheme": {
-            "type": "enum",
             "enum": [
                 "md5",
                 "sha256"
