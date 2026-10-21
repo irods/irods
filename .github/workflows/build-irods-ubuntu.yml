@@ -98,6 +98,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                 -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON \
                 -DIRODS_ENABLE_ALL_TESTS=YES \
+                -DIRODS_ENABLE_STATIC_SHA1=YES \
                 -GNinja \
                 ../
 
