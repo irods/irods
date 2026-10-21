@@ -86,7 +86,8 @@ jobs:
       - name: Restore Ccache State
         uses: actions/cache@v4
         with:
-            key: "ccache-irods-${{ matrix.container }}"
+            key: "ccache-irods-${{ matrix.container }}-${{ github.sha }}"
+            restore-keys: "ccache-irods-${{ matrix.container }}-"
             path: /irods_build_cache/
 
       - name: Configure CMake
