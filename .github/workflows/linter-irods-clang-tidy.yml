@@ -120,17 +120,17 @@ jobs:
                       prev_offset = 0
                       offset = looky.tell()
 
-                        while offset < desired_offset:
-                          _ = looky.readline()
-                          current_line = prev_ln + 1
-                          offset = looky.tell()
+                      while offset < desired_offset:
+                        _ = looky.readline()
+                        current_line = prev_ln + 1
+                        offset = looky.tell()
 
-                          if offset >= desired_offset:
-                            print(f'::{report['Level']} file={file},line={prev_ln}::{msg['Message']}')
-                            break
+                        if offset >= desired_offset:
+                          print(f'::{report['Level']} file={file},line={prev_ln}::{msg['Message']}')
+                          break
 
-                          prev_ln = current_line
-                          prev_offset = offset
+                        prev_ln = current_line
+                        prev_offset = offset
                   EOF
 
                   # Return a failure if the output contains a clang-tidy error.
