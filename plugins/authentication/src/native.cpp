@@ -14,6 +14,7 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/miscServerFunct.hpp"
@@ -21,6 +22,7 @@
 #include "irods/obf.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsDef.h"
+#include "irods/rodsErrorTable.h"
 
 #ifdef RODS_SERVER
 #include "irods/irods_rs_comm_query.hpp"
@@ -28,16 +30,20 @@
 #include "irods/rsAuthRequest.hpp"
 #endif // RODS_SERVER
 
+#include <fmt/format.h>
+
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
 #include <termios.h>
 #include <unistd.h>
 
+#include <charconv>
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <system_error>
 
 void setSessionSignatureClientside(char* _sig);
 #ifdef RODS_SERVER
@@ -397,26 +403,27 @@ namespace irods::authentication
             // If TTL was provided, get and record the limited password.
             if (const auto ttl_iter = _req.find(irods::AUTH_TTL_KEY); ttl_iter != _req.end()) {
                 if (const auto& ttl_str = ttl_iter->get_ref<const std::string&>(); !ttl_str.empty()) {
-                    try {
-                        // Specifically check for TTL of 0 here because 0 means "no TTL" for native authentication and
-                        // is a valid value as far as this authentication plugin is concerned. However, the mechanism
-                        // for getting the limited password considers non-positive values invalid. Therefore, we drop
-                        // through to the "else" case for 0 and pass non-zero values to the limited password machinery
-                        // to allow it to perform the value checking.
-                        if (const auto ttl = std::stoi(ttl_str); 0 != ttl) {
-                            record_limited_password(_comm, ttl, password->c_str());
-                            // Now that the limited password is recorded in the auth file, we need to authenticate with
-                            // the limited password to ensure that things are working. Call the start operation - the
-                            // limited password recorded in the irodsA file will be used.
-                            return nlohmann::json{{irods_auth::scheme_name, scheme_name},
-                                                  {irods_auth::next_operation, AUTH_CLIENT_START}};
-                        }
+                    // Specifically check for TTL of 0 here because 0 means "no TTL" for native authentication and
+                    // is a valid value as far as this authentication plugin is concerned. However, the mechanism
+                    // for getting the limited password considers non-positive values invalid. Therefore, we drop
+                    // through to the "else" case for 0 and pass non-zero values to the limited password machinery
+                    // to allow it to perform the value checking.
+                    int ttl; // NOLINT(cppcoreguidelines-init-variables)
+                    const auto* ttl_b = ttl_str.c_str();
+                    const auto* ttl_e =
+                        ttl_b + ttl_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(ttl_b, ttl_e, ttl);
+                    if (std::errc{} != ec) {
+                        THROW(SYS_INVALID_INPUT_PARAM,
+                              fmt::format("Invalid TTL [{}]: {}", ttl_str, std::make_error_code(ec).message()));
                     }
-                    catch (const std::invalid_argument& e) {
-                        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid TTL [{}]: {}", ttl_str, e.what()));
-                    }
-                    catch (const std::out_of_range& e) {
-                        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid TTL [{}]: {}", ttl_str, e.what()));
+                    if (0 != ttl) {
+                        record_limited_password(_comm, ttl, password->c_str());
+                        // Now that the limited password is recorded in the auth file, we need to authenticate with
+                        // the limited password to ensure that things are working. Call the start operation - the
+                        // limited password recorded in the irodsA file will be used.
+                        return nlohmann::json{{irods_auth::scheme_name, scheme_name},
+                                              {irods_auth::next_operation, AUTH_CLIENT_START}};
                     }
                 }
             }

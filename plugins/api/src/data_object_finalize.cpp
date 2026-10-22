@@ -1,4 +1,11 @@
+#ifdef RODS_SERVER
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#endif
+
 #include "irods/plugins/api/api_plugin_number.h"
+
+#include "irods/apiHandler.hpp"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/fileDriver.hpp"
 #include "irods/irods_configuration_keywords.hpp"
@@ -8,8 +15,6 @@
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsPackInstruct.h"
-
-#include "irods/apiHandler.hpp"
 
 #include <functional>
 #include <stdexcept>
@@ -24,9 +29,12 @@
 
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
+#include "irods/data_object_proxy.hpp"
+#include "irods/filesystem.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_logger.hpp"
@@ -38,24 +46,20 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/objDesc.hpp"
 #include "irods/rodsConnect.h"
+#include "irods/rodsType.h"
 #include "irods/server_utilities.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "irods/data_object_proxy.hpp"
 
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
 
+#include <charconv>
+#include <chrono>
 #include <cstdlib>
 #include <string>
 #include <string_view>
-#include <tuple>
-#include <chrono>
 #include <system_error>
+#include <tuple>
 
 extern irods::resource_manager resc_mgr;
 
@@ -156,14 +160,42 @@ namespace
                     //      the file_object.
                     irods::file_object_ptr obj;
                     if (_logical_path.empty()) {
-                        obj = irods::file_object_factory(_comm, std::stoll(replica.at("before").at("data_id").get<std::string>()));
+                        rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+                        const std::string& data_id_str =
+                            replica.at("before").at("data_id").get_ref<const std::string&>();
+                        const auto* data_id_b = data_id_str.c_str();
+                        const auto* data_id_e =
+                            data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        auto [ptr, ec] = std::from_chars(data_id_b, data_id_e, data_id);
+                        if (std::errc{} != ec) {
+                            log::api::error("[{}:{}] - Failed to parse data_id [{}]: {}",
+                                            __FUNCTION__,
+                                            __LINE__,
+                                            data_id_str,
+                                            std::make_error_code(ec).message());
+                            return INVALID_LEXICAL_CAST;
+                        }
+                        obj = irods::file_object_factory(_comm, data_id);
                     }
                     else {
                         auto [before, after] = split_before_and_after_info(_replicas);
                         obj = irods::file_object_factory(_comm, _logical_path, after);
                     }
 
-                    const auto leaf_resource_id = std::stoll(replica.at("after").at("resc_id").get<std::string>());
+                    rodsLong_t leaf_resource_id; // NOLINT(cppcoreguidelines-init-variables)
+                    const std::string& leaf_id_str = replica.at("after").at("resc_id").get_ref<const std::string&>();
+                    const auto* leaf_id_b = leaf_id_str.c_str();
+                    const auto* leaf_id_e =
+                        leaf_id_b + leaf_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    auto [ptr, ec] = std::from_chars(leaf_id_b, leaf_id_e, leaf_resource_id);
+                    if (std::errc{} != ec) {
+                        log::api::error("[{}:{}] - Failed to parse leaf_resource_id [{}]: {}",
+                                        __FUNCTION__,
+                                        __LINE__,
+                                        leaf_id_str,
+                                        std::make_error_code(ec).message());
+                        return INVALID_LEXICAL_CAST;
+                    }
                     obj->resc_hier(resc_mgr.leaf_id_to_hier(leaf_resource_id));
 
                     set_file_object_keywords(replica.at(FILE_MODIFIED_KW), obj);
@@ -245,10 +277,36 @@ namespace
             // This section will perform permissions checks and update ticket information
             // only if not running in privileged mode. This matches the behavior of
             // the mod_data_obj_meta database operation.
-            const auto data_id = std::stoll(_replicas.front().at("before").at("data_id").get<std::string>());
+            rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string& data_id_str = _replicas.front().at("before").at("data_id").get_ref<const std::string&>();
+            const auto* data_id_b = data_id_str.c_str();
+            const auto* data_id_e =
+                data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            std::from_chars_result fcres = std::from_chars(data_id_b, data_id_e, data_id);
+            if (std::errc{} != fcres.ec) {
+                log::api::error("[{}:{}] - Failed to parse data_id [{}]: {}",
+                                __FUNCTION__,
+                                __LINE__,
+                                data_id_str,
+                                std::make_error_code(fcres.ec).message());
+                return INVALID_LEXICAL_CAST;
+            }
 
-            const auto bytes_written = !_bytes_written.empty() ? std::stoll(_bytes_written.data()) : 0;
+            rodsLong_t bytes_written; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* bytes_b = _bytes_written.data();
+            const auto* bytes_e =
+                bytes_b + _bytes_written.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            fcres = std::from_chars(bytes_b, bytes_e, bytes_written);
+            if (std::errc{} != fcres.ec) {
+                log::api::error("[{}:{}] - Failed to parse bytes_written [{}]: {}",
+                                __FUNCTION__,
+                                __LINE__,
+                                _bytes_written,
+                                std::make_error_code(fcres.ec).message());
+                return INVALID_LEXICAL_CAST;
+            }
 
+            // TODO: We don't use data_id or bytes_written outside this block, should we do parsing in here too?
             if (!_admin_operation) {
                 // If the caller indicates that bytes have been written (equivalent
                 // to updating the size), the information for any existing session

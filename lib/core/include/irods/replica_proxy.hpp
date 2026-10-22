@@ -8,10 +8,16 @@
 #include "irods/key_value_proxy.hpp"
 #include "irods/objInfo.h"
 #include "irods/replica.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsType.h"
 
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <charconv>
+#include <exception>
 #include <string_view>
+#include <system_error>
 
 namespace irods::experimental::replica
 {
@@ -46,30 +52,30 @@ namespace irods::experimental::replica
         }
 
         // clang-format off
-        auto logical_path()     const noexcept -> std::string_view { return doi_->objPath; }
-        auto resource()         const noexcept -> std::string_view { return doi_->rescName; }
-        auto hierarchy()        const noexcept -> std::string_view { return doi_->rescHier; }
-        auto type()             const noexcept -> std::string_view { return doi_->dataType; }
-        auto size()             const noexcept -> rodsLong_t       { return doi_->dataSize; }
-        auto checksum()         const noexcept -> std::string_view { return doi_->chksum; }
-        auto version()          const noexcept -> std::string_view { return doi_->version; }
-        auto physical_path()    const noexcept -> std::string_view { return doi_->filePath; }
-        auto owner_user_name()  const noexcept -> std::string_view { return doi_->dataOwnerName; }
-        auto owner_zone_name()  const noexcept -> std::string_view { return doi_->dataOwnerZone; }
-        auto replica_number()   const noexcept -> int              { return doi_->replNum; }
-        auto replica_status()   const noexcept -> int              { return doi_->replStatus; }
-        auto data_id()          const noexcept -> rodsLong_t       { return doi_->dataId; }
-        auto collection_id()    const noexcept -> rodsLong_t       { return doi_->collId; }
-        auto resource_id()      const noexcept -> rodsLong_t       { return doi_->rescId; }
-        auto comments()         const noexcept -> std::string_view { return doi_->dataComments; }
-        auto atime()            const noexcept -> std::string_view { return doi_->dataAccessTime; }
-        auto ctime()            const noexcept -> std::string_view { return doi_->dataCreate; }
-        auto mtime()            const noexcept -> std::string_view { return doi_->dataModify; }
-        auto in_pdmo()          const noexcept -> std::string_view { return doi_->in_pdmo; }
-        auto status()           const noexcept -> std::string_view { return doi_->statusString; }
-        auto mode()             const noexcept -> std::string_view { return doi_->dataMode; }
-        auto data_expiry()      const noexcept -> std::string_view { return doi_->dataExpiry; }
-        auto map_id()           const noexcept -> int              { return doi_->dataMapId; }
+        [[nodiscard]] std::string_view     logical_path()     const noexcept { return doi_->objPath; }
+        [[nodiscard]] std::string_view     resource()         const noexcept { return doi_->rescName; }
+        [[nodiscard]] std::string_view     hierarchy()        const noexcept { return doi_->rescHier; }
+        [[nodiscard]] std::string_view     type()             const noexcept { return doi_->dataType; }
+        [[nodiscard]] rodsLong_t           size()             const noexcept { return doi_->dataSize; }
+        [[nodiscard]] std::string_view     checksum()         const noexcept { return doi_->chksum; }
+        [[nodiscard]] std::string_view     version()          const noexcept { return doi_->version; }
+        [[nodiscard]] std::string_view     physical_path()    const noexcept { return doi_->filePath; }
+        [[nodiscard]] std::string_view     owner_user_name()  const noexcept { return doi_->dataOwnerName; }
+        [[nodiscard]] std::string_view     owner_zone_name()  const noexcept { return doi_->dataOwnerZone; }
+        [[nodiscard]] replica_number_type  replica_number()   const noexcept { return doi_->replNum; }
+        [[nodiscard]] int                  replica_status()   const noexcept { return doi_->replStatus; }
+        [[nodiscard]] rodsLong_t           data_id()          const noexcept { return doi_->dataId; }
+        [[nodiscard]] rodsLong_t           collection_id()    const noexcept { return doi_->collId; }
+        [[nodiscard]] rodsLong_t           resource_id()      const noexcept { return doi_->rescId; }
+        [[nodiscard]] std::string_view     comments()         const noexcept { return doi_->dataComments; }
+        [[nodiscard]] std::string_view     atime()            const noexcept { return doi_->dataAccessTime; }
+        [[nodiscard]] std::string_view     ctime()            const noexcept { return doi_->dataCreate; }
+        [[nodiscard]] std::string_view     mtime()            const noexcept { return doi_->dataModify; }
+        [[nodiscard]] std::string_view     in_pdmo()          const noexcept { return doi_->in_pdmo; }
+        [[nodiscard]] std::string_view     status()           const noexcept { return doi_->statusString; }
+        [[nodiscard]] std::string_view     mode()             const noexcept { return doi_->dataMode; }
+        [[nodiscard]] std::string_view     data_expiry()      const noexcept { return doi_->dataExpiry; }
+        [[nodiscard]] int                  map_id()           const noexcept { return doi_->dataMapId; }
         // clang-format on
 
         /// \returns key_value_proxy
@@ -199,7 +205,7 @@ namespace irods::experimental::replica
         template<
             typename P = doi_type,
             typename = std::enable_if_t<!std::is_const_v<P>>>
-        auto replica_number(const int _rn)          -> void { doi_->replNum = _rn; }
+        auto replica_number(const replica_number_type _rn) -> void { doi_->replNum = _rn; }
 
         template<
             typename P = doi_type,
@@ -364,16 +370,92 @@ namespace irods::experimental::replica
             try {
                 auto proxy = replica_proxy{_doi};
 
-                proxy.data_id(std::stoul(_info[index::DATA_ID]));
-                proxy.collection_id(std::stoul(_info[index::DATA_COLL_ID]));
-                proxy.replica_number(std::stoi(_info[index::DATA_REPL_NUM]));
+                rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& id_str = _info[index::DATA_ID];
+                const auto* id_b = id_str.c_str();
+                const auto* id_e = id_b + id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                std::from_chars_result fc_res = std::from_chars(id_b, id_e, data_id);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_ID: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                rodsLong_t data_coll_id; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& coll_id_str = _info[index::DATA_COLL_ID];
+                const auto* coll_id_b = coll_id_str.c_str();
+                const auto* coll_id_e =
+                    coll_id_b + coll_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(coll_id_b, coll_id_e, data_coll_id);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_COLL_ID: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                replica_number_type data_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& repl_num_str = _info[index::DATA_REPL_NUM];
+                const auto* repl_num_b = repl_num_str.c_str();
+                const auto* repl_num_e =
+                    repl_num_b + repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(repl_num_b, repl_num_e, data_repl_num);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_REPL_NUM: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                rodsLong_t data_size; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& size_str = _info[index::DATA_SIZE];
+                const auto* size_b = size_str.c_str();
+                const auto* size_e =
+                    size_b + size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(size_b, size_e, data_size);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_SIZE: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                int data_repl_status; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& repl_status_str = _info[index::DATA_REPL_STATUS];
+                const auto* repl_status_b = repl_status_str.c_str();
+                const auto* repl_status_e =
+                    repl_status_b + repl_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(repl_status_b, repl_status_e, data_repl_status);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_REPL_STATUS: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                rodsLong_t data_resc_id; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& resc_id_str = _info[index::DATA_RESC_ID];
+                const auto* resc_id_b = resc_id_str.c_str();
+                const auto* resc_id_e =
+                    resc_id_b + resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(resc_id_b, resc_id_e, data_resc_id);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_RESC_ID: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                int data_map_id; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string& map_id_str = _info[index::DATA_MAP_ID];
+                const auto* map_id_b = map_id_str.c_str();
+                const auto* map_id_e =
+                    map_id_b + map_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(map_id_b, map_id_e, data_map_id);
+                if (std::errc{} != fc_res.ec) {
+                    THROW(INVALID_LEXICAL_CAST,
+                          fmt::format("Error parsing DATA_MAP_ID: {}", std::make_error_code(fc_res.ec).message()));
+                }
+
+                proxy.data_id(data_id);
+                proxy.collection_id(data_coll_id);
+                proxy.replica_number(data_repl_num);
                 proxy.version(_info[index::DATA_VERSION]);
                 proxy.type(_info[index::DATA_TYPE_NAME]);
-                proxy.size(std::stoul(_info[index::DATA_SIZE]));
+                proxy.size(data_size);
                 proxy.physical_path(_info[index::DATA_PATH]);
                 proxy.owner_user_name(_info[index::DATA_OWNER_NAME]);
                 proxy.owner_zone_name(_info[index::DATA_OWNER_ZONE]);
-                proxy.replica_status(std::stoi(_info[index::DATA_REPL_STATUS]));
+                proxy.replica_status(data_repl_status);
                 proxy.status(_info[index::DATA_STATUS]);
                 proxy.checksum(_info[index::DATA_CHECKSUM]);
                 proxy.mode(_info[index::DATA_MODE]);
@@ -381,9 +463,9 @@ namespace irods::experimental::replica
                 proxy.atime(_info[index::DATA_ACCESS_TIME]);
                 proxy.ctime(_info[index::DATA_CREATE_TIME]);
                 proxy.mtime(_info[index::DATA_MODIFY_TIME]);
-                proxy.resource_id(std::stoul(_info[index::DATA_RESC_ID]));
+                proxy.resource_id(data_resc_id);
                 proxy.data_expiry(_info[index::DATA_EXPIRY]);
-                proxy.map_id(std::stoi(_info[index::DATA_MAP_ID]));
+                proxy.map_id(data_map_id);
 
                 proxy.resource(_info[index::DATA_RESC_NAME]);
                 proxy.hierarchy(_info[index::DATA_RESC_HIER]);
@@ -391,8 +473,10 @@ namespace irods::experimental::replica
                 const auto lp = fs::path{_info[index::COLL_NAME]} / _info[index::DATA_NAME];
                 proxy.logical_path(lp.c_str());
             }
-            catch (const std::exception& e)
-            {
+            catch (const irods::exception& e) {
+                throw;
+            }
+            catch (const std::exception& e) {
                 THROW(SYS_LIBRARY_ERROR, e.what());
             }
         } // populate_struct_from_results
@@ -566,26 +650,103 @@ namespace irods::experimental::replica
         auto proxy_lm_pair = make_replica_proxy();
         auto& proxy = proxy_lm_pair.first;
 
-        proxy.data_id(std::stoul(_input.at("data_id").get<std::string>()));
-        proxy.collection_id(std::stoul(_input.at("coll_id").get<std::string>()));
-        proxy.replica_number(std::stoi(_input.at("data_repl_num").get<std::string>()));
+        rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& data_id_str = _input.at("data_id").get_ref<const std::string&>();
+        const auto* data_id_b = data_id_str.c_str();
+        const auto* data_id_e =
+            data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        std::from_chars_result fc_res = std::from_chars(data_id_b, data_id_e, data_id);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing data_id: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        rodsLong_t coll_id; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& coll_id_str = _input.at("coll_id").get_ref<const std::string&>();
+        const auto* coll_id_b = coll_id_str.c_str();
+        const auto* coll_id_e =
+            coll_id_b + coll_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(coll_id_b, coll_id_e, coll_id);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing coll_id: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        replica_number_type data_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& data_repl_num_str = _input.at("data_repl_num").get_ref<const std::string&>();
+        const auto* data_repl_num_b = data_repl_num_str.c_str();
+        const auto* data_repl_num_e =
+            data_repl_num_b + data_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(data_repl_num_b, data_repl_num_e, data_repl_num);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing data_repl_num: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        rodsLong_t data_size; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& data_size_str = _input.at("data_size").get_ref<const std::string&>();
+        const auto* data_size_b = data_size_str.c_str();
+        const auto* data_size_e =
+            data_size_b + data_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(data_size_b, data_size_e, data_size);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing data_size: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        int data_is_dirty; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& data_is_dirty_str = _input.at("data_is_dirty").get_ref<const std::string&>();
+        const auto* data_is_dirty_b = data_is_dirty_str.c_str();
+        const auto* data_is_dirty_e =
+            data_is_dirty_b + data_is_dirty_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(data_is_dirty_b, data_is_dirty_e, data_is_dirty);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing data_is_dirty: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        int data_map_id; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& data_map_id_str = _input.at("data_map_id").get_ref<const std::string&>();
+        const auto* data_map_id_b = data_map_id_str.c_str();
+        const auto* data_map_id_e =
+            data_map_id_b + data_map_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(data_map_id_b, data_map_id_e, data_map_id);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing data_map_id: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        rodsLong_t resc_id; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string& resc_id_str = _input.at("resc_id").get_ref<const std::string&>();
+        const auto* resc_id_b = resc_id_str.c_str();
+        const auto* resc_id_e =
+            resc_id_b + resc_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        fc_res = std::from_chars(resc_id_b, resc_id_e, resc_id);
+        if (std::errc{} != fc_res.ec) {
+            THROW(INVALID_LEXICAL_CAST,
+                  fmt::format("Error parsing resc_id: {}", std::make_error_code(fc_res.ec).message()));
+        }
+
+        proxy.data_id(data_id);
+        proxy.collection_id(coll_id);
+        proxy.replica_number(data_repl_num);
         proxy.version(_input.at("data_version").get<std::string>());
         proxy.type(_input.at("data_type_name").get<std::string>());
-        proxy.size(std::stoul(_input.at("data_size").get<std::string>()));
+        proxy.size(data_size);
         proxy.physical_path(_input.at("data_path").get<std::string>());
         proxy.owner_user_name(_input.at("data_owner_name").get<std::string>());
         proxy.owner_zone_name(_input.at("data_owner_zone").get<std::string>());
-        proxy.replica_status(std::stoi(_input.at("data_is_dirty").get<std::string>()));
+        proxy.replica_status(data_is_dirty);
         proxy.status(_input.at("data_status").get<std::string>());
         proxy.checksum(_input.at("data_checksum").get<std::string>());
         proxy.data_expiry(_input.at("data_expiry_ts").get<std::string>());
-        proxy.map_id(std::stoi(_input.at("data_map_id").get<std::string>()));
+        proxy.map_id(data_map_id);
         proxy.mode(_input.at("data_mode").get<std::string>());
         proxy.comments(_input.at("r_comment").get<std::string>());
         proxy.atime(_input.at("access_ts").get<std::string>());
         proxy.ctime(_input.at("create_ts").get<std::string>());
         proxy.mtime(_input.at("modify_ts").get<std::string>());
-        proxy.resource_id(std::stoul(_input.at("resc_id").get<std::string>()));
+        proxy.resource_id(resc_id);
 
         // TODO: resource() and hierarchy() are not being populated
 

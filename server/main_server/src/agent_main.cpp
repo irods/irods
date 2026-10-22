@@ -66,6 +66,7 @@
 #include <limits>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <thread>
 
 // __has_feature is a Clang specific feature.
@@ -177,7 +178,7 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         if (auto iter = vm.find("atime-resolution"); std::end(vm) != iter) {
-            const auto resolution_in_seconds = iter->second.as<std::string>();
+            const std::string& resolution_in_seconds = iter->second.as<std::string>();
 
             // Verify the resolution value is acceptable.
             try {
@@ -185,13 +186,21 @@ auto main(int _argc, char* _argv[]) -> int
                     throw std::exception{};
                 }
 
-                const auto value = std::stoll(resolution_in_seconds);
-                // Limited to 32-bit values.
-                if (value < 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                std::int32_t atime_resolution; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* atime_resolution_b = resolution_in_seconds.c_str();
+                const auto* atime_resolution_e =
+                    atime_resolution_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    resolution_in_seconds.size();
+                auto [ptr, ec] = std::from_chars(atime_resolution_b, atime_resolution_e, atime_resolution);
+                if (std::errc{} != ec) {
+                    throw std::system_error{std::make_error_code(ec)};
+                }
+                // Must be positive.
+                if (atime_resolution < 0) {
                     throw std::exception{};
                 }
 
-                g_atime_resolution_in_seconds = value;
+                g_atime_resolution_in_seconds = atime_resolution;
             }
             catch (const std::exception&) {
                 g_atime_invalid_resolution_in_seconds_detected = true;
@@ -1049,7 +1058,15 @@ namespace
                 log_af::trace("{}: Converting epoch seconds to UTC timestamp.", __func__);
                 using boost::chrono::system_clock;
                 using boost::chrono::time_fmt;
-                const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
+                std::time_t tt; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* secs_b = epoch_seconds.c_str();
+                const auto* secs_e =
+                    secs_b + epoch_seconds.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(secs_b, secs_e, tt);
+                if (std::errc{} != ec) {
+                    throw std::system_error{std::make_error_code(ec)};
+                }
+                const auto tp = system_clock::from_time_t(tt);
                 std::ostringstream utc_ss;
                 utc_ss << time_fmt(boost::chrono::timezone::utc, "%FT%T") << tp;
 
