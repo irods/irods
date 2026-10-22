@@ -1,19 +1,27 @@
 #include "irods/apiNumber.h"
+#include "irods/authentication_plugin_framework.hpp"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjGet.h"
+#include "irods/dataObjLseek.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjPut.h"
 #include "irods/dataObjRepl.h"
 #include "irods/dataObjTrim.h"
+#include "irods/dataObjWrite.h"
 #include "irods/fileDriver.hpp"
+#include "irods/fileClose.h"
+#include "irods/fileLseek.h"
+#include "irods/fileOpen.h"
+#include "irods/fileRead.h"
 #include "irods/fileStageToCache.h"
 #include "irods/fileSyncToArch.h"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatDefines.h"
 #include "irods/miscServerFunct.hpp"
+#include "irods/rcConnect.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/physPath.hpp"
 #include "irods/resource.hpp"
@@ -36,6 +44,9 @@
 #include "irods/rsUnbunAndRegPhyBunfile.hpp"
 #include "irods/rsUnregDataObj.hpp"
 #include "irods/rs_replica_close.hpp"
+#include "irods/server_side_copy_delegation.hpp"
+#include "irods/replica_open.h"
+#include "irods/replica_close.h"
 #include "irods/specColl.hpp"
 #include "irods/unbunAndRegPhyBunfile.h"
 
@@ -71,10 +82,15 @@
 
 #include <algorithm>
 #include <cstring>
+#include <exception>
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -920,6 +936,18 @@ namespace
             source_cond_input.at(RESC_HIER_STR_KW).value(),
             destination_cond_input.at(RESC_HIER_STR_KW).value()));
 
+        if (auto* host = irods::server_side_copy::destination_for_delegation(
+                _comm, source_hierarchy, destination_hierarchy,
+                source_replica.size(), _inp)) {
+            cond_input[irods::server_side_copy::delegated_keyword] = "";
+            const irods::at_scope_exit remove_marker{[&] {
+                cond_input.erase(irods::server_side_copy::delegated_keyword);
+            }};
+            log_api::info("Delegating multi-1247 replication of [{}] to [{}].",
+                          _inp.objPath, host->hostName->name);
+            return _rcDataObjRepl(host->conn, &_inp, _stat);
+        }
+
         // replicate!
         const int ec = replicate_data(_comm, source_inp, destination_inp, _stat);
 
@@ -1135,6 +1163,260 @@ namespace
         }
         return 0;
     } // singleL1Copy
+
+    struct copy_endpoint
+    {
+        std::string path;
+        std::string hierarchy;
+        int replica_number;
+    };
+
+    // Authenticate each worker as a server, retaining the effective client
+    // identity of the original request. Client credentials from the service
+    // account environment alone would incorrectly change copy permissions.
+    auto connect_copy_worker(RsComm& primary, rErrMsg_t& error) -> RcComm*
+    {
+        auto* worker = _rcConnect(primary.myEnv.rodsHost, primary.myEnv.rodsPort,
+                                  primary.myEnv.rodsUserName, primary.myEnv.rodsZone,
+                                  primary.clientUser.userName, primary.clientUser.rodsZone,
+                                  &error, primary.connectCnt, NO_RECONN);
+        if (!worker) {
+            return nullptr;
+        }
+
+        RodsEnvironment env;
+        _getRodsEnv(env);
+        namespace ia = irods::authentication;
+        if (const int ec = ia::authenticate_client(*worker,
+                nlohmann::json{{ia::scheme_name, env.rodsAuthScheme}}); ec < 0) {
+            error.status = ec;
+            rcDisconnect(worker);
+            return nullptr;
+        }
+        return worker;
+    }
+
+    auto copy_segment(RsComm& primary, const fileOpenInp_t& source_file,
+                      const copy_endpoint& destination, const std::string& token,
+                      rodsLong_t begin, rodsLong_t end, int chunk_size) -> int
+    {
+        try {
+            rErrMsg_t error{};
+            auto* worker = connect_copy_worker(primary, error);
+            if (!worker) {
+                return error.status < 0 ? error.status : SYS_SVR_TO_SVR_CONNECT_FAILED;
+            }
+            const irods::at_scope_exit disconnect{[&] { rcDisconnect(worker); }};
+
+            const auto open_replica = [&](const copy_endpoint& endpoint, int flags,
+                                          const char* replica_token) -> int {
+                dataObjInp_t input{};
+                const irods::at_scope_exit clear_input{[&] { clearKeyVal(&input.condInput); }};
+                rstrcpy(input.objPath, endpoint.path.c_str(), MAX_NAME_LEN);
+                input.openFlags = flags;
+                const auto number = std::to_string(endpoint.replica_number);
+                addKeyVal(&input.condInput, REPL_NUM_KW, number.c_str());
+                addKeyVal(&input.condInput, RESC_HIER_STR_KW, endpoint.hierarchy.c_str());
+                if (replica_token) {
+                    addKeyVal(&input.condInput, REPLICA_TOKEN_KW, replica_token);
+                }
+                char* info{};
+                const int fd = rc_replica_open(worker, &input, &info);
+                std::free(info);
+                return fd;
+            };
+
+            auto source_input = source_file;
+            const irods::at_scope_exit clear_source_input{[&] {
+                clearKeyVal(&source_input.condInput);
+            }};
+            const int source_fd = rcFileOpen(worker, &source_input);
+            if (source_fd < 3) {
+                return source_fd < 0 ? source_fd : SYS_FILE_DESC_OUT_OF_RANGE;
+            }
+            fileCloseInp_t source_close_input{};
+            source_close_input.fileInx = source_fd;
+            bool source_closed = false;
+            const irods::at_scope_exit close_source{[&] {
+                if (!source_closed) {
+                    rcFileClose(worker, &source_close_input);
+                }
+            }};
+
+            const int destination_fd = open_replica(destination, O_WRONLY, token.c_str());
+            if (destination_fd < 3) {
+                return destination_fd < 0 ? destination_fd : SYS_FILE_DESC_OUT_OF_RANGE;
+            }
+            const auto destination_close_input = nlohmann::json{
+                {"fd", destination_fd}, {"update_size", false},
+                {"update_status", false}, {"compute_checksum", false},
+                {"send_notifications", false}}.dump();
+            bool destination_closed = false;
+            const irods::at_scope_exit close_destination{[&] {
+                if (!destination_closed) {
+                    rc_replica_close(worker, destination_close_input.c_str());
+                }
+            }};
+
+            {
+                fileLseekInp_t seek{};
+                seek.fileInx = source_fd;
+                seek.offset = begin;
+                seek.whence = SEEK_SET;
+                fileLseekOut_t* result{};
+                const int ec = rcFileLseek(worker, &seek, &result);
+                const bool correct_offset = result && result->offset == begin;
+                std::free(result);
+                if (ec < 0) {
+                    return ec;
+                }
+                if (!correct_offset) {
+                    return UNIX_FILE_LSEEK_ERR;
+                }
+            }
+            {
+                openedDataObjInp_t seek{};
+                seek.l1descInx = destination_fd;
+                seek.offset = begin;
+                seek.whence = SEEK_SET;
+                fileLseekOut_t* result{};
+                const int ec = rcDataObjLseek(worker, &seek, &result);
+                const bool correct_offset = result && result->offset == begin;
+                std::free(result);
+                if (ec < 0) {
+                    return ec;
+                }
+                if (!correct_offset) {
+                    return UNIX_FILE_LSEEK_ERR;
+                }
+            }
+
+            for (auto pos = begin; pos < end;) {
+                fileReadInp_t read{};
+                read.fileInx = source_fd;
+                read.len = static_cast<int>(std::min<rodsLong_t>(end - pos, chunk_size));
+                bytesBuf_t bytes{};
+                const int nread = rcFileRead(worker, &read, &bytes);
+                const irods::at_scope_exit free_bytes{[&] { std::free(bytes.buf); }};
+                if (nread < 0) {
+                    return nread;
+                }
+                if (nread == 0 || !bytes.buf || bytes.len != nread || nread > read.len) {
+                    return SYS_COPY_LEN_ERR;
+                }
+                openedDataObjInp_t write{};
+                write.l1descInx = destination_fd;
+                write.len = nread;
+                if (const int written = rcDataObjWrite(worker, &write, &bytes); written != nread) {
+                    return written < 0 ? written : SYS_COPY_LEN_ERR;
+                }
+                pos += nread;
+            }
+
+            const int ec = rc_replica_close(worker, destination_close_input.c_str());
+            if (ec == 0) {
+                destination_closed = true;
+            }
+            const int source_ec = rcFileClose(worker, &source_close_input);
+            if (source_ec == 0) {
+                source_closed = true;
+            }
+            return ec < 0 ? ec : source_ec;
+        }
+        catch (const irods::exception& e) {
+            return e.code();
+        }
+        catch (const std::exception&) {
+            return SYS_INTERNAL_ERR;
+        }
+    }
+
+    // A byte-only replacement for the inter-server portal. The descriptor
+    // owning server is the coordinator: its replica token and logical locks
+    // remain valid on the independent API-port connections.
+    auto multi_connection_copy(RsComm& comm, int source_fd, int destination_fd) -> std::optional<int>
+    {
+        const auto& source = L1desc[source_fd];
+        const auto& destination = L1desc[destination_fd];
+        const auto size = source.dataObjInfo->dataSize;
+        const int threads = destination.dataObjInp->numThreads;
+        const auto zone_prefix = "/" + std::string{comm.myEnv.rodsZone} + "/";
+        if (std::strcmp(comm.clientUser.rodsZone, comm.myEnv.rodsZone) != 0 ||
+            !std::string_view{source.dataObjInfo->objPath}.starts_with(zone_prefix) ||
+            !std::string_view{destination.dataObjInfo->objPath}.starts_with(zone_prefix)) {
+            return std::nullopt;
+        }
+        if (size <= 32 * 1024 * 1024 || threads < 1 || threads > MAX_NUM_CONFIG_TRAN_THR ||
+            source.dataObjInfo->replStatus == STALE_REPLICA ||
+            source.l3descInx < 3 || source.l3descInx >= NUM_FILE_DESC ||
+            destination.l3descInx < 3 || destination.l3descInx >= NUM_FILE_DESC ||
+            source.remoteZoneHost || destination.remoteZoneHost ||
+            source.dataObjInfo->specColl || destination.dataObjInfo->specColl ||
+            std::strcmp(comm.clientUser.userName, PUBLIC_USER_NAME) == 0 ||
+            getValByKey(&source.dataObjInp->condInput, TICKET_KW) ||
+            getValByKey(&destination.dataObjInp->condInput, TICKET_KW) ||
+            getValByKey(&destination.dataObjInp->condInput, NO_CHK_COPY_LEN_KW) ||
+            getValByKey(&destination.dataObjInp->condInput, NO_PARA_OP_KW) ||
+            getValByKey(&destination.dataObjInp->condInput, STREAMING_KW) ||
+            destination.replica_token.empty()) {
+            return std::nullopt;
+        }
+
+        if (!FileDesc[source.l3descInx].inuseFlag ||
+            !FileDesc[destination.l3descInx].inuseFlag ||
+            !FileDesc[source.l3descInx].fileName[0]) {
+            return std::nullopt;
+        }
+
+        auto* source_host = FileDesc[source.l3descInx].rodsServerHost;
+        auto* destination_host = FileDesc[destination.l3descInx].rodsServerHost;
+        if (source_host == destination_host ||
+            !irods::server_side_copy::supports_api_port_copy(comm, source_host) ||
+            !irods::server_side_copy::supports_api_port_copy(comm, destination_host)) {
+            return std::nullopt;
+        }
+
+        fileOpenInp_t source_file{};
+        rstrcpy(source_file.objPath, FileDesc[source.l3descInx].objPath, MAX_NAME_LEN);
+        rstrcpy(source_file.fileName, FileDesc[source.l3descInx].fileName, MAX_NAME_LEN);
+        rstrcpy(source_file.resc_hier_, FileDesc[source.l3descInx].rescHier, MAX_NAME_LEN);
+        source_file.mode = FileDesc[source.l3descInx].mode;
+        source_file.flags = O_RDONLY;
+        source_file.dataSize = size;
+        const copy_endpoint destination_endpoint{destination.dataObjInfo->objPath,
+            destination.dataObjInfo->rescHier, destination.dataObjInfo->replNum};
+        try {
+            const int buffer_size = std::max(1, irods::get_advanced_setting<const int>(
+                irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS)) * 1024 * 1024;
+            const int workers = std::min<rodsLong_t>(threads, size);
+            std::vector<int> results(workers, 0);
+            std::vector<std::jthread> jobs;
+            jobs.reserve(workers);
+            for (int i = 0; i < workers; ++i) {
+                const auto begin = (size / workers) * i;
+                const auto end = i == workers - 1 ? size : (size / workers) * (i + 1);
+                jobs.emplace_back([&, i, begin, end] {
+                    results[i] = copy_segment(comm, source_file, destination_endpoint,
+                                              destination.replica_token, begin, end, buffer_size);
+                });
+            }
+            jobs.clear(); // Join before the original descriptors are finalized.
+            for (const auto ec : results) {
+                if (ec < 0) {
+                    return ec;
+                }
+            }
+            irods::log(LOG_NOTICE, fmt::format("multi-1247 server copy: {} ({} connections)",
+                                                destination_endpoint.path, workers));
+            return 0;
+        }
+        catch (const irods::exception& e) {
+            return e.code();
+        }
+        catch (const std::exception&) {
+            return SYS_INTERNAL_ERR;
+        }
+    }
 } // anonymous namespace
 
 int rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **transStat)
@@ -1259,6 +1541,26 @@ int dataObjCopy(rsComm_t* rsComm, int _destination_l1descInx)
     }
     else {
         destRemoteFlag = FileDesc[destL3descInx].rodsServerHost->localFlag;
+    }
+
+    // Select this before preProcParaGet/Put opens a transfer portal. Keep
+    // normal L1 descriptors and their close/finalization in the caller.
+    if (auto result = multi_connection_copy(*rsComm, source_l1descInx, _destination_l1descInx)) {
+        if (*result == 0) {
+            dataCopyInp_t post{};
+            initDataOprInp(&post.dataOprInp, _destination_l1descInx, COPY_TO_LOCAL_OPR);
+            // No post-only DATA_COPY API exists on 5.0 peers. Apply the same
+            // policy locally without sending an unknown mode to older hosts.
+            post.dataOprInp.destL3descInx = destL3descInx;
+            const int post_ec = apply_acPostProcForDataCopyReceived(rsComm, &post.dataOprInp);
+            clearKeyVal(&post.dataOprInp.condInput);
+            if (post_ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "multi-1247 post-copy policy failed for {}: {}",
+                    L1desc[_destination_l1descInx].dataObjInfo->objPath, post_ec));
+            }
+        }
+        return *result;
     }
 
     dataCopyInp_t dataCopyInp{};

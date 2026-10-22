@@ -53,6 +53,7 @@ auto rs_get_library_features(RsComm* _comm, char** _features) -> int
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_LOGICAL_QUOTAS)
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_DSTREAM)
         IRODS_FEATURE(IRODS_LIBRARY_FEATURE_RESOURCE_ADMINISTRATION)
+        IRODS_FEATURE(IRODS_LIBRARY_FEATURE_SERVER_SIDE_MULTI_1247_COPY)
     }.dump().c_str());
     // clang-format on
 

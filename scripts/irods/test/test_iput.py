@@ -27,6 +27,39 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
     def tearDown(self):
         super(Test_Iput, self).tearDown()
 
+    def test_multi_1247_put_uses_original_put_finalization(self):
+        local_file = os.path.join(self.user.local_session_dir, 'multi_1247_source')
+        downloaded_file = os.path.join(self.user.local_session_dir, 'multi_1247_download')
+        logical_path = os.path.join(self.user.session_collection, 'multi_1247_object')
+        lib.make_file(local_file, 34 * 1024 * 1024, 'zero')
+
+        # -V identifies the transport; -K, metadata, and ACLs exercise the
+        # original put's finalization after parallel I/O.
+        stdout, stderr, status = self.user.run_icommand(
+            ['iput', '-V', '-N', '3', '-K', '--metadata=multi_1247;yes;test;',
+             '--acl=read otherrods;', local_file, logical_path])
+        self.assertEqual(status, 0, stderr)
+        self.assertIn('multi-1247 transfer', stdout)
+        self.user.assert_icommand(['iget', '-f', logical_path, downloaded_file])
+        with open(local_file, 'rb') as src, open(downloaded_file, 'rb') as dst:
+            self.assertEqual(src.read(), dst.read())
+        self.user.assert_icommand(['imeta', 'ls', '-d', logical_path],
+                                  'STDOUT', 'multi_1247')
+        self.user.assert_icommand(['ils', '-A', logical_path],
+                                  'STDOUT', 'otherrods')
+        self.user.assert_icommand(['ichksum', logical_path], 'STDOUT', 'sha2:')
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iput', '-V', '-f', '-N', '2', '-k', local_file, logical_path])
+        self.assertEqual(status, 0, stderr)
+        self.assertIn('multi-1247 transfer', stdout)
+        self.user.assert_icommand(['ichksum', logical_path], 'STDOUT', 'sha2:')
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iput', '-V', '-f', '-N', '0', local_file, logical_path])
+        self.assertEqual(status, 0, stderr)
+        self.assertNotIn('multi-1247 transfer', stdout)
+
     def test_multithreaded_iput__issue_5675(self):
         user0 = self.user_sessions[0]
 
