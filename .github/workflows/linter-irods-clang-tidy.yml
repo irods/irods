@@ -48,7 +48,8 @@ jobs:
                     bison \
                     lsb-release \
                     libsystemd-dev \
-                    libarchive-dev
+                    libarchive-dev \
+                    python3-yaml
             - name: Install iRODS Externals
               run: |
                   sudo mkdir -p /etc/apt/keyrings
@@ -83,8 +84,49 @@ jobs:
 
                   # Run clang-tidy on the changes.
                   git diff -U0 origin/$GITHUB_BASE_REF | \
-                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 300 | \
+                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 1200 -export-fixes fixes.yaml | \
                       tee clang_tidy_output.txt
+                      
+                  # Helper file to print out the errors!
+                  cat > tidy-printer.py <<'EOF'
+                  import argparse
+                  from pathlib import Path
+
+                  from yaml import load
+                  try:
+                    from yaml import CLoader as Loader
+                  except ImportError:
+                    from yaml import Loader
+
+                  parser = argparse.ArgumentParser()
+                  parser.add_argument('filename', type=Path)
+                  args = parser.parse_args()
+
+                  with open(args.filename) as yaml_file:
+                    data = load(yaml_file, Loader=Loader)
+
+                  for report in data['Diagnostics']:
+                    msg = report['DiagnosticMessage']
+                    file = Path(msg['FilePath'])
+                    desired_offset = int(msg['FileOffset'])
+
+                    with open(file, 'r') as source_file:
+                      prev_ln = 1
+                      prev_offset = 0
+                      offset = source_file.tell()
+
+                      while offset < desired_offset:
+                        _ = source_file.readline()
+                        current_line = prev_ln + 1
+                        offset = source_file.tell()
+
+                        if offset >= desired_offset:
+                          print(f'::{report['Level']} title=Clang-Tidy: {report['DiagnosticName']},file={file},line={prev_ln}::{msg['Message']}')
+                          break
+
+                        prev_ln = current_line
+                        prev_offset = offset
+                  EOF
 
                   # Return a failure if the output contains a clang-tidy error.
                   # clang-tidy-diff.py doesn't report a non-zero error code when it finds violations.
@@ -98,6 +140,8 @@ jobs:
                       echo
                       echo 'This command only works while the branch associated with this pull request is checked out.'
                       echo
+
+                      python3 tidy-printer.py fixes.yaml
 
                       exit 1
                   fi
@@ -113,6 +157,8 @@ jobs:
                       echo
                       echo 'This command only works while the branch associated with this pull request is checked out.'
                       echo
+
+                      python3 tidy-printer.py fixes.yaml
 
                       exit 0
                   fi
