@@ -92,8 +92,6 @@ jobs:
                   import argparse
                   from pathlib import Path
 
-                  # Import taken from wiki:
-                  # https://pyyaml.org/wiki/PyYAMLDocumentation
                   from yaml import load, dump
                   try:
                     from yaml import CLoader as Loader, CDumper as Dumper
