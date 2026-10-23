@@ -121,7 +121,7 @@ jobs:
                         offset = source_file.tell()
 
                         if offset >= desired_offset:
-                          print(f'::{report['Level']} title=Clang-Tidy: {report['DiagnosticName']},file={file},line={prev_ln},col={offset-prev_offset}::{msg['Message']}')
+                          print(f'::{report['Level']} title=Clang-Tidy: {report['DiagnosticName']},file={file},line={prev_ln}::{msg['Message']}')
                           break
 
                         prev_ln = current_line
