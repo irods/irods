@@ -110,15 +110,15 @@ jobs:
                     file = Path(msg['FilePath'])
                     desired_offset = int(msg['FileOffset'])
 
-                    with open(file, 'r') as looky:
+                    with open(file, 'r') as source_file:
                       prev_ln = 1
                       prev_offset = 0
-                      offset = looky.tell()
+                      offset = source_file.tell()
 
                       while offset < desired_offset:
-                        _ = looky.readline()
+                        _ = source_file.readline()
                         current_line = prev_ln + 1
-                        offset = looky.tell()
+                        offset = source_file.tell()
 
                         if offset >= desired_offset:
                           print(f'::{report['Level']} title=clang-tidy {report['DiagnosticName']},file={file},line={prev_ln}::{msg['Message']}')
