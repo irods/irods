@@ -84,7 +84,7 @@ jobs:
 
                   # Run clang-tidy on the changes.
                   git diff -U0 origin/$GITHUB_BASE_REF | \
-                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 600 -export-fixes fixes.yaml | \
+                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet -timeout 1200 -export-fixes fixes.yaml | \
                       tee clang_tidy_output.txt
                       
                   # Helper file to print out the errors!
