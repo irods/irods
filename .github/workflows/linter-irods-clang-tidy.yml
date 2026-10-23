@@ -92,7 +92,6 @@ jobs:
                   import argparse
                   from pathlib import Path
 
-
                   # Import taken from wiki:
                   # https://pyyaml.org/wiki/PyYAMLDocumentation
                   from yaml import load, dump
@@ -101,11 +100,9 @@ jobs:
                   except ImportError:
                     from yaml import Loader, Dumper
 
-
                   parser = argparse.ArgumentParser()
                   parser.add_argument('filename', type=Path)
                   args = parser.parse_args()
-
 
                   with open(args.filename) as yaml_file:
                     data = load(yaml_file, Loader=Loader)
