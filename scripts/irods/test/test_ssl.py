@@ -1,5 +1,6 @@
 import copy
 import os
+import socket
 import sys
 import unittest
 
@@ -51,6 +52,43 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
             self.remove_files()
             IrodsController().reload_configuration()
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_iget_succeeds_when_resource_hostname_is_short_and_client_verifies_cert__issue_9038(self):
+        try:
+            self.init_properties()
+            self.create_ssl_files_for_hostname(lib.get_hostname())
+
+            data_object = 'issue_9038.txt'
+            local_file = os.path.join(self.admin.local_session_dir, data_object)
+            retrieved_file = os.path.join(self.admin.local_session_dir, 'retrieved_' + data_object)
+            resource_host = socket.gethostbyname(lib.get_hostname())
+            lib.make_file(local_file, 8, 'arbitrary')
+
+            with lib.file_backed_up(self.config.server_config_path):
+                with lib.file_backed_up(self.config.client_environment_path):
+                    session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+
+                    try:
+                        self.enable_server_ssl()
+                        self.enable_server_ssl_client_hostname_verification()
+                        IrodsController().reload_configuration()
+
+                        self.enable_client_ssl_verify_cert()
+                        self.admin.assert_icommand(['iput', local_file, data_object])
+                        self.admin.assert_icommand(['iadmin', 'modresc', self.admin.default_resource, 'host', resource_host])
+                        self.admin.assert_icommand(['ils', data_object], 'STDOUT', data_object)
+                        self.admin.assert_icommand(['iget', data_object, retrieved_file])
+
+                    finally:
+                        self.admin.run_icommand(['iadmin', 'modresc', self.admin.default_resource, 'host', lib.get_hostname()])
+                        self.admin.run_icommand(['irm', '-f', data_object])
+                        self.admin.environment_file_contents = session_env_backup
+
+        finally:
+            self.remove_files()
+            IrodsController().reload_configuration()
+
     # NOTE: The methods below assume use of the native rule language rule engine plugin
     # Please skip any additional tests using these methods unless the native rule language REP is in use by default
     def init_properties(self):
@@ -68,6 +106,13 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
     def create_ssl_files(self):
         lib.execute_command(['openssl', 'genrsa', '-out', self.ssl_key_path, '2048'])
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (self.ssl_key_path, self.ssl_crt_path))
+        lib.execute_command('openssl dhparam -2 -out %s 2048' % (self.dhparams_pem_path))
+
+    def create_ssl_files_for_hostname(self, hostname):
+        lib.execute_command(['openssl', 'genrsa', '-out', self.ssl_key_path, '2048'])
+        lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', self.ssl_key_path,
+                             '-out', self.ssl_crt_path, '-days', '365', '-subj', '/CN={}'.format(hostname),
+                             '-addext', 'subjectAltName=DNS:{}'.format(hostname)])
         lib.execute_command('openssl dhparam -2 -out %s 2048' % (self.dhparams_pem_path))
 
     def remove_files(self):
@@ -97,6 +142,18 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
                     "certificate_key_file": self.ssl_key_path,
                     "dh_params_file": self.dhparams_pem_path
                 }
+            }
+        )
+
+    def enable_server_ssl_client_hostname_verification(self):
+        lib.update_json_file_from_dict(
+            self.config.server_config_path,
+            {
+                "tls_client": {
+                    "ca_certificate_file": self.ssl_crt_path,
+                    "verify_server": "hostname"
+                },
+                "client_server_policy": "CS_NEG_REQUIRE"
             }
         )
 
