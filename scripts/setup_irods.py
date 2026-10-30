@@ -145,9 +145,14 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False, op
     if irods_config.is_provider:
         from irods import database_interface
         l.info(irods.lib.get_header('Setting up the database'))
-        database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
+        ret = database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
         l.info(irods.lib.get_header('Applying updates to database'))
-        database_interface.run_catalog_update(irods_config, is_upgrade=False)
+        if "skipped" == ret:
+            # this is a setup of a new provider pointing to an existing database, run upgrade code
+            database_interface.run_catalog_update(irods_config, is_upgrade=True)
+        else:
+            # a new database, not an upgrade
+            database_interface.run_catalog_update(irods_config, is_upgrade=False)
 
     # Copy iRODS Rule Language (NREP) files into correct directory if this is a new install.
     for f in ['core.re', 'core.dvm', 'core.fnm']:
