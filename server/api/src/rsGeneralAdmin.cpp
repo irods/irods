@@ -20,6 +20,7 @@
 #include "irods/rcMisc.h"
 #include "irods/rodsConnect.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/rodsPath.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rsModAVUMetadata.hpp"
 #include "irods/rsZoneReport.hpp"
@@ -1512,6 +1513,11 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
     }
 
     if (strcmp(generalAdminInp->arg0, "set_logical_quota") == 0) {
+        if (!generalAdminInp->arg1 || !generalAdminInp->arg2 || !generalAdminInp->arg3) {
+            log_api::error("{}: set_logical_quota: Invalid input argument: null pointer", __func__);
+            return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+        }
+
         rodsLong_t nonnegative_checker;
         // Only allow negative values internally-- error out if encountered here
         if (const auto [ptr, ec] = std::from_chars(
@@ -1535,6 +1541,13 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
             return SYS_INVALID_INPUT_PARAM;
         }
 
+        // The database plugin requires a normalized collection name. Trailing slashes are removed here so
+        // that every caller (e.g. iadmin, microservices) is treated the same. The input argument may be
+        // owned by the caller, so a copy is made rather than modifying it in place.
+        char coll_name[MAX_NAME_LEN]{};
+        rstrcpy(coll_name, generalAdminInp->arg1, MAX_NAME_LEN);
+        remove_trailing_path_separators(coll_name);
+
         const char* const local_zone = getLocalZoneName();
         if (local_zone == nullptr) {
             log_api::error("{}: set_logical_quota: Failed to fetch local zone name.", __func__);
@@ -1546,25 +1559,25 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
 
         // If zone collection is longer, compare up to zone collection without trailing slash.
         // If input collection is longer, compare to zone collection with trailing slash
-        if (std::strncmp(generalAdminInp->arg1,
-                         zone_collection.c_str(),
-                         std::min(zone_collection.size(),
-                                  std::max(zone_collection.size() - 1, std::strlen(generalAdminInp->arg1)))) != 0)
+        if (std::strncmp(
+                coll_name,
+                zone_collection.c_str(),
+                std::min(zone_collection.size(), std::max(zone_collection.size() - 1, std::strlen(coll_name)))) != 0)
         {
             log_api::error("{}: set_logical_quota: Cannot set quota on non-local zone or root. Attempted setting quota "
                            "on [{}], but zone collection is [{}].",
                            __func__,
-                           generalAdminInp->arg1,
+                           coll_name,
                            zone_collection);
             return SYS_NOT_ALLOWED;
         }
 
         if (strcmp(generalAdminInp->arg2, "bytes") == 0) {
-            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg3, "-1");
+            return chl_set_logical_quota(rsComm, coll_name, generalAdminInp->arg3, "-1");
         }
 
         if (strcmp(generalAdminInp->arg2, "objects") == 0) {
-            return chl_set_logical_quota(rsComm, generalAdminInp->arg1, "-1", generalAdminInp->arg3);
+            return chl_set_logical_quota(rsComm, coll_name, "-1", generalAdminInp->arg3);
         }
 
         // arg2 should be nonnegative here
@@ -1584,7 +1597,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
             return USER_INPUT_FORMAT_ERR;
         }
 
-        return chl_set_logical_quota(rsComm, generalAdminInp->arg1, generalAdminInp->arg2, generalAdminInp->arg3);
+        return chl_set_logical_quota(rsComm, coll_name, generalAdminInp->arg2, generalAdminInp->arg3);
     }
 
     if (std::strcmp(generalAdminInp->arg0, "set_delay_server") == 0) {

@@ -7,9 +7,11 @@
 #include "irods/logical_quota_utilities.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rodsConnect.h"
+#include "irods/rodsPath.h"
 #include "irods/rs_get_grid_configuration_value.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -51,8 +53,24 @@ int rs_get_logical_quota(RsComm* _comm,
                          getLogicalQuotaInp_t* _get_logical_quota_inp,
                          logicalQuotaList_t** _logical_quota_list)
 {
+    if (!_get_logical_quota_inp) {
+        log_api::error("{}: Received null input argument.", __func__);
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
+    }
+
+    // The database plugin requires a normalized collection name. Trailing slashes are removed here so
+    // that every caller is treated the same. A null or empty collection name means "all quotas" and is
+    // passed through untouched. The input argument is owned by the caller, so a copy is made rather
+    // than modifying it in place.
+    char coll_name[MAX_NAME_LEN]{};
+    rstrcpy(coll_name, _get_logical_quota_inp->coll_name ? _get_logical_quota_inp->coll_name : "", MAX_NAME_LEN);
+    remove_trailing_path_separators(coll_name);
+
+    getLogicalQuotaInp_t normalized_inp = *_get_logical_quota_inp;
+    normalized_inp.coll_name = coll_name;
+
     rodsServerHost_t* rodsServerHost{};
-    auto status = getAndConnRcatHost(_comm, PRIMARY_RCAT, _get_logical_quota_inp->coll_name, &rodsServerHost);
+    auto status = getAndConnRcatHost(_comm, PRIMARY_RCAT, normalized_inp.coll_name, &rodsServerHost);
 
     if (status < 0) {
         return status;
@@ -67,7 +85,7 @@ int rs_get_logical_quota(RsComm* _comm,
         }
 
         if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-            status = _rs_get_logical_quota(*_comm, *_get_logical_quota_inp, *_logical_quota_list);
+            status = _rs_get_logical_quota(*_comm, normalized_inp, *_logical_quota_list);
         }
         else if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
             status = SYS_NO_RCAT_SERVER_ERR;
@@ -78,7 +96,7 @@ int rs_get_logical_quota(RsComm* _comm,
         }
     }
     else {
-        status = rc_get_logical_quota(rodsServerHost->conn, _get_logical_quota_inp, _logical_quota_list);
+        status = rc_get_logical_quota(rodsServerHost->conn, &normalized_inp, _logical_quota_list);
     }
 
     return status;

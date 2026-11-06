@@ -2852,8 +2852,8 @@ usage( char *subOpt ) {
         " $ iadmin set_logical_quota /tempZone/home/alice bytes 5000",
         "Set a logical quota of 50 objects on the zone collection:",
         " $ iadmin set_logical_quota /tempZone objects 50",
-        "Set a logical quota of 1000000 bytes and 100 objects on the root collection:",
-        " $ iadmin set_logical_quota / 1000000 100",
+        "Set a logical quota of 1000000 bytes and 100 objects on the zone collection:",
+        " $ iadmin set_logical_quota /tempZone 1000000 100",
         "Remove a quota set on alice's home collection:",
         " $ iadmin set_logical_quota /tempZone/home/alice 0 0",
         ""};

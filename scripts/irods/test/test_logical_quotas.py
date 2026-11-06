@@ -252,6 +252,110 @@ class Test_Logical_Quotas(
                 ]
             )
 
+    def test_logical_quota_set_with_trailing_slash__issue_9145(self):
+        try:
+            for suffix in ["/", "//"]:
+                self.admin.assert_icommand(
+                    [
+                        "iadmin",
+                        "set_logical_quota",
+                        self.quota_user.session_collection + suffix,
+                        "bytes",
+                        "10000",
+                    ]
+                )
+                _, out, _ = self.admin.assert_icommand(
+                    ["iadmin", "list_logical_quotas"],
+                    "STDOUT_SINGLELINE",
+                    self.quota_user.session_collection,
+                )
+                self.assertTrue(
+                    (
+                        self.llq_output_template
+                        % (
+                            self.quota_user.session_collection,
+                            "10000",
+                            "<unset>",
+                            "-10000",
+                            "<unenforced>",
+                        )
+                    )
+                    in out
+                )
+                self.admin.assert_icommand(
+                    [
+                        "iadmin",
+                        "set_logical_quota",
+                        self.quota_user.session_collection + suffix,
+                        "0",
+                        "0",
+                    ]
+                )
+
+            # The root collection is still rejected by the server.
+            self.admin.assert_icommand(
+                ["iadmin", "set_logical_quota", "/", "bytes", "10000"],
+                "STDERR",
+                "SYS_NOT_ALLOWED",
+            )
+
+        finally:
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+
+    def test_logical_quota_list_with_trailing_slash__issue_9145(self):
+        try:
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "bytes",
+                    "10000",
+                ]
+            )
+            for suffix in ["/", "//"]:
+                _, out, _ = self.admin.assert_icommand(
+                    [
+                        "iadmin",
+                        "list_logical_quotas",
+                        self.quota_user.session_collection + suffix,
+                    ],
+                    "STDOUT_SINGLELINE",
+                    self.quota_user.session_collection,
+                )
+                self.assertTrue(
+                    (
+                        self.llq_output_template
+                        % (
+                            self.quota_user.session_collection,
+                            "10000",
+                            "<unset>",
+                            "-10000",
+                            "<unenforced>",
+                        )
+                    )
+                    in out
+                )
+
+        finally:
+            self.admin.assert_icommand(
+                [
+                    "iadmin",
+                    "set_logical_quota",
+                    self.quota_user.session_collection,
+                    "0",
+                    "0",
+                ]
+            )
+
     def test_logical_quota_enforcement(self):
         file_name = "test_logical_quota_enforcement"
         file_path = os.path.join(self.quota_user.local_session_dir, file_name)
