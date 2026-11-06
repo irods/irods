@@ -17,17 +17,12 @@ extern "C" {
 /// \since 5.1.0
 typedef struct GetLogicalQuotaInput
 {
-    /// The collection name for which to fetch applicable quotas.
-    /// Quotas will be fetched for the named collection, as well as any ancestors.
-    /// e.g. "/tempZone/home" will fetch quotas for /, /tempZone, and /tempZone/home.
-    ///
-    /// nullptr or empty string will fetch all quotas.
+    /// The absolute logical path to a collection.
     ///
     /// \since 5.1.0
     char* coll_name;
 
-    /// The condInput structure.
-    /// Currently unused.
+    /// A list of key-value pair strings.
     ///
     /// \since 5.1.0
     keyValPair_t cond_input;
@@ -134,8 +129,14 @@ void clear_logical_quota_list(void* _logical_quota_list);
 ///
 /// \param[in] _comm A pointer to a RcComm.
 /// \param[in] _getLogicalQuotaInp \parblock
-/// A pointer to a GetLogicalQuotaInput. Stores the collection name that will be used to find applicable quotas.
-/// e.g. Passing in "/tempZone/home" will find quotas for "/tempZone", and "/tempZone/home", if any such quotas exist.
+/// A pointer to a GetLogicalQuotaInput.
+///
+/// coll_name is the collection name for which to fetch applicable quotas. Quotas will be fetched for the named
+/// collection, as well as any ancestors. e.g. Passing in "/tempZone/home" will find quotas for "/", "/tempZone",
+/// and "/tempZone/home", if any such quotas exist. nullptr or empty string will fetch all quotas. Trailing path
+/// separators in the collection name are ignored by the server.
+///
+/// cond_input is the condInput structure. Currently unused.
 /// \endparblock
 /// \param[out] _logicalQuotaList A pointer to a LogicalQuotaList pointer that will hold the results.
 ///
