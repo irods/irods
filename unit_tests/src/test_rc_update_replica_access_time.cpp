@@ -13,6 +13,7 @@
 #include "irods/resource_administration.hpp"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/rodsType.h"
 #include "irods/transport/default_transport.hpp"
 #include "irods/update_replica_access_time.h"
 #include "irods/user_administration.hpp"
@@ -21,11 +22,13 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <charconv>
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <system_error>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -243,7 +246,13 @@ TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad acc
     io::client::native_transport tp{conn};
     io::odstream{tp, logical_path};
 
-    const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+    const auto [data_id_str, atime, mtime] = get_replica_info(conn, logical_path, 0);
+
+    rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+    const auto* data_id_b = data_id_str.c_str();
+    const auto* data_id_e = data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
+    CHECK(std::errc{} == data_id_fcres.ec);
 
     // This JSON string contains the new atime for the replica.
     const auto* bad_atime = "bogus";
@@ -251,7 +260,7 @@ TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad acc
     const auto updates = json{
         {"access_time_updates", json::array_t{
             {
-                {"data_id", std::stoull(data_id)},
+                {"data_id", data_id},
                 {"replica_number", 0},
                 {"atime", bad_atime}
             }
@@ -264,7 +273,7 @@ TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad acc
 
     // Show that the replica's atime has been updated to the bad value.
     const auto updated_replica_info = get_replica_info(conn, logical_path, 0);
-    CHECK(std::get<0>(updated_replica_info) == data_id);
+    CHECK(std::get<0>(updated_replica_info) == data_id_str);
     CHECK(std::get<1>(updated_replica_info) == bad_atime); // atime should be different.
 }
 
@@ -325,7 +334,13 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
     // Closing the replica will result in the mtime being updated, so fetch the latest
     // mtime of the replica in case it changed.
     out.close();
-    const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+    const auto [data_id_str, atime, mtime] = get_replica_info(conn, logical_path, 0);
+
+    rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+    const auto* data_id_b = data_id_str.c_str();
+    const auto* data_id_e = data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
+    CHECK(std::errc{} == data_id_fcres.ec);
 
     // This JSON string contains the new atime for the replica.
     const auto* expected_atime = "01700000000";
@@ -333,7 +348,7 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
     const auto updates = json{
         {"access_time_updates", json::array_t{
             {
-                {"data_id", std::stoull(data_id)},
+                {"data_id", data_id},
                 {"replica_number", 0},
                 {"atime", expected_atime}
             }
@@ -348,7 +363,7 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
 
     // Show that the replica's atime has been updated to the expected value.
     const auto updated_replica_info = get_replica_info(conn, logical_path, 0);
-    CHECK(std::get<0>(updated_replica_info) == data_id);
+    CHECK(std::get<0>(updated_replica_info) == data_id_str);
     CHECK(std::get<1>(updated_replica_info) == expected_atime); // atime should be different.
     CHECK(std::get<2>(updated_replica_info) == mtime); // mtime should not have changed.
 }
@@ -412,19 +427,36 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     // these two variables must always have unique atime values.
     const auto expected_atime_0 = "01700000000";
     const auto expected_atime_1 = "01711111111";
+
+    rodsLong_t data_id_0; // NOLINT(cppcoreguidelines-init-variables)
+    const std::string data_id_0_str = std::get<0>(replica_info_0);
+    const auto* data_id_0_b = data_id_0_str.c_str();
+    const auto* data_id_0_e =
+        data_id_0_b + data_id_0_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_0_fcres = std::from_chars(data_id_0_b, data_id_0_e, data_id_0);
+    CHECK(std::errc{} == data_id_0_fcres.ec);
+
+    rodsLong_t data_id_1; // NOLINT(cppcoreguidelines-init-variables)
+    const std::string data_id_1_str = std::get<0>(replica_info_1);
+    const auto* data_id_1_b = data_id_1_str.c_str();
+    const auto* data_id_1_e =
+        data_id_1_b + data_id_1_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_1_fcres = std::from_chars(data_id_1_b, data_id_1_e, data_id_1);
+    CHECK(std::errc{} == data_id_1_fcres.ec);
+
     // clang-format off
     // This JSON string contains the new atimes for the replicas.
     const auto updates = json{
         {"access_time_updates", json::array_t{
             // Replica 1 of the first data object.
             {
-                {"data_id", std::stoull(std::get<0>(replica_info_0))},
+                {"data_id", data_id_0},
                 {"replica_number", 1},
                 {"atime", expected_atime_0}
             },
             // Replica 0 of the second data object.
             {
-                {"data_id", std::stoull(std::get<0>(replica_info_1))},
+                {"data_id", data_id_1},
                 {"replica_number", 0},
                 {"atime", expected_atime_1}
             }
@@ -440,12 +472,12 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     // Show that the atimes for each replica have been updated to the expected values.
     // Here, we check replica 1 of the first data object.
     auto updated_replica_info = get_replica_info(conn, logical_path_0, 1);
-    CHECK(std::get<0>(updated_replica_info) == std::get<0>(replica_info_0));
+    CHECK(std::get<0>(updated_replica_info) == data_id_0_str);
     CHECK(std::get<1>(updated_replica_info) == expected_atime_0); // atime should be different.
     CHECK(std::get<2>(updated_replica_info) == std::get<2>(replica_info_0)); // mtime should not have changed.
     // And now we check replica 0 of the second data object.
     updated_replica_info = get_replica_info(conn, logical_path_1, 0);
-    CHECK(std::get<0>(updated_replica_info) == std::get<0>(replica_info_1));
+    CHECK(std::get<0>(updated_replica_info) == data_id_1_str);
     CHECK(std::get<1>(updated_replica_info) == expected_atime_1); // atime should be different.
     CHECK(std::get<2>(updated_replica_info) == std::get<2>(replica_info_1)); // mtime should not have changed.
 }
@@ -524,7 +556,14 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
         // Closing the replica will result in the mtime being updated, so fetch the
         // latest mtime of the replica in case it changed.
         out.close();
-        const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+        const auto [data_id_str, atime, mtime] = get_replica_info(conn, logical_path, 0);
+
+        rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+        const auto* data_id_b = data_id_str.c_str();
+        const auto* data_id_e =
+            data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
+        CHECK(std::errc{} == data_id_fcres.ec);
 
         // This JSON string contains the new atime for the replicas. Only the update
         // involving the existent replica should succeed. The other update is effectively
@@ -534,7 +573,7 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
         const auto updates = json{
             {"access_time_updates", json::array_t{
                 {
-                    {"data_id", std::stoull(data_id)},
+                    {"data_id", data_id},
                     {"replica_number", 0},
                     {"atime", expected_atime}
                 },
@@ -563,7 +602,7 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
 
         // Show that the replica's atime has been updated to the expected value.
         const auto updated_replica_info = get_replica_info(conn, logical_path, 0);
-        CHECK(std::get<0>(updated_replica_info) == data_id);
+        CHECK(std::get<0>(updated_replica_info) == data_id_str);
         CHECK(std::get<1>(updated_replica_info) == expected_atime); // atime should be different.
         CHECK(std::get<2>(updated_replica_info) == mtime); // mtime should not have changed.
     }
@@ -594,7 +633,11 @@ TEST_CASE("#8260: opening a replica for reading updates its access time")
     // Adjust the replica's atime so that a read operation triggers an atime update.
     auto replica_info = get_replica_info(conn, logical_path, 0);
     DataObjInfo info_input{};
-    info_input.dataId = std::stoull(std::get<0>(replica_info));
+    const std::string data_id_str = std::get<0>(replica_info);
+    const auto* data_id_b = data_id_str.c_str();
+    const auto* data_id_e = data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, info_input.dataId);
+    CHECK(std::errc{} != data_id_fcres.ec);
 
     KeyValPair reg_params{};
     const auto* configured_atime = "00000000000";
@@ -657,7 +700,11 @@ TEST_CASE("#8260: opening a replica for writing does not update its access time"
     // trigger atime updates.
     auto replica_info = get_replica_info(conn, logical_path, 0);
     DataObjInfo info_input{};
-    info_input.dataId = std::stoull(std::get<0>(replica_info));
+    const std::string data_id_str = std::get<0>(replica_info);
+    const auto* data_id_b = data_id_str.c_str();
+    const auto* data_id_e = data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, info_input.dataId);
+    CHECK(std::errc{} != data_id_fcres.ec);
 
     KeyValPair reg_params{};
     const auto* configured_atime = "00000000000";

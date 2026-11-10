@@ -1,23 +1,31 @@
-#include "irods/dataObjTrim.h"
-#include "irods/dataObjUnlink.h"
-#include "irods/dataObjOpr.hpp"
-#include "irods/rcMisc.h"
-#include "irods/rodsLog.h"
-#include "irods/objMetaOpr.hpp"
-#include "irods/specColl.hpp"
 #include "irods/rsDataObjTrim.hpp"
-#include "irods/icatDefines.h"
+#include "irods/dataObjTrim.h"
+
+#include "irods/dataObjOpr.hpp"
+#include "irods/dataObjUnlink.h"
 #include "irods/getRemoteZoneResc.h"
-#include "irods/rsDataObjUnlink.hpp"
-#include "irods/rsDataObjOpen.hpp"
-
-// =-=-=-=-=-=-=-
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/icatDefines.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_linked_list_iterator.hpp"
+#include "irods/irods_resource_redirect.hpp"
 #include "irods/logical_locking.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsKeyWdDef.h"
+#include "irods/rodsLog.h"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjUnlink.hpp"
+#include "irods/specColl.hpp"
 
+#include <fmt/format.h>
+
+#include <algorithm>
+#include <charconv>
+#include <string_view>
+#include <system_error>
 #include <tuple>
 #include <type_traits> // For std::remove_cv_t
 #include <utility>
@@ -61,22 +69,28 @@ namespace
         if (!copies_kw) {
             return DEF_MIN_COPY_CNT;
         }
-        try {
-            const auto minimum_replica_count = std::stoi(copies_kw);
-            if (minimum_replica_count <= 0) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      fmt::format("{}: {} value [{}] must be a positive value.", __func__, COPIES_KW, copies_kw));
-            }
-            return minimum_replica_count;
-        }
-        catch (const std::invalid_argument& e) {
-            THROW(SYS_INVALID_INPUT_PARAM,
-                  fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, COPIES_KW, copies_kw, e.what()));
-        }
-        catch (const std::out_of_range&) {
+        std::int32_t minimum_replica_count; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string_view copies_kw_str{copies_kw};
+        const auto* value_b = copies_kw_str.data();
+        const auto* value_e = value_b + copies_kw_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(value_b, value_e, minimum_replica_count);
+        if (std::errc::result_out_of_range == ec) {
             THROW(SYS_INVALID_INPUT_PARAM,
                   fmt::format("{}: {} value [{}] is out of range.", __func__, COPIES_KW, copies_kw));
         }
+        if (std::errc{} != ec) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] is invalid: [{}]",
+                              __func__,
+                              COPIES_KW,
+                              copies_kw,
+                              std::make_error_code(ec).message()));
+        }
+        if (minimum_replica_count <= 0) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] must be a positive value.", __func__, COPIES_KW, copies_kw));
+        }
+        return minimum_replica_count;
     } // get_minimum_replica_count
 
     auto get_data_object_info(rsComm_t *rsComm, dataObjInp_t& dataObjInp) -> std::tuple<irods::file_object_ptr, DataObjInfo*>
@@ -124,40 +138,47 @@ namespace
 
         // If a specific replica number is specified, only trim that one!
         if (const char* repl_num = getValByKey(&_inp.condInput, REPL_NUM_KW); repl_num) {
-            try {
-                const auto num = std::stoi(repl_num);
-
-                const auto repl = std::find_if(replica_list.begin(), replica_list.end(), [num](const auto& repl) {
-                    return num == repl.repl_num();
-                });
-
-                if (repl == replica_list.end()) {
-                    THROW(SYS_REPLICA_DOES_NOT_EXIST, "target replica does not exist");
-                }
-
-                if (const auto ret = ill::try_lock(_info, ill::lock_type::write, num); ret < 0) {
-                    const auto msg = fmt::format(
-                        "trim not allowed because data object is locked "
-                        "[path=[{}], hierarchy=[{}]]",
-                        _obj->logical_path(), repl->resc_hier());
-
-                    THROW(ret, msg);
-                }
-
-                if (good_replica_count <= minimum_good_replica_count && GOOD_REPLICA == repl->replica_status()) {
-                    THROW(USER_INCOMPATIBLE_PARAMS, "cannot remove the last good replica");
-                }
-
-                return {*repl};
-            }
-            catch (const std::invalid_argument& e) {
-                THROW(USER_INVALID_REPLICA_INPUT,
-                      fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, REPL_NUM_KW, repl_num, e.what()));
-            }
-            catch (const std::out_of_range& e) {
+            int num; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string_view repl_num_str{repl_num};
+            const auto* value_b = repl_num_str.data();
+            const auto* value_e =
+                value_b + repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, num);
+            if (std::errc::result_out_of_range == ec) {
                 THROW(USER_INVALID_REPLICA_INPUT,
                       fmt::format("{}: {} value [{}] is out of range.", __func__, REPL_NUM_KW, repl_num));
             }
+            if (std::errc{} != ec) {
+                THROW(USER_INVALID_REPLICA_INPUT,
+                      fmt::format("{}: {} value [{}] is invalid: [{}]",
+                                  __func__,
+                                  REPL_NUM_KW,
+                                  repl_num,
+                                  std::make_error_code(ec).message()));
+            }
+
+            const auto repl = std::ranges::find_if(replica_list, [num](const auto& repl) {
+                return num == repl.repl_num();
+            });
+
+            if (repl == replica_list.end()) {
+                THROW(SYS_REPLICA_DOES_NOT_EXIST, "target replica does not exist");
+            }
+
+            if (const auto ret = ill::try_lock(_info, ill::lock_type::write, num); ret < 0) {
+                const auto msg = fmt::format("trim not allowed because data object is locked "
+                                             "[path=[{}], hierarchy=[{}]]",
+                                             _obj->logical_path(),
+                                             repl->resc_hier());
+
+                THROW(ret, msg);
+            }
+
+            if (good_replica_count <= minimum_good_replica_count && GOOD_REPLICA == repl->replica_status()) {
+                THROW(USER_INCOMPATIBLE_PARAMS, "cannot remove the last good replica");
+            }
+
+            return {*repl};
         }
 
         // Do not try the lock for a replica specified by RESC_NAME_KW because it could

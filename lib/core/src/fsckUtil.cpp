@@ -11,9 +11,12 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
+#include <charconv>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
-#include <string>
+#include <string_view>
+#include <system_error>
 
 namespace fs = boost::filesystem;
 
@@ -143,22 +146,20 @@ int chkObjConsistency(rcComm_t* conn,
         const char* objName = genQueryOut->sqlResult[0].value;
         const char* objPath = genQueryOut->sqlResult[1].value;
 
-        intmax_t objSize = 0;
-
-        try {
-            objSize = std::stoll(genQueryOut->sqlResult[2].value);
-        }
-        catch (const std::invalid_argument& e) {
-            std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
-            return SYS_INTERNAL_ERR;
-        }
-        catch (const std::out_of_range& e) {
-            std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
-            return SYS_INTERNAL_ERR;
+        std::intmax_t objSize = 0;
+        const std::string_view objSize_str{genQueryOut->sqlResult[2].value};
+        const auto* objSize_b = objSize_str.data();
+        const auto* objSize_e =
+            objSize_b + objSize_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(objSize_b, objSize_e, objSize);
+        if (std::errc{} != ec) {
+            std::cerr << "ERROR: could not parse object size into integer [ec => " << std::make_error_code(ec).message()
+                      << ", path => " << inpPath << "].\n";
+            return INVALID_LEXICAL_CAST;
         }
 
         const char* objChksum = genQueryOut->sqlResult[3].value;
-        const intmax_t srcSize = fs::file_size(p);
+        const std::intmax_t srcSize = fs::file_size(p);
 
         if (srcSize == objSize) {
             if (myRodsArgs->verifyChecksum == True) {

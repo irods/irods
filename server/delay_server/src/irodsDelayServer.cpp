@@ -50,17 +50,20 @@
 
 #include <unistd.h>
 
+#include <charconv>
+#include <chrono>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <chrono>
 #include <condition_variable>
+#include <fstream>
 #include <functional>
 #include <ios>
-#include <thread>
 #include <string>
 #include <string_view>
-#include <fstream>
+#include <system_error>
+#include <thread>
 
 // __has_feature is a Clang specific feature.
 // The preprocessor code below exists so that other compilers can be used (e.g. GCC).
@@ -341,23 +344,24 @@ namespace
             ruleExecModInp_t rule_exec_mod_inp{};
             rstrcpy(rule_exec_mod_inp.ruleId, _inp.ruleExecId, NAME_LEN);
 
-            if (std::strlen(_inp.priority) > 0) {
-                // The priority string is not empty, but it could be invalid.
-                // If the priority cannot be parsed into a valid signed integer, set it
-                // to the default priority level of 5.
-                try {
-                    if (const auto p = std::stoi(_inp.priority); p < 1 || p > 9) {
-                        addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
-                    }
-                }
-                catch (...) {
-                    addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
-                }
-            }
-            else {
+            const std::string_view rule_prio_str{_inp.priority};
+            if (rule_prio_str.empty()) {
                 // An empty priority is an indicator that the rule existed prior to iRODS v4.2.9
                 // and that it needs to be set to the default priority level of 5.
                 addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
+            }
+            else {
+                // The priority string is not empty, but it could be invalid.
+                // If the priority cannot be parsed into a valid signed integer, set it
+                // to the default priority level of 5.
+                std::int_fast8_t rule_prio; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* rule_prio_b = rule_prio_str.data();
+                const auto* rule_prio_e =
+                    rule_prio_b + rule_prio_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(rule_prio_b, rule_prio_e, rule_prio);
+                if (std::errc{} != ec || rule_prio < 1 || rule_prio > 9) {
+                    addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
+                }
             }
 
             // Clear the delay server lock information so the rule can be processed in the future.

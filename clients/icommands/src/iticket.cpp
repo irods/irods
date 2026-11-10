@@ -11,12 +11,15 @@
 
 #include <boost/date_time.hpp>
 
+#include <charconv>
 #include <cstdio>
+#include <ctime>
 #include <locale>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <system_error>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -45,7 +48,14 @@ void showRestrictions( char *inColumn );
 std::string to_utc_timestamp(const std::string_view _seconds)
 {
     try {
-        const auto tt = std::stoll(_seconds.data());
+        std::time_t tt; // NOLINT(cppcoreguidelines-init-variables, readability-identifier-length)
+        const auto* sec_b = _seconds.data();
+        const auto* sec_e = sec_b + _seconds.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(sec_b, sec_e, tt);
+        if (std::errc{} != ec) {
+            throw std::system_error(std::make_error_code(ec));
+        }
+
         const auto pt = boost::posix_time::from_time_t(tt);
 
         std::ostringstream ss;

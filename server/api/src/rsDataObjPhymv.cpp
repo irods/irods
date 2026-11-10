@@ -1,18 +1,35 @@
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "irods/rsDataObjPhymv.hpp"
+#include "irods/dataObjPhymv.h"
+
+#include "irods/data_object_proxy.hpp"
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjOpr.hpp"
-#include "irods/dataObjPhymv.h"
 #include "irods/dataObjRepl.h"
 #include "irods/fileClose.h"
+#include "irods/filesystem.hpp"
+#include "irods/finalize_utilities.hpp"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatDefines.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/json_serialization.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/physPath.hpp"
+#include "irods/replica_access_table.hpp"
+#include "irods/replication_utilities.hpp"
+#include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
 #include "irods/rsDataObjClose.hpp"
 #include "irods/rsDataObjOpen.hpp"
-#include "irods/rsDataObjPhymv.hpp"
-#include "irods/rsDataObjPhymv.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/rsDataObjTrim.hpp"
 #include "irods/rsDataObjUnlink.hpp"
@@ -22,23 +39,10 @@
 #include "irods/rs_replica_close.hpp"
 #include "irods/specColl.hpp"
 
-#include "irods/finalize_utilities.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_resource_backport.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/json_serialization.hpp"
-#include "irods/key_value_proxy.hpp"
-#include "irods/replica_access_table.hpp"
-#include "irods/replication_utilities.hpp"
+#include <fmt/format.h>
 
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "irods/filesystem.hpp"
-
-#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "irods/data_object_proxy.hpp"
-
-#include "irods/logical_locking.hpp"
+#include <charconv>
+#include <system_error>
 
 namespace
 {
@@ -48,6 +52,7 @@ namespace
     namespace fs = irods::experimental::filesystem;
     namespace rat = irods::experimental::replica_access_table;
     namespace rst = irods::replica_state_table;
+    using log_api = irods::experimental::log::api;
 
     auto apply_static_peps(RsComm& _comm, l1desc& _l1desc, const int _operation_status) -> void
     {
@@ -268,7 +273,19 @@ namespace
             return {obj, std::ref(source_replica)};
         }
         else if (cond_input.contains(REPL_NUM_KW)) {
-            auto maybe_source_replica = obj->get_replica(std::stoi(cond_input.at(REPL_NUM_KW).value().data()));
+            int repl_num; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string_view value_str = cond_input.at(REPL_NUM_KW).value();
+            const auto* value_b = value_str.data();
+            const auto* value_e = value_b + value_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, repl_num);
+            if (std::errc{} != ec) {
+                THROW(INVALID_LEXICAL_CAST,
+                      fmt::format("[{}:{}] - Error parsing replica number: [{}]",
+                                  __FUNCTION__,
+                                  __LINE__,
+                                  std::make_error_code(ec).message()));
+            }
+            auto maybe_source_replica = obj->get_replica(repl_num);
             if (!maybe_source_replica) {
                 const std::string msg = "error finding source replica.";
 
@@ -489,8 +506,24 @@ namespace
             const auto query_string = fmt::format(
                 "select max(DATA_REPL_NUM) where DATA_ID = '{}'", source_replica.data_id()
             );
+            const std::string repl_num_str = irods::query{&_comm, query_string}.front().at(0);
+            int repl_num; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = repl_num_str.data();
+            const auto* value_e =
+                value_b + repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, repl_num);
+            if (std::errc{} != ec) {
+                log_api::error("[{}:{}] - failed to parse replica number "
+                               "[error=[{}], path=[{}], hierarchy=[{}]]",
+                               __FUNCTION__,
+                               __LINE__,
+                               std::make_error_code(ec).message(),
+                               source_replica.logical_path(),
+                               source_replica.hierarchy());
+                return INVALID_LEXICAL_CAST;
+            }
 
-            source_replica.replica_number(std::stoi(irods::query{&_comm, query_string}.front().at(0)) + 1);
+            source_replica.replica_number(repl_num + 1);
             source_replica.mtime(SET_TIME_TO_NOW_KW);
             source_replica.status(nlohmann::json{{"original_status", std::to_string(STALE_REPLICA)}}.dump());
 

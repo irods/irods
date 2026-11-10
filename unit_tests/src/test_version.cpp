@@ -2,6 +2,8 @@
 
 #include "irods/version.hpp"
 
+#include <system_error>
+
 static constexpr irods::version v4290{4, 2, 9};
 static constexpr irods::version v4300{4, 3};
 
@@ -36,6 +38,6 @@ TEST_CASE("test to_version")
     CHECK(!irods::to_version("rods4.two.9"));
     CHECK(!irods::to_version("rods4.-2.9"));
 
-    // to_version uses std::stoi, so overflow will throw std::out_of_range
-    CHECK_THROWS(irods::to_version("rods400000000000000.200000000000000.900000000000000"));
+    // overflow will throw std::system_error
+    CHECK_THROWS_AS(irods::to_version("rods400000000000000.200000000000000.900000000000000"), std::system_error);
 }

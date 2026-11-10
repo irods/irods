@@ -5,6 +5,10 @@
 #include "irods/replica_state_table.hpp"
 #include "irods/scoped_privileged_client.hpp"
 
+#include <charconv>
+#include <string>
+#include <system_error>
+
 namespace
 {
     namespace id  = irods::experimental::data_object;
@@ -40,7 +44,16 @@ namespace
             const auto data_status_json = json::parse(data_status_str);
 
             if (!data_status_json.empty() && data_status_json.contains("original_status")) {
-                return std::stoi(data_status_json.at("original_status").get<std::string>());
+                const std::string& status_str = data_status_json.at("original_status").get_ref<const std::string&>();
+                int status; // NOLINT(cppcoreguidelines-init-variables)
+                const auto* value_b = status_str.c_str();
+                const auto* value_e =
+                    value_b + status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                auto [ptr, ec] = std::from_chars(value_b, value_e, status);
+                if (std::errc{} != ec) {
+                    throw std::system_error{std::make_error_code(ec)};
+                }
+                return status;
             }
 
             return -1;
@@ -61,7 +74,16 @@ namespace
         const auto logical_path = rst::get_logical_path(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
+            const std::string& replica_number_str =
+                json_replica.at("before").at("data_repl_num").get_ref<const std::string&>();
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = replica_number_str.c_str();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
 
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - replica:[{}]",
@@ -92,7 +114,16 @@ namespace
     auto remove_data_status(const std::uint64_t _data_id) -> void
     {
         for (const auto& json_replica : rst::at(_data_id)) {
-            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
+            const std::string& replica_number_str =
+                json_replica.at("before").at("data_repl_num").get_ref<const std::string&>();
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = replica_number_str.c_str();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
             rst::update(_data_id, replica_number, json{{"data_status", ""}});
         }
     } // remove_data_status
@@ -106,7 +137,16 @@ namespace
         const auto logical_path = rst::get_logical_path(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
+            const std::string& replica_number_str =
+                json_replica.at("before").at("data_repl_num").get_ref<const std::string&>();
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = replica_number_str.c_str();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
 
             if (_replica_number == replica_number) {
                 continue;
@@ -136,7 +176,16 @@ namespace
         auto entry = rst::at(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
+            const std::string& replica_number_str =
+                json_replica.at("before").at("data_repl_num").get_ref<const std::string&>();
+            int replica_number; // NOLINT(cppcoreguidelines-init-variables)
+            const auto* value_b = replica_number_str.c_str();
+            const auto* value_e =
+                value_b + replica_number_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            auto [ptr, ec] = std::from_chars(value_b, value_e, replica_number);
+            if (std::errc{} != ec) {
+                throw std::system_error{std::make_error_code(ec)};
+            }
 
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - data_id:[{}], repl_num:[{}], status:[{}], target repl_num:[{}]",

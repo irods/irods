@@ -3,25 +3,31 @@
 #include "irods/data_object_proxy.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/logical_locking.hpp"
+#include "irods/replica.hpp"
 #include "irods/replica_state_table.hpp"
+#include "irods/rodsType.h"
 
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <charconv>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
+#include <system_error>
 
 namespace
 {
     namespace data_object = irods::experimental::data_object;
     namespace rst = irods::replica_state_table;
+    using irods::experimental::replica::replica_number_type;
 
-    constexpr int REPLICA_COUNT       = 3;
-    constexpr std::uint64_t SIZE_1    = 4000;
-    constexpr std::uint64_t SIZE_2    = 9999;
-    constexpr std::uint64_t DATA_ID_1 = 10101;
-    constexpr std::uint64_t DATA_ID_2 = 20202;
+    constexpr replica_number_type REPLICA_COUNT = 3;
+    constexpr rodsLong_t SIZE_1    = 4000;
+    constexpr rodsLong_t SIZE_2    = 9999;
+    constexpr rodsLong_t DATA_ID_1 = 10101;
+    constexpr rodsLong_t DATA_ID_2 = 20202;
     const std::string LOGICAL_PATH_1  = "/tempZone/home/rods/foo";
     const std::string LOGICAL_PATH_2  = "/tempZone/home/rods/goo";
     const std::string UPDATED_COMMENT = "updated";
@@ -34,7 +40,7 @@ namespace
         std::array<DataObjInfo*, REPLICA_COUNT> replicas;
         DataObjInfo* head{};
         DataObjInfo* prev{};
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
             auto [proxy, lm] = irods::experimental::replica::make_replica_proxy();
             proxy.logical_path(_logical_path);
             proxy.size(_size);
@@ -104,7 +110,7 @@ TEST_CASE("replica state table", "[basic]")
 
     SECTION("access by replica number")
     {
-        constexpr int replica_number = REPLICA_COUNT - 1;
+        constexpr replica_number_type replica_number = REPLICA_COUNT - 1;
         const auto original_replica = irods::experimental::replica::make_replica_proxy(*replicas.at(replica_number));
         const auto replica_json = rst::at(DATA_ID_1, replica_number, rst::state_type::before);
         const auto [before, lm] = irods::experimental::replica::make_replica_proxy(LOGICAL_PATH_1, replica_json);
@@ -117,7 +123,7 @@ TEST_CASE("replica state table", "[basic]")
 
     SECTION("modify entry by whole replica")
     {
-        constexpr int target_replica_number = 1;
+        constexpr replica_number_type target_replica_number = 1;
 
         auto [r, r_lm] = irods::experimental::replica::duplicate_replica(*replicas.at(target_replica_number));
 
@@ -167,16 +173,53 @@ TEST_CASE("replica state table", "[basic]")
 
         SECTION("property accessors")
         {
-            CHECK(target_replica_number == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_repl_num", rst::state_type::after)));
-            CHECK(DATA_ID_1 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
-            CHECK(SIZE_2 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
-            CHECK(STALE_REPLICA == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
+            replica_number_type data_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string data_repl_num_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_repl_num", rst::state_type::after);
+            const auto* data_repl_num_b = data_repl_num_str.c_str();
+            const auto* data_repl_num_e =
+                data_repl_num_b + data_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result data_repl_num_fcres =
+                std::from_chars(data_repl_num_b, data_repl_num_e, data_repl_num);
+            CHECK(std::errc{} == data_repl_num_fcres.ec);
+            CHECK(target_replica_number == data_repl_num);
+
+            rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string data_id_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after);
+            const auto* data_id_b = data_id_str.c_str();
+            const auto* data_id_e =
+                data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
+            CHECK(std::errc{} == data_id_fcres.ec);
+            CHECK(DATA_ID_1 == data_id);
+
+            rodsLong_t data_size; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string data_size_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after);
+            const auto* data_size_b = data_size_str.c_str();
+            const auto* data_size_e =
+                data_size_b + data_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result data_size_fcres = std::from_chars(data_size_b, data_size_e, data_size);
+            CHECK(std::errc{} == data_size_fcres.ec);
+            CHECK(SIZE_2 == data_size);
+
+            int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string replica_status_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after);
+            const auto* replica_status_b = replica_status_str.c_str();
+            const auto* replica_status_e =
+                replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result replica_status_fcres =
+                std::from_chars(replica_status_b, replica_status_e, replica_status);
+            CHECK(std::errc{} == replica_status_fcres.ec);
+            CHECK(STALE_REPLICA == replica_status);
         }
     }
 
     SECTION("modify entry by replica number")
     {
-        constexpr int target_replica_number = 1;
+        constexpr replica_number_type target_replica_number = 1;
 
         const auto updates = nlohmann::json{nlohmann::json{
             {"r_comment", UPDATED_COMMENT},
@@ -186,7 +229,7 @@ TEST_CASE("replica state table", "[basic]")
 
         REQUIRE_NOTHROW(rst::update(DATA_ID_1, target_replica_number, updates));
 
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
             const auto original_replica = irods::experimental::replica::make_replica_proxy(*replicas.at(i));
             const auto replica_json = rst::at(DATA_ID_1, original_replica.replica_number(), rst::state_type::after);
             const auto [replica, lm] = irods::experimental::replica::make_replica_proxy(LOGICAL_PATH_1, replica_json);
@@ -223,9 +266,36 @@ TEST_CASE("replica state table", "[basic]")
 
         SECTION("property accessors")
         {
-            CHECK(DATA_ID_1 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after)));
-            CHECK(SIZE_2 == std::stoll(rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after)));
-            CHECK(STALE_REPLICA == std::stoi(rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after)));
+            rodsLong_t data_id; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string data_id_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_id", rst::state_type::after);
+            const auto* data_id_b = data_id_str.c_str();
+            const auto* data_id_e =
+                data_id_b + data_id_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result data_id_fcres = std::from_chars(data_id_b, data_id_e, data_id);
+            CHECK(std::errc{} != data_id_fcres.ec);
+            CHECK(DATA_ID_1 == data_id);
+
+            rodsLong_t data_size; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string data_size_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_size", rst::state_type::after);
+            const auto* data_size_b = data_size_str.c_str();
+            const auto* data_size_e =
+                data_size_b + data_size_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result data_size_fcres = std::from_chars(data_size_b, data_size_e, data_size);
+            CHECK(std::errc{} != data_size_fcres.ec);
+            CHECK(SIZE_2 == data_size);
+
+            int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string replica_status_str =
+                rst::get_property(DATA_ID_1, target_replica_number, "data_is_dirty", rst::state_type::after);
+            const auto* replica_status_b = replica_status_str.c_str();
+            const auto* replica_status_e =
+                replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result replica_status_fcres =
+                std::from_chars(replica_status_b, replica_status_e, replica_status);
+            CHECK(std::errc{} != replica_status_fcres.ec);
+            CHECK(STALE_REPLICA == replica_status);
         }
     }
 
@@ -243,7 +313,7 @@ TEST_CASE("replica state table", "[basic]")
         REQUIRE(0 == rst::insert(obj_2));
         REQUIRE(rst::contains(DATA_ID_2));
 
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
             const auto original_replica = irods::experimental::replica::make_replica_proxy(*replicas_2.at(i));
 
             const auto replica_json = rst::at(DATA_ID_2, original_replica.replica_number(), rst::state_type::before);
@@ -259,7 +329,7 @@ TEST_CASE("replica state table", "[basic]")
 
     SECTION("insert replica for existing entry")
     {
-        constexpr int REPL_NUM = 7;
+        constexpr replica_number_type REPL_NUM = 7;
 
         auto [proxy, lm] = irods::experimental::replica::make_replica_proxy();
         proxy.data_id(DATA_ID_1);
@@ -272,7 +342,16 @@ TEST_CASE("replica state table", "[basic]")
 
         CHECK(rst::contains(proxy.data_id(), proxy.replica_number()));
         CHECK(REPLICA_COUNT + 1 == rst::at(proxy.data_id()).size());
-        CHECK(REPL_NUM == std::stoi(rst::get_property(proxy.data_id(), REPL_NUM, "data_repl_num")));
+
+        replica_number_type data_repl_num; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string data_repl_num_str = rst::get_property(proxy.data_id(), REPL_NUM, "data_repl_num");
+        const auto* data_repl_num_b = data_repl_num_str.c_str();
+        const auto* data_repl_num_e =
+            data_repl_num_b + data_repl_num_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const std::from_chars_result data_repl_num_fcres =
+            std::from_chars(data_repl_num_b, data_repl_num_e, data_repl_num);
+        CHECK(std::errc{} != data_repl_num_fcres.ec);
+        CHECK(REPL_NUM == data_repl_num);
 
         SECTION("erase entry for existing entry")
         {
@@ -318,19 +397,34 @@ TEST_CASE("logical_locking", "[basic]")
     REQUIRE(rst::contains(DATA_ID_1));
     REQUIRE(REPLICA_COUNT == rst::at(DATA_ID_1).size());
 
-    for (int i = 0; i < REPLICA_COUNT; ++i) {
-        const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+    for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
+        int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+        const std::string replica_status_str = rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+        const auto* replica_status_b = replica_status_str.c_str();
+        const auto* replica_status_e =
+            replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const std::from_chars_result replica_status_fcres =
+            std::from_chars(replica_status_b, replica_status_e, replica_status);
+        CHECK(std::errc{} != replica_status_fcres.ec);
         REQUIRE(GOOD_REPLICA == replica_status);
     }
 
     SECTION("write lock")
     {
-        constexpr int locked_replica_number = 1;
+        constexpr replica_number_type locked_replica_number = 1;
 
         ill::lock(DATA_ID_1, locked_replica_number, ill::lock_type::write);
 
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
+            int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string replica_status_str =
+                rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+            const auto* replica_status_b = replica_status_str.c_str();
+            const auto* replica_status_e =
+                replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result replica_status_fcres =
+                std::from_chars(replica_status_b, replica_status_e, replica_status);
+            CHECK(std::errc{} != replica_status_fcres.ec);
             if (locked_replica_number == i) {
                 CHECK(INTERMEDIATE_REPLICA == replica_status);
             }
@@ -340,15 +434,33 @@ TEST_CASE("logical_locking", "[basic]")
 
             // the data status column should contain an original_status key with the original replica status as its value
             const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
-            REQUIRE(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+            int original_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string original_status_str = data_status.at("original_status").get<std::string>();
+            const auto* original_status_b = original_status_str.c_str();
+            const auto* original_status_e =
+                original_status_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                original_status_str.size();
+            const std::from_chars_result original_status_fcres =
+                std::from_chars(original_status_b, original_status_e, original_status);
+            CHECK(std::errc{} != original_status_fcres.ec);
+            REQUIRE(GOOD_REPLICA == original_status);
         }
 
         SECTION("restore status")
         {
             ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status);
 
-            for (int i = 0; i < REPLICA_COUNT; ++i) {
-                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
+                int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string replica_status_str =
+                    rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+                const auto* replica_status_b = replica_status_str.c_str();
+                const auto* replica_status_e =
+                    replica_status_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    replica_status_str.size();
+                const std::from_chars_result replica_status_fcres =
+                    std::from_chars(replica_status_b, replica_status_e, replica_status);
+                CHECK(std::errc{} != replica_status_fcres.ec);
                 REQUIRE(GOOD_REPLICA == replica_status);
 
                 // the data_status column should be empty again
@@ -360,8 +472,17 @@ TEST_CASE("logical_locking", "[basic]")
         {
             ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, STALE_REPLICA);
 
-            for (int i = 0; i < REPLICA_COUNT; ++i) {
-                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
+                int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+                const std::string replica_status_str =
+                    rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+                const auto* replica_status_b = replica_status_str.c_str();
+                const auto* replica_status_e =
+                    replica_status_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    replica_status_str.size();
+                const std::from_chars_result replica_status_fcres =
+                    std::from_chars(replica_status_b, replica_status_e, replica_status);
+                CHECK(std::errc{} != replica_status_fcres.ec);
                 if (locked_replica_number == i) {
                     // unlock() does not change the replica status of the target replica
                     CHECK(GOOD_REPLICA == replica_status);
@@ -379,26 +500,51 @@ TEST_CASE("logical_locking", "[basic]")
 
     SECTION("read lock")
     {
-        constexpr int locked_replica_number = 1;
+        constexpr replica_number_type locked_replica_number = 1;
 
         REQUIRE(0 == ill::lock(DATA_ID_1, locked_replica_number, ill::lock_type::read));
 
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
             // All replicas should be read-locked, including the target replica
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string replica_status_str =
+                rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+            const auto* replica_status_b = replica_status_str.c_str();
+            const auto* replica_status_e =
+                replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result replica_status_fcres =
+                std::from_chars(replica_status_b, replica_status_e, replica_status);
+            CHECK(std::errc{} != replica_status_fcres.ec);
             CHECK(READ_LOCKED == replica_status);
 
             // the data status column should contain an original_status key with the original replica status as its value
             const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
-            CHECK(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+            int original_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string original_status_str = data_status.at("original_status").get<std::string>();
+            const auto* original_status_b = original_status_str.c_str();
+            const auto* original_status_e =
+                original_status_b + // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                original_status_str.size();
+            const std::from_chars_result original_status_fcres =
+                std::from_chars(original_status_b, original_status_e, original_status);
+            CHECK(std::errc{} != original_status_fcres.ec);
+            CHECK(GOOD_REPLICA == original_status);
 
             // TODO: need to check for how many readers, who they are, etc.
         }
 
         REQUIRE(0 == ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status));
 
-        for (int i = 0; i < REPLICA_COUNT; ++i) {
-            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+        for (replica_number_type i = 0; i < REPLICA_COUNT; ++i) {
+            int replica_status; // NOLINT(cppcoreguidelines-init-variables)
+            const std::string replica_status_str =
+                rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after);
+            const auto* replica_status_b = replica_status_str.c_str();
+            const auto* replica_status_e =
+                replica_status_b + replica_status_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const std::from_chars_result replica_status_fcres =
+                std::from_chars(replica_status_b, replica_status_e, replica_status);
+            CHECK(std::errc{} != replica_status_fcres.ec);
             CHECK(GOOD_REPLICA == replica_status);
 
             // the data_status column should be empty again

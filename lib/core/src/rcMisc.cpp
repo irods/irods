@@ -42,7 +42,6 @@
 #include "irods/delay_rule_unlock.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
@@ -54,18 +53,20 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
+#include <algorithm>
+#include <charconv>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-#include <algorithm>
-#include <string>
-#include <string_view>
+#include <iterator>
 #include <map>
 #include <random>
+#include <string>
+#include <string_view>
+#include <system_error>
 #include <unordered_map>
-#include <iterator>
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -3666,21 +3667,15 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
     }
     else {
         rstrcpy(addr->hostAddr, buffer, LONG_NAME_LEN);
-        std::size_t port_parse_idx{};
-        try {
-            addr->portNum = std::stoi(port, &port_parse_idx);
-        }
-        catch (...) {
+
+        const std::string_view port_str{port};
+        const auto* port_b = port_str.data();
+        const auto* port_e = port_b + port_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        auto [ptr, ec] = std::from_chars(port_e, port_b, addr->portNum);
+        if (std::errc{} != ec) {
             // previously, we used atoi to parse the port number.
             // atoi never throws exceptions and just returns 0 if it runs into trouble.
             // let's preserve that behavior until this function can get a proper refactor
-            addr->portNum = 0;
-        }
-
-        // make sure we parsed the whole thing
-        const std::size_t port_len = strnlen(port, SHORT_STR_LEN);
-        if (port_parse_idx < port_len) {
-            // again, until this function can get a proper refactor, we're just going to set 0
             addr->portNum = 0;
         }
     }

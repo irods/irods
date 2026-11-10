@@ -4,7 +4,10 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
+#include <cstdint>
 #include <regex>
+#include <system_error>
 
 extern int ProcessType;
 
@@ -27,11 +30,34 @@ namespace irods
             //
             // Where <_version> represents the string that was searched.
             if (m.size() == 4) {
-                return irods::version{
-                    static_cast<std::uint16_t>(std::stoi(m[1].str())), // Major
-                    static_cast<std::uint16_t>(std::stoi(m[2].str())), // Minor
-                    static_cast<std::uint16_t>(std::stoi(m[3].str()))  // Patch
-                };
+                std::uint16_t major; // NOLINT(cppcoreguidelines-init-variables)
+                std::string v_str = m[1].str();
+                const auto* v_b = v_str.c_str();
+                const auto* v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                std::from_chars_result fc_res = std::from_chars(v_b, v_e, major);
+                if (std::errc{} != fc_res.ec) {
+                    throw std::system_error(std::make_error_code(fc_res.ec));
+                }
+
+                std::uint16_t minor; // NOLINT(cppcoreguidelines-init-variables)
+                v_str = m[2].str();
+                v_b = v_str.c_str();
+                v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(v_b, v_e, minor);
+                if (std::errc{} != fc_res.ec) {
+                    throw std::system_error(std::make_error_code(fc_res.ec));
+                }
+
+                std::uint16_t patch; // NOLINT(cppcoreguidelines-init-variables)
+                v_str = m[2].str();
+                v_b = v_str.c_str();
+                v_e = v_b + v_str.size(); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                fc_res = std::from_chars(v_b, v_e, patch);
+                if (std::errc{} != fc_res.ec) {
+                    throw std::system_error(std::make_error_code(fc_res.ec));
+                }
+
+                return irods::version{.major = major, .minor = minor, .patch = patch};
             }
             else if (CLIENT_PT != ProcessType) {
                 rodsLog(LOG_NOTICE,
