@@ -1,17 +1,18 @@
+#include "irods/getRemoteZoneResc.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
 #include "irods/rodsConnect.h"
 #include "irods/rsGlobalExtern.hpp"
-#include "irods/rcGlobalExtern.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/getRemoteZoneResc.h"
-#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_hostname.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 #include <cstring>
-#include <vector>
-#include <iterator>
 #include <experimental/iterator>
+#include <iterator>
 #include <sstream>
+#include <vector>
 
 /* getAndConnRcatHost - get the rcat enabled host (result given in
  * rodsServerHost) based on the rcatZoneHint.
@@ -413,9 +414,15 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     /* no match */
 
-    tmpRodsServerHost = mkServerHost( myHostAddr, myZoneName );
+    if (hostname_resolves_to_local_address(myHostAddr) && LocalServerHost != nullptr) {
+        queueHostName(LocalServerHost, myHostAddr, 0);
+        *rodsServerHost = LocalServerHost;
+        return LOCAL_HOST;
+    }
 
-    if ( tmpRodsServerHost == NULL ) {
+    tmpRodsServerHost = mkServerHost(myHostAddr, myZoneName);
+
+    if (tmpRodsServerHost == nullptr) {
         rodsLog( LOG_ERROR,
                  "resolveHost: mkServerHost error" );
         return SYS_INVALID_SERVER_HOST;

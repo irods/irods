@@ -539,7 +539,9 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 
         try:
             lib.create_ufs_resource(self.admin, resc_name, hostname=hostname_alias)
             lib.create_ascii_printable_file(local_file, 1)
-            self.admin.assert_icommand(['iput', '-R', resc_name, local_file], 'STDERR', ['-9000 SYS_EXCEED_CONNECT_CNT'])
+            # since #9038, the server now DOES handles mismatches as long as they can be resolved through host_resolution
+            # this means `iput -R` should work, and no longer return `-9000 SYS_EXCEED_CONNECT_CNT`
+            self.admin.assert_icommand(['iput', '-R', resc_name, local_file])
 
         finally:
             self.admin.run_icommand(['irm', '-f', os.path.basename(local_file)])
