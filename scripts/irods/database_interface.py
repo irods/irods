@@ -13,7 +13,7 @@ from .exceptions import IrodsError, IrodsWarning
 #These are the functions that must be implemented in order
 #for the iRODS python scripts to communicate with the database
 
-def setup_catalog(irods_config, default_resource_directory=None, default_resource_name=None):
+def setup_catalog(irods_config, default_resource_directory=None, default_resource_name=None, password_storage_mode="legacy"):
     l = logging.getLogger(__name__)
 
     with contextlib.closing(database_connect.get_database_connection(irods_config)) as connection:
@@ -24,7 +24,13 @@ def setup_catalog(irods_config, default_resource_directory=None, default_resourc
         with contextlib.closing(connection.cursor()) as cursor:
             try:
                 if database_connect.create_database_tables(irods_config, cursor) != 'skipped':
-                    database_connect.setup_database_values(irods_config, cursor, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
+                    database_connect.setup_database_values(
+                        irods_config,
+                        cursor,
+                        default_resource_directory=default_resource_directory,
+                        default_resource_name=default_resource_name,
+                        password_storage_mode=password_storage_mode
+                    )
                     l.debug('Committing database changes...')
                 cursor.commit()
             except:

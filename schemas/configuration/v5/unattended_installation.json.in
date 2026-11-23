@@ -17,6 +17,7 @@
                 "service_account_group_name"
             ]
         },
+        "password_storage_mode": {"enum": ["legacy", "hashed", "both"]},
         "server_config": {
             "$ref": "server_config.json"
         },
