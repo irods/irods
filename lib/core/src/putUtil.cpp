@@ -20,6 +20,8 @@
 #include "irods/irods_random.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/sockComm.h"
+#include "irods/dataObjPut.h"
+#include "irods/version.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
@@ -440,7 +442,40 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     }
     rstrcpy( dataObjOprInp->objPath, targPath, MAX_NAME_LEN );
     dataObjOprInp->dataSize = srcSize;
-    status = rcDataObjPut( conn, dataObjOprInp, srcPath );
+    // Keep the portal transport for older servers, restartable uploads and
+    // federated objects. The 5.x transport preserves DATA_OBJ_PUT setup and
+    // completion; only the data transfer changes. Once all supported servers
+    // use it, the portal transport can be retired independently.
+    std::optional<irods::version> server_version;
+    try {
+        if (conn->svrVersion) {
+            server_version = irods::to_version(conn->svrVersion->relVersion);
+        }
+    }
+    catch (const std::exception&) {
+        // An unrecognized server version must use the established put path.
+    }
+    const auto env = std::string{conn->clientUser.rodsZone};
+    const bool local_zone = std::string{targPath}.starts_with("/" + env + "/");
+    const bool use_multi_connection = server_version && *server_version >= irods::version{5, 0, 0}
+        && local_zone && conn->fileRestart.flags != FILE_RESTART_ON
+        && dataObjOprInp->numThreads != NO_THREADING
+        && srcSize > 32 * 1024 * 1024;
+
+    if (use_multi_connection) {
+        rodsEnv env{};
+        status = getRodsEnv(&env);
+        if (status == 0) {
+            const int workers = dataObjOprInp->numThreads > 0
+                ? dataObjOprInp->numThreads : env.irodsDefaultNumberTransferThreads;
+            status = rcDataObjPutMultiConnection(conn, dataObjOprInp, srcPath,
+                                                 std::max(1, workers),
+                                                 rodsArgs->ticket ? rodsArgs->ticketString : nullptr);
+        }
+    }
+    else {
+        status = rcDataObjPut(conn, dataObjOprInp, srcPath);
+    }
 
     if ( status >= 0 ) {
         if ( rodsArgs->verbose == True ) {

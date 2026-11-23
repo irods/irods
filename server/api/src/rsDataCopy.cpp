@@ -96,7 +96,6 @@ remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
     return status;
 }
 
-static
 int
 apply_acPostProcForDataCopyReceived(rsComm_t *rsComm, dataOprInp_t *dataOprInp) {
     if (rsComm == NULL) {

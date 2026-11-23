@@ -1,5 +1,7 @@
 from __future__ import print_function
+import filecmp
 import os
+import stat
 import sys
 
 if sys.version_info < (2, 7):
@@ -20,6 +22,77 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
     def tearDown(self):
         super(test_iget_general, self).tearDown()
+
+    def test_multi_1247_get_retains_replica_selection_and_checksum(self):
+        source = os.path.join(self.user.local_session_dir, 'multi_1247_source')
+        destination = os.path.join(self.user.local_session_dir, 'multi_1247_destination')
+        legacy_destination = os.path.join(self.user.local_session_dir, 'multi_1247_legacy')
+        logical_path = os.path.join(self.user.session_collection, 'multi_1247_object')
+        # Nonuniform bytes catch incorrect segment offsets and ordering.
+        lib.make_file(source, 34 * 1024 * 1024, 'random')
+        self.user.assert_icommand(['iput', '-N', '0', '-k', source, logical_path])
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iget', '-P', '-V', '-N', '3', '-K', '-n', '0', logical_path, destination])
+        self.assertEqual(status, 0, stderr)
+        self.assertIn('multi-1247 transfer', stdout)
+        self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+        self.user.assert_icommand(['iget', '-N', '0', logical_path, legacy_destination])
+        self.assertEqual(stat.S_IMODE(os.stat(legacy_destination).st_mode),
+                         stat.S_IMODE(os.stat(destination).st_mode))
+        self.assertEqual('1', lib.get_replica_status(self.user,
+                                                     os.path.basename(logical_path), 0))
+
+        _, stderr, status = self.user.run_icommand(
+            ['iget', '-N', '2', logical_path, destination])
+        self.assertNotEqual(status, 0)
+        self.assertIn('OVERWRITE_WITHOUT_FORCE_FLAG', stderr)
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iget', '-V', '-f', logical_path, destination])
+        self.assertEqual(status, 0, stderr)
+        self.assertIn('multi-1247 transfer', stdout)
+        self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iget', '-V', '-f', '-N', '2', '-R', self.user.default_resource,
+             logical_path, destination])
+        self.assertEqual(status, 0, stderr)
+        self.assertIn('multi-1247 transfer', stdout)
+        self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+
+        _, output, _ = self.user.assert_icommand(
+            ['iticket', 'create', 'read', logical_path], 'STDOUT', 'ticket:')
+        ticket = output.rpartition(':')[2].strip()
+        try:
+            stdout, stderr, status = self.user.run_icommand(
+                ['iget', '-V', '-f', '-N', '2', '-t', ticket, logical_path, destination])
+            self.assertEqual(status, 0, stderr)
+            self.assertIn('multi-1247 transfer', stdout)
+            self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+        finally:
+            self.user.assert_icommand(['iticket', 'delete', ticket])
+
+        stdout, stderr, status = self.user.run_icommand(
+            ['iget', '-V', '-f', '-N', '0', logical_path, destination])
+        self.assertEqual(status, 0, stderr)
+        self.assertNotIn('multi-1247 transfer', stdout)
+        self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', logical_path,
+                                    'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+        try:
+            # A stale replica may have a catalog size which differs from its
+            # physical length. It must be read until EOF, not divided into ranges.
+            stdout, stderr, status = self.user.run_icommand(
+                ['iget', '-V', '-f', '-R', self.user.default_resource,
+                 logical_path, destination])
+            self.assertEqual(status, 0, stderr)
+            self.assertNotIn('multi-1247 transfer', stdout)
+            self.assertTrue(filecmp.cmp(source, destination, shallow=False))
+        finally:
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', logical_path,
+                                        'replica_number', '0', 'DATA_REPL_STATUS', '1'])
 
     def test_iget_R_is_a_directive_not_a_preference__issue_4475(self):
         def do_test_iget_R_is_a_directive_not_a_preference__issue_4475(self, file_size):
@@ -122,4 +195,3 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
         finally:
             # Make sure the data path is real so that it will get cleaned up
             self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', logical_path, 'replica_number', '0', 'DATA_PATH', real_data_path])
-

@@ -29,4 +29,12 @@ extern "C"
 int rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath );
 int _rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf );
 
+#ifdef __cplusplus
+// Keep DATA_OBJ_GET replica selection and checksum verification; transfer only
+// the bytes over independent connections to the server's regular API port.
+int rcDataObjGetMultiConnection(rcComm_t* conn, dataObjInp_t* input,
+                                char* local_path, int thread_count,
+                                const char* ticket = nullptr);
+#endif
+
 #endif

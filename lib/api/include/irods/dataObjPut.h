@@ -30,4 +30,12 @@ extern "C"
 #endif
 int rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath );
 int _rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut );
+#ifdef __cplusplus
+// Use the regular DATA_OBJ_PUT setup and completion, but send the file through
+// independent authenticated connections to the server's ordinary API port.
+// Only call this for servers supporting replica tokens (iRODS 5.0 or newer).
+int rcDataObjPutMultiConnection(rcComm_t* conn, dataObjInp_t* input,
+                                const char* local_path, int thread_count,
+                                const char* ticket = nullptr);
+#endif
 #endif

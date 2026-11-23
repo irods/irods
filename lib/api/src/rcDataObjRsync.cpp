@@ -5,6 +5,7 @@
 #include "irods/apiNumber.h"
 #include "irods/oprComplete.h"
 #include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
 
 #include <cstring>
 
@@ -78,13 +79,26 @@
  * \sa none
 **/
 
-int
-rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
+static int
+rcDataObjRsyncImpl( rcComm_t *conn, dataObjInp_t *dataObjInp, int worker_count, bool dry_run ) {
     int status;
     msParamArray_t *outParamArray = NULL;
     char *locFilePath;
 
     status = _rcDataObjRsync( conn, dataObjInp, &outParamArray );
+
+    // These responses are the server's checksum decision. Do not follow up
+    // with a data transfer when irsync is only listing pending changes.
+    if (dry_run && status != SYS_SVR_TO_CLI_MSI_REQUEST) {
+        if (outParamArray) {
+            clearMsParamArray(outParamArray, 1);
+            free(outParamArray);
+        }
+        if (status == SYS_SVR_TO_CLI_PUT_ACTION || status == SYS_SVR_TO_CLI_GET_ACTION) {
+            return SYS_RSYNC_TARGET_MODIFIED;
+        }
+        return status;
+    }
 
     if ( status == SYS_SVR_TO_CLI_PUT_ACTION ) {
         if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
@@ -92,7 +106,9 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
             return USER_INPUT_PATH_ERR;
         }
         else {
-            status = rcDataObjPut( conn, dataObjInp, locFilePath );
+            status = worker_count > 0
+                ? rcDataObjPutMultiConnection(conn, dataObjInp, locFilePath, worker_count)
+                : rcDataObjPut(conn, dataObjInp, locFilePath);
             if ( status >= 0 ) {
                 return SYS_RSYNC_TARGET_MODIFIED;
             }
@@ -107,7 +123,9 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
             return USER_INPUT_PATH_ERR;
         }
         else {
-            status = rcDataObjGet( conn, dataObjInp, locFilePath );
+            status = worker_count > 0
+                ? rcDataObjGetMultiConnection(conn, dataObjInp, locFilePath, worker_count)
+                : rcDataObjGet(conn, dataObjInp, locFilePath);
             if ( status >= 0 ) {
                 return SYS_RSYNC_TARGET_MODIFIED;
             }
@@ -205,6 +223,27 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     }
 
     return status;
+}
+
+int rcDataObjRsync(rcComm_t* conn, dataObjInp_t* input)
+{
+    return rcDataObjRsyncImpl(conn, input, 0, false);
+}
+
+int rcDataObjRsyncMultiConnection(rcComm_t* conn, dataObjInp_t* input, int thread_count)
+{
+    if (!conn || !input || thread_count < 1 || thread_count > MAX_NUM_CONFIG_TRAN_THR) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    return rcDataObjRsyncImpl(conn, input, thread_count, false);
+}
+
+int rcDataObjRsyncDryRun(rcComm_t* conn, dataObjInp_t* input)
+{
+    if (!conn || !input) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    return rcDataObjRsyncImpl(conn, input, 0, true);
 }
 
 int

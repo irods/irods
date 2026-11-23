@@ -20,6 +20,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_set_grid_configuration_value.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_touch.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_update_replica_access_time.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/server_side_copy_delegation.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsAuthCheck.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsAuthPluginRequest.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsAuthRequest.cpp"

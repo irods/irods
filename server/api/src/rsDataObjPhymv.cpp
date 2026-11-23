@@ -14,6 +14,7 @@
 #include "irods/rsDataObjPhymv.hpp"
 #include "irods/rsDataObjPhymv.hpp"
 #include "irods/rsDataObjRepl.hpp"
+#include "irods/server_side_copy_delegation.hpp"
 #include "irods/rsDataObjTrim.hpp"
 #include "irods/rsDataObjUnlink.hpp"
 #include "irods/rsFileClose.hpp"
@@ -39,6 +40,8 @@
 #include "irods/data_object_proxy.hpp"
 
 #include "irods/logical_locking.hpp"
+
+#include <cstdlib>
 
 namespace
 {
@@ -783,6 +786,28 @@ namespace
                 }
             }
 
+            if (auto* host = irods::server_side_copy::destination_for_delegation(
+                    _comm, source_replica.resc_hier(), destination_hierarchy,
+                    source_replica.size(), _inp)) {
+                DataObjInp forwarded{};
+                if (replDataObjInp(&_inp, &forwarded) < 0) {
+                    clearKeyVal(&forwarded.condInput);
+                    std::free(forwarded.specColl);
+                    return SYS_INTERNAL_ERR;
+                }
+                const irods::at_scope_exit clear_forwarded{[&] {
+                    clearKeyVal(&forwarded.condInput);
+                    std::free(forwarded.specColl);
+                }};
+                addKeyVal(&forwarded.condInput, RESC_HIER_STR_KW,
+                          source_replica.resc_hier().c_str());
+                addKeyVal(&forwarded.condInput, DEST_RESC_HIER_STR_KW,
+                          destination_hierarchy.data());
+                addKeyVal(&forwarded.condInput,
+                          irods::server_side_copy::delegated_keyword, "");
+                return _rcDataObjPhymv(host->conn, &forwarded, _stat);
+            }
+
             return replicate_data(_comm, source_inp, destination_inp, _stat);
         }
         catch (const irods::exception& e) {
@@ -842,4 +867,3 @@ int rsDataObjPhymv(RsComm *rsComm, DataObjInp *dataObjInp, TransferStat **transS
         return SYS_UNKNOWN_ERROR;
     }
 } // rsDataObjPhymv
-

@@ -180,6 +180,12 @@
 /// \since 5.1.0
 #define IRODS_LIBRARY_FEATURE_RESOURCE_ADMINISTRATION                     202606L
 
+/// Defined if this server can coordinate a cross-resource copy using
+/// independent API-port connections after a pre-open handoff.
+///
+/// \since 5.1.0
+#define IRODS_LIBRARY_FEATURE_SERVER_SIDE_MULTI_1247_COPY                 202610L
+
 // NOLINTEND
 
 #endif // IRODS_LIBRARY_FEATURES_H
