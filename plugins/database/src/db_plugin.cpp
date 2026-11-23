@@ -10760,7 +10760,9 @@ irods::error db_rename_object_op(
         cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
         cllBindVars[cllBindVarCount++] = collName;
-        cllBindVars[cllBindVarCount++] = collNameSlash;
+        cllBindVars[cllBindVarCount++] = parentCollName;
+        cllBindVars[cllBindVarCount++] = slashNewName;
+        cllBindVars[cllBindVarCount++] = collName;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collName;
         if ( logSQL != 0 ) {
@@ -10768,41 +10770,18 @@ irods::error db_rename_object_op(
         }
 #ifdef ORA_ICAT
         status = cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_name = SUBSTR(coll_name, 1, LENGTH(?)) || ? || SUBSTR(coll_name, LENGTH(?) + "
-            "1) where SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
+            "update R_COLL_MAIN set coll_name = SUBSTR(coll_name, 1, LENGTH(?)) || ? || SUBSTR(coll_name, "
+            "LENGTH(?) + 1), parent_coll_name = SUBSTR(parent_coll_name, 1, "
+            "LENGTH(?)) || ? || SUBSTR(parent_coll_name, LENGTH(?) + 1) "
+            "where parent_coll_name LIKE (? || '%') or parent_coll_name = ?",
             &icss);
 #else
         status = cmlExecuteNoAnswerSql(
             "update R_COLL_MAIN set coll_name = substr(coll_name, 1, char_length(?)) || ? || substr(coll_name, "
-            "char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+            "char_length(?) + 1), parent_coll_name = substr(parent_coll_name, 1, "
+            "char_length(?)) || ? || substr(parent_coll_name, char_length(?) + 1) "
+            "where parent_coll_name LIKE (? || '%') or parent_coll_name = ?",
             &icss);
-#endif
-        if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
-            _rollback( "chlRenameObject" );
-            return ERROR( status, "cmlExecuteNoAnswerSql update failure" );
-        }
-
-        /* like above, but for the parent_coll_name's */
-        cllBindVars[cllBindVarCount++] = parentCollName;
-        cllBindVars[cllBindVarCount++] = slashNewName;
-        cllBindVars[cllBindVarCount++] = collName;
-        cllBindVars[cllBindVarCount++] = collNameSlash;
-        cllBindVars[cllBindVarCount++] = collNameSlash;
-        cllBindVars[cllBindVarCount++] = collName;
-        if ( logSQL != 0 ) {
-            log_sql::debug("chlRenameObject SQL 10");
-        }
-#ifdef ORA_ICAT
-        status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = SUBSTR(parent_coll_name, 1, "
-                                       "LENGTH(?)) || ? || SUBSTR(parent_coll_name, LENGTH(?) + 1) where "
-                                       "SUBSTR(parent_coll_name, 1, LENGTH(?)) = ? or parent_coll_name = ?",
-                                       &icss);
-#else
-        status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name, 1, "
-                                       "char_length(?)) || ? || substr(parent_coll_name, char_length(?) + 1) where "
-                                       "substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
-                                       &icss);
 #endif
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             log_db::info("chlRenameObject cmlExecuteNoAnswerSql update failure {}", status);
