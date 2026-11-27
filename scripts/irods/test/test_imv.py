@@ -354,3 +354,46 @@ class test_moving_and_renaming_collections_with_multibyte_characters__issue_6239
     def test_move_down_rename_shorter_length_with_additional_multibyte_character(self):
         # imv above/béta12 above/sibling/béé34
         self.do_imv_test("/".join([self.base_subcollection, self.sibling_subcollection, "béé34"]))
+
+    def test_rename_multibyte_name_to_ascii_name__issue_9054(self):
+        # imv above/béta12 above/beta12
+        self.do_imv_test("/".join([self.base_subcollection, "beta12"]))
+
+    def test_move_down_rename_multibyte_name_to_ascii_name__issue_9054(self):
+        # imv above/béta12 above/sibling/beta1
+        self.do_imv_test("/".join([self.base_subcollection, self.sibling_subcollection, "beta1"]))
+
+
+class test_renaming_collections_with_like_wildcards_and_similar_siblings(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.user = session.mkuser_and_return_session("rodsuser", "smeagol", "spass", lib.get_hostname())
+
+    @classmethod
+    def tearDownClass(cls):
+        with session.make_session_for_existing_admin() as admin_session:
+            cls.user.__exit__()
+            admin_session.assert_icommand(["iadmin", "rmuser", cls.user.username])
+
+    def test_only_descendants_of_renamed_collection_are_updated(self):
+        base = self.user.session_collection
+        source = "a_b%c"
+        # Names that match the source collection name when "_" and "%" are interpreted as LIKE wildcards, or that
+        # merely share its prefix.
+        siblings = ["axbyyc", "a_b%cX", "a_b%c Y"]
+        destination = "renamed"
+
+        try:
+            self.user.assert_icommand(["imkdir", "-p", f"{base}/{source}/child/grandchild"])
+            for sibling in siblings:
+                self.user.assert_icommand(["imkdir", "-p", f"{base}/{sibling}/child"])
+
+            self.user.assert_icommand(["imv", f"{base}/{source}", f"{base}/{destination}"])
+
+            self.assertFalse(lib.collection_exists(self.user, f"{base}/{source}"))
+            self.assertTrue(lib.collection_exists(self.user, f"{base}/{destination}/child/grandchild"))
+            for sibling in siblings:
+                self.assertTrue(lib.collection_exists(self.user, f"{base}/{sibling}/child"))
+        finally:
+            self.user.run_icommand(["irm", "-rf", base])
