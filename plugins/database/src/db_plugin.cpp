@@ -1494,6 +1494,24 @@ makeEscapedPath( const std::string &inPath ) {
     return boost::regex_replace( inPath, boost::regex( "[%_\\\\]" ), "\\\\$&" );
 }
 
+/* Number of characters (UTF-8 code points) in a string, plus _add. Used to pass substr() offsets as
+ * integers: char_length(?) on a bound parameter counts bytes on MySQL with the ODBC driver. */
+static std::string utf8CharCount( const std::string &_s, long _add = 0 ) {
+    long n = _add;
+    for ( const unsigned char c : _s ) {
+        if ( ( c & 0xC0 ) != 0x80 ) {
+            n++;
+        }
+    }
+    return std::to_string( n );
+}
+
+#if MY_ICAT
+#define SQL_INT_TYPE "signed integer"
+#else
+#define SQL_INT_TYPE "integer"
+#endif
+
 /* Internal routine to modify inheritance */
 /* inheritFlag =1 to set, 2 to remove */
 int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, const char *pathName ) {
@@ -10760,9 +10778,22 @@ irods::error db_rename_object_op(
         cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
         cllBindVars[cllBindVarCount++] = collName;
+#ifdef ORA_ICAT
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collName;
+#else
+        // Offsets are passed as character counts, and the prefix match uses LIKE so that the index
+        // on parent_coll_name can be used (important for MySQL).
+        const std::string parentCollLen = utf8CharCount( parentCollName );
+        const std::string collTailStart = utf8CharCount( collName, 1 );
+        const std::string collNameLike = makeEscapedPath( collNameSlash ) + "%";
+        cllBindVars[cllBindVarCount++] = parentCollLen.c_str();
+        cllBindVars[cllBindVarCount++] = slashNewName;
+        cllBindVars[cllBindVarCount++] = collTailStart.c_str();
+        cllBindVars[cllBindVarCount++] = collNameLike.c_str();
+        cllBindVars[cllBindVarCount++] = collName;
+#endif
         if ( logSQL != 0 ) {
             log_sql::debug("chlRenameObject SQL 9");
         }
@@ -10773,8 +10804,8 @@ irods::error db_rename_object_op(
             &icss);
 #else
         status = cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_name = substr(coll_name, 1, char_length(?)) || ? || substr(coll_name, "
-            "char_length(?) + 1) where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+            "update R_COLL_MAIN set coll_name = substr(coll_name, 1, cast(? as " SQL_INT_TYPE ")) || ? || "
+            "substr(coll_name, cast(? as " SQL_INT_TYPE ")) where parent_coll_name like ? or parent_coll_name = ?",
             &icss);
 #endif
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -10787,9 +10818,17 @@ irods::error db_rename_object_op(
         cllBindVars[cllBindVarCount++] = parentCollName;
         cllBindVars[cllBindVarCount++] = slashNewName;
         cllBindVars[cllBindVarCount++] = collName;
+#ifdef ORA_ICAT
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collName;
+#else
+        cllBindVars[cllBindVarCount++] = parentCollLen.c_str();
+        cllBindVars[cllBindVarCount++] = slashNewName;
+        cllBindVars[cllBindVarCount++] = collTailStart.c_str();
+        cllBindVars[cllBindVarCount++] = collNameLike.c_str();
+        cllBindVars[cllBindVarCount++] = collName;
+#endif
         if ( logSQL != 0 ) {
             log_sql::debug("chlRenameObject SQL 10");
         }
@@ -10800,8 +10839,9 @@ irods::error db_rename_object_op(
                                        &icss);
 #else
         status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name, 1, "
-                                       "char_length(?)) || ? || substr(parent_coll_name, char_length(?) + 1) where "
-                                       "substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+                                       "cast(? as " SQL_INT_TYPE ")) || ? || substr(parent_coll_name, "
+                                       "cast(? as " SQL_INT_TYPE ")) where "
+                                       "parent_coll_name like ? or parent_coll_name = ?",
                                        &icss);
 #endif
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -11203,9 +11243,22 @@ irods::error db_move_object_op(
         cllBindVars[cllBindVarCount++] = oldCollName;
         cllBindVars[cllBindVarCount++] = newCollName;
         cllBindVars[cllBindVarCount++] = oldCollName;
+#ifdef ORA_ICAT
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = collNameSlash;
         cllBindVars[cllBindVarCount++] = oldCollName;
+#else
+        // Offsets are passed as character counts, and the prefix match uses LIKE so that the index
+        // on parent_coll_name can be used (important for MySQL).
+        const std::string oldCollTailStart = utf8CharCount( oldCollName, 1 );
+        const std::string collNameLike = makeEscapedPath( collNameSlash ) + "%";
+        cllBindVars[cllBindVarCount++] = newCollName;
+        cllBindVars[cllBindVarCount++] = oldCollTailStart.c_str();
+        cllBindVars[cllBindVarCount++] = newCollName;
+        cllBindVars[cllBindVarCount++] = oldCollTailStart.c_str();
+        cllBindVars[cllBindVarCount++] = collNameLike.c_str();
+        cllBindVars[cllBindVarCount++] = oldCollName;
+#endif
         if ( logSQL != 0 ) {
             log_sql::debug("chlMoveObject SQL 13");
         }
@@ -11216,8 +11269,9 @@ irods::error db_move_object_op(
             &icss);
 #else
         status = cmlExecuteNoAnswerSql("update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, "
-                                       "char_length(?) + 1), coll_name = ? || substr(coll_name, char_length(?) + 1) "
-                                       "where substr(parent_coll_name, 1, char_length(?)) = ? or parent_coll_name = ?",
+                                       "cast(? as " SQL_INT_TYPE ")), coll_name = ? || substr(coll_name, "
+                                       "cast(? as " SQL_INT_TYPE ")) "
+                                       "where parent_coll_name like ? or parent_coll_name = ?",
                                        &icss);
 #endif
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
